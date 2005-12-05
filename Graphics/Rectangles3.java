@@ -32,18 +32,35 @@ public class Rectangles3 extends Applet{
 	f.pack(); //with pack everyting becomes visible and the required size of the frame is calculated.
         f.setSize(new Dimension(550,250)); //After that the frame gets a new dimension...
         f.show();
-    }
+        
+       
+    } //end of main
 
 } //end of Rectangles3
 
 //a new class RectangleCanvas3, which extends Canvas, is created.
 class RectangleCanvas3 extends Canvas implements MouseListener, MouseMotionListener{
 
+	//an integer array rectcoord is created.
+      int[][] rectcoord={
+    	{0,0,100,50},
+	   {150,50,100,50},
+	   {0,100,100,50},
+	   {150,100,100,50}
+	 }; 
+	
 	//A rectangle is created.
-   Rectangle rect1 = new Rectangle(0, 0, 100, 50); //Rectangle(int x, int y, int width, int height) with top-left corner (x,y)
-   Rectangle rect2 = new Rectangle(0, 0, 100, 50);
+   //Rectangle rect1 = new Rectangle(0, 0, 100, 50); //Rectangle(int x, int y, int width, int height) with top-left corner (x,y)
+   //Rectangle rect2 = new Rectangle(0, 0, 100, 50);
    BufferedImage bi; 
 	Graphics2D big;
+	Rectangle[] rects = new Rectangle[4];
+	
+	for (int j = 0; j < 4; j++) {
+		Rectangle rect = new Rectangle(rectcoord[j,1],rectcoord[j,2],rectcoord[j,3],rectcoord[j,4]);
+		rects[j]=rect;
+	}
+		
 
    // Holds the coordinates of the user's last mousePressed event.
 	int last1_x, last1_y, last2_x, last2_y;
