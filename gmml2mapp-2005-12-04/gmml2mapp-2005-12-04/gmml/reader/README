@@ -1,0 +1,54 @@
+$Id: README,v 1.1 2005/09/22 12:34:21 gontran Exp $
+
+from sub gp()
+
+	#	GeneProduct
+	#	{attr}
+	#		## no correlation for this GMML GeneProduct Attrib in GenMAPP
+	#       ## files
+	#		Type						-> UNMAPPED
+	#
+	#		Short-Name					Object.Label
+	#		Xref						Object.Links
+	#		BackpageHead				Object.Head
+	#		Name						Object.ID
+	#		GeneProduct-Data-Source		Object.SystemCode
+
+	#		For instance:
+	#			'Short-Name' => 'HADHSC',
+	#			'Type' => 'unknown',
+	#			'Xref' => '',
+	#			'BackpageHead' => 'Short Chain 3-Hydroxyacyl-CoA Dehydrogenase',
+	#			'Name' => 'HADHSC',
+	#			'GeneProduct-Data-Source' => 'LocusLink'
+	#
+	#	Notes				Object.Notes
+	#	Comment				Object.Remarks
+	#
+	#	Graphics
+	#	{attr}
+	#		CenterX			Object.CenterX
+	#		CenterY			Object.CenterY
+	#		Width			Object.Width
+	#		Height			Object.Height
+
+Ferrante and her mappings.
+
+
+1. 
+<LineShape><Type>
+Add and enumeration for just plain:
+	<xsd:enumeration value="Receptor"/>
+if it makes sense -- seems to be missing compared to list of available
+lineshapes in genmapp.
+
+2.
+Extend Label<font settings> so that all genmapp labellings can be handled
+lossley>
+
+3. Is there no curvature associated with an Arc in GenMAPP?
+
+4. Arc needs graphics attrib rotation
+
+5. What kind of enforcements should be made when converting *to* GenMAPP
+mapp files?

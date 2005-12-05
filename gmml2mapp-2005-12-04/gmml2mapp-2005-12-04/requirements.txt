@@ -1,0 +1,8 @@
+Requires
+Perl - Active State
+
+Additional Modules:
+	XML::Twig
+	DBI
+	DBD::ODBC
+	Win32::ODBC
