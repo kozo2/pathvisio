@@ -4,19 +4,24 @@
 /*
 /*********************************************************/
 
+import java.awt.*;
+
 //TODO add something to find and use int colors! This is not supported atm! 
-//And the Hex might make mistakes on 6 sized strings with random values
 
 public class GmmlColor {
-	double[] color = new double[3];
+	float[] color = new float[3];
 	
 	//Constructor
-	public static void main(String[] args) {
-        //Main can be empty        
+	public GmmlColor() {
+        //Main can be empty       
+    }
+
+	public GmmlColor(String input) {
+        storeColor(input);        
     }
    
 	//GetColor method
-	public double[] getColor() {
+	public float[] getColor() {
 		return color;
 	}
 	
@@ -25,14 +30,26 @@ public class GmmlColor {
 		if(!storeStringColor(scolor)) {
 			if(!storeHexColor(scolor)) {
 				System.out.println("Not a valid color value!");
-			} else {
-				System.out.println("Found a hex color value.");
 			}
-		} else {
-			System.out.println("Found a String color value.");
 		}
 	}
+
+	//Convert a string into a float[3] a color of unknown type
+	public static float[] convertColorFloat(String scolor) {
+		GmmlColor temp = new GmmlColor(scolor);
+		float[] fcolor = temp.getColor();
+		return fcolor;
+	}
 	
+	//Convert a string into a float[3] a color of unknown type
+	public static Color convertColor(String scolor) {
+		GmmlColor temp = new GmmlColor(scolor);
+		float[] fcolor = temp.getColor();
+		Color rcolor = new Color(fcolor[0],fcolor[1],fcolor[2]);
+		return rcolor;
+	}	
+
+		
 	//StoreColor method
 	public boolean storeHexColor(String scolor) {
 		//Trim the string and break it into bytes
@@ -45,15 +62,15 @@ public class GmmlColor {
 			String blue = ""+trimcolor.charAt(4)+trimcolor.charAt(5);
 			
 			try {
-				//Convert a string into an integer
+				//Convert a hex string into an integer
 				int r = Integer.parseInt( red.trim(), 16 /* radix */ );
 				int g = Integer.parseInt( green.trim(), 16 /* radix */ );
 				int b = Integer.parseInt( blue.trim(), 16 /* radix */ );
 			
 				//Make the desired 0.0 - 1.0 doubles out of the integers			
-				color[0] = r / 255d;
-				color[1] = g / 255d;
-				color[2] = b / 255d;
+				color[0] = r / 255f;
+				color[1] = g / 255f;
+				color[2] = b / 255f;
 				
 				return true;	//No errors
 			}
@@ -89,9 +106,9 @@ public class GmmlColor {
 		for(int i=0; i < 16; i++) { //The length of the table is 16 hardcoded
 			if (trimcolor == colortable[i][0]) {
 				//Insert the color as doubles
-				color[0] = Double.parseDouble(colortable[i][1]);
-				color[1] = Double.parseDouble(colortable[i][2]);
-				color[2] = Double.parseDouble(colortable[i][3]);
+				color[0] = Float.parseFloat(colortable[i][1]);
+				color[1] = Float.parseFloat(colortable[i][2]);
+				color[2] = Float.parseFloat(colortable[i][3]);
 				
 				return true;	//No errors
 			}

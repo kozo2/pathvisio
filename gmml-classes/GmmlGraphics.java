@@ -36,7 +36,7 @@ public class GmmlGraphics {
 		boardsize[0] = bs[0];
 		boardsize[1] = bs[1];
 	}
-	public int[] getBoardsize {
+	public int[] getBoardsize () {
 		return boardsize;
 	}
 	
@@ -45,7 +45,7 @@ public class GmmlGraphics {
 		windowsize[0] = ws[0];
 		windowsize[1] = ws[1];
 	}
-	public int[] getWindowsize {
+	public int[] getWindowsize () {
 		return windowsize;
 	}
 	
@@ -54,7 +54,7 @@ public class GmmlGraphics {
 		mapinfo[0] = mi[0];
 		mapinfo[1] = mi[1];
 	}
-	public int[] getMapinfo {
+	public int[] getMapinfo () {
 		return mapinfo;
 	}
 	
@@ -63,7 +63,7 @@ public class GmmlGraphics {
 		center[0] = c[0];
 		center[1] = c[1];
 	}
-	public int[] getCenter {
+	public int[] getCenter () {
 		return center;
 	}
 	
@@ -72,7 +72,7 @@ public class GmmlGraphics {
 		size[0] = s[0];
 		size[1] = s[1];
 	}
-	public int[] getSize {
+	public int[] getSize () {
 		return size;
 	}
 }
