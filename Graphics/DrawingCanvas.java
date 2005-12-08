@@ -7,7 +7,7 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	RectArray ra;
 	BufferedImage bi;
 	Graphics2D big;
-	String[] colors;
+	Color[] colors;
 	
 	//Holds the coordinates of the user's last mousePressed event.
 	int[] lastx;
@@ -22,11 +22,17 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	Rectangle area; //area in which the rectangles are plotted.
 	
 	
-	DrawingCanvas(int[][] rectCoord, String[] rectColors) {
-		colors=rectColors;
+	DrawingCanvas(int[][] rectCoord, Color[] rectColors) {
+		//to use the colors outside of the constructor
+		colors = new Color[rectColors.length];
+		for (int i=0; i<rectColors.length; i++){
+			colors[i]=rectColors[i];
+		}
+		//to use the length of rectCoord outside of the constructor
 		rectCoordLength = rectCoord.length;
+		System.out.println("There are "+rectCoordLength+" rectangles");
 		rectClick = new boolean[rectCoordLength];
-		System.out.println(rectCoordLength);
+		
 		ra = new RectArray(rectCoord);
 		setBackground(Color.white);
 		addMouseMotionListener(this);
@@ -35,14 +41,6 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 		lastx = new int[rectCoordLength];
 		lasty = new int[rectCoordLength];
 		
-		//Create buffered fill. Moet nog in for-loop komen!!
-		bi = new BufferedImage(5,5,BufferedImage.TYPE_INT_RGB); //(int width, int height, int imageType)
-		big = bi.createGraphics();
-		big.setColor(Color.cyan);
-		big.fillRect(0,0,7,7);
-		Rectangle r = new Rectangle(0,0,5,5); //big and bi are only used to create the pattern
-		fillColor = new TexturePaint(bi,r);
-		big.dispose();
 	} //end of DrawingCanvas()
 	
 	/*When the mouse is pressed, there is checked with a for-loop if one clicked inside of a rectangle.
@@ -153,7 +151,7 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 		for (int i=0; i<rectCoordLength; i++){
 			big.setStroke(new BasicStroke(8.0f));
 			big.draw(ra.rects[i]);
-			big.setPaint(fillColor);
+			big.setColor(colors[i]);
 			big.fill(ra.rects[i]);
 		}
 

@@ -19,7 +19,7 @@ public class Drawing extends Applet{
 		   {300,0,100,50}
 	 	 };
 		  
-		 String[] rectColors={"blue","green","yellow","red","pink"};
+		 Color[] rectColors={Color.blue,Color.green,Color.yellow,Color.red,Color.pink};
 		//Initialize the layout.
 		setLayout(new BorderLayout());
 		add(new DrawingCanvas(rectCoord,rectColors)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
