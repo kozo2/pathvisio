@@ -27,7 +27,7 @@ public class GmmlWindow {
 	 f.getContentPane().add(toolBar, BorderLayout.NORTH);
 
     //Add some content
-    GmmlPathway pathway = GmmlReader.read();
+    GmmlPathway pathway = GmmlReader.read("Hs_G13_Signaling_Pathway.xml");
     
     f.getContentPane().add(pathway);
 	 pathway.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.

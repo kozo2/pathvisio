@@ -179,8 +179,8 @@ public class GmmlReader {
 		         }
 		      } 
 		   }
-		   System.out.println("Trying to resize pathway to: '"+width+"'x'"+height+"'");
-		   pathway.resize(width/10, height/10);
+		   System.out.println("Trying to resize pathway to: '"+width/15+"'x'"+height/15+"'");
+		   pathway.resize(width/15, height/15);
 		} else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
 			System.out.println("Geneproduct not implemented yet");
 			List children = element.getContent();
@@ -221,7 +221,7 @@ public class GmmlReader {
 					   x = cx - (width/2);
 					   
 					   y = cy - (height/2);
-					   pathway.addRectCoord(x/10,y/10,width/10,height/10);
+					   pathway.addRectCoord(x/15,y/15,width/15,height/15);
 		        }
 		      }
 

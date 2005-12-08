@@ -87,7 +87,7 @@ public class GmmlPathway extends Applet{
 		rectCoord[length][0] = x;
 		rectCoord[length][1] = y;
 		rectCoord[length][2] = w;
-		rectCoord[length][2] = h;
+		rectCoord[length][3] = h;
 	}
 	
 	public void echoAtt() {

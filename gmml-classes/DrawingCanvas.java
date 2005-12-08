@@ -149,10 +149,11 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 
 		// Draws and fills the newly positioned rectangle to the buffer.
 		for (int i=0; i<rectCoordLength; i++){
-			big.setStroke(new BasicStroke(8.0f));
+			big.setColor(Color.blue);
+			big.setStroke(new BasicStroke(2.0f));
 			big.draw(ra.rects[i]);
 			//big.setColor(colors[i]);
-			big.setColor(Color.blue);
+			big.setColor(Color.orange);
 			big.fill(ra.rects[i]);
 		}
 
