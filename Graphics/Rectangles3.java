@@ -38,10 +38,21 @@ public class Rectangles3 extends Applet{
 
 } //end of Rectangles3
 
+class RectangleArray  {
+	public void createRect(int[][] rectcoord){
+		for (int j = 0; j < 4; j++) {
+			Rectangle rect = new Rectangle(rectcoord[j][1],rectcoord[j][2],rectcoord[j][3],rectcoord[j][4]);
+			rects[j]=rect;
+		}
+	}
+}
+
+
+
 //a new class RectangleCanvas3, which extends Canvas, is created.
 class RectangleCanvas3 extends Canvas implements MouseListener, MouseMotionListener{
-
-	//an integer array rectcoord is created.
+	
+		//an integer array rectcoord is created.
       int[][] rectcoord={
     	{0,0,100,50},
 	   {150,50,100,50},
@@ -54,16 +65,15 @@ class RectangleCanvas3 extends Canvas implements MouseListener, MouseMotionListe
    //Rectangle rect2 = new Rectangle(0, 0, 100, 50);
    BufferedImage bi; 
 	Graphics2D big;
-	Rectangle[] rects = new Rectangle[4];
 	
-	for (int j = 0; j < 4; j++) {
-		Rectangle rect = new Rectangle(rectcoord[j,1],rectcoord[j,2],rectcoord[j,3],rectcoord[j,4]);
-		rects[j]=rect;
-	}
-		
-
+	//rects is an array of class Rectangle, in which objects rectangle can be put.
+	RectangleArray rects = new RectangleArray();
+	rects.createRect(rectcoord);	
+	
+	
+	
    // Holds the coordinates of the user's last mousePressed event.
-	int last1_x, last1_y, last2_x, last2_y;
+	int last_x, last_y;
 	boolean firstTime = true;
 	TexturePaint fillPolka, strokePolka;
    Rectangle area;
@@ -73,6 +83,7 @@ class RectangleCanvas3 extends Canvas implements MouseListener, MouseMotionListe
 	boolean rect1click = false;
 	boolean rect2click = false;
 
+ 
 	public RectangleCanvas3(){ //method to color the rectangle
                 setBackground(Color.white);
                 addMouseMotionListener(this);
