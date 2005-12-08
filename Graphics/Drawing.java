@@ -15,13 +15,14 @@ public class Drawing extends Applet{
     		{0,0,100,50},
 	   	{150,50,100,50},
 	   	{0,100,100,50},
-	   	{150,100,100,50}
+	   	{150,150,100,50},
+		   {300,0,100,50}
 	 	 };
 		  
-		 String[] rectColors={"blue","green","yellow","red"};
+		 String[] rectColors={"blue","green","yellow","red","pink"};
 		//Initialize the layout.
 		setLayout(new BorderLayout());
-		add(new DrawingCanvas(rectCoord)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
+		add(new DrawingCanvas(rectCoord,rectColors)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
 	//This label is used when the applet is just started
 		label = new Label("Drag rectangles around within the area");
 		add("South", label); //South: in the lowest part of the frame.

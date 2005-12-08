@@ -7,21 +7,33 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	RectArray ra;
 	BufferedImage bi;
 	Graphics2D big;
+	String[] colors;
 	
 	//Holds the coordinates of the user's last mousePressed event.
-	int[] lastx = new int[4];
-	int[] lasty = new int[4];
+	int[] lastx;
+	int[] lasty;
+	
+	//length of Coordlength = amount of rectangles
+	int rectCoordLength;
+	boolean[] rectClick;
 
 	boolean firstTime = true;
 	TexturePaint fillColor;
 	Rectangle area; //area in which the rectangles are plotted.
 	
 	
-	DrawingCanvas(int[][] rectCoord) {
+	DrawingCanvas(int[][] rectCoord, String[] rectColors) {
+		colors=rectColors;
+		rectCoordLength = rectCoord.length;
+		rectClick = new boolean[rectCoordLength];
+		System.out.println(rectCoordLength);
 		ra = new RectArray(rectCoord);
 		setBackground(Color.white);
 		addMouseMotionListener(this);
 		addMouseListener(this);
+		
+		lastx = new int[rectCoordLength];
+		lasty = new int[rectCoordLength];
 		
 		//Create buffered fill. Moet nog in for-loop komen!!
 		bi = new BufferedImage(5,5,BufferedImage.TYPE_INT_RGB); //(int width, int height, int imageType)
@@ -39,13 +51,12 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	 *in rectClickArray, the rects in which there was clicked are true.
 	 */
 	 
-	boolean pressOut = false; //true when one pressed or dragged or released outside the rectangles, false otherwise.
-	boolean[] rectClick = new boolean[4];		
+	boolean pressOut = false; //true when one pressed or dragged or released outside the rectangles, false otherwise.		
 	
 	public void mousePressed(MouseEvent e){
 		pressOut = false;
 		int CS = 0;
-		for (int i=0; i<4; i++) {
+		for (int i=0; i<rectCoordLength; i++) {
 			if(ra.rects[i].contains(e.getX(), e.getY())){ //if the user presses the mouses on a coordinate which is contained by rect
 				updateLocation(i,e);
 				rectClick[i]=true;
@@ -58,14 +69,14 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 				rectClick[i]=false;
 			}
 		}
-		if (CS==4) { //if CS is the same as the amount of rectangles, one didn't press inside a rectangle.
+		if (CS==rectCoordLength) { //if CS is the same as the amount of rectangles, one didn't press inside a rectangle.
 			pressOut = true;
 		}
 				
 	} //end of mousePressed
 	
 	public void mouseDragged(MouseEvent e){
-		for (int i=0; i<4; i++) {
+		for (int i=0; i<rectCoordLength; i++) {
 			if(!pressOut && rectClick[i]){ //always mousePressed before mouseDragged -> pressOut true when start dragging outside of rect.
 			 	updateLocation(i,e);
 			} 
@@ -79,7 +90,7 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	public void mouseReleased(MouseEvent e){
 
 		// Checks whether or not the cursor is inside of the rectangle when the user releases the mouse button.   
-		for (int i=0; i<4; i++) {
+		for (int i=0; i<rectCoordLength; i++) {
 			if(ra.rects[i].contains(e.getX(), e.getY())){
 				updateLocation(i,e);
 			} 
@@ -139,7 +150,7 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 		big.clearRect(0, 0, area.width, area.height);
 
 		// Draws and fills the newly positioned rectangle to the buffer.
-		for (int i=0; i<4; i++){
+		for (int i=0; i<rectCoordLength; i++){
 			big.setStroke(new BasicStroke(8.0f));
 			big.draw(ra.rects[i]);
 			big.setPaint(fillColor);
