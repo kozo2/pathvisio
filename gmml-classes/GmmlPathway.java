@@ -1,245 +1,110 @@
-/**********************************************************
-/*
-/*        The GMML Pathways class by Hakim 6/12/2005
-/*
-/*********************************************************/
-
 import java.awt.*;
-import javax.swing.*;
 import java.awt.event.*;
 import java.applet.Applet;
-import java.awt.geom.*;
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 
-class GmmlPathway extends JPanel implements MouseListener, MouseMotionListener{
-	public Color defaultcolor;
-	BufferedImage bi;
-	Graphics2D big;
-	int x, y;
-	Rectangle area, startpt, endpt, ctrl1, ctrl2, rect, rect2;	
-	CubicCurve2D.Double cubic = new CubicCurve2D.Double();
-	Point2D.Double start, end, one, two, point;
-	boolean firstTime = true;
-	boolean pressOut = false;
+public class GmmlPathway extends Applet{
 
-	public GmmlPathway(){
+	int[][] rectCoord = new int[0][4];
+	
+	//Attributes + notes element + comment element
+	String[][] attributes = new String[0][2];
+	String notes = new String();
+	String comment = new String();
+	
+	static protected Label label;
 
-		setBackground(Color.white);
-      addMouseMotionListener(this);
-      addMouseListener(this);
+	//init is used to form the applet later in the program.
+	public void init(){
 
-		start = new Point2D.Double();
-		one = new Point2D.Double();
-		two = new Point2D.Double();
-		end = new Point2D.Double();
-
-      cubic.setCurve(start, one, two, end);
-		startpt = new Rectangle(0, 0, 8, 8);
-		endpt = new Rectangle(0, 0, 8, 8);
-		ctrl1 = new Rectangle(0, 0, 8, 8);
-		ctrl2 = new Rectangle(0, 0, 8, 8);
+   	//an integer array rectcoord is created.
+/*		int[][] rectCoord = {
+	   	{0,0,100,50},
+	   	{150,50,100,50},
+		   {0,100,100,50},
+		   {150,150,100,50},
+			{300,0,100,50}
+		}; */
 		
-		rect2 = new Rectangle(20, 10, 100, 50);
-	}
-
-	public void mousePressed(MouseEvent e){
-
-		x = e.getX();
-		y = e.getY();
-
-		if(startpt.contains(x, y)){
-			rect = startpt;
-			point = start;
-         x = startpt.x - e.getX();
-         y = startpt.y - e.getY();
-         updateLocation(e);
+		System.out.println("Checking for stored attributes - number: "+attributes.length);
+		for(int i=0; i<attributes.length; i++) {
+			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
 		}
- 		else if(endpt.contains(x, y)){
-			rect = endpt;
-			point = end;
-         x = endpt.x - e.getX();
-         y = endpt.y - e.getY();
-         updateLocation(e);
-		}
-		else if(ctrl1.contains(x, y)){
-			rect = ctrl1;
-			point = one;
-         x = ctrl1.x - e.getX();
-         y = ctrl1.y - e.getY();
-         updateLocation(e);
-		}
-		else if(ctrl2.contains(x, y)){
-			rect = ctrl2;
-			point = two;
-         x = ctrl2.x - e.getX();  
-         y = ctrl2.y - e.getY();
-         updateLocation(e);
-		} else {
-			pressOut = true;
-      }
-	}
+		
+		Color[] rectColors={Color.blue,Color.green,Color.yellow,Color.red,Color.pink};
+		//Initialize the layout.
+		setLayout(new BorderLayout());
+		add(new DrawingCanvas(rectCoord,rectColors)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
+		//This label is used when the applet is just started
+		label = new Label("Drag rectangles around within the area");
+		add("South", label); //South: in the lowest part of the frame.
+	} //end of init
 
-	public void mouseDragged(MouseEvent e){
-      if(!pressOut) {
-        updateLocation(e);
-		}
-
-	}
-
-	public void mouseReleased(MouseEvent e){
-     if(startpt.contains(e.getX(), e.getY())){
-       rect = startpt;
-       point = start;
-       updateLocation(e);
-     }
-     else if(endpt.contains(e.getX(), e.getY())){
-       rect = endpt;
-       point = end;
-       updateLocation(e);
-     }
-     else if(ctrl1.contains(e.getX(), e.getY())){
-       rect = ctrl1;  
-       point = one;  
-       updateLocation(e);
-     }
-     else if(ctrl2.contains(e.getX(), e.getY())){
-       rect = ctrl2;
-       point = two;
-       updateLocation(e);
-     }
-     else {
-       pressOut = false;
-     }
-	}
-
-	public void mouseMoved(MouseEvent e){}
-
-	public void mouseClicked(MouseEvent e){}
-	public void mouseExited(MouseEvent e){}
-	public void mouseEntered(MouseEvent e){}
-
-	public void updateLocation(MouseEvent e){
-
-	  rect.setLocation((x + e.getX())-4, (y + e.getY())-4);
-	  point.setLocation(x + e.getX(), y + e.getY());
-
-     checkPoint();
-                
-	  cubic.setCurve(start, one, two, end);
-	  repaint();
+	public void setNotes(String n) {
+		notes = n;
 	}
 	
-	public void updateColor(){
-	  repaint();
+	public void setComment(String c) {
+		comment = c;
 	}
-
-	public void paintComponent(Graphics g){
-     super.paintComponent(g);
-	  update(g);
-	}
-
-	public void update(Graphics g){
-
-		Graphics2D g2 = (Graphics2D)g;
-		Dimension dim = getSize();
-		int w = dim.width;
-      int h = dim.height; 
-                 
-      if(firstTime){
-		  bi = (BufferedImage)createImage(w, h);
-		  big = bi.createGraphics();
-		  //Set the points
-		  start.setLocation(w/2-50, h/2);
-		  end.setLocation(w/2+50, h/2);
-		  one.setLocation((int)(start.x)+25, (int)(start.y)-25);
-		  two.setLocation((int)(end.x)-25, (int)(end.y)+25);
-		  //Set the points
-		  startpt.setLocation((int)((start.x)-4), (int)((start.y)-4));
-        endpt.setLocation((int)((end.x)-4), (int)((end.y)-4));
-        ctrl1.setLocation((int)((one.x)-4), (int)((one.y)-4));
-        ctrl2.setLocation((int)((two.x)-4), (int)((two.y)-4));
-        //Set the curve
-		  cubic.setCurve(start, one, two, end);
-        	  big.setColor(Color.black);
-		  big.setStroke(new BasicStroke(5.0f));
-		  big.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		  area = new Rectangle(dim);
-		  firstTime = false; 
-		} 
-
-		// Clears the rectangle that was previously drawn.
-		big.setColor(Color.white);
-		big.clearRect(0, 0, area.width, area.height);
-
-		// Draws and fills the newly positioned rectangle to the buffer.
-		big.setPaint(defaultcolor);
-		big.draw(cubic);
-		big.setPaint(GmmlColor.convertColor("FF8800"));
-		big.fill(startpt);
-		big.setPaint(GmmlColor.convertColor("8800FF"));
-		big.fill(endpt);
-		big.setPaint(GmmlColor.convertColor("FF0088"));
-		big.fill(ctrl1);
-		big.setPaint(GmmlColor.convertColor("0088FF"));
-		big.fill(ctrl2);
+	
+	public void addAttribute(String attribute, String value) {
+		System.out.println("Adding attribute at "+attributes.length+" - attr: "+attribute+" - value: "+value);
+		int length = attributes.length;
 		
-		/* Fill extra triangle
-		GmmlColor gkleur = new GmmlColor("FF8800");
-		kleur = gkleur.getColor;
-		big.setPaint(new Color(kleur[0],kleur[1],kleur[2]));
-		big.fill(rect2); */
-
-		// Draws the buffered image to the screen.
-		g2.drawImage(bi, 0, 0, this);
-
-	}
-	/*
-         * Checks if the rectangle is contained within the applet window.  If the rectangle
-         * is not contained withing the applet window, it is redrawn so that it is adjacent
-         * to the edge of the window and just inside the window.
-	 */
-
-	void checkPoint(){
+		//RESIZE PART
+		attributes = (String[][]) resizeArray(attributes, (length+1));
+		// new array is [length+1][2 or Null]
+  		for (int i=0; i<attributes.length; i++) {
+			if (attributes[i] == null) {
+     			attributes[i] = new String[2];
+			}
+		}
 		
-		if (area == null) {
-			return;
-		}
-
-		if((area.contains(rect)) && (area.contains(point))){
-			return;
-		}
-		int new_x = rect.x;
-		int new_y = rect.y;
-
-		double new_px = point.x;
-		double new_py = point.y;
-
-		if((rect.x+rect.width)>area.getWidth()){
-			new_x = (int)area.getWidth()-(rect.width-1);
-		}
-		if(point.x > area.getWidth()){
-			new_px = (int)area.getWidth()-1;
-		}
-		if(rect.x < 0){  
-			new_x = -1;
-		}
-		if(point.x < 0){
-			new_px = -1;
-		}
-		if((rect.y+rect.width)>area.getHeight()){
-			new_y = (int)area.getHeight()-(rect.height-1);
-		}
-		if(point.y > area.getHeight()){
-			new_py = (int)area.getHeight()-1;
-		}
-		if(rect.y < 0){  
-			new_y = -1;
-		}
-		if(point.y < 0){
-                        new_py = -1;
-                }
-		rect.setLocation(new_x, new_y);
-		point.setLocation(new_px, new_py);
-
+      // new array is [length+1][2]
+   
+		System.out.println("New length at "+attributes.length);
+		attributes[length][0] = attribute;
+		attributes[length][1] = value;
 	}
-}
+	
+	public void addRectCoord(int x, int y, int w, int h) {
+		System.out.println("Adding rect nr: "+rectCoord.length+" - x: "+x+" - y: "+y+" - w: "+w+" - h: "+h);
+		int length = rectCoord.length;
+		
+		//RESIZE PART
+		rectCoord = (int[][]) resizeArray(rectCoord, (length+1));
+		// new array is [length+1][2 or Null]
+  		for (int i=0; i<rectCoord.length; i++) {
+			if (rectCoord[i] == null) {
+     			rectCoord[i] = new int[4];
+			}
+		}
+		
+      // new array is [length+1][2]
+   
+		System.out.println("New length at "+attributes.length);
+		rectCoord[length][0] = x;
+		rectCoord[length][1] = y;
+		rectCoord[length][2] = w;
+		rectCoord[length][2] = h;
+	}
+	
+	public void echoAtt() {
+		System.out.println("Checking for stored attributes - number: "+attributes.length);
+		for(int i=0; i<attributes.length; i++) {
+			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
+      }
+   }
+
+    private static Object resizeArray (Object oldArray, int newSize) {
+      int oldSize = java.lang.reflect.Array.getLength(oldArray);
+      Class elementType = oldArray.getClass().getComponentType();
+      Object newArray = java.lang.reflect.Array.newInstance(elementType,newSize);
+      int preserveLength = Math.min(oldSize,newSize);
+      if (preserveLength > 0)
+          System.arraycopy (oldArray,0,newArray,0,preserveLength);
+    	return newArray; 
+	 }
+    	
+} //end of Drawing

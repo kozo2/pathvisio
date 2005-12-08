@@ -10,13 +10,13 @@ import javax.swing.*;
 
 public class GmmlWindow {
   private JFrame f;
-  GmmlPathway pathway;
+//  GmmlPathway pathway;
   JTextField colorField;
   
   public GmmlWindow() {
     GmmlWindow.setJavaLookAndFeel();
     f = new JFrame("The GMML Window");
-    f.setSize(800, 600);
+    f.setSize(1280, 1024);
     Container content = f.getContentPane();
     content.setBackground(Color.white);
     buildMenu(); //Add the menu
@@ -27,8 +27,14 @@ public class GmmlWindow {
 	 f.getContentPane().add(toolBar, BorderLayout.NORTH);
 
     //Add some content
-    pathway = new GmmlPathway();
+    GmmlPathway pathway = GmmlReader.read();
+    
     f.getContentPane().add(pathway);
+	 pathway.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.
+	 f.show();
+    
+    
+    
     
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.setVisible(true);
@@ -127,8 +133,8 @@ public class GmmlWindow {
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
       	String input = colorField.getText();
-      	pathway.defaultcolor = GmmlColor.convertColor(input);
-	      pathway.updateColor();
+      	//pathway.defaultcolor = GmmlColor.convertColor(input);
+	      //pathway.updateColor();
       }
     });
     toolBar.add(button);   
