@@ -12,7 +12,7 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 
 class GmmlPathway extends JPanel implements MouseListener, MouseMotionListener{
-
+	public Color defaultcolor;
 	BufferedImage bi;
 	Graphics2D big;
 	int x, y;
@@ -128,6 +128,10 @@ class GmmlPathway extends JPanel implements MouseListener, MouseMotionListener{
 	  cubic.setCurve(start, one, two, end);
 	  repaint();
 	}
+	
+	public void updateColor(){
+	  repaint();
+	}
 
 	public void paintComponent(Graphics g){
      super.paintComponent(g);
@@ -168,13 +172,13 @@ class GmmlPathway extends JPanel implements MouseListener, MouseMotionListener{
 		big.clearRect(0, 0, area.width, area.height);
 
 		// Draws and fills the newly positioned rectangle to the buffer.
-		big.setPaint(Color.black);
+		big.setPaint(defaultcolor);
 		big.draw(cubic);
-		big.setPaint(Color.yellow);
+		big.setPaint(GmmlColor.convertColor("FF8800"));
 		big.fill(startpt);
-		big.setPaint(Color.red);
+		big.setPaint(GmmlColor.convertColor("8800FF"));
 		big.fill(endpt);
-		big.setPaint(Color.blue);
+		big.setPaint(GmmlColor.convertColor("FF0088"));
 		big.fill(ctrl1);
 		big.setPaint(GmmlColor.convertColor("0088FF"));
 		big.fill(ctrl2);

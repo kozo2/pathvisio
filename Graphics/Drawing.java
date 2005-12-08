@@ -9,9 +9,19 @@ public class Drawing extends Applet{
 
 	//init is used to form the applet later in the program.
 	public void init(){
+	
+    	 //an integer array rectcoord is created.
+		 int[][] rectCoord={
+    		{0,0,100,50},
+	   	{150,50,100,50},
+	   	{0,100,100,50},
+	   	{150,100,100,50}
+	 	 };
+		  
+		 String[] rectColors={"blue","green","yellow","red"};
 		//Initialize the layout.
 		setLayout(new BorderLayout());
-		add(new DrawingCanvas()); //Same as add(new DrawingCanvas(), BorderLayout.center); 
+		add(new DrawingCanvas(rectCoord)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
 	//This label is used when the applet is just started
 		label = new Label("Drag rectangles around within the area");
 		add("South", label); //South: in the lowest part of the frame.
@@ -20,19 +30,7 @@ public class Drawing extends Applet{
 
 	 //Main
     public static void main(String s[]) {
-    	 //an integer array rectcoord is created.
-	    int[][] rectCoord={
-    		{0,0,100,50},
-	   	{150,50,100,50},
-	   	{0,100,100,50},
-	   	{150,100,100,50}
-	 	 };
-		  
-		 String[] rectColors={"blue","green","yellow","red"};
-
- 		 
-	
-			
+    			
     	  //Here the Frame is created. It is invisible.
         Frame f = new Frame("Drawing");
         //Windowlistener to stop the program when closing the window.

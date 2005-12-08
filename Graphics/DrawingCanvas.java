@@ -17,8 +17,8 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	Rectangle area; //area in which the rectangles are plotted.
 	
 	
-	public void DrawingCanvas() {
-		ra = new RectArray();
+	DrawingCanvas(int[][] rectCoord) {
+		ra = new RectArray(rectCoord);
 		setBackground(Color.white);
 		addMouseMotionListener(this);
 		addMouseListener(this);

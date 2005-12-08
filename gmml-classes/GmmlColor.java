@@ -20,8 +20,14 @@ public class GmmlColor {
         storeColor(input);        
     }
    
-	//GetColor method
-	public float[] getColor() {
+	//GetColor method returning a Color
+	public Color getColor() {
+		Color returncolor = new Color(color[0],color[1],color[2]);
+		return returncolor;
+	}
+	
+	//GetColor method returning a float[]
+	public float[] getColorFloat() {
 		return color;
 	}
 	
@@ -37,16 +43,15 @@ public class GmmlColor {
 	//Convert a string into a float[3] a color of unknown type
 	public static float[] convertColorFloat(String scolor) {
 		GmmlColor temp = new GmmlColor(scolor);
-		float[] fcolor = temp.getColor();
+		float[] fcolor = temp.getColorFloat();
 		return fcolor;
 	}
 	
 	//Convert a string into a float[3] a color of unknown type
 	public static Color convertColor(String scolor) {
 		GmmlColor temp = new GmmlColor(scolor);
-		float[] fcolor = temp.getColor();
-		Color rcolor = new Color(fcolor[0],fcolor[1],fcolor[2]);
-		return rcolor;
+		Color returncolor = temp.getColor();
+		return returncolor;
 	}	
 
 		
@@ -104,7 +109,7 @@ public class GmmlColor {
 		
 		//Test each known color name
 		for(int i=0; i < 16; i++) { //The length of the table is 16 hardcoded
-			if (trimcolor == colortable[i][0]) {
+			if (trimcolor.equalsIgnoreCase(colortable[i][0])) {
 				//Insert the color as doubles
 				color[0] = Float.parseFloat(colortable[i][1]);
 				color[1] = Float.parseFloat(colortable[i][2]);
