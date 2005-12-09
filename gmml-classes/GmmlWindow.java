@@ -10,12 +10,12 @@ import javax.swing.*;
 
 public class GmmlWindow {
   private JFrame f;
-//  GmmlPathway pathway;
+  GmmlPathway pathway;
   JTextField colorField;
   
   public GmmlWindow() {
+  	 f = new JFrame("The GMML Window");
     GmmlWindow.setJavaLookAndFeel();
-    f = new JFrame("The GMML Window");
     f.setSize(1280, 1024);
     Container content = f.getContentPane();
     content.setBackground(Color.white);
@@ -26,20 +26,30 @@ public class GmmlWindow {
     addButtons(toolBar);
 	 f.getContentPane().add(toolBar, BorderLayout.NORTH);
 
-    //Add some content
-    GmmlPathway pathway = GmmlReader.read("Hs_G13_Signaling_Pathway.xml");
-    
-    f.getContentPane().add(pathway);
-	 pathway.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.
 	 f.show();
-    
-    
-    
     
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.setVisible(true);
   }
-  
+  public void openPathway(String file) {
+  		//Read a pathway and open it in the applet
+      f.getContentPane().removeAll();
+      buildMenu(); //Add the menu
+    
+		//Add a toolbar
+		JToolBar toolBar = new JToolBar();
+		addButtons(toolBar);
+		f.getContentPane().add(toolBar, BorderLayout.NORTH);
+	
+   	//Add some content
+	   //System.out.println("Trying to start the GmmlReader for file: "+file);
+	   GmmlReader reader = new GmmlReader(file);
+		pathway = reader.getPathway();
+    
+		f.getContentPane().add(pathway);
+		pathway.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.
+		f.show();
+	}
   public static void setJavaLookAndFeel() {
     try {
       UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -63,6 +73,7 @@ public class GmmlWindow {
     openitem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
+        //TODO! Make a filter for XML only.
         // Note: source for ExampleFileFilter can be found in FileChooserDemo,
         // under the demo/jfc directory in the Java 2 SDK, Standard Edition.
         //ExampleFileFilter filter = new ExampleFileFilter();
@@ -72,8 +83,8 @@ public class GmmlWindow {
         //chooser.setFileFilter(filter);
         int returnVal = chooser.showOpenDialog(null);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-          System.out.println("You chose to open this file: " +
-          chooser.getSelectedFile().getName());
+          String file = chooser.getSelectedFile().getPath();
+			 openPathway(file);
         }
       }
     });

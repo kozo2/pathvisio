@@ -14,7 +14,7 @@ public class RectArray {
 		
 	public void createRectArray(int[][] rectCoord) {
 		for (int j = 0; j < rectCoord.length; j++) {
-			System.out.println("Creating rectangle "+j);
+			//System.out.println("Creating rectangle "+j);
 			Rectangle temp = new Rectangle(rectCoord[j][0],rectCoord[j][1],rectCoord[j][2],rectCoord[j][3]);
 			rects[j] = temp;
 		}

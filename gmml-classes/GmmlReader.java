@@ -10,15 +10,14 @@ import org.apache.xerces.parsers.SAXParser;
 
 
 public class GmmlReader {
-  public static GmmlPathway read() {
-    System.out.println("changed argument to default: Hs_G13_Signaling_Pathway.xml");
-
-    GmmlPathway pathway = read("Hs_G13_Signaling_Pathway.xml");
-    return pathway;
-  }
-  public static GmmlPathway read(String args) {
-    System.out.println("Start reading the XML file");
-  	 GmmlPathway pathway = new GmmlPathway();
+  GmmlPathway pathway;
+  
+  public GmmlReader(String file) {
+    //Create the pathway
+    pathway = new GmmlPathway(); 
+    
+    
+    System.out.println("Start reading the XML file: "+file);
 	   
     SAXBuilder builder = new SAXBuilder(false);
                                     //  ^^^^^
@@ -26,21 +25,23 @@ public class GmmlReader {
       
     // command line should offer URIs or file names
     try {
-      Document doc = builder.build(args);
+      Document doc = builder.build(file);
       // If there are no well-formedness or validity errors, 
       // then no exception is thrown.
-      System.out.println(args + " is not validated.");
-      pathway = checkGMML(doc, 0);
+      System.out.println(file + " is not validated.");
+      checkGMML(doc, 0);
     }
     // indicates a well-formedness or validity error
     catch (JDOMException e) { 
-      System.out.println(args + " is not valid.");
+      System.out.println(file + " is not valid.");
       System.out.println(e.getMessage());
     }  
     catch (IOException e) { 
-      System.out.println("Could not check " + args);
+      System.out.println("Could not check " + file);
       System.out.println(" because " + e.getMessage());
     }  
+  }
+  public GmmlPathway getPathway() {
     return pathway;
   }
 
@@ -55,15 +56,13 @@ public class GmmlReader {
         return newArray; 
     }
     
-  public static GmmlPathway checkGMML(Object o, int depth) {
-    GmmlPathway pathway = new GmmlPathway();
-    
+  public void checkGMML(Object o, int depth) { 
     printSpaces(depth);
     
     if (o instanceof Element) {
       Element element = (Element) o;
       System.out.println("Element: " + element.getName());
-      pathway = checkPathway(element);
+      checkPathway(element);
     }
     else if (o instanceof Document) {
       System.out.println("Document");
@@ -72,18 +71,16 @@ public class GmmlReader {
       Iterator iterator = children.iterator();
       while (iterator.hasNext()) {
         Object child = iterator.next();
-        pathway = checkGMML(child, depth+1);
+        checkGMML(child, depth+1);
       }
     }
     else {  // This really shouldn't happen
       System.out.println("Unexpected type: " + o.getClass());
     }
-    
-    return pathway;
   }
 
 
-  private static void printSpaces(int n) {
+  private void printSpaces(int n) {
     
     for (int i = 0; i < n; i++) {
       System.out.print(' '); 
@@ -91,10 +88,7 @@ public class GmmlReader {
     
   }
   
-  private static GmmlPathway checkPathway (Element e) {
-    //Create an empty pathway
-    GmmlPathway pathway = new GmmlPathway();
-    
+  private void checkPathway (Element e) {
     String name = e.getName();
     //We only want a pathway in the document root
     if (name.equalsIgnoreCase("Pathway")) {
@@ -106,34 +100,33 @@ public class GmmlReader {
         Object att = aiterator.next();
         if (att instanceof Attribute) {
 	       Attribute attribute = (Attribute) att;
-          //System.out.println("Attribute name: "+attribute.getName()+ "value : "+attribute.getValue());
           //Make a very big if-elseif statement for fitlering all atrributes TODO!
           if ("Name".equalsIgnoreCase(attribute.getName())) {
-          	System.out.println("Found attribute Name: "+attribute.getValue());
+          	//System.out.println("Found attribute Name: "+attribute.getValue());
 	         pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Organism".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Organism: "+attribute.getValue());
+            //System.out.println("Found attribute Organism: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Data-Source".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Data-Source: "+attribute.getValue());
+            //System.out.println("Found attribute Data-Source: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Version".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Version: "+attribute.getValue());
+            //System.out.println("Found attribute Version: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Author".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Author: "+attribute.getValue());
+            //System.out.println("Found attribute Author: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Maintained-By".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Maintained-By: "+attribute.getValue());
+            //System.out.println("Found attribute Maintained-By: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Email".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Email: "+attribute.getValue());
+            //System.out.println("Found attribute Email: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Availability".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Availability: "+attribute.getValue());
+            //System.out.println("Found attribute Availability: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Last-Modified".equalsIgnoreCase(attribute.getName())) {
-            System.out.println("Found attribute Last-Modified: "+attribute.getValue());
+            //System.out.println("Found attribute Last-Modified: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());         
           } else {
           	System.out.println("Ignored unknown an attribute! Attribute name: "+attribute.getName()+ "value : "+attribute.getValue());
@@ -146,22 +139,20 @@ public class GmmlReader {
       Iterator iterator = children.iterator();
       while (iterator.hasNext()) {
         Object child = iterator.next();
-        checkPathwayChilds(child, 1, pathway);
+        checkPathwayChilds(child, 1);
       }
 	 } else {
 	   System.out.println("Found unsupported first level element!");
 	 }
-	 
-	 return pathway;
   }
   
-  public static void checkPathwayChilds(Object o, int depth, GmmlPathway pathway) {
+  public void checkPathwayChilds(Object o, int depth) {
    
     printSpaces(depth);
     
     if (o instanceof Element) {
       Element element = (Element) o;
-      System.out.println("Element: " + element.getName());
+      //System.out.println("Element: " + element.getName());
       if("Graphics".equalsIgnoreCase(element.getName())) {
       	int height = 0;      	
 	      int width = 0;
@@ -173,16 +164,17 @@ public class GmmlReader {
 	            Attribute attribute = (Attribute) att;
 	            if("BoardWidth".equalsIgnoreCase(attribute.getName())) {
 	            	width = Integer.parseInt(attribute.getValue());
-		         }
+		         } //end if BoardWidth
 	            if("BoardHeight".equalsIgnoreCase(attribute.getName())) {
 	            	height = Integer.parseInt(attribute.getValue());
-		         }
-		      } 
-		   }
+		         } //end if BoardHeight
+		      } //end if attribute
+		   } //end while hasNext()
 		   System.out.println("Trying to resize pathway to: '"+width/15+"'x'"+height/15+"'");
 		   pathway.resize(width/15, height/15);
-		} else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
-			System.out.println("Geneproduct not implemented yet");
+		} //If Graphics
+		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
+			//System.out.println("Geneproduct not fully implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -190,7 +182,7 @@ public class GmmlReader {
         		if (child instanceof Element) {
 		        Element subelement = (Element) child;
 		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
-		        		System.out.println("Found GP grapgics");
+		        		//System.out.println("Found GP grapgics");
 		        		int x = 0;
 				      int y = 0;
 				      int cx = 0;
@@ -206,37 +198,68 @@ public class GmmlReader {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
 						      	cx = Integer.parseInt(attribute.getValue());
-						      }
+						      } //end if centerx
 						      if("CenterY".equalsIgnoreCase(attribute.getName())) {
 						      	cy = Integer.parseInt(attribute.getValue());
-						      }
+						      } //end if centery
 						      if("Width".equalsIgnoreCase(attribute.getName())) {
 						      	width = Integer.parseInt(attribute.getValue());
-						      }
+						      } //end if width
 						      if("Height".equalsIgnoreCase(attribute.getName())) {
 						      	height = Integer.parseInt(attribute.getValue());
-						      }
-					      }
-					   }
+						      } //end if heigh
+					      } //end if attribute
+					   } //end while hasNext()
 					   x = cx - (width/2);
 					   
 					   y = cy - (height/2);
 					   pathway.addRectCoord(x/15,y/15,width/15,height/15);
-		        }
-		      }
+		        } //end if graphics
+		      } //end if element
+		   } //end while hasNext()
+		} //end else if Geneproduct
+	   else if ("Line".equalsIgnoreCase(element.getName())) {
+			//System.out.println("Line not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		//System.out.println("Found GP grapgics");
+		        		int sx = 0;
+				      int sy = 0;
+				      int ex = 0;
+						int ey = 0;
 
-		   }
-		}
-		
-		
-	 /*List children = element.getContent();
-      Iterator iterator = children.iterator();
-      while (iterator.hasNext()) {
-        Object child = iterator.next();
-        listPathwayChilds(child, depth+1);
-      }
-      */
-    }
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
+						      	sx = Integer.parseInt(attribute.getValue());
+						      } //end if startx
+						      if("StartY".equalsIgnoreCase(attribute.getName())) {
+						      	sy = Integer.parseInt(attribute.getValue());
+						      } //end if starty
+						      if("EndX".equalsIgnoreCase(attribute.getName())) {
+						      	ex = Integer.parseInt(attribute.getValue());
+						      } //end if endx
+						      if("EndY".equalsIgnoreCase(attribute.getName())) {
+						      	ey = Integer.parseInt(attribute.getValue());
+						      } //end if endy
+					      } //end if attribute
+					   } //end while hasNext()
+					   pathway.addLineCoord(sx/15,sy/15,ex/15,ey/15);
+		        } //end if graphics
+		      } //end if element
+		   } //end while hasNext()
+		} //end else if Line
+
+    } //end if element
     else if (o instanceof Document) {
       System.out.println("Document");
       Document doc = (Document) o;

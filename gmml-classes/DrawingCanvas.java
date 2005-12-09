@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.applet.Applet;
 import java.awt.image.*;
+import java.awt.geom.*;
 
 public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionListener {
 	RectArray ra;
@@ -16,13 +17,16 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 	//length of Coordlength = amount of rectangles
 	int rectCoordLength;
 	boolean[] rectClick;
+	
+	//Array with lines
+	double[][] lineCoord;
 
 	boolean firstTime = true;
 	TexturePaint fillColor;
 	Rectangle area; //area in which the rectangles are plotted.
 	
 	
-	DrawingCanvas(int[][] rectCoord, Color[] rectColors) {
+	DrawingCanvas(int[][] rectCoord, Color[] rectColors, double[][] lines) {
 		//to use the colors outside of the constructor
 		colors = new Color[rectColors.length];
 		for (int i=0; i<rectColors.length; i++){
@@ -32,6 +36,8 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 		rectCoordLength = rectCoord.length;
 		System.out.println("There are "+rectCoordLength+" rectangles");
 		rectClick = new boolean[rectCoordLength];
+		//to use lines outside of the contructor
+		lineCoord = lines;
 		
 		ra = new RectArray(rectCoord);
 		
@@ -147,8 +153,16 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 		big.setColor(Color.white);
 		big.clearRect(0, 0, area.width, area.height);
 
+		//Draws lines
+		big.setColor(Color.black);
+		big.setStroke(new BasicStroke(2.0f));
+		
+		for (int i=0; i<lineCoord.length; i++) {
+			big.draw(new Line2D.Double(lineCoord[i][0],lineCoord[i][1],lineCoord[i][2],lineCoord[i][3]));
+		}
+
 		// Draws and fills the newly positioned rectangle to the buffer.
-		for (int i=0; i<rectCoordLength; i++){
+		for (int i=0; i<rectCoordLength; i++) {
 			big.setColor(Color.blue);
 			big.setStroke(new BasicStroke(2.0f));
 			big.draw(ra.rects[i]);
@@ -156,7 +170,7 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 			big.setColor(Color.orange);
 			big.fill(ra.rects[i]);
 		}
-
+		
 		// Draws the buffered image to the screen.
 		g2.drawImage(bi, 0, 0, this);
 		
