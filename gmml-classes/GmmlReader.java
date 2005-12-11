@@ -6,7 +6,6 @@ import org.jdom.Element;
 import org.jdom.Attribute;
 import java.io.IOException;
 import java.util.*;
-import org.apache.xerces.parsers.SAXParser;
 
 
 public class GmmlReader {
