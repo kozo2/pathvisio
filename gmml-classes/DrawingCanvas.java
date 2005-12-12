@@ -62,7 +62,7 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 	public void mousePressed(MouseEvent e){
 		pressOut = false;
 		int CS = 0;
-		for (int i=0; i<rectCoordLength; i++) {
+		for (int i=rectCoordLength-1; i>=0; i--) {
 			if(ra.rects[i].contains(e.getX(), e.getY())){ //if the user presses the mouses on a coordinate which is contained by rect
 				
 				rectClick[i]=true;
