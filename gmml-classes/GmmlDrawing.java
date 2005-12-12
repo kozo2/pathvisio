@@ -10,6 +10,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	BufferedImage bi;
 	Graphics2D big;
 	
+	
 	//Holds the coordinates of the user's last mousePressed event.
 	int[] lastx;
 	int[] lasty;
@@ -26,6 +27,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	GmmlDrawing(GmmlPathway inputpathway) {
 		pathway = inputpathway;
+		
 		rectsLength = pathway.rects.length;
 		rectClick = new boolean[rectsLength];
 				
@@ -35,7 +37,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		lastx = new int[rectsLength];
 		lasty = new int[rectsLength];
-	} //end of DrawingCanvas()
+	} //end of GmmlDrawing(inputpathway)
 
 	//init is used to form the JPanel later in the program.
 	public void init(){
@@ -171,6 +173,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			big.draw(new Line2D.Double(pathway.lineCoord[i][0],pathway.lineCoord[i][1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 		}
 		
+		//Creates arrows
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
 			double[] p = new double[2];
 			double[] q = new double[2];
@@ -208,6 +211,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			//big.setColor(colors[i]);
 			big.setColor(Color.orange);
 			big.fill(pathway.rects[i]);
+		}
+		
+		// Draws text on the newly positioned rectangles.
+		for (int i=0; i<pathway.rectText.length; i++) {
+			big.setColor(Color.black);
+			big.setStroke(new BasicStroke(2.0f));
+			int x = (int)pathway.rects[i].getX();
+			int y = (int)pathway.rects[i].getY();
+			big.drawString(pathway.rectText[i],x,y);
 		}
 		
 		// Draws the buffered image to the screen.
