@@ -47,9 +47,10 @@ public class GmmlWindow {
 	   //System.out.println("Trying to start the GmmlReader for file: "+file);
 	   GmmlReader reader = new GmmlReader(file);
 		pathway = reader.getPathway();
-    
-		f.getContentPane().add(pathway);
-		pathway.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.
+
+		GmmlDrawing drawing = new GmmlDrawing(pathway);
+		f.getContentPane().add(drawing);
+		drawing.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.
 		f.show();
 	}
   public static void setJavaLookAndFeel() {
@@ -154,5 +155,5 @@ class XmlFilter extends javax.swing.filechooser.FileFilter {
 	public String getDescription () {
 		return "GMML Files (*.xml)";
 	}
-} // class JavaFilter
+} // class XmlFilter
 

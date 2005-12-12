@@ -170,7 +170,7 @@ public class GmmlReader {
 		      } //end if attribute
 		   } //end while hasNext()
 		   System.out.println("Trying to resize pathway to: '"+width/15+"'x'"+height/15+"'");
-		   pathway.resize(width/15, height/15);
+		   pathway.setSize(width/15, height/15);
 		} //If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
 			//System.out.println("Geneproduct not fully implemented yet");
@@ -212,7 +212,7 @@ public class GmmlReader {
 					   x = cx - (width/2);
 					   
 					   y = cy - (height/2);
-					   pathway.addRectCoord(x/15,y/15,width/15,height/15);
+					   pathway.addRect(x/15,y/15,width/15,height/15);
 		        } //end if graphics
 		      } //end if element
 		   } //end while hasNext()

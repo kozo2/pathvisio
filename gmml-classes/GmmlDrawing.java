@@ -5,51 +5,55 @@ import java.awt.image.*;
 import java.awt.geom.*;
 import javax.swing.JPanel;
 
-public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionListener {
-	RectArray ra;
+public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener {
+	GmmlPathway pathway;
 	BufferedImage bi;
 	Graphics2D big;
-	Color[] colors;
 	
 	//Holds the coordinates of the user's last mousePressed event.
 	int[] lastx;
 	int[] lasty;
 	
 	//length of Coordlength = amount of rectangles
-	int rectCoordLength;
+	int rectsLength;
 	boolean[] rectClick;
 	
-	//Array with lines
-	double[][] lineCoord;
-
 	boolean firstTime = true;
 	TexturePaint fillColor;
 	Rectangle area; //area in which the rectangles are plotted.
 	
+	static protected Label label;
 	
-	DrawingCanvas(int[][] rectCoord, Color[] rectColors, double[][] lines) {
-		//to use the colors outside of the constructor
-		colors = new Color[rectColors.length];
-		for (int i=0; i<rectColors.length; i++){
-			colors[i]=rectColors[i];
-		}
-		//to use the length of rectCoord outside of the constructor
-		rectCoordLength = rectCoord.length;
-		System.out.println("There are "+rectCoordLength+" rectangles");
-		rectClick = new boolean[rectCoordLength];
-		//to use lines outside of the contructor
-		lineCoord = lines;
-		
-		ra = new RectArray(rectCoord);
-		
+	GmmlDrawing(GmmlPathway inputpathway) {
+		pathway = inputpathway;
+		System.out.println(pathway.rects.length);
+		rectsLength = pathway.rects.length;
+		System.out.println(rectsLength);
+		rectClick = new boolean[rectsLength];
+				
 		setBackground(Color.white);
 		addMouseMotionListener(this);
 		addMouseListener(this);
 		
-		lastx = new int[rectCoordLength];
-		lasty = new int[rectCoordLength];
-		
+		lastx = new int[rectsLength];
+		lasty = new int[rectsLength];
 	} //end of DrawingCanvas()
+
+	//init is used to form the JPanel later in the program.
+	public void init(){
+		//Dump the stored attributes to the screen.		
+		System.out.println("Checking for stored attributes - number: "+pathway.attributes.length);
+		for(int i=0; i<pathway.attributes.length; i++) {
+			System.out.println("Attribute name: "+pathway.attributes[i][0]+ "value : "+pathway.attributes[i][1]);
+		}
+		
+		//Initialize the layout.
+		setLayout(new BorderLayout());
+		
+		//This label is used when the applet is just started
+		label = new Label("Drag rectangles around within the area");
+		add("South", label); //South: in the lowest part of the frame.
+	} //end of init
 	
 	/*When the mouse is pressed, there is checked with a for-loop if one clicked inside of a rectangle.
 	 *If that is not the case, pressOut is true. If one clicks in a rectangle, the mouseEvent and the
@@ -62,15 +66,15 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 	public void mousePressed(MouseEvent e){
 		pressOut = false;
 		int CS = 0;
-		for (int i=rectCoordLength-1; i>=0; i--) {
-			if(ra.rects[i].contains(e.getX(), e.getY())){ //if the user presses the mouses on a coordinate which is contained by rect
+		for (int i=rectsLength-1; i>=0; i--) {
+			if(pathway.rects[i].contains(e.getX(), e.getY())){ //if the user presses the mouses on a coordinate which is contained by rect
 				
 				rectClick[i]=true;
 				
-				lastx[i] = ra.rects[i].x - e.getX(); //lastx = position ra.rects[i] - position mouse when pressed
-				lasty[i] = ra.rects[i].y - e.getY();
+				lastx[i] = pathway.rects[i].x - e.getX(); //lastx = position pathway.rects[i] - position mouse when pressed
+				lasty[i] = pathway.rects[i].y - e.getY();
 				
-				updateLocation(i,e,lastx[i],lasty[i]);
+				updateLocation(i,e);
 			}
 			else {
 				CS++; //counter for in how many rectangles the mouse was not clicked.
@@ -80,19 +84,19 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 				break;
 			}
 		}
-		if (CS==rectCoordLength) { //if CS is the same as the amount of rectangles, one didn't press inside a rectangle.
+		if (CS==rectsLength) { //if CS is the same as the amount of rectangles, one didn't press inside a rectangle.
 			pressOut = true;
 		}
 				
 	} //end of mousePressed
 	
 	public void mouseDragged(MouseEvent e){
-		for (int i=0; i<rectCoordLength; i++) {
+		for (int i=0; i<rectsLength; i++) {
 			if(!pressOut && rectClick[i]){ //always mousePressed before mouseDragged -> pressOut true when start dragging outside of rect.
 			 	updateLocation(i,e);
 			} 
 			else {  
-				GmmlPathway.label.setText("First position the cursor on the rectangle and then drag.");
+				label.setText("First position the cursor on the rectangle and then drag.");
 			}
 		}
 	} //end of mouseDragged
@@ -101,7 +105,7 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 	public void mouseReleased(MouseEvent e){
 
 		// Checks whether or not the cursor is inside of the rectangle when the user releases the mouse button.   
-		for (int i=rectCoordLength-1; i>=0; i--) {
+		for (int i=rectsLength-1; i>=0; i--) {
 			rectClick[i]=false;
 		}
 	} //end of mouseReleased
@@ -116,41 +120,22 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 	
 	//updateLocation
 	public void updateLocation(int i, MouseEvent e){
-		ra.rects[i].setLocation(lastx[i] + e.getX(), lasty[i] + e.getY());
+		pathway.rects[i].setLocation(lastx[i] + e.getX(), lasty[i] + e.getY());
                 /*
                  * Updates the label to reflect the location of the
                  * current rectangle 
                  * if checkrect2 returns true; otherwise, returns error message.
                  */
                 if (checkRect(i)) { //true if rect is in area, false if rect is not in area, rect is put back into area
-                   GmmlPathway.label.setText("Rectangle "+i+" located at " +
-                                                     ra.rects[i].getX() + ", " +
-                                                    ra.rects[i].getY());
+                   label.setText("Rectangle "+i+" located at " +
+                                                     pathway.rects[i].getX() + ", " +
+                                                    pathway.rects[i].getY());
              } else {
-                    GmmlPathway.label.setText("Please don't try to "+
+                    label.setText("Please don't try to "+
                                                     " drag outside the area.");
                 }
 		repaint(); //The component will be repainted after all of the currently pending events have been dispatched
 	}
-	
-	public void updateLocation(int i, MouseEvent e, int lastx, int lasty){
-		ra.rects[i].setLocation(lastx + e.getX(), lasty + e.getY());
-                /*
-                 * Updates the label to reflect the location of the
-                 * current rectangle 
-                 * if checkrect2 returns true; otherwise, returns error message.
-                 */
-                if (checkRect(i)) { //true if rect is in area, false if rect is not in area, rect is put back into area
-                   GmmlPathway.label.setText("Rectangle "+i+" located at " +
-                                                     ra.rects[i].getX() + ", " +
-                                                    ra.rects[i].getY());
-             } else {
-                    GmmlPathway.label.setText("Please don't try to "+
-                                                    " drag outside the area.");
-                }
-		repaint(); //The component will be repainted after all of the currently pending events have been dispatched
-	}
-
 	
 	public void paint(Graphics g){
 		update(g);
@@ -178,18 +163,18 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 		big.setColor(Color.black);
 		big.setStroke(new BasicStroke(2.0f));
 		
-		for (int i=0; i<lineCoord.length; i++) {
-			big.draw(new Line2D.Double(lineCoord[i][0],lineCoord[i][1],lineCoord[i][2],lineCoord[i][3]));
+		for (int i=0; i<pathway.lineCoord.length; i++) {
+			big.draw(new Line2D.Double(pathway.lineCoord[i][0],pathway.lineCoord[i][1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 		}
 
 		// Draws and fills the newly positioned rectangle to the buffer.
-		for (int i=0; i<rectCoordLength; i++) {
+		for (int i=0; i<rectsLength; i++) {
 			big.setColor(Color.blue);
 			big.setStroke(new BasicStroke(2.0f));
-			big.draw(ra.rects[i]);
+			big.draw(pathway.rects[i]);
 			//big.setColor(colors[i]);
 			big.setColor(Color.orange);
-			big.fill(ra.rects[i]);
+			big.fill(pathway.rects[i]);
 		}
 		
 		// Draws the buffered image to the screen.
@@ -207,26 +192,26 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 		if (area == null) {
 		return false;
 		}
-		if(area.contains(ra.rects[i].x, ra.rects[i].y, ra.rects[i].width, ra.rects[i].height)){
+		if(area.contains(pathway.rects[i].x, pathway.rects[i].y, pathway.rects[i].width, pathway.rects[i].height)){
 		return true;
 		}		
 	
-		int new_x = ra.rects[i].x;
-		int new_y = ra.rects[i].y;
+		int new_x = pathway.rects[i].x;
+		int new_y = pathway.rects[i].y;
 
-		if((ra.rects[i].x+ra.rects[i].width)>area.width){
-			new_x = area.width-ra.rects[i].width+1;
+		if((pathway.rects[i].x+pathway.rects[i].width)>area.width){
+			new_x = area.width-pathway.rects[i].width+1;
 		}
-		if(ra.rects[i].x < 0){  
+		if(pathway.rects[i].x < 0){  
 			new_x = -1;
 		}
-		if((ra.rects[i].y+ra.rects[i].height)>area.height){
-			new_y = area.height-ra.rects[i].height+1; 
+		if((pathway.rects[i].y+pathway.rects[i].height)>area.height){
+			new_y = area.height-pathway.rects[i].height+1; 
 		}
-		if(ra.rects[i].y < 0){  
+		if(pathway.rects[i].y < 0){  
 			new_y = -1;
 		}
-		ra.rects[i].setLocation(new_x, new_y);
+		pathway.rects[i].setLocation(new_x, new_y);
 		return false;
 	}
 		

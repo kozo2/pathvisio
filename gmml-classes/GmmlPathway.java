@@ -3,34 +3,16 @@ import java.awt.event.*;
 import java.awt.image.*;
 import javax.swing.JApplet;
 
-public class GmmlPathway extends JApplet {
+public class GmmlPathway {
 	//Geneproduct and line coordinates
-	int[][] rectCoord = new int[0][4];
+	Rectangle[] rects = new Rectangle[0];
 	double[][] lineCoord = new double[0][4];
+	int[] size = new int[2];
 	
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
 	String notes = new String();
 	String comment = new String();
-	
-	static protected Label label;
-
-	//init is used to form the applet later in the program.
-	public void init(){
-		//Dump the stored attributes to the screen.		
-		System.out.println("Checking for stored attributes - number: "+attributes.length);
-		for(int i=0; i<attributes.length; i++) {
-			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
-		}
-		
-		Color[] rectColors={Color.blue,Color.green,Color.yellow,Color.red,Color.pink};
-		//Initialize the layout.
-		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(new DrawingCanvas(rectCoord,rectColors,lineCoord)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
-		//This label is used when the applet is just started
-		label = new Label("Drag rectangles around within the area");
-		getContentPane().add("South", label); //South: in the lowest part of the frame.
-	} //end of init
 
 	public void setNotes(String n) {
 		notes = n;
@@ -57,23 +39,15 @@ public class GmmlPathway extends JApplet {
 		attributes[length][1] = value;
 	}
 	
-	public void addRectCoord(int x, int y, int w, int h) {
+	public void addRect(int x, int y, int w, int h) {
 		//System.out.println("Adding rect nr: "+rectCoord.length+" - x: "+x+" - y: "+y+" - w: "+w+" - h: "+h);
-		int length = rectCoord.length;
+		int length = rects.length;
 		
 		//RESIZE PART
-		rectCoord = (int[][]) resizeArray(rectCoord, (length+1));
-		// new array is [length+1][2 or Null]
-  		for (int i=0; i<rectCoord.length; i++) {
-			if (rectCoord[i] == null) {
-     			rectCoord[i] = new int[4];
-			}
-		}
+		rects = (Rectangle[]) resizeArray(rects, (length+1));
 		
-		rectCoord[length][0] = x;
-		rectCoord[length][1] = y;
-		rectCoord[length][2] = w;
-		rectCoord[length][3] = h;
+		Rectangle temp = new Rectangle(x, y, w, h);
+		rects[length] = temp;
 	}
 	
 	public void addLineCoord(double sx, double sy, double ex, double ey) {
@@ -94,7 +68,10 @@ public class GmmlPathway extends JApplet {
 		lineCoord[length][2] = ex;
 		lineCoord[length][3] = ey;
 	}
-	
+	public void setSize(int h, int w) {
+		size[0] = w;
+		size[1] = h;
+	}
 	public void echoAtt() {
 		System.out.println("Checking for stored attributes - number: "+attributes.length);
 		for(int i=0; i<attributes.length; i++) {
