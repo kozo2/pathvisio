@@ -214,6 +214,10 @@ public class GmmlReader {
 					   y = cy - (height/2);
 					   pathway.addRect(x/15,y/15,width/15,height/15);
 		        } //end if graphics
+		        else if("Short-Name".equalsIgnoreCase(subelement.getName())) {
+		        		String GeneProductText = GeneProductText = subelement.getName();
+				      pathway.addGeneProductText(GeneProductText);
+		        } //end if Short-Name
 		      } //end if element
 		   } //end while hasNext()
 		} //end else if Geneproduct
