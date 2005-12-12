@@ -73,6 +73,9 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 				CS++; //counter for in how many rectangles the mouse was not clicked.
 				rectClick[i]=false;
 			}
+			if(rectClick[i]) {
+			break;
+			}
 		}
 		if (CS==rectCoordLength) { //if CS is the same as the amount of rectangles, one didn't press inside a rectangle.
 			pressOut = true;
@@ -100,7 +103,8 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 				updateLocation(i,e);
 			} 	else {
 				GmmlPathway.label.setText("First position the cursor on the rectangle and then drag.");
-			}	
+			}
+			rectClick[i]=false;	
 		}
 	} //end of mouseReleased
 	
