@@ -9,7 +9,6 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	GmmlPathway pathway;
 	BufferedImage bi;
 	Graphics2D big;
-	int[][] layoutarray;
 	
 	//Holds the coordinates of the user's last mousePressed event.
 	int[] lastx;
@@ -27,9 +26,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	GmmlDrawing(GmmlPathway inputpathway) {
 		pathway = inputpathway;
-		System.out.println(pathway.rects.length);
 		rectsLength = pathway.rects.length;
-		System.out.println(rectsLength);
 		rectClick = new boolean[rectsLength];
 				
 		setBackground(Color.white);
@@ -38,8 +35,6 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		lastx = new int[rectsLength];
 		lasty = new int[rectsLength];
-		int[][] temparray = {{1,2},{2,1},{1,1},{2,2},{2,2},{1,1},{1,2},{2,1}};
-		layoutarray = temparray;
 	} //end of DrawingCanvas()
 
 	//init is used to form the JPanel later in the program.
@@ -164,40 +159,44 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 
 		//Draws lines
 		big.setColor(Color.black);
-		System.out.println("lengte is" + layoutarray.length);
-		for (int i=0; i<layoutarray.length-1; i++) {
+		for (int i=0; i<pathway.lineLayout.length-1; i++) {
 			//System.out.println("i is" + i);
-			float[] dash = {10.0f};
-			if (layoutarray[i][0]==1) {
-				big.setStroke(new BasicStroke(1.0f));
+			float[] dash = {3.0f};
+			if (pathway.lineLayout[i][0]==0) {
+				big.setStroke(new BasicStroke(2.0f));
 			}
-			else if (layoutarray[i][0]==2){ 
-			big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+			else if (pathway.lineLayout[i][0]==1){ 
+			big.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 			}
 			big.draw(new Line2D.Double(pathway.lineCoord[i][0],pathway.lineCoord[i][1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 		}
 		
-		for (int i=0; i<layoutarray.length-1; i++) {
+		for (int i=0; i<pathway.lineLayout.length-1; i++) {
 			double[] p = new double[2];
 			double[] q = new double[2];
 			double a;
 			double b;
 			double normp;
 			double normq;
-			big.setStroke(new BasicStroke(1.0f));
+			big.setStroke(new BasicStroke(2.0f));
 			//if (lineCoord[i][5]==2) {
-			if (layoutarray[i][1]==2) {
+			if (pathway.lineLayout[i][1]==1) {
 				a = pathway.lineCoord[i][2]-pathway.lineCoord[i][0];
 				b = pathway.lineCoord[i][3]-pathway.lineCoord[i][1];
 				normp = 10/(Math.sqrt((-a+b)*(-a+b)+(-a-b)*(-a-b)));
 				normq = 10/(Math.sqrt((-a-b)*(-a-b)+(-b+a)*(-b+a)));
-				p[0] = pathway.lineCoord[i][2]-normp*(-a+b);
-				p[1] = pathway.lineCoord[i][3]-normp*(-a-b);
-				q[0] = pathway.lineCoord[i][2]-normq*(-a-b);
-				q[1] = pathway.lineCoord[i][3]+normq*(-b+a);
+				p[0] = pathway.lineCoord[i][2]-normp*(a-b);
+				p[1] = pathway.lineCoord[i][3]-normp*(a+b);
+				q[0] = pathway.lineCoord[i][2]-normq*(a+b);
+				q[1] = pathway.lineCoord[i][3]-normq*(-a+b);
 				big.draw(new Line2D.Double(p[0],p[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 				big.draw(new Line2D.Double(q[0],q[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
-				System.out.println(" a = " + a + " b = " + b + " p = " + p[0] + ", " + p[1] +" q = " + q[0] + ", " + q[1]);
+				int[] x = {(int) pathway.lineCoord[i][2],(int) p[0],(int) q[0]};
+				int[] y = {(int) pathway.lineCoord[i][3],(int) p[1],(int) q[1]};
+				Polygon arrowhead = new Polygon(x,y,3);
+				big.draw(arrowhead);
+				big.fill(arrowhead);
+				//System.out.println(" a = " + a + " b = " + b + " p = " + p[0] + ", " + p[1] +" q = " + q[0] + ", " + q[1]);
 			}
 		}
 

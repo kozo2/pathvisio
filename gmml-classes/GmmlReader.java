@@ -222,6 +222,15 @@ public class GmmlReader {
 		   } //end while hasNext()
 		} //end else if Geneproduct
 	   else if ("Line".equalsIgnoreCase(element.getName())) {
+	   	int style = 0;
+		   int type= 0;
+     		int sx = 0;
+	      int sy = 0;
+	      int ex = 0;
+			int ey = 0;
+			String stype;
+			String sstyle;
+						
 			//System.out.println("Line not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
@@ -230,12 +239,6 @@ public class GmmlReader {
         		if (child instanceof Element) {
 		        Element subelement = (Element) child;
 		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
-		        		//System.out.println("Found GP grapgics");
-		        		int sx = 0;
-				      int sy = 0;
-				      int ex = 0;
-						int ey = 0;
-
 		        		List attributes = subelement.getAttributes();
 			        	Iterator aiterator = attributes.iterator();
 				      while (aiterator.hasNext()) {
@@ -256,10 +259,37 @@ public class GmmlReader {
 						      } //end if endy
 					      } //end if attribute
 					   } //end while hasNext()
-					   pathway.addLineCoord(sx/15,sy/15,ex/15,ey/15);
 		        } //end if graphics
 		      } //end if element
 		   } //end while hasNext()
+			List attributes = element.getAttributes();
+			Iterator aiterator = attributes.iterator();
+			while (aiterator.hasNext()) {
+				Object att = aiterator.next();
+				if (att instanceof Attribute) {
+					Attribute attribute = (Attribute) att;
+					if("Style".equalsIgnoreCase(attribute.getName())) {
+						sstyle = attribute.getValue();
+						if("Solid".equalsIgnoreCase(sstyle)) {
+					   	style = 0;
+						}
+						if("Broken".equalsIgnoreCase(sstyle)) {
+					   	style = 1;
+						}
+					}
+					if("Type".equalsIgnoreCase(attribute.getName())) {
+						stype = attribute.getValue();
+						if("Line".equalsIgnoreCase(stype)) {
+							type = 0;
+						}
+						if("Arrow".equalsIgnoreCase(stype)) {
+						  	type = 1;
+						}
+					}
+				} //end if attribute
+			}//end while hasNext()
+		   	
+		   pathway.addLine(sx/15,sy/15,ex/15,ey/15, style, type);
 		} //end else if Line
 
     } //end if element

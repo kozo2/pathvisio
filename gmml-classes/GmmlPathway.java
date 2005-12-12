@@ -7,6 +7,7 @@ public class GmmlPathway {
 	//Geneproduct and line coordinates
 	Rectangle[] rects = new Rectangle[0];
 	double[][] lineCoord = new double[0][4];
+	int[][] lineLayout = new int[0][2];
 	int[] size = new int[2];
 	String[] rectText = new String[0];
 	
@@ -51,7 +52,7 @@ public class GmmlPathway {
 		rects[length] = temp;
 	}
 	
-	public void addLineCoord(double sx, double sy, double ex, double ey) {
+	public void addLine(double sx, double sy, double ex, double ey, int style, int type) {
 		//System.out.println("Adding rect nr: "+lineCoord.length+" - x1: "+sx+" - y1: "+sy+" - x2: "+ex+" - y2: "+ey);
 		int length = lineCoord.length;
 		
@@ -64,10 +65,21 @@ public class GmmlPathway {
 			}
 		}
 		
+		//RESIZE PART
+		lineLayout = (int[][]) resizeArray(lineLayout, (length+1));
+		// new array is [length+1][2 or Null]
+  		for (int i=0; i<lineLayout.length; i++) {
+			if (lineLayout[i] == null) {
+     			lineLayout[i] = new int[2];
+			}
+		}
+		
 		lineCoord[length][0] = sx;
 		lineCoord[length][1] = sy;
 		lineCoord[length][2] = ex;
 		lineCoord[length][3] = ey;
+		lineLayout[length][0] = style;
+		lineLayout[length][1] = type;
 	}
 	
 	public void addGeneProductText(String GPText) {
