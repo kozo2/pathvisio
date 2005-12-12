@@ -8,6 +8,7 @@ public class GmmlPathway {
 	Rectangle[] rects = new Rectangle[0];
 	double[][] lineCoord = new double[0][4];
 	int[] size = new int[2];
+	String[] rectText = new String[0];
 	
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
@@ -68,6 +69,16 @@ public class GmmlPathway {
 		lineCoord[length][2] = ex;
 		lineCoord[length][3] = ey;
 	}
+	
+	public void addGeneProductText(String GPText) {
+		int length = rectText.length;
+		
+		//RESIZE PART
+		rectText = (String[]) resizeArray(rectText, (length+1));
+		
+		rectText[length] = GPText;
+	}
+	
 	public void setSize(int h, int w) {
 		size[0] = w;
 		size[1] = h;
