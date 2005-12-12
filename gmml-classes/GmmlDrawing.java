@@ -40,7 +40,6 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		lasty = new int[rectsLength];
 		int[][] temparray = {{1,2},{2,1},{1,1},{2,2},{2,2},{1,1},{1,2},{2,1}};
 		layoutarray = temparray;
-		System.out.println(layoutarray.length);
 	} //end of DrawingCanvas()
 
 	//init is used to form the JPanel later in the program.
@@ -188,15 +187,17 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			big.setStroke(new BasicStroke(1.0f));
 			//if (lineCoord[i][5]==2) {
 			if (layoutarray[i][1]==2) {
-				a = pathway.lineCoord[i][2];
-				b = pathway.lineCoord[i][3];
-				normp = 1/(Math.sqrt((-a+b)*(-a+b)+(-a-b)*(-a-b)));
-				normq = 1/(Math.sqrt((-a-b)*(-a-b)+(-b+a)*(-b+a)));
-				p[0] = normp*(-a+b);
-				p[1] = normp*(-a-b);
-				q[0] = normq*(-a-b);
-				q[1] = normq*(-b+a);
-				big.draw(new Line2D.Double(p[0],p[1],q[0],q[1]));
+				a = pathway.lineCoord[i][2]-pathway.lineCoord[i][0];
+				b = pathway.lineCoord[i][3]-pathway.lineCoord[i][1];
+				normp = 10/(Math.sqrt((-a+b)*(-a+b)+(-a-b)*(-a-b)));
+				normq = 10/(Math.sqrt((-a-b)*(-a-b)+(-b+a)*(-b+a)));
+				p[0] = pathway.lineCoord[i][2]-normp*(-a+b);
+				p[1] = pathway.lineCoord[i][3]-normp*(-a-b);
+				q[0] = pathway.lineCoord[i][2]-normq*(-a-b);
+				q[1] = pathway.lineCoord[i][3]+normq*(-b+a);
+				big.draw(new Line2D.Double(p[0],p[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
+				big.draw(new Line2D.Double(q[0],q[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
+				System.out.println(" a = " + a + " b = " + b + " p = " + p[0] + ", " + p[1] +" q = " + q[0] + ", " + q[1]);
 			}
 		}
 
