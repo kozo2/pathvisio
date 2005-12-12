@@ -15,6 +15,7 @@ public class GmmlWindow {
   
   public GmmlWindow() {
   	 f = new JFrame("The GMML Window");
+	 javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); //This line will fix the menu hiding behind the canvas.
     GmmlWindow.setJavaLookAndFeel();
     f.setSize(1280, 1024);
     Container content = f.getContentPane();

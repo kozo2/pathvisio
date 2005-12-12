@@ -3,8 +3,9 @@ import java.awt.event.*;
 import java.applet.Applet;
 import java.awt.image.*;
 import java.awt.geom.*;
+import javax.swing.JPanel;
 
-public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionListener {
+public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionListener {
 	RectArray ra;
 	BufferedImage bi;
 	Graphics2D big;

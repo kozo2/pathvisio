@@ -1,10 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.applet.Applet;
 import java.awt.image.*;
+import javax.swing.JApplet;
 
-public class GmmlPathway extends Applet{
-
+public class GmmlPathway extends JApplet {
+	//Geneproduct and line coordinates
 	int[][] rectCoord = new int[0][4];
 	double[][] lineCoord = new double[0][4];
 	
@@ -17,8 +17,7 @@ public class GmmlPathway extends Applet{
 
 	//init is used to form the applet later in the program.
 	public void init(){
-
-		
+		//Dump the stored attributes to the screen.		
 		System.out.println("Checking for stored attributes - number: "+attributes.length);
 		for(int i=0; i<attributes.length; i++) {
 			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
@@ -26,11 +25,11 @@ public class GmmlPathway extends Applet{
 		
 		Color[] rectColors={Color.blue,Color.green,Color.yellow,Color.red,Color.pink};
 		//Initialize the layout.
-		setLayout(new BorderLayout());
-		add(new DrawingCanvas(rectCoord,rectColors,lineCoord)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(new DrawingCanvas(rectCoord,rectColors,lineCoord)); //Same as add(new DrawingCanvas(), BorderLayout.center); 
 		//This label is used when the applet is just started
 		label = new Label("Drag rectangles around within the area");
-		add("South", label); //South: in the lowest part of the frame.
+		getContentPane().add("South", label); //South: in the lowest part of the frame.
 	} //end of init
 
 	public void setNotes(String n) {
@@ -113,4 +112,4 @@ public class GmmlPathway extends Applet{
     	return newArray; 
 	 }
     	
-} //end of Drawing
+} //end of GmmlPathway
