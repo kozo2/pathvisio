@@ -66,7 +66,7 @@ public class DrawingCanvas extends Canvas implements MouseListener, MouseMotionL
 				updateLocation(i,e);
 				rectClick[i]=true;
 				
-				lastx[i] = ra.rects[i].x - e.getX(); //last_x = position ra.rects[i] - position mouse when pressed
+				lastx[i] = ra.rects[i].x - e.getX(); //lastx = position ra.rects[i] - position mouse when pressed
 				lasty[i] = ra.rects[i].y - e.getY();
 			}
 			else {

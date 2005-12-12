@@ -18,14 +18,6 @@ public class GmmlPathway extends Applet{
 	//init is used to form the applet later in the program.
 	public void init(){
 
-   	//an integer array rectcoord is created.
-/*		int[][] rectCoord = {
-	   	{0,0,100,50},
-	   	{150,50,100,50},
-		   {0,100,100,50},
-		   {150,150,100,50},
-			{300,0,100,50}
-		}; */
 		
 		System.out.println("Checking for stored attributes - number: "+attributes.length);
 		for(int i=0; i<attributes.length; i++) {
