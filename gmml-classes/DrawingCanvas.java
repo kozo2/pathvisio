@@ -77,7 +77,7 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 				rectClick[i]=false;
 			}
 			if(rectClick[i]) {
-			break;
+				break;
 			}
 		}
 		if (CS==rectCoordLength) { //if CS is the same as the amount of rectangles, one didn't press inside a rectangle.
@@ -101,13 +101,8 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 	public void mouseReleased(MouseEvent e){
 
 		// Checks whether or not the cursor is inside of the rectangle when the user releases the mouse button.   
-		for (int i=0; i<rectCoordLength; i++) {
-			if(ra.rects[i].contains(e.getX(), e.getY())){
-				updateLocation(i,e);
-			} 	else {
-				GmmlPathway.label.setText("First position the cursor on the rectangle and then drag.");
-			}
-			rectClick[i]=false;	
+		for (int i=rectCoordLength-1; i>=0; i--) {
+			rectClick[i]=false;
 		}
 	} //end of mouseReleased
 	
