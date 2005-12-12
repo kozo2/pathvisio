@@ -7,7 +7,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-
+import java.io.*;
+ 
 public class GmmlWindow {
   private JFrame f;
   GmmlPathway pathway;
@@ -74,14 +75,7 @@ public class GmmlWindow {
     openitem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
-        //TODO! Make a filter for XML only.
-        // Note: source for ExampleFileFilter can be found in FileChooserDemo,
-        // under the demo/jfc directory in the Java 2 SDK, Standard Edition.
-        //ExampleFileFilter filter = new ExampleFileFilter();
-        //filter.addExtension("jpg");
-        //filter.addExtension("gif");
-        //filter.setDescription("JPG & GIF Images");
-        //chooser.setFileFilter(filter);
+        chooser.setFileFilter(new XmlFilter());
         int returnVal = chooser.showOpenDialog(null);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
           String file = chooser.getSelectedFile().getPath();
@@ -151,6 +145,14 @@ public class GmmlWindow {
     });
     toolBar.add(button);   
   }
-
 }
+class XmlFilter extends javax.swing.filechooser.FileFilter {
+	public boolean accept (File f) {
+		return f.getName ().toLowerCase ().endsWith (".xml")
+			|| f.isDirectory ();
+	}
+	public String getDescription () {
+		return "GMML Files (*.xml)";
+	}
+} // class JavaFilter
 
