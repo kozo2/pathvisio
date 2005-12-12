@@ -64,11 +64,13 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
 		int CS = 0;
 		for (int i=0; i<rectCoordLength; i++) {
 			if(ra.rects[i].contains(e.getX(), e.getY())){ //if the user presses the mouses on a coordinate which is contained by rect
-				updateLocation(i,e);
+				
 				rectClick[i]=true;
 				
 				lastx[i] = ra.rects[i].x - e.getX(); //lastx = position ra.rects[i] - position mouse when pressed
 				lasty[i] = ra.rects[i].y - e.getY();
+				
+				updateLocation(i,e,lastx[i],lasty[i]);
 			}
 			else {
 				CS++; //counter for in how many rectangles the mouse was not clicked.
@@ -135,6 +137,25 @@ public class DrawingCanvas extends JPanel implements MouseListener, MouseMotionL
                 }
 		repaint(); //The component will be repainted after all of the currently pending events have been dispatched
 	}
+	
+	public void updateLocation(int i, MouseEvent e, int lastx, int lasty){
+		ra.rects[i].setLocation(lastx + e.getX(), lasty + e.getY());
+                /*
+                 * Updates the label to reflect the location of the
+                 * current rectangle 
+                 * if checkrect2 returns true; otherwise, returns error message.
+                 */
+                if (checkRect(i)) { //true if rect is in area, false if rect is not in area, rect is put back into area
+                   GmmlPathway.label.setText("Rectangle "+i+" located at " +
+                                                     ra.rects[i].getX() + ", " +
+                                                    ra.rects[i].getY());
+             } else {
+                    GmmlPathway.label.setText("Please don't try to "+
+                                                    " drag outside the area.");
+                }
+		repaint(); //The component will be repainted after all of the currently pending events have been dispatched
+	}
+
 	
 	public void paint(Graphics g){
 		update(g);
