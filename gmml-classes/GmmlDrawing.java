@@ -177,21 +177,42 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
 			double[] p = new double[2];
 			double[] q = new double[2];
-			double a;
-			double b;
-			double normp;
-			double normq;
+			double[] a = new double[2];
+			double[] b = new double[2];
+			double[] rot = new double[2];
+			double[] ptemp = new double[2];
+			double[] qtemp = new double[2];
+			double alfa = 30.0;
+			//double a;
+			//double b;
+			//double normp;
+			//double normq;
+			
 			big.setStroke(new BasicStroke(2.0f));
-			//if (lineCoord[i][5]==2) {
 			if (pathway.lineLayout[i][1]==1) {
-				a = pathway.lineCoord[i][2]-pathway.lineCoord[i][0];
-				b = pathway.lineCoord[i][3]-pathway.lineCoord[i][1];
-				normp = 10/(Math.sqrt((-a+b)*(-a+b)+(-a-b)*(-a-b)));
-				normq = 10/(Math.sqrt((-a-b)*(-a-b)+(-b+a)*(-b+a)));
-				p[0] = pathway.lineCoord[i][2]-normp*(a-b);
-				p[1] = pathway.lineCoord[i][3]-normp*(a+b);
-				q[0] = pathway.lineCoord[i][2]-normq*(a+b);
-				q[1] = pathway.lineCoord[i][3]-normq*(-a+b);
+				a[0] = pathway.lineCoord[i][0]; 
+				a[1] = pathway.lineCoord[i][1];
+				b[0] = pathway.lineCoord[i][2]; 
+				b[1] = pathway.lineCoord[i][3];
+				double theta = Math.atan(((b[0]-a[0])/(b[1]-a[1])));			
+				rot[0] = (b[0]-a[0])*Math.cos(theta)+(b[1]-a[1])*Math.sin(theta);
+				rot[1] = (b[0]-a[0])*(-1)*(Math.sin(theta))+(b[1]-a[1])*Math.cos(theta);
+				ptemp[0] = rot[0]-6*Math.cos(alfa);
+				ptemp[1] = rot[1]+6*Math.sin(alfa);
+				qtemp[0] = rot[0]-6*Math.cos(alfa);
+				qtemp[1] = rot[1]-6*Math.sin(alfa);
+				p[0] = (ptemp[0]*Math.cos(-theta)+ptemp[1]*Math.sin(-theta))+b[0];
+				p[1] = (ptemp[0]*(-1)*(Math.sin(-theta))+ptemp[1]*Math.cos(-theta))+b[1];
+				q[0] = (qtemp[0]*Math.cos(-theta)+qtemp[1]*Math.sin(-theta))+b[0];
+				q[1] = (qtemp[0]*(-1)*(Math.sin(-theta))+qtemp[1]*Math.cos(-theta))+b[1];				
+				//a = pathway.lineCoord[i][3]-pathway.lineCoord[i][0];
+				//b = pathway.lineCoord[i][4]-pathway.lineCoord[i][1];
+				//normp = 10/(Math.sqrt((-a+b)*(-a+b)+(-a-b)*(-a-b)));
+				//normq = 10/(Math.sqrt((-a-b)*(-a-b)+(-b+a)*(-b+a)));				
+				//p[0] = pathway.lineCoord[i][2]-normp*(a-b);
+				//p[1] = pathway.lineCoord[i][3]-normp*(a+b);
+				//q[0] = pathway.lineCoord[i][2]-normq*(a+b);
+				//q[1] = pathway.lineCoord[i][3]-normq*(-a+b);
 				big.draw(new Line2D.Double(p[0],p[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 				big.draw(new Line2D.Double(q[0],q[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 				int[] x = {(int) pathway.lineCoord[i][2],(int) p[0],(int) q[0]};
@@ -199,7 +220,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				Polygon arrowhead = new Polygon(x,y,3);
 				big.draw(arrowhead);
 				big.fill(arrowhead);
-				//System.out.println(" a = " + a + " b = " + b + " p = " + p[0] + ", " + p[1] +" q = " + q[0] + ", " + q[1]);
+				System.out.println(" a = " + a + " b = " + b + " p = " + p[0] + ", " + p[1] +" q = " + q[0] + ", " + q[1]);
 			}
 		}
 

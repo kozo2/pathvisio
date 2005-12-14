@@ -5,5 +5,5 @@ import java.awt.image.*;
 import java.awt.geom.*;
 import javax.swing.JPanel;
 
-public class GmmlGPText {
+public class GmmlGPText {}
 	
