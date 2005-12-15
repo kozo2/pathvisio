@@ -412,7 +412,7 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("StrartX");
+						      	System.out.println("StartX");
 						      } //end if startx
 						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
 						      	System.out.println("StartY");

@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import javax.swing.JApplet;
+import java.awt.geom.Arc2D;
 
 public class GmmlPathway {
 	//Geneproduct and line coordinates
@@ -10,6 +11,7 @@ public class GmmlPathway {
 	int[][] lineLayout = new int[0][2];
 	int[] size = new int[2];
 	String[] rectText = new String[0];
+	Arc2D.Double[] arcs = new Arc2D.Double[0];
 	int[][] rectConnection = new int[0][3];
 	
 	//Attributes + notes element + comment element
@@ -83,13 +85,25 @@ public class GmmlPathway {
 		lineLayout[length][1] = type;
 	}
 	
-	public void addGeneProductText(String GPText) {
+	public void addGeneProductText(String gpText) {
 		int length = rectText.length;
 		
 		//RESIZE PART
 		rectText = (String[]) resizeArray(rectText, (length+1));
 		
-		rectText[length] = GPText;
+		rectText[length] = gpText;
+	}
+	
+	public void addArc(double x, double y, double w, double h) {
+		int length = arcs.length;
+		
+		//RESIZE PART
+		arcs = (Arc2D.Double[]) resizeArray(arcs, (length+1));
+		
+		Arc2D.Double temp = new Arc2D.Double(0);
+		temp.setArc(x,y,w,h,90,180,0);
+		arcs[length] = temp;
+
 	}
 	
 	public void addBrace(int cX, int cY, int W, int PPO, String Or) {
