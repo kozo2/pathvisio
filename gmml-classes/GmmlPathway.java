@@ -219,14 +219,14 @@ public class GmmlPathway {
 					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy)))) {
 						connec[i][0]=j;
 						test1=true;
-						n=15;
+						break;
 					}
 				}	
 				for (int n=0; n < 15; n++){	
 					if (temprectj.contains(lineCoord[i][2]+(n*dx), lineCoord[i][3]+(n*dy))){
 						connec[i][1]=j;				
 						test2=true;
-						n=15;
+						break;
 					}
 				}
 				if (test1 && test2) {

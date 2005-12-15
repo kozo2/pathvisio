@@ -76,6 +76,7 @@ public class GmmlReader {
     else {  // This really shouldn't happen
       System.out.println("Unexpected type: " + o.getClass());
     }
+    System.out.println("End of document");
   }
 
 
@@ -99,33 +100,24 @@ public class GmmlReader {
         Object att = aiterator.next();
         if (att instanceof Attribute) {
 	       Attribute attribute = (Attribute) att;
-          //Make a very big if-elseif statement for fitlering all atrributes TODO!
+          //a very big if-elseif statement for fitlering all atrributes
           if ("Name".equalsIgnoreCase(attribute.getName())) {
-          	//System.out.println("Found attribute Name: "+attribute.getValue());
 	         pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Organism".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Organism: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Data-Source".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Data-Source: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Version".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Version: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Author".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Author: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Maintained-By".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Maintained-By: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Email".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Email: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Availability".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Availability: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());
           } else if ("Last-Modified".equalsIgnoreCase(attribute.getName())) {
-            //System.out.println("Found attribute Last-Modified: "+attribute.getValue());
             pathway.addAttribute(attribute.getName(),attribute.getValue());         
           } else {
           	System.out.println("Ignored unknown an attribute! Attribute name: "+attribute.getName()+ "value : "+attribute.getValue());
@@ -140,6 +132,7 @@ public class GmmlReader {
         Object child = iterator.next();
         checkPathwayChilds(child, 1);
       }
+      System.out.println("All data extracted, done...");
 	 } else {
 	   System.out.println("Found unsupported first level element!");
 	 }
@@ -169,20 +162,17 @@ public class GmmlReader {
 		         } //end if BoardHeight
 		      } //end if attribute
 		   } //end while hasNext()
-		   System.out.println("Trying to resize pathway to: '"+width/15+"'x'"+height/15+"'");
+		   System.out.println("Setting size of the pathway to: '"+width/15+"'x'"+height/15+"'");
 		   pathway.setSize(width/15, height/15);
 		} //If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
-			//System.out.println("Geneproduct not fully implemented yet");
 	      List attributes = element.getAttributes();
 	      Iterator aiterator = attributes.iterator();
       	while (aiterator.hasNext()) {
         		Object att = aiterator.next();
 		      if (att instanceof Attribute) {
 	            Attribute attribute = (Attribute) att;
-	            //System.out.println("Found an attribute of type:" + attribute.getName() + "  with the value: "+attribute.getValue() );
 					if("GeneID".equalsIgnoreCase(attribute.getName())) {
-		        		//System.out.println("Found name : "+attribute.getValue());
 				      pathway.addGeneProductText(attribute.getValue());
 		         } //end if GeneID
 		         else if("Type".equalsIgnoreCase(attribute.getName())) {
@@ -384,7 +374,7 @@ public class GmmlReader {
 							//System.out.println("ReceptorRound");
 						}
 						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
-						  	//System.out.println("ReceptorRound");
+						  	//System.out.println("ReceptorSquare");
 						}
 						else if("LigandRound".equalsIgnoreCase(stype)) {
 						  	//System.out.println("LigandRound");
@@ -445,7 +435,6 @@ public class GmmlReader {
 		   pathway.addArc(sx/15,sy/15,width/15,height/15);
 		 }// end if Arc
 		 else if ("Label".equalsIgnoreCase(element.getName())) {
-		 	System.out.println("Found Label");
 			String fname = "";
 			String fstyle = "";
 			String fweight = "";
@@ -466,7 +455,6 @@ public class GmmlReader {
 		      if (att instanceof Attribute) {
 		      	Attribute attribute = (Attribute) att;
 					if("TextLabel".equalsIgnoreCase(attribute.getName())) {
-						System.out.println("TextLabel");
 						text = attribute.getValue();
 					}//end if TextLabel
 				}//end if attribute
@@ -573,7 +561,7 @@ public class GmmlReader {
 					   } //end while hasNext()
 		        } //end if graphics
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
@@ -587,10 +575,10 @@ public class GmmlReader {
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
 						if("Rectangle".equalsIgnoreCase(stype)) {
-							System.out.println("Rectangle");
+							//System.out.println("Rectangle");
 						}//end if rectangle
 						else if("Oval".equalsIgnoreCase(stype)) {
-						  	System.out.println("Oval");
+						  	//System.out.println("Oval");
 						}//end if oval						
 					}//end if type
 				} //end if attribute
@@ -602,16 +590,17 @@ public class GmmlReader {
 	      double width = 0;
 			double PicPointOffset = 0;	
 						
-			//System.out.println("LineShape not fully not implemented yet");
+			//System.out.println("Brace not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
-        		Object child = iterator.next();
+	      	Object child = iterator.next();
         		if (child instanceof Element) {
 		        Element subelement = (Element) child;
 		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
 		        		List attributes = subelement.getAttributes();
 			        	Iterator aiterator = attributes.iterator();
+			         System.out.println("Checking for graphics attributes");
 				      while (aiterator.hasNext()) {
 				      	Object att = aiterator.next();
 					      if (att instanceof Attribute) {
@@ -632,7 +621,7 @@ public class GmmlReader {
 					   } //end while hasNext()
 		        } //end if graphics
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
