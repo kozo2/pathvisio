@@ -160,9 +160,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.clearRect(0, 0, area.width, area.height);
 
 		//Draws lines
-		big.setColor(Color.black);
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
-			//System.out.println("i is" + i);
+			for (int j=0; j<pathway.rectConnection.length; j++) {
+				if (i==pathway.rectConnection[j][0]){
+					big.setColor(Color.blue);
+				}
+				else {
+					big.setColor(Color.black);
+				}
+			}
 			float[] dash = {3.0f};
 			if (pathway.lineLayout[i][0]==0) {
 				big.setStroke(new BasicStroke(2.0f));
