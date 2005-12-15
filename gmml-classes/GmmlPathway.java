@@ -91,6 +91,10 @@ public class GmmlPathway {
 		rectText[length] = GPText;
 	}
 	
+	public void addBrace(int cX, int cY, int W, int PPO, String Or) {
+		//hier komt addBrace.
+	}
+	
 	public void setSize(int h, int w) {
 		size[0] = w;
 		size[1] = h;
