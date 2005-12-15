@@ -539,8 +539,8 @@ public class GmmlReader {
 		else if ("Shape".equalsIgnoreCase(element.getName())) {
      		double sx = 0;
 	      double sy = 0;
-	      double ex = 0;
-			double ey = 0;			
+	      double width = 0;
+			double height = 0;			
 			String stype;
 						
 			//System.out.println("LineShape not fully not implemented yet");
@@ -564,10 +564,10 @@ public class GmmlReader {
 						      	sy = Integer.parseInt(attribute.getValue());
 						      } //end if starty
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
-						      	ex = Integer.parseInt(attribute.getValue());
+						      	width = Integer.parseInt(attribute.getValue());
 						      } //end if Width
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
-						      	ey = Integer.parseInt(attribute.getValue());
+						      	height = Integer.parseInt(attribute.getValue());
 						      } //end if height
 					      } //end if attribute					      
 					   } //end while hasNext()
@@ -595,7 +595,48 @@ public class GmmlReader {
 					}//end if type
 				} //end if attribute
 			}//end while hasNext()
-		} //end else if Shape		 
+		} //end else if Shape
+		else if ("Brace".equalsIgnoreCase(element.getName())) {
+     		double sx = 0;
+	      double sy = 0;
+	      double width = 0;
+			double PicPointOffset = 0;	
+						
+			//System.out.println("LineShape not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
+						      	sx = Integer.parseInt(attribute.getValue());
+						      } //end if startx
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      	sy = Integer.parseInt(attribute.getValue());
+						      } //end if starty
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      	width = Integer.parseInt(attribute.getValue());
+						      } //end if Width
+						      else if("PicPointOffset".equalsIgnoreCase(attribute.getName())) {
+						      	PicPointOffset = Integer.parseInt(attribute.getValue());
+						      } //end if PicPointOffset
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+		} //end else if Brace				 
     } //end if element
     else if (o instanceof Document) {
       System.out.println("Document");
