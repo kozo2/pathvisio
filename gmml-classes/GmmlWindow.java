@@ -47,6 +47,7 @@ public class GmmlWindow {
 	   //System.out.println("Trying to start the GmmlReader for file: "+file);
 	   GmmlReader reader = new GmmlReader(file);
 		pathway = reader.getPathway();
+		pathway.checkConnection();
 
 		GmmlDrawing drawing = new GmmlDrawing(pathway);
 		f.getContentPane().add(drawing);

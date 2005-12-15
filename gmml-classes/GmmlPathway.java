@@ -10,6 +10,7 @@ public class GmmlPathway {
 	int[][] lineLayout = new int[0][2];
 	int[] size = new int[2];
 	String[] rectText = new String[0];
+	int[][] rectConnection = new int[0][3];
 	
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
@@ -105,6 +106,7 @@ public class GmmlPathway {
 			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
       }
    }
+   
 
     private static Object resizeArray (Object oldArray, int newSize) {
       int oldSize = java.lang.reflect.Array.getLength(oldArray);
@@ -115,5 +117,68 @@ public class GmmlPathway {
           System.arraycopy (oldArray,0,newArray,0,preserveLength);
     	return newArray; 
 	 }
+
+	public void checkConnection(){
+	/* for each point of each line the corresponding rectangle is searched
+	 * these rectangles are saved in connection
+	 * the first point is the first rectangle
+	 * the second point is the second rectangle
+	 */
+	 	int[][] connec = new int[lineCoord.length][2];
+	 	int count = 0;
+		for (int i=0; i < lineCoord.length; i++){
+			double theta=Math.atan(Math.abs((lineCoord[i][3]-lineCoord[i][1])/(lineCoord[i][2]-lineCoord[i][0])));
+			double dx=Math.cos(theta);
+			double dy=Math.sin(theta);
+			boolean test1=false;
+			boolean test2=false;
+			if (lineCoord[i][0]>lineCoord[i][2]){
+				dx=-dx;
+			}
+			if (lineCoord[i][1]>lineCoord[i][3]){
+				dy=-dy;
+			}
+			for (int j=0; j < rects.length; j++){
+				Rectangle temprectj=rects[j];
+				for (int n=0; n < 15; n++){
+					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy)))) {
+						connec[i][0]=j;
+						test1=true;
+						n=15;
+					}
+				}	
+				for (int n=0; n < 15; n++){	
+					if (temprectj.contains(lineCoord[i][2]+(n*dx), lineCoord[i][3]+(n*dy))){
+						connec[i][1]=j;				
+						test2=true;
+						n=15;
+					}
+				}
+				if (test1 && test2) {
+					j = rects.length;
+				}
+			} //end for loop that searches the rectangles
+			if (!test1 || !test2) {
+				connec[i][0]=-1;
+				connec[i][1]=-1;
+				count=count+1;
+			}
+		}
+		int n = 0;
+		int[][] tempConnection=new int[connec.length-count][3];
+		for (int i = 0; i < connec.length; i++) {
+			if (connec[i][0]!=-1 && connec[i][1]!=-1) {
+				System.out.println("TEST 1: rectangle " + connec[i][0] + " is connecte to " + connec[i][1] + " by line " + i);
+				tempConnection[n][0]= i;
+				tempConnection[n][1]= connec[i][0];
+				tempConnection[n][2]= connec[i][1];
+				n=n+1;		
+			}
+		}
+	rectConnection = tempConnection;
+	for (int i = 0; i<rectConnection.length; i++){
+		System.out.println("TEST 2: rectangle " + rectConnection[i][1] + " is connected to " + rectConnection[i][2] + " by line " + rectConnection[i][0]);
+	}
+	}//end of checkconnection
     	
 } //end of GmmlPathway
