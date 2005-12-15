@@ -186,19 +186,19 @@ public class GmmlReader {
 				      pathway.addGeneProductText(attribute.getValue());
 		         } //end if GeneID
 		         else if("Type".equalsIgnoreCase(attribute.getName())) {
-		        		System.out.println("Type");
+		        		//System.out.println("Type");
 		         } //end if Type
 					else if("GeneProduct-Data-Source".equalsIgnoreCase(attribute.getName())) {
-		        		System.out.println("GeneProduct-Data-Source");
+		        		//System.out.println("GeneProduct-Data-Source");
 		         } //end if GeneProduct-Data-Source
 					else if("Short-Name".equalsIgnoreCase(attribute.getName())) {
-		        		System.out.println("Short-Name");
+		        		//System.out.println("Short-Name");
 		         } //end if Short-Name
 					else if("Xref".equalsIgnoreCase(attribute.getName())) {
-		        		System.out.println("Xref");
+		        		//System.out.println("Xref");
 		         } //end if Xref
 					else if("BackpageHead".equalsIgnoreCase(attribute.getName())) {
-		        		System.out.println("BackpageHead");
+		        		//System.out.println("BackpageHead");
 		         } //end if BackpageHead
 		      } //end if attribute
 		   } //end while hasNext()
@@ -243,10 +243,10 @@ public class GmmlReader {
 					   pathway.addRect(x/15,y/15,width/15,height/15);
 		         } //end if graphics
 		         else if ("Comment".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Comment");
+      				//System.out.println("Comment");
 				   }//end if Comment
 				   else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes   
 		      } //end if element
 		   } //end while hasNext()
@@ -291,10 +291,10 @@ public class GmmlReader {
 					   } //end while hasNext()
 		        } //end if graphics
 		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Comment");
+      				//System.out.println("Comment");
 				  }//end if Comment
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
@@ -365,10 +365,10 @@ public class GmmlReader {
 					   } //end while hasNext()
 		        } //end if graphics
 		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Comment");
+      				//System.out.println("Comment");
 				  }//end if Comment
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
@@ -378,25 +378,24 @@ public class GmmlReader {
 				Object att = aiterator.next();
 				if (att instanceof Attribute) {
 					Attribute attribute = (Attribute) att;
-
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
 						if("ReceptorRound".equalsIgnoreCase(stype)) {
-							System.out.println("ReceptorRound");
+							//System.out.println("ReceptorRound");
 						}
 						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
-						  	System.out.println("ReceptorRound");
+						  	//System.out.println("ReceptorRound");
 						}
 						else if("LigandRound".equalsIgnoreCase(stype)) {
-						  	System.out.println("LigandRound");
+						  	//System.out.println("LigandRound");
 						}
 						else if("LigandSquare".equalsIgnoreCase(stype)) {
-						  	System.out.println("LigandSquare");
+						  	//System.out.println("LigandSquare");
 						}
 						else if("Tbar".equalsIgnoreCase(stype)) {
-						  	System.out.println("Tbar");
+						  	//System.out.println("Tbar");
 						}
-					}
+					}//end if Type
 				} //end if attribute
 			}//end while hasNext()
 		} //end else if LineShape
@@ -436,16 +435,42 @@ public class GmmlReader {
 					   } //end while hasNext()
 		        } //end if graphics
 		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Comment");
+      				//System.out.println("Comment");
 				  }//end if Comment
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
 		 }// end if Arc
 		 else if ("Label".equalsIgnoreCase(element.getName())) {
-		
+		 	System.out.println("Found Label");
+			String fname = "";
+			String fstyle = "";
+			String fweight = "";
+			String text = "";
+			String color = "";
+			int cx = 0;
+			int cy = 0;
+			int x = 0;
+			int y = 0;
+			int h = 0;
+			int w = 0;
+			int fsize = 0;
+			
+			List attributes = element.getAttributes();
+        	Iterator aiterator = attributes.iterator();
+	      while (aiterator.hasNext()) {
+	      	Object att = aiterator.next();
+		      if (att instanceof Attribute) {
+		      	Attribute attribute = (Attribute) att;
+					if("TextLabel".equalsIgnoreCase(attribute.getName())) {
+						System.out.println("TextLabel");
+						text = attribute.getValue();
+					}//end if TextLabel
+				}//end if attribute
+			}//end while hasNext()
+				
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -453,55 +478,62 @@ public class GmmlReader {
         		if (child instanceof Element) {
 		        Element subelement = (Element) child;
 		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
-		        		List attributes = subelement.getAttributes();
-			        	Iterator aiterator = attributes.iterator();
-				      while (aiterator.hasNext()) {
-				      	Object att = aiterator.next();
+		        		List sattributes = subelement.getAttributes();
+			        	Iterator saiterator = sattributes.iterator();
+				      while (saiterator.hasNext()) {
+				      	Object att = saiterator.next();
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("CenterX");
+						      	//System.out.println("CenterX");
+							      cx = Integer.parseInt(attribute.getValue());
 						      } //end if centerx
 						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("CenterY");
+						      	//System.out.println("CenterY");
+							      cy = Integer.parseInt(attribute.getValue());
 						      } //end if centery
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("Width");
+						      	//System.out.println("Width");
+							      w = Integer.parseInt(attribute.getValue());
 						      } //end if width
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("Height");
+						      	//System.out.println("Height");
+							      h = Integer.parseInt(attribute.getValue());
 						      } //end if height
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	//System.out.println("Color");
+							      color = attribute.getValue();
+						      } //end if fontname
 						      else if("FontName".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("FontName");
+						      	//System.out.println("FontName");
+							      fname = attribute.getValue();
 						      } //end if fontname
 						      else if("FontStyle".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("FontStyle");
+						      	//System.out.println("FontStyle");
+							      fstyle = attribute.getValue();
 						      } //end if fontstyle
 						      else if("FontWeight".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("FontWeight");
+						      	//System.out.println("FontWeight");
+							      fweight = attribute.getValue();
 						      } //end if fontweight
 						      else if("FontSize".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("FontSize");
+						      	//System.out.println("FontSize");
+							      fsize = Integer.parseInt(attribute.getValue());
 						      } //end if fontsize
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
 		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Comment");
+      				//System.out.println("Comment");
 				  }//end if Comment
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
-      				System.out.println("Notes");
+      				//System.out.println("Notes");
 				   }//end if Notes
 		      } //end if element
-		      List attributes = element.getAttributes();
-				Iterator aiterator = attributes.iterator();
-				if (child instanceof Attribute) {
-					Attribute attribute = (Attribute) att;
-					if("TextLabel".equalsIgnoreCase(attribute.getName())) {
-						System.out.println("TextLabel");
-			  		}//end if TextLabel
-				}//end if attribute
 		   } //end while hasNext()
+		   x = cx - (w/2);
+		   y = cy - (h/2);
+		   pathway.addLabel(x/15, y/15, w/15, h/15, text, color, fname, fweight, fstyle, fsize);
 		 }// end if Label
 		else if ("Shape".equalsIgnoreCase(element.getName())) {
      		double sx = 0;

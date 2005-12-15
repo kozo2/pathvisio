@@ -33,6 +33,7 @@ public class GmmlWindow {
     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     f.setVisible(true);
   }
+  
   public void openPathway(String file) {
   		//Read a pathway and open it in the applet
       f.getContentPane().removeAll();
@@ -49,11 +50,22 @@ public class GmmlWindow {
 		pathway = reader.getPathway();
 		pathway.checkConnection();
 
+		//Create a drawing (this is an extended JPanel class)
 		GmmlDrawing drawing = new GmmlDrawing(pathway);
-		f.getContentPane().add(drawing);
+		drawing.setBounds(0,0,drawing.pathway.size[0],drawing.pathway.size[1]);
+
+		//Try to make a scrolling area
+		JScrollPane scroll = new JScrollPane(drawing);
+		scroll.setVerticalScrollBar(scroll.createVerticalScrollBar());
+		scroll.setHorizontalScrollBar(scroll.createHorizontalScrollBar());
+		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		f.getContentPane().add(scroll);
+		
 		drawing.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.
 		f.show();
-	}
+  }
+	
   public static void setJavaLookAndFeel() {
     try {
       UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());

@@ -160,6 +160,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.clearRect(0, 0, area.width, area.height);
 
 		//Draws lines
+		big.setColor(Color.black);
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
 			for (int j=0; j<pathway.rectConnection.length; j++) {
 				if (i==pathway.rectConnection[j][0]){
@@ -224,6 +225,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		}
 		
 		// Draws text on the newly positioned rectangles.
+		Font gpfont = new Font("Arial", Font.PLAIN, 10);
+		big.setFont(gpfont);
 		FontMetrics fm = big.getFontMetrics();
 		int fHeight = fm.getHeight();
 		int textWidth;
@@ -241,6 +244,28 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			int x = (int)pathway.rects[i].getX()+ ((rectWidth-textWidth)/2);
 			int y = (int)pathway.rects[i].getY() + (rectHeight+fHeight)/2;
 			big.drawString(pathway.rectText[i],x,y);
+		}
+		
+		// Draw text labels
+		for (int i=0; i<pathway.labelCoord.length; i++) {
+			big.setColor(pathway.labelColor[i]);
+			Font font = new Font(pathway.labelFont[i][0], Font.PLAIN, pathway.labelFontSize[i]);
+			if (pathway.labelFont[i][1].equalsIgnoreCase("bold")) {
+				if (pathway.labelFont[i][2].equalsIgnoreCase("italic")) {
+					font = font.deriveFont(Font.BOLD+Font.ITALIC);
+				} else {
+					font = font.deriveFont(Font.BOLD);
+				}
+			} else if (pathway.labelFont[i][2].equalsIgnoreCase("italic")) {
+				font = font.deriveFont(Font.ITALIC);
+			} 
+			
+			big.setFont(font); 
+			
+			FontMetrics lfm = big.getFontMetrics();
+			int lfHeight = fm.getHeight();
+
+			big.drawString(pathway.labelText[i],pathway.labelCoord[i][0], pathway.labelCoord[i][1]+lfHeight);
 		}
 		
 		// Draws the buffered image to the screen.

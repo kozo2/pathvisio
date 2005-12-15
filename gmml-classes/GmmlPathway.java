@@ -5,15 +5,26 @@ import javax.swing.JApplet;
 import java.awt.geom.Arc2D;
 
 public class GmmlPathway {
-	//Geneproduct and line coordinates
+	//Pathway
+	int[] size = new int[2];
+	
+	//Geneproduct
 	Rectangle[] rects = new Rectangle[0];
+	String[] rectText = new String[0];
+		
+	//Lines
 	double[][] lineCoord = new double[0][4];
 	int[][] lineLayout = new int[0][2];
-	int[] size = new int[2];
-	String[] rectText = new String[0];
 	Arc2D.Double[] arcs = new Arc2D.Double[0];
 	int[][] rectConnection = new int[0][3];
 	
+	//Label
+	int[][] labelCoord = new int[0][4];
+	Color[] labelColor = new Color[0];
+	String[][] labelFont = new String[0][3];
+	int[] labelFontSize = new int[0];
+	String[] labelText = new String[0];
+		
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
 	String notes = new String();
@@ -61,7 +72,7 @@ public class GmmlPathway {
 		
 		//RESIZE PART
 		lineCoord = (double[][]) resizeArray(lineCoord, (length+1));
-		// new array is [length+1][2 or Null]
+		// new array is [length+1][4 or Null]
   		for (int i=0; i<lineCoord.length; i++) {
 			if (lineCoord[i] == null) {
      			lineCoord[i] = new double[4];
@@ -83,6 +94,49 @@ public class GmmlPathway {
 		lineCoord[length][3] = ey;
 		lineLayout[length][0] = style;
 		lineLayout[length][1] = type;
+	}
+	
+	public void addLabel(int x, int y, int w, int h, String text, String color, String font, String weight, String style, int fontsize) {
+		int length = labelCoord.length;	
+
+		//RESIZE PART
+		labelColor = (Color[]) resizeArray(labelColor, (length+1));
+
+		//RESIZE PART
+		labelFontSize = (int[]) resizeArray(labelFontSize, (length+1));
+		
+		//RESIZE PART
+		labelText = (String[]) resizeArray(labelText, (length+1));
+
+		//RESIZE PART
+		labelCoord = (int[][]) resizeArray(labelCoord, (length+1));
+		// new array is [length+1][4 or Null]
+  		for (int i=0; i<labelCoord.length; i++) {
+			if (labelCoord[i] == null) {
+     			labelCoord[i] = new int[4];
+			}
+		}
+		
+		//RESIZE PART
+		labelFont = (String[][]) resizeArray(labelFont, (length+1));
+		// new array is [length+1][3 or Null]
+  		for (int i=0; i<labelFont.length; i++) {
+			if (labelFont[i] == null) {
+     			labelFont[i] = new String[3];
+			}
+		}
+		
+		System.out.println("Storing label "+length+" in pathway...");
+		labelColor[length] = GmmlColor.convertColor(color);
+		labelFontSize[length] = fontsize;
+		labelCoord[length][0] = x;
+		labelCoord[length][1] = y;
+		labelCoord[length][2] = h;
+		labelCoord[length][3] = w;
+		labelFont[length][0] = font;
+		labelFont[length][1] = weight;
+		labelFont[length][2] = style;
+		labelText[length] = text;
 	}
 	
 	public void addGeneProductText(String gpText) {
