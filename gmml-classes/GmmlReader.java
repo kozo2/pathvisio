@@ -328,14 +328,7 @@ public class GmmlReader {
 		   pathway.addLine(sx/15,sy/15,ex/15,ey/15, style, type);
 		} //end else if Line
 		else if ("LineShape".equalsIgnoreCase(element.getName())) {
-	   	int style = 0;
-		   int type= 0;
-     		int sx = 0;
-	      int sy = 0;
-	      int ex = 0;
-			int ey = 0;
-			String stype;
-			String sstyle;
+
 						
 			//System.out.println("LineShape not fully not implemented yet");
 			List children = element.getContent();
@@ -352,16 +345,16 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	sx = Integer.parseInt(attribute.getValue());
+						      	System.out.println("Comment");
 						      } //end if startx
 						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
-						      	sy = Integer.parseInt(attribute.getValue());
+						      	System.out.println("Comment");
 						      } //end if starty
 						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
-						      	ex = Integer.parseInt(attribute.getValue());
+						      	System.out.println("Comment");
 						      } //end if endx
 						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
-						      	ey = Integer.parseInt(attribute.getValue());
+						      	System.out.println("Comment");
 						      } //end if endy
 					      } //end if attribute					      
 					   } //end while hasNext()
@@ -384,29 +377,26 @@ public class GmmlReader {
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
 						if("ReceptorRound".equalsIgnoreCase(stype)) {
-							type = 0;
+							System.out.println("ReceptorRound");
 						}
 						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
-						  	type = 1;
+						  	System.out.println("ReceptorRound");
 						}
 						else if("LigandRound".equalsIgnoreCase(stype)) {
-						  	type = 2;
+						  	System.out.println("LigandRound");
 						}
 						else if("LigandSquare".equalsIgnoreCase(stype)) {
-						  	type = 3;
+						  	System.out.println("LigandSquare");
 						}
 						else if("Tbar".equalsIgnoreCase(stype)) {
-						  	type = 4;
+						  	System.out.println("Tbar");
 						}
 					}
 				} //end if attribute
 			}//end while hasNext()
 		} //end else if LineShape
 		else if ("Arc".equalsIgnoreCase(element.getName())) {
-			int sx = 0;
-	      int sy = 0;
-	      int ex = 0;
-			int ey = 0;
+
 		
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
@@ -422,16 +412,16 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	sx = Integer.parseInt(attribute.getValue());
+						      	System.out.println("StrartX");
 						      } //end if startx
 						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
-						      	sy = Integer.parseInt(attribute.getValue());
+						      	System.out.println("StartY");
 						      } //end if starty
 						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
-						      	ex = Integer.parseInt(attribute.getValue());
+						      	System.out.println("EndX");
 						      } //end if endx
 						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
-						      	ey = Integer.parseInt(attribute.getValue());
+						      	System.out.println("EndY");
 						      } //end if endy
 						      
 					      } //end if attribute					      
@@ -497,13 +487,13 @@ public class GmmlReader {
 		      } //end if element
 		      List attributes = element.getAttributes();
 				Iterator aiterator = attributes.iterator();
-				while (aiterator.hasNext()) {
-					Object att = aiterator.next();
-					if (att instanceof Attribute) {
-						Attribute attribute = (Attribute) att;
-						if("TextLabel".equalsIgnoreCase(attribute.getName())) {
-							System.out.println("TextLabel");
-				  		}//end if TextLabel
+				if (child instanceof Attribute) {
+					Attribute attribute = (Attribute) att;
+					if("TextLabel".equalsIgnoreCase(attribute.getName())) {
+						System.out.println("TextLabel");
+			  		}//end if TextLabel
+				}//end if attribute
+				
 		   } //end while hasNext()
 		 }// end if Label
 
