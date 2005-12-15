@@ -219,13 +219,21 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		// Draws text on the newly positioned rectangles.
 		FontMetrics fm = big.getFontMetrics();
-		int fheight = fm.getHeight();
+		int fHeight = fm.getHeight();
+		int textWidth;
+		int rectWidth;
+		int rectHeight;
 		
 		for (int i=0; i<pathway.rectText.length; i++) {
 			big.setColor(Color.black);
 			big.setStroke(new BasicStroke(2.0f));
-			int x = (int)pathway.rects[i].getX();
-			int y = (int)pathway.rects[i].getY() + fheight;
+			
+			rectWidth = (int)pathway.rects[i].getWidth();
+			rectHeight = (int)pathway.rects[i].getHeight();
+			textWidth = fm.stringWidth(pathway.rectText[i]);
+						
+			int x = (int)pathway.rects[i].getX()+ ((rectWidth-textWidth)/2);
+			int y = (int)pathway.rects[i].getY() + (rectHeight+fHeight)/2;
 			big.drawString(pathway.rectText[i],x,y);
 		}
 		
