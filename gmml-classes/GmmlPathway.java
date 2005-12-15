@@ -155,7 +155,7 @@ public class GmmlPathway {
 		arcs = (Arc2D.Double[]) resizeArray(arcs, (length+1));
 		
 		Arc2D.Double temp = new Arc2D.Double(0);
-		temp.setArc(x,y,w,h,90,180,0);
+		temp.setArc(x-w,y-h,2*w,2*h,0,180,0);
 		arcs[length] = temp;
 
 	}

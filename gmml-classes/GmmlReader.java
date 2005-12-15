@@ -442,6 +442,7 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
+		   pathway.addArc(sx/15,sy/15,width/15,height/15);
 		 }// end if Arc
 		 else if ("Label".equalsIgnoreCase(element.getName())) {
 		 	System.out.println("Found Label");

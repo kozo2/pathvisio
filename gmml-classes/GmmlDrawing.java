@@ -268,6 +268,14 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			big.drawString(pathway.labelText[i],pathway.labelCoord[i][0], pathway.labelCoord[i][1]+lfHeight);
 		}
 		
+		// Draws arcs
+		for (int i=0; i<pathway.arcs.length; i++) {
+			big.setColor(Color.black);
+			big.setStroke(new BasicStroke(2.0f));
+			
+			big.draw(pathway.arcs[i]);
+		}
+		
 		// Draws the buffered image to the screen.
 		g2.drawImage(bi, 0, 0, this);
 		
