@@ -190,12 +190,16 @@ public class GmmlPathway {
 	 }
 
 	public void checkConnection(){
-	/* for each point of each line the corresponding rectangle is searched
-	 * these rectangles are saved in connection
-	 * the first point is the first rectangle
-	 * the second point is the second rectangle
-	 */
-	 	int[][] connec = new int[lineCoord.length][2];
+ 	 	/* in the first for loop a line i is selected
+		 * in the second for loop is checked if the begin or the end of line i lays in rectangle j
+		 * because most lines don't finish or start in a renctangle, the lines are extended by a maximum of 15 pixels
+		 * when a line doesn't end in a rectangle, line i in connec is filled with -1
+		 * after al lines are checked a second loop is started
+		 * the second loop fills a new array with the lines that connect rectangles
+		 * after this loop the temporary array is written to rectConnection
+		 */
+		 
+		int[][] connec = new int[lineCoord.length][2];
 	 	int count = 0;
 		for (int i=0; i < lineCoord.length; i++){
 			double theta=Math.atan(Math.abs((lineCoord[i][3]-lineCoord[i][1])/(lineCoord[i][2]-lineCoord[i][0])));
@@ -211,7 +215,7 @@ public class GmmlPathway {
 			}
 			for (int j=0; j < rects.length; j++){
 				Rectangle temprectj=rects[j];
-				for (int n=0; n < 15; n++){
+				for (int n=0; n < 25; n++){
 					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy)))) {
 						connec[i][0]=j;
 						test1=true;
