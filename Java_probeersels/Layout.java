@@ -29,9 +29,11 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 	//Calculating distance between linked blocks and and using this to normalise dCoord as vectors of length one. 	
 	double[][] direction = new double[(link.length)][2];
 	double[] distance = new double[(link.length)];
-	
+		
 	for(nRow=0; nRow<(link.length); nRow++) {
-		distance[nRow] = Math.sqrt(((dCoord[nRow][0])*(dCoord[nRow][0])) + ((dCoord[nRow][1])*(dCoord[nRow][1])));
+		int dx=dCoord[nRow][0];
+		int dy=dCoord[nRow][1];
+		distance[nRow] = Math.sqrt(dx*dx+dy*dy);
 		direction[nRow][0]= ( dCoord[nRow][0] )/(distance[nRow]);
 		direction[nRow][1]= ( dCoord[nRow][1] )/(distance[nRow]);
 	}
@@ -43,31 +45,41 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 	}
 	
 	// Calculating spring force vector
-	
+	int firstBlockInvolved=0;
+	int secondBlockInvolved=0;
+	double fx=0.0;
+	double fy=0.0;
+				
 	double[][] springForce =  new double[(coord.length)][2];
 	for(nRow=0; nRow<(link.length); nRow++) {
-		if (distance[nRow]>refL) {
-			//attraction
-			int[] blocksInvolved={(link[nRow][0]),(link[nRow][1])};
-			springForce[(blocksInvolved[0])][0]=(springForce[(blocksInvolved[0])][0])-(direction[nRow][0]*magnitudeSpringForce[nRow]);
-			springForce[(blocksInvolved[0])][1]=(springForce[(blocksInvolved[0])][1])-(direction[nRow][1]*magnitudeSpringForce[nRow]);
-			springForce[(blocksInvolved[1])][0]=(springForce[(blocksInvolved[1])][0])+(direction[nRow][0]*magnitudeSpringForce[nRow]);
-			springForce[(blocksInvolved[1])][1]=(springForce[(blocksInvolved[1])][1])+(direction[nRow][1]*magnitudeSpringForce[nRow]);
+		firstBlockInvolved=(link[nRow][0]-1);
+		secondBlockInvolved=(link[nRow][1]-1);
 
-			
-			
+		if (distance[nRow]<=refL) {
+			//repulsion
+			fx=magnitudeSpringForce[nRow]*(direction[nRow][0]);
+			fy=magnitudeSpringForce[nRow]*(direction[nRow][1]);
+
+			springForce[firstBlockInvolved][0]+=fx;
+			springForce[firstBlockInvolved][1]+=fy;
+			springForce[secondBlockInvolved][0]-=fx;
+			springForce[secondBlockInvolved][1]-=fy;
 			}
-		else if (distance[nRow] <= refL) {
-			//repulsion: opposite signs
-			int[] blocksInvolved={(link[nRow][0]),(link[nRow][1])};
-			springForce[(blocksInvolved[0])][0]=(springForce[(blocksInvolved[0])][0])+(direction[nRow][0]*magnitudeSpringForce[nRow]);
-			springForce[(blocksInvolved[0])][1]=(springForce[(blocksInvolved[0])][1])+(direction[nRow][1]*magnitudeSpringForce[nRow]);
-			springForce[(blocksInvolved[1])][0]=(springForce[(blocksInvolved[1])][0])-(direction[nRow][0]*magnitudeSpringForce[nRow]);
-			springForce[(blocksInvolved[1])][1]=(springForce[(blocksInvolved[1])][1])-(direction[nRow][1]*magnitudeSpringForce[nRow]);
+						
+						
+		else if (distance[nRow] > refL) {
+			//attraction: opposite signs
+			fx=magnitudeSpringForce[nRow]*(direction[nRow][0]);
+			fy=magnitudeSpringForce[nRow]*(direction[nRow][1]);
+
+			springForce[firstBlockInvolved][0]-=fx;
+			springForce[firstBlockInvolved][1]-=fy;
+			springForce[secondBlockInvolved][0]+=fx;
+			springForce[secondBlockInvolved][1]+=fy;
+
 
 			}
 		}
-	
 	
 	return springForce;
   }
@@ -86,12 +98,12 @@ public static double[][] calculateElectricForce(int[][] coord, int[][] link, int
   int nBlock=0;
   
   for(nRow=0; nRow<(link.length); nRow++) {
-  	for(nBlock=0; nBlock<(coord.length); nBlock++) {	  
+  	for(nBlock=0; nBlock<=(coord.length); nBlock++) {	  
 		if (link[nRow][0] == nBlock) {
-	  		nLinks[nBlock]=nLinks[nBlock]+1;
+	  		nLinks[nBlock-1]++;
 			}
 	  	else if (link[nRow][1] == nBlock) {
-	  		nLinks[nBlock]=nLinks[nBlock]+1;
+	  		nLinks[nBlock-1]++;
 			}
 		}
 	}
@@ -140,7 +152,6 @@ public static double[][] calculateElectricForce(int[][] coord, int[][] link, int
 			}
 		}
 
-	
 	//Calculating electric force magnitude
 	
 	double[][] electricForceMagnitude = new double [(coord.length)][(coord.length)];
@@ -149,38 +160,34 @@ public static double[][] calculateElectricForce(int[][] coord, int[][] link, int
 		for(nColumn=0; nColumn<(coord.length); nColumn++) {
 			if (distanceSquare[nRow][nColumn] != 0) {
 				//Otherwise, the force magnitude keeps default value zero 
-				electricForceMagnitude[nRow][nColumn]=(nLinks[nRow])*(nLinks[nColumn])*(alpha/(distanceSquare[nRow][nColumn]));
-				//The force is weighed with the number of links of the corresponding blocks
+				electricForceMagnitude[nRow][nColumn]=(nLinks[nRow]+1)*(nLinks[nColumn]+1)*(alpha/(distanceSquare[nRow][nColumn]));
+				/* The force is weighed with the number of links of the corresponding blocks; 1 is added to these values to prevent
+				non-linked of having zero force. */
+				
+				
 				}
 			}
 		}
 	
 	//Calculating the net electric force on every block
 	double[][]electricForce = new double [(coord.length)][2];
+	double fx=0.0;
+	double fy=0.0;
 	
 	for(nRow=0; nRow<(coord.length); nRow++) {
-		for(nColumn=0; nRow<(coord.length); nColumn++) {
-			electricForce[nRow][0]=(electricForce[nRow][0])+(direction[nRow][nColumn][0])*(electricForceMagnitude[nRow][nColumn]);
-			electricForce[nRow][1]=(electricForce[nRow][1])+(direction[nRow][nColumn][1])*(electricForceMagnitude[nRow][nColumn]);
+		for(nColumn=0; nColumn<(coord.length); nColumn++) {
+		
+			fx=(direction[nRow][nColumn][0])*(electricForceMagnitude[nRow][nColumn]);
+			fy=(direction[nRow][nColumn][1])*(electricForceMagnitude[nRow][nColumn]);
+
+			electricForce[nRow][0]+=fx;
+			electricForce[nRow][1]+=fy;
 			}
 		}
-			
+
 	return electricForce;
 
 	}
-
-
-	
-	
-	
-	  
-  
-   
-
-
- 
-
-
 
 /***********************************************************************************************/
 
@@ -188,25 +195,29 @@ public static double[][] calculateElectricForce(int[][] coord, int[][] link, int
   
   public static void main(String[] args) {
     
-  int[][] coord={{1,1},{2,4},{3,2}};
-  int[][] link={{1,3},{1,4}};
+  int[][] coord={{100,100},{200,400},{300,200}};
+  int[][] link={{1,3},{1,2}};
   
   int sC = 1;
-  int refL = 3;  //repulsion
+  int refL = 300;  //repulsion
   int alpha = 1;
   
-  //double[][] elektrischeKrachten = calculateElectricForce(coord, link, alpha);
+  double[][] elektrischeKrachten = calculateElectricForce(coord, link, alpha);
   double[][] veerkrachten = calculateSpringForce(coord, link, refL, sC);
   
-  System.out.println("veerkrachten");
-  //System.out.println(veerkrachten[0][0]+"  "+veerkrachten[0][1]);
-  //System.out.println(veerkrachten[1][0]+"  "+veerkrachten[1][1]);
+  System.out.println("veerkrachten ("+veerkrachten.length+"x"+veerkrachten[0].length+")");
+  System.out.println(veerkrachten[0][0]+"  "+veerkrachten[0][1]);
+  System.out.println(veerkrachten[1][0]+"  "+veerkrachten[1][1]);
+  System.out.println(veerkrachten[2][0]+"  "+veerkrachten[2][1]);
   
   System.out.println();
 
-  System.out.println("elektrische krachten");
-  //System.out.println(elektrischeKrachten[0][0]+"  "+elektrischeKrachten[0][1]);
-  //System.out.println(elektrischeKrachten[1][0]+"  "+elektrischeKrachten[1][1]);
+  System.out.println("elektrische krachten ("+elektrischeKrachten.length+"x"+elektrischeKrachten[0].length+")");
+  System.out.println(elektrischeKrachten[0][0]+"  "+elektrischeKrachten[0][1]);
+  System.out.println(elektrischeKrachten[1][0]+"  "+elektrischeKrachten[1][1]);
+  System.out.println(elektrischeKrachten[2][0]+"  "+elektrischeKrachten[2][1]);
+  System.out.println();
+
   
   }
 }	
