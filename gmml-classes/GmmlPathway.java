@@ -15,7 +15,6 @@ public class GmmlPathway {
 	//Lines
 	double[][] lineCoord = new double[0][4];
 	int[][] lineLayout = new int[0][2];
-	Arc2D.Double[] arcs = new Arc2D.Double[0];
 	int[][] rectConnection = new int[0][3];
 	
 	//Label
@@ -24,6 +23,10 @@ public class GmmlPathway {
 	String[][] labelFont = new String[0][3];
 	int[] labelFontSize = new int[0];
 	String[] labelText = new String[0];
+	
+	//Arc
+	Arc2D.Double[] arcs = new Arc2D.Double[0];
+
 		
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
