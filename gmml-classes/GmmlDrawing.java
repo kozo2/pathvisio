@@ -162,26 +162,29 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		//Draws lines
 		big.setColor(Color.black);
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
-			for (int j=0; j<pathway.rectConnection.length; j++) {
-				if (i==pathway.rectConnection[j][0]){
-					big.setColor(Color.blue);
-				}
-				else {
-					big.setColor(Color.black);
-				}
-			}
+			big.setColor(Color.black);
 			float[] dash = {3.0f};
 			if (pathway.lineLayout[i][0]==0) {
 				big.setStroke(new BasicStroke(2.0f));
 			}
 			else if (pathway.lineLayout[i][0]==1){ 
-			big.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+				big.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 			}
 			big.draw(new Line2D.Double(pathway.lineCoord[i][0],pathway.lineCoord[i][1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
+		}
+		for (int i=0; i<pathway.rectConnection.length; i++) {
+			big.setColor(Color.green);
+			big.setStroke(new BasicStroke(2.0f));
+			double x1 = pathway.rects[pathway.rectConnection[i][1]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getWidth();
+			double y1 = pathway.rects[pathway.rectConnection[i][1]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getHeight();
+			double x2 = pathway.rects[pathway.rectConnection[i][2]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getWidth();
+			double y2 = pathway.rects[pathway.rectConnection[i][2]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getHeight();
+			big.draw(new Line2D.Double(x1,y1,x2,y2));
 		}
 		
 		//Creates arrows
 		//This doesn't have to be in the forloop so putting it here saves speed
+		big.setColor(Color.black);
 		double angle = 25.0;
 		double theta = (180 - angle) / (180/Math.PI);
 		double[] rot = new double[2];

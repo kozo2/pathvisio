@@ -129,7 +129,7 @@ public class GmmlPathway {
 			}
 		}
 		
-		System.out.println("Storing label "+length+" in pathway...");
+		//System.out.println("Storing label "+length+" in pathway...");
 		labelColor[length] = GmmlColor.convertColor(color);
 		labelFontSize[length] = fontsize;
 		labelCoord[length][0] = x;
@@ -202,6 +202,7 @@ public class GmmlPathway {
 		int[][] connec = new int[lineCoord.length][2];
 	 	int count = 0;
 		for (int i=0; i < lineCoord.length; i++){
+			System.out.println("Checking line: "+i);
 			double theta=Math.atan(Math.abs((lineCoord[i][3]-lineCoord[i][1])/(lineCoord[i][2]-lineCoord[i][0])));
 			double dx=Math.cos(theta);
 			double dy=Math.sin(theta);
@@ -214,23 +215,25 @@ public class GmmlPathway {
 				dy=-dy;
 			}
 			for (int j=0; j < rects.length; j++){
-				Rectangle temprectj=rects[j];
-				for (int n=0; n < 25; n++){
-					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy)))) {
+				Rectangle temprectj = rects[j];
+				for (int n=0; n < 50; n++){
+					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy))) && (!test1)) {
+						System.out.println("Hit for 1 coord: "+j);
 						connec[i][0]=j;
 						test1=true;
 						break;
 					}
 				}	
-				for (int n=0; n < 15; n++){	
-					if (temprectj.contains(lineCoord[i][2]+(n*dx), lineCoord[i][3]+(n*dy))){
+				for (int n=0; n < 50; n++){	
+					if (temprectj.contains(lineCoord[i][2]+(n*dx), lineCoord[i][3]+(n*dy)) && (!test2)) {
+						System.out.println("Hit for 2 coord: "+j);
 						connec[i][1]=j;				
 						test2=true;
 						break;
 					}
 				}
 				if (test1 && test2) {
-					j = rects.length;
+					break;
 				}
 			} //end for loop that searches the rectangles
 			if (!test1 || !test2) {
@@ -252,7 +255,7 @@ public class GmmlPathway {
 		}
 	rectConnection = tempConnection;
 	for (int i = 0; i<rectConnection.length; i++){
-		System.out.println("TEST 2: rectangle " + rectConnection[i][1] + " is connected to " + rectConnection[i][2] + " by line " + rectConnection[i][0]);
+		//System.out.println("TEST 2: rectangle " + rectConnection[i][1] + " is connected to " + rectConnection[i][2] + " by line " + rectConnection[i][0]);
 	}
 	}//end of checkconnection
     	
