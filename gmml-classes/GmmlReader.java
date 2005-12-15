@@ -254,10 +254,10 @@ public class GmmlReader {
 	   else if ("Line".equalsIgnoreCase(element.getName())) {
 	   	int style = 0;
 		   int type= 0;
-     		int sx = 0;
-	      int sy = 0;
-	      int ex = 0;
-			int ey = 0;
+     		double sx = 0;
+	      double sy = 0;
+	      double ex = 0;
+			double ey = 0;
 			String stype;
 			String sstyle;
 						
@@ -278,13 +278,13 @@ public class GmmlReader {
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
 						      	sx = Integer.parseInt(attribute.getValue());
 						      } //end if startx
-						      if("StartY".equalsIgnoreCase(attribute.getName())) {
+						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
 						      	sy = Integer.parseInt(attribute.getValue());
 						      } //end if starty
-						      if("EndX".equalsIgnoreCase(attribute.getName())) {
+						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
 						      	ex = Integer.parseInt(attribute.getValue());
 						      } //end if endx
-						      if("EndY".equalsIgnoreCase(attribute.getName())) {
+						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
 						      	ey = Integer.parseInt(attribute.getValue());
 						      } //end if endy
 					      } //end if attribute					      
@@ -309,7 +309,7 @@ public class GmmlReader {
 						if("Solid".equalsIgnoreCase(sstyle)) {
 					   	style = 0;
 						}
-						if("Broken".equalsIgnoreCase(sstyle)) {
+						else if("Broken".equalsIgnoreCase(sstyle)) {
 					   	style = 1;
 						}
 					}
@@ -318,7 +318,7 @@ public class GmmlReader {
 						if("Line".equalsIgnoreCase(stype)) {
 							type = 0;
 						}
-						if("Arrow".equalsIgnoreCase(stype)) {
+						else if("Arrow".equalsIgnoreCase(stype)) {
 						  	type = 1;
 						}
 					}
@@ -328,7 +328,12 @@ public class GmmlReader {
 		   pathway.addLine(sx/15,sy/15,ex/15,ey/15, style, type);
 		} //end else if Line
 		else if ("LineShape".equalsIgnoreCase(element.getName())) {
-
+     		double sx = 0;
+	      double sy = 0;
+	      double ex = 0;
+			double ey = 0;			
+			String stype;
+			String sstyle;
 						
 			//System.out.println("LineShape not fully not implemented yet");
 			List children = element.getContent();
@@ -345,16 +350,16 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("Comment");
+						      	sx = Integer.parseInt(attribute.getValue());
 						      } //end if startx
 						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("Comment");
+						      	sy = Integer.parseInt(attribute.getValue());
 						      } //end if starty
 						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("Comment");
+						      	ex = Integer.parseInt(attribute.getValue());
 						      } //end if endx
 						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("Comment");
+						      	ey = Integer.parseInt(attribute.getValue());
 						      } //end if endy
 					      } //end if attribute					      
 					   } //end while hasNext()
@@ -396,7 +401,10 @@ public class GmmlReader {
 			}//end while hasNext()
 		} //end else if LineShape
 		else if ("Arc".equalsIgnoreCase(element.getName())) {
-
+     		double sx = 0;
+	      double sy = 0;
+	      double width = 0;
+			double height = 0;
 		
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
@@ -412,17 +420,17 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("StartX");
+						      	sx = Integer.parseInt(attribute.getValue());
 						      } //end if startx
 						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("StartY");
+						      	sy = Integer.parseInt(attribute.getValue());
 						      } //end if starty
-						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("EndX");
-						      } //end if endx
-						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
-						      	System.out.println("EndY");
-						      } //end if endy
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      	width = Integer.parseInt(attribute.getValue());
+						      } //end if width
+						      else if("Height".equalsIgnoreCase(attribute.getName())) {
+						      	height = Integer.parseInt(attribute.getValue());
+						      } //end if height
 						      
 					      } //end if attribute					      
 					   } //end while hasNext()
@@ -493,10 +501,68 @@ public class GmmlReader {
 						System.out.println("TextLabel");
 			  		}//end if TextLabel
 				}//end if attribute
-				
 		   } //end while hasNext()
 		 }// end if Label
+		else if ("Shape".equalsIgnoreCase(element.getName())) {
+     		double sx = 0;
+	      double sy = 0;
+	      double ex = 0;
+			double ey = 0;			
+			String stype;
+						
+			//System.out.println("LineShape not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
+						      	sx = Integer.parseInt(attribute.getValue());
+						      } //end if startx
+						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
+						      	sy = Integer.parseInt(attribute.getValue());
+						      } //end if starty
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      	ex = Integer.parseInt(attribute.getValue());
+						      } //end if Width
+						      else if("Height".equalsIgnoreCase(attribute.getName())) {
+						      	ey = Integer.parseInt(attribute.getValue());
+						      } //end if height
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+			List attributes = element.getAttributes();
+			Iterator aiterator = attributes.iterator();
+			while (aiterator.hasNext()) {
+				Object att = aiterator.next();
+				if (att instanceof Attribute) {
+					Attribute attribute = (Attribute) att;
 
+					if("Type".equalsIgnoreCase(attribute.getName())) {
+						stype = attribute.getValue();
+						if("Rectangle".equalsIgnoreCase(stype)) {
+							System.out.println("Rectangle");
+						}//end if rectangle
+						else if("Oval".equalsIgnoreCase(stype)) {
+						  	System.out.println("Oval");
+						}//end if oval						
+					}//end if type
+				} //end if attribute
+			}//end while hasNext()
+		} //end else if Shape		 
     } //end if element
     else if (o instanceof Document) {
       System.out.println("Document");
