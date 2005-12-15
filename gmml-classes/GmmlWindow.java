@@ -18,7 +18,7 @@ public class GmmlWindow {
   	 f = new JFrame("The GMML Window");
 	 javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); //This line will fix the menu hiding behind the canvas.
     GmmlWindow.setJavaLookAndFeel();
-    f.setSize(1280, 1024);
+    f.setSize(800, 600);
     Container content = f.getContentPane();
     content.setBackground(Color.white);
     buildMenu(); //Add the menu
@@ -45,15 +45,13 @@ public class GmmlWindow {
 		f.getContentPane().add(toolBar, BorderLayout.NORTH);
 	
    	//Add some content
-	   //System.out.println("Trying to start the GmmlReader for file: "+file);
 	   GmmlReader reader = new GmmlReader(file);
 		pathway = reader.getPathway();
 		pathway.checkConnection();
 
 		//Create a drawing (this is an extended JPanel class)
 		GmmlDrawing drawing = new GmmlDrawing(pathway);
-		drawing.setBounds(0,0,drawing.pathway.size[0],drawing.pathway.size[1]);
-
+		
 		//Try to make a scrolling area
 		JScrollPane scroll = new JScrollPane(drawing);
 		scroll.setVerticalScrollBar(scroll.createVerticalScrollBar());

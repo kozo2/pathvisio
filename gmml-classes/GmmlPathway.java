@@ -167,7 +167,7 @@ public class GmmlPathway {
 		//hier komt addBrace.
 	}
 	
-	public void setSize(int h, int w) {
+	public void setSize(int w, int h) {
 		size[0] = w;
 		size[1] = h;
 	}

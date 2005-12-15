@@ -10,6 +10,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	BufferedImage bi;
 	Graphics2D big;
 	
+	//Zoomfactor
+	int zoom;
 	
 	//Holds the coordinates of the user's last mousePressed event.
 	int[] lastx;
@@ -37,6 +39,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		lastx = new int[rectsLength];
 		lasty = new int[rectsLength];
+		setPreferredSize(new Dimension(pathway.size[0], pathway.size[1]));
 	} //end of GmmlDrawing(inputpathway)
 
 	//init is used to form the JPanel later in the program.
@@ -52,7 +55,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		//This label is used when the applet is just started
 		label = new Label("Drag rectangles around within the area");
-		add("South", label); //South: in the lowest part of the frame.
+		//add("South", label); //South: in the lowest part of the frame.
 	} //end of init
 	
 	/*When the mouse is pressed, there is checked with a for-loop if one clicked inside of a rectangle.
