@@ -130,8 +130,8 @@ public class GmmlReader {
           } else {
           	System.out.println("Ignored unknown an attribute! Attribute name: "+attribute.getName()+ "value : "+attribute.getValue());
           }
-        }  
-      }
+        } //If attribute
+      } //while hasNext()
    
       //Get children
 	   List children = e.getContent();
@@ -185,6 +185,21 @@ public class GmmlReader {
 		        		//System.out.println("Found name : "+attribute.getValue());
 				      pathway.addGeneProductText(attribute.getValue());
 		         } //end if GeneID
+		         else if("Type".equalsIgnoreCase(attribute.getName())) {
+		        		System.out.println("Type");
+		         } //end if Type
+					else if("GeneProduct-Data-Source".equalsIgnoreCase(attribute.getName())) {
+		        		System.out.println("GeneProduct-Data-Source");
+		         } //end if GeneProduct-Data-Source
+					else if("Short-Name".equalsIgnoreCase(attribute.getName())) {
+		        		System.out.println("Short-Name");
+		         } //end if Short-Name
+					else if("Xref".equalsIgnoreCase(attribute.getName())) {
+		        		System.out.println("Xref");
+		         } //end if Xref
+					else if("BackpageHead".equalsIgnoreCase(attribute.getName())) {
+		        		System.out.println("BackpageHead");
+		         } //end if BackpageHead
 		      } //end if attribute
 		   } //end while hasNext()
 			List children = element.getContent();
@@ -226,7 +241,13 @@ public class GmmlReader {
 					   
 					   y = cy - (height/2);
 					   pathway.addRect(x/15,y/15,width/15,height/15);
-		        } //end if graphics
+		         } //end if graphics
+		         else if ("Comment".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Comment");
+				   }//end if Comment
+				   else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes   
 		      } //end if element
 		   } //end while hasNext()
 		} //end else if Geneproduct
@@ -266,9 +287,15 @@ public class GmmlReader {
 						      if("EndY".equalsIgnoreCase(attribute.getName())) {
 						      	ey = Integer.parseInt(attribute.getValue());
 						      } //end if endy
-					      } //end if attribute
+					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
+		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Comment");
+				  }//end if Comment
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
 			List attributes = element.getAttributes();
@@ -300,6 +327,185 @@ public class GmmlReader {
 		   	
 		   pathway.addLine(sx/15,sy/15,ex/15,ey/15, style, type);
 		} //end else if Line
+		else if ("LineShape".equalsIgnoreCase(element.getName())) {
+	   	int style = 0;
+		   int type= 0;
+     		int sx = 0;
+	      int sy = 0;
+	      int ex = 0;
+			int ey = 0;
+			String stype;
+			String sstyle;
+						
+			//System.out.println("LineShape not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
+						      	sx = Integer.parseInt(attribute.getValue());
+						      } //end if startx
+						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
+						      	sy = Integer.parseInt(attribute.getValue());
+						      } //end if starty
+						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
+						      	ex = Integer.parseInt(attribute.getValue());
+						      } //end if endx
+						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
+						      	ey = Integer.parseInt(attribute.getValue());
+						      } //end if endy
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Comment");
+				  }//end if Comment
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+			List attributes = element.getAttributes();
+			Iterator aiterator = attributes.iterator();
+			while (aiterator.hasNext()) {
+				Object att = aiterator.next();
+				if (att instanceof Attribute) {
+					Attribute attribute = (Attribute) att;
+
+					if("Type".equalsIgnoreCase(attribute.getName())) {
+						stype = attribute.getValue();
+						if("ReceptorRound".equalsIgnoreCase(stype)) {
+							type = 0;
+						}
+						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
+						  	type = 1;
+						}
+						else if("LigandRound".equalsIgnoreCase(stype)) {
+						  	type = 2;
+						}
+						else if("LigandSquare".equalsIgnoreCase(stype)) {
+						  	type = 3;
+						}
+						else if("Tbar".equalsIgnoreCase(stype)) {
+						  	type = 4;
+						}
+					}
+				} //end if attribute
+			}//end while hasNext()
+		} //end else if LineShape
+		else if ("Arc".equalsIgnoreCase(element.getName())) {
+			int sx = 0;
+	      int sy = 0;
+	      int ex = 0;
+			int ey = 0;
+		
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
+						      	sx = Integer.parseInt(attribute.getValue());
+						      } //end if startx
+						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
+						      	sy = Integer.parseInt(attribute.getValue());
+						      } //end if starty
+						      else if("EndX".equalsIgnoreCase(attribute.getName())) {
+						      	ex = Integer.parseInt(attribute.getValue());
+						      } //end if endx
+						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
+						      	ey = Integer.parseInt(attribute.getValue());
+						      } //end if endy
+						      
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Comment");
+				  }//end if Comment
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+		 }// end if Arc
+		 else if ("Label".equalsIgnoreCase(element.getName())) {
+		
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("CenterX");
+						      } //end if centerx
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("CenterY");
+						      } //end if centery
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("Width");
+						      } //end if width
+						      else if("Height".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("Height");
+						      } //end if height
+						      else if("FontName".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("FontName");
+						      } //end if fontname
+						      else if("FontStyle".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("FontStyle");
+						      } //end if fontstyle
+						      else if("FontWeight".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("FontWeight");
+						      } //end if fontweight
+						      else if("FontSize".equalsIgnoreCase(attribute.getName())) {
+						      	System.out.println("FontSize");
+						      } //end if fontsize
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+		        else if ("Comment".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Comment");
+				  }//end if Comment
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		      List attributes = element.getAttributes();
+				Iterator aiterator = attributes.iterator();
+				while (aiterator.hasNext()) {
+					Object att = aiterator.next();
+					if (att instanceof Attribute) {
+						Attribute attribute = (Attribute) att;
+						if("TextLabel".equalsIgnoreCase(attribute.getName())) {
+							System.out.println("TextLabel");
+				  		}//end if TextLabel
+		   } //end while hasNext()
+		 }// end if Label
 
     } //end if element
     else if (o instanceof Document) {
