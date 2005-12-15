@@ -164,7 +164,7 @@ public class GmmlReader {
 	            if("BoardWidth".equalsIgnoreCase(attribute.getName())) {
 	            	width = Integer.parseInt(attribute.getValue());
 		         } //end if BoardWidth
-	            if("BoardHeight".equalsIgnoreCase(attribute.getName())) {
+	            else if("BoardHeight".equalsIgnoreCase(attribute.getName())) {
 	            	height = Integer.parseInt(attribute.getValue());
 		         } //end if BoardHeight
 		      } //end if attribute
@@ -174,6 +174,19 @@ public class GmmlReader {
 		} //If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
 			//System.out.println("Geneproduct not fully implemented yet");
+	      List attributes = element.getAttributes();
+	      Iterator aiterator = attributes.iterator();
+      	while (aiterator.hasNext()) {
+        		Object att = aiterator.next();
+		      if (att instanceof Attribute) {
+	            Attribute attribute = (Attribute) att;
+	            //System.out.println("Found an attribute of type:" + attribute.getName() + "  with the value: "+attribute.getValue() );
+					if("GeneID".equalsIgnoreCase(attribute.getName())) {
+		        		//System.out.println("Found name : "+attribute.getValue());
+				      pathway.addGeneProductText(attribute.getValue());
+		         } //end if GeneID
+		      } //end if attribute
+		   } //end while hasNext()
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -189,22 +202,22 @@ public class GmmlReader {
 						int width = 0;
 						int height = 0;
 
-		        		List attributes = subelement.getAttributes();
-			        	Iterator aiterator = attributes.iterator();
-				      while (aiterator.hasNext()) {
-				      	Object att = aiterator.next();
+		        		List sattributes = subelement.getAttributes();
+			        	Iterator saiterator = sattributes.iterator();
+				      while (saiterator.hasNext()) {
+				      	Object att = saiterator.next();
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
 						      	cx = Integer.parseInt(attribute.getValue());
 						      } //end if centerx
-						      if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
 						      	cy = Integer.parseInt(attribute.getValue());
 						      } //end if centery
-						      if("Width".equalsIgnoreCase(attribute.getName())) {
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
 						      	width = Integer.parseInt(attribute.getValue());
 						      } //end if width
-						      if("Height".equalsIgnoreCase(attribute.getName())) {
+						      else if("Height".equalsIgnoreCase(attribute.getName())) {
 						      	height = Integer.parseInt(attribute.getValue());
 						      } //end if heigh
 					      } //end if attribute
@@ -214,10 +227,6 @@ public class GmmlReader {
 					   y = cy - (height/2);
 					   pathway.addRect(x/15,y/15,width/15,height/15);
 		        } //end if graphics
-		        else if("Short-Name".equalsIgnoreCase(subelement.getName())) {
-		        		String GeneProductText = GeneProductText = subelement.getName();
-				      pathway.addGeneProductText(GeneProductText);
-		        } //end if Short-Name
 		      } //end if element
 		   } //end while hasNext()
 		} //end else if Geneproduct
