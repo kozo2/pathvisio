@@ -35,7 +35,13 @@ public class GmmlColor {
 	public void storeColor(String scolor) {
 		if(!storeStringColor(scolor)) {
 			if(!storeHexColor(scolor)) {
-				System.out.println("Not a valid color value!");
+				if(Integer.parseInt(scolor.trim()) != -1) {
+					System.out.println("Not a valid color value!");
+				} else {
+					color[0] = 0;
+					color[1] = 0;
+					color[2] = 0;
+				}
 			}
 		}
 	}

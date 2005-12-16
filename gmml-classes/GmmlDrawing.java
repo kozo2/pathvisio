@@ -162,22 +162,34 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.setColor(Color.white);
 		big.clearRect(0, 0, area.width, area.height);
 
+		//Draw shapes
+		big.setStroke(new BasicStroke(1.0f));
+		for(int i=0; i<pathway.shapeCoord.length-1; i++) {
+			big.setColor(pathway.shapeColor[i]);
+			if (pathway.shapeType[i] == 0) {
+				big.draw(new Rectangle((int)pathway.shapeCoord[i][0],(int)pathway.shapeCoord[i][1],(int)pathway.shapeCoord[i][2],(int)pathway.shapeCoord[i][3]));
+			} else if (pathway.shapeType[i] == 1) {
+				big.draw(new Ellipse2D.Double(pathway.shapeCoord[i][0],pathway.shapeCoord[i][1],2*pathway.shapeCoord[i][2],2*pathway.shapeCoord[i][3]));
+
+			}
+		}
+
 		//Draws lines
 		big.setColor(Color.black);
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
 			big.setColor(Color.black);
 			float[] dash = {3.0f};
 			if (pathway.lineLayout[i][0]==0) {
-				big.setStroke(new BasicStroke(2.0f));
+				big.setStroke(new BasicStroke(1.0f));
 			}
 			else if (pathway.lineLayout[i][0]==1){ 
-				big.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+				big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 			}
 			big.draw(new Line2D.Double(pathway.lineCoord[i][0],pathway.lineCoord[i][1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 		}
 		for (int i=0; i<pathway.rectConnection.length; i++) {
 			big.setColor(Color.green);
-			big.setStroke(new BasicStroke(2.0f));
+			big.setStroke(new BasicStroke(1.0f));
 			double x1 = pathway.rects[pathway.rectConnection[i][1]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getWidth();
 			double y1 = pathway.rects[pathway.rectConnection[i][1]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getHeight();
 			double x2 = pathway.rects[pathway.rectConnection[i][2]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getWidth();
@@ -200,7 +212,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			double[] q = new double[2];
 			double a, b, norm;
 			
-			big.setStroke(new BasicStroke(2.0f));
+			big.setStroke(new BasicStroke(1.0f));
 			if (pathway.lineLayout[i][1]==1) {
 				a = pathway.lineCoord[i][2]-pathway.lineCoord[i][0];
 				b = pathway.lineCoord[i][3]-pathway.lineCoord[i][1];
@@ -241,7 +253,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		for (int i=0; i<pathway.rectText.length; i++) {
 			big.setColor(Color.black);
-			big.setStroke(new BasicStroke(2.0f));
+			big.setStroke(new BasicStroke(1.0f));
 			
 			rectWidth = (int)pathway.rects[i].getWidth();
 			rectHeight = (int)pathway.rects[i].getHeight();

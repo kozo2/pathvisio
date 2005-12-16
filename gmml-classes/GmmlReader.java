@@ -525,10 +525,15 @@ public class GmmlReader {
 		   pathway.addLabel(x/15, y/15, w/15, h/15, text, color, fname, fweight, fstyle, fsize);
 		 }// end if Label
 		else if ("Shape".equalsIgnoreCase(element.getName())) {
-     		double sx = 0;
-	      double sy = 0;
-	      double width = 0;
-			double height = 0;			
+     		double cx = 0;
+	      double cy = 0;
+     		double x = 0;
+	      double y = 0;
+	      double w = 0;
+			double h = 0;
+     		double rotation = 0;
+		   int type = 0;
+	      String color = "";
 			String stype;
 						
 			//System.out.println("LineShape not fully not implemented yet");
@@ -545,17 +550,23 @@ public class GmmlReader {
 				      	Object att = aiterator.next();
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
-					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	sx = Integer.parseInt(attribute.getValue());
+					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
+						      	cx = Double.parseDouble(attribute.getValue());
 						      } //end if startx
-						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
-						      	sy = Integer.parseInt(attribute.getValue());
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      	cy = Double.parseDouble(attribute.getValue());
 						      } //end if starty
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
-						      	width = Integer.parseInt(attribute.getValue());
+						      	w = Double.parseDouble(attribute.getValue());
 						      } //end if Width
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
-						      	height = Integer.parseInt(attribute.getValue());
+						      	h = Double.parseDouble(attribute.getValue());
+						      } //end if height
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	color = attribute.getValue();
+						      } //end if height
+						      else if("Rotation".equalsIgnoreCase(attribute.getName())) {
+						      	rotation = Double.parseDouble(attribute.getValue());
 						      } //end if height
 					      } //end if attribute					      
 					   } //end while hasNext()
@@ -575,14 +586,19 @@ public class GmmlReader {
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
 						if("Rectangle".equalsIgnoreCase(stype)) {
+							type = 0;
 							//System.out.println("Rectangle");
 						}//end if rectangle
 						else if("Oval".equalsIgnoreCase(stype)) {
+							type = 1;
 						  	//System.out.println("Oval");
 						}//end if oval						
 					}//end if type
 				} //end if attribute
 			}//end while hasNext()
+			x = cx - w;
+			y = cy - h;
+			pathway.addShape(x/15, y/15, w/15, h/15, type, color, rotation);
 		} //end else if Shape
 		else if ("Brace".equalsIgnoreCase(element.getName())) {
      		double sx = 0;
