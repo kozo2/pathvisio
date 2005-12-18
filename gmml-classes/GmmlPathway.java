@@ -243,24 +243,27 @@ public class GmmlPathway {
 			}
 			for (int j=0; j < rects.length; j++){
 				Rectangle temprectj = rects[j];
-				for (int n=0; n < 50; n++){
+				//for (int n=0; n < 50; n++){
+				int n=0;
+				while (!test1&&(n<25)){
 					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy))) && (!test1)) {
 						System.out.println("Hit for 1 coord: "+j);
 						connec[i][0]=j;
 						test1=true;
-						break;
 					}
-				}	
-				for (int n=0; n < 50; n++){	
+					n++;
+				}
+				n=0;	
+				//for (int i=0; n < 50; n++){	
+				while (!test2&&(n<25)) {
 					if (temprectj.contains(lineCoord[i][2]+(n*dx), lineCoord[i][3]+(n*dy)) && (!test2)) {
 						System.out.println("Hit for 2 coord: "+j);
 						connec[i][1]=j;				
 						test2=true;
-						break;
 					}
+					n++;
 				}
 				if (test1 && test2) {
-					break;
 				}
 			} //end for loop that searches the rectangles
 			if (!test1 || !test2) {
