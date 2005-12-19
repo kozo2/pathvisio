@@ -650,14 +650,14 @@ public class GmmlReader {
 		   } //end while hasNext()
 			x = cx - w;
 			y = cy - h;
-			pathway.addCellShape(x/15, y/15, w/15, h/15, rotation);
+			//pathway.addCellShape(x/15, y/15, w/15, h/15, rotation);
 		} //end else if CellShape
 		else if ("Brace".equalsIgnoreCase(element.getName())) {
      		double sx = 0;
 	      double sy = 0;
 	      double width = 0;
 			double PicPointOffset = 0;
-			int orientation=0	
+			int orientation=0;	
 						
 			//System.out.println("Brace not fully not implemented yet");
 			List children = element.getContent();
