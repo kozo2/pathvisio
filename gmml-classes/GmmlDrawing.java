@@ -6,6 +6,7 @@ import java.awt.geom.*;
 import javax.swing.JPanel;
 
 public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener {
+	int zf = 15; //zoomfactor
 	GmmlPathway pathway;
 	BufferedImage bi;
 	Graphics2D big;
@@ -39,7 +40,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		lastx = new int[rectsLength];
 		lasty = new int[rectsLength];
-		setPreferredSize(new Dimension(pathway.size[0], pathway.size[1]));
+		setPreferredSize(new Dimension(pathway.size[0]/zf, pathway.size[1]/zf));
+		setSize(new Dimension(pathway.size[0]/zf, pathway.size[1]/zf));
 	} //end of GmmlDrawing(inputpathway)
 
 	//init is used to form the JPanel later in the program.
@@ -70,12 +72,12 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		pressOut = false;
 		int CS = 0;
 		for (int i=rectsLength-1; i>=0; i--) {
-			if(pathway.rects[i].contains(e.getX(), e.getY())){ //if the user presses the mouses on a coordinate which is contained by rect
+			if(pathway.rects[i].contains(e.getX()*zf, e.getY()*zf)){ //if the user presses the mouses on a coordinate which is contained by rect
 				
 				rectClick[i]=true;
 				
-				lastx[i] = pathway.rects[i].x - e.getX(); //lastx = position pathway.rects[i] - position mouse when pressed
-				lasty[i] = pathway.rects[i].y - e.getY();
+				lastx[i] = pathway.rects[i].x - e.getX()*zf; //lastx = position pathway.rects[i] - position mouse when pressed
+				lasty[i] = pathway.rects[i].y - e.getY()*zf;
 				
 				updateLocation(i,e);
 			}
@@ -123,7 +125,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	//updateLocation
 	public void updateLocation(int i, MouseEvent e){
-		pathway.rects[i].setLocation(lastx[i] + e.getX(), lasty[i] + e.getY());
+		pathway.rects[i].setLocation(lastx[i] + e.getX()*zf, lasty[i] + e.getY()*zf);
                 /*
                  * Updates the label to reflect the location of the
                  * current rectangle 
@@ -167,9 +169,9 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		for(int i=0; i<pathway.shapeCoord.length-1; i++) {
 			big.setColor(pathway.shapeColor[i]);
 			if (pathway.shapeType[i] == 0) {
-				big.draw(new Rectangle((int)pathway.shapeCoord[i][0]+(int)pathway.shapeCoord[i][2]/2,(int)pathway.shapeCoord[i][1]+(int)pathway.shapeCoord[i][3]/2,(int)pathway.shapeCoord[i][2],(int)pathway.shapeCoord[i][3]));
+				big.draw(new Rectangle((int)pathway.shapeCoord[i][0]/zf+(int)pathway.shapeCoord[i][2]/(2*zf),(int)pathway.shapeCoord[i][1]/zf+(int)pathway.shapeCoord[i][3]/(2*zf),(int)pathway.shapeCoord[i][2]/zf,(int)pathway.shapeCoord[i][3]/zf));
 			} else if (pathway.shapeType[i] == 1) {
-				big.draw(new Ellipse2D.Double(pathway.shapeCoord[i][0],pathway.shapeCoord[i][1],2*pathway.shapeCoord[i][2],2*pathway.shapeCoord[i][3]));
+				big.draw(new Ellipse2D.Double(pathway.shapeCoord[i][0]/zf,pathway.shapeCoord[i][1]/zf,2*pathway.shapeCoord[i][2]/zf,2*pathway.shapeCoord[i][3]/zf));
 
 			}
 		}
@@ -185,16 +187,16 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			else if (pathway.lineLayout[i][0]==1){ 
 				big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 			}
-			big.draw(new Line2D.Double(pathway.lineCoord[i][0],pathway.lineCoord[i][1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
+			big.draw(new Line2D.Double(pathway.lineCoord[i][0]/zf,pathway.lineCoord[i][1]/zf,pathway.lineCoord[i][2]/zf,pathway.lineCoord[i][3]/zf));
 		}
 		for (int i=0; i<pathway.rectConnection.length; i++) {
 			big.setColor(Color.green);
-			big.setStroke(new BasicStroke(1.0f));
+			big.setStroke(new BasicStroke(2.0f));
 			double x1 = pathway.rects[pathway.rectConnection[i][1]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getWidth();
 			double y1 = pathway.rects[pathway.rectConnection[i][1]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getHeight();
 			double x2 = pathway.rects[pathway.rectConnection[i][2]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getWidth();
 			double y2 = pathway.rects[pathway.rectConnection[i][2]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getHeight();
-			big.draw(new Line2D.Double(x1,y1,x2,y2));
+			big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
 		}
 		
 		//Creates arrows
@@ -217,14 +219,14 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				a = pathway.lineCoord[i][2]-pathway.lineCoord[i][0];
 				b = pathway.lineCoord[i][3]-pathway.lineCoord[i][1];
 				norm = 8/(Math.sqrt((a*a)+(b*b)));				
-				p[0] = ( a*rot[0] + b*rot[1] ) * norm + pathway.lineCoord[i][2];
-				p[1] = (-a*rot[1] + b*rot[0] ) * norm + pathway.lineCoord[i][3];
-				q[0] = ( a*rot[0] - b*rot[1] ) * norm + pathway.lineCoord[i][2];
-				q[1] = ( a*rot[1] + b*rot[0] ) * norm + pathway.lineCoord[i][3];
+				p[0] = ( a*rot[0] + b*rot[1] ) * norm + pathway.lineCoord[i][2]/zf;
+				p[1] = (-a*rot[1] + b*rot[0] ) * norm + pathway.lineCoord[i][3]/zf;
+				q[0] = ( a*rot[0] - b*rot[1] ) * norm + pathway.lineCoord[i][2]/zf;
+				q[1] = ( a*rot[1] + b*rot[0] ) * norm + pathway.lineCoord[i][3]/zf;
 //				big.draw(new Line2D.Double(p[0],p[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
 //				big.draw(new Line2D.Double(q[0],q[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
-				int[] x = {(int) pathway.lineCoord[i][2],(int) p[0],(int) q[0]};
-				int[] y = {(int) pathway.lineCoord[i][3],(int) p[1],(int) q[1]};
+				int[] x = {(int) (pathway.lineCoord[i][2])/zf,(int) (p[0]),(int) (q[0])};
+				int[] y = {(int) (pathway.lineCoord[i][3])/zf,(int) (p[1]),(int) (q[1])};
 				Polygon arrowhead = new Polygon(x,y,3);
 				big.draw(arrowhead);
 				big.fill(arrowhead);
@@ -236,14 +238,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		for (int i=0; i<rectsLength; i++) {
 			big.setColor(Color.blue);
 			big.setStroke(new BasicStroke(2.0f));
-			big.draw(pathway.rects[i]);
+			Rectangle temp = new Rectangle((int)pathway.rects[i].getX()/zf,(int)pathway.rects[i].getY()/zf,(int)pathway.rects[i].getWidth()/zf,(int)pathway.rects[i].getHeight()/zf);
+			big.draw(temp);
 			//big.setColor(colors[i]);
 			big.setColor(Color.orange);
-			big.fill(pathway.rects[i]);
+			big.fill(temp);
 		}
 		
 		// Draws text on the newly positioned rectangles.
-		Font gpfont = new Font("Arial", Font.PLAIN, 10);
+		Font gpfont = new Font("Arial", Font.PLAIN, (150/zf));
 		big.setFont(gpfont);
 		FontMetrics fm = big.getFontMetrics();
 		int fHeight = fm.getHeight();
@@ -259,15 +262,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			rectHeight = (int)pathway.rects[i].getHeight();
 			textWidth = fm.stringWidth(pathway.rectText[i]);
 						
-			int x = (int)pathway.rects[i].getX()+ ((rectWidth-textWidth)/2);
-			int y = (int)pathway.rects[i].getY() + (rectHeight+fHeight)/2;
-			big.drawString(pathway.rectText[i],x,y);
+			int x = (int)pathway.rects[i].getX() + (rectWidth  - zf * textWidth) /2;
+			int y = (int)pathway.rects[i].getY() + (rectHeight + zf * fHeight  ) /2;
+			big.drawString(pathway.rectText[i],x/zf,y/zf);
 		}
 		
 		// Draw text labels
 		for (int i=0; i<pathway.labelCoord.length; i++) {
 			big.setColor(pathway.labelColor[i]);
-			Font font = new Font(pathway.labelFont[i][0], Font.PLAIN, pathway.labelFontSize[i]);
+			Font font = new Font(pathway.labelFont[i][0], Font.PLAIN, pathway.labelFontSize[i]*(15/zf));
 			if (pathway.labelFont[i][1].equalsIgnoreCase("bold")) {
 				if (pathway.labelFont[i][2].equalsIgnoreCase("italic")) {
 					font = font.deriveFont(Font.BOLD+Font.ITALIC);
@@ -283,7 +286,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			FontMetrics lfm = big.getFontMetrics();
 			int lfHeight = fm.getHeight();
 
-			big.drawString(pathway.labelText[i],pathway.labelCoord[i][0], pathway.labelCoord[i][1]+lfHeight);
+			big.drawString(pathway.labelText[i],pathway.labelCoord[i][0]/zf, pathway.labelCoord[i][1]/zf+lfHeight);
 		}
 		
 		// Draws arcs
@@ -291,7 +294,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			big.setColor(Color.black);
 			big.setStroke(new BasicStroke(2.0f));
 			
-			big.draw(pathway.arcs[i]);
+			Arc2D.Double temp = new Arc2D.Double(pathway.arcs[i].x/zf, pathway.arcs[i].y/zf, pathway.arcs[i].width/zf, pathway.arcs[i].height/zf, pathway.arcs[i].start, pathway.arcs[i].extent, 0);
+			big.draw(temp);
 		}
 		
 		// Draws the buffered image to the screen.
@@ -307,29 +311,35 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	 
 	boolean checkRect(int i){
 		if (area == null) {
-		return false;
+			return false;
 		}
-		if(area.contains(pathway.rects[i].x, pathway.rects[i].y, pathway.rects[i].width, pathway.rects[i].height)){
-		return true;
+		if(area.contains(pathway.rects[i].x/zf, pathway.rects[i].y/zf, pathway.rects[i].width/zf, pathway.rects[i].height/zf)){
+			return true;
 		}		
 	
 		int new_x = pathway.rects[i].x;
 		int new_y = pathway.rects[i].y;
 
-		if((pathway.rects[i].x+pathway.rects[i].width)>area.width){
-			new_x = area.width-pathway.rects[i].width+1;
+		if((pathway.rects[i].x+pathway.rects[i].width)/zf>area.width){
+			new_x = area.width*zf-pathway.rects[i].width+1;
 		}
 		if(pathway.rects[i].x < 0){  
 			new_x = -1;
 		}
-		if((pathway.rects[i].y+pathway.rects[i].height)>area.height){
-			new_y = area.height-pathway.rects[i].height+1; 
+		if((pathway.rects[i].y+pathway.rects[i].height)/zf>area.height){
+			new_y = area.height*zf-pathway.rects[i].height+1; 
 		}
 		if(pathway.rects[i].y < 0){  
 			new_y = -1;
 		}
 		pathway.rects[i].setLocation(new_x, new_y);
 		return false;
+	}
+	
+	public void setZoom(int z) {
+		zf = (int) (15.0/(z/100.0));
+		setPreferredSize(new Dimension(pathway.size[0]/zf, pathway.size[1]/zf));
+		repaint();
 	}
 		
 } //end of DrawingCanvas

@@ -12,7 +12,8 @@ import java.io.*;
 public class GmmlWindow {
   private JFrame f;
   GmmlPathway pathway;
-  JTextField colorField;
+  JTextField zoomField;
+  GmmlDrawing drawing;
   
   public GmmlWindow() {
   	 f = new JFrame("The GMML Window");
@@ -50,7 +51,7 @@ public class GmmlWindow {
 		pathway.checkConnection();
 
 		//Create a drawing (this is an extended JPanel class)
-		GmmlDrawing drawing = new GmmlDrawing(pathway);
+		drawing = new GmmlDrawing(pathway);
 		
 		//Try to make a scrolling area
 		JScrollPane scroll = new JScrollPane(drawing);
@@ -134,25 +135,25 @@ public class GmmlWindow {
     button.setToolTipText("This is Button2");
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        System.out.println("Button2 is now pressed!");
+        System.out.println("XML Output");
+        GmmlWriter output = new GmmlWriter(drawing.pathway);
+        output.dumpToScreen();
       }
     });
     toolBar.add(button);
     
     //Input box
-    colorField = new JTextField(2);
-    JLabel colorFieldLabel = new JLabel("Color", SwingConstants.LEFT);
-    toolBar.add(colorFieldLabel);
-    toolBar.add(colorField);
+    zoomField = new JTextField(2);
+    JLabel zoomFieldLabel = new JLabel("Zoom", SwingConstants.LEFT);
+    toolBar.add(zoomFieldLabel);
+    toolBar.add(zoomField);
     
     //Button 3
     button = new JButton("Apply");
-    button.setToolTipText("Apply color");
+    button.setToolTipText("Apply zoom");
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-      	String input = colorField.getText();
-      	//pathway.defaultcolor = GmmlColor.convertColor(input);
-	      //pathway.updateColor();
+      	drawing.setZoom(Integer.parseInt(zoomField.getText()));
       }
     });
     toolBar.add(button);   

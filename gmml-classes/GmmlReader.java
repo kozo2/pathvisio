@@ -173,8 +173,8 @@ public class GmmlReader {
 		         } //end if BoardHeight
 		      } //end if attribute
 		   } //end while hasNext()
-		   System.out.println("Setting size of the pathway to: '"+width/15+"'x'"+height/15+"'");
-		   pathway.setSize(width/15, height/15);
+		   System.out.println("Setting size of the pathway to: '"+width+"'x'"+height+"'");
+		   pathway.setSize(width, height);
 		} //If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
 	      //Within an element "GeneProduct" there are attributes and elements
@@ -243,9 +243,12 @@ public class GmmlReader {
 						      } //end if height
 					      } //end if attribute
 					   } //end while hasNext()
-					   x = cx - (width/2);	   
+					   
+					   x = cx - (width/2);
 					   y = cy - (height/2);
-					   pathway.addRect(x/15,y/15,width/15,height/15);
+					   
+					   pathway.addRect(x,y,width,height);
+					   
 		         } //end if graphics
 		         else if ("Comment".equalsIgnoreCase(subelement.getName())) {
       				//System.out.println("Comment");
@@ -330,7 +333,7 @@ public class GmmlReader {
 				} //end if attribute
 			}//end while hasNext()
 		   	
-		   pathway.addLine(sx/15,sy/15,ex/15,ey/15, style, type);
+		   pathway.addLine(sx,sy,ex,ey, style, type);
 		} //end else if Line
 		else if ("LineShape".equalsIgnoreCase(element.getName())) {
      		double sx = 0;
@@ -446,7 +449,7 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-		   pathway.addArc(sx/15,sy/15,width/15,height/15);
+		   pathway.addArc(sx, sy, width, height);
 		 }// end if Arc
 		 else if ("Label".equalsIgnoreCase(element.getName())) {
 			String fname = "";
@@ -536,7 +539,7 @@ public class GmmlReader {
 		   } //end while hasNext()
 		   x = cx - (w/2);
 		   y = cy - (h/2);
-		   pathway.addLabel(x/15, y/15, w/15, h/15, text, color, fname, fweight, fstyle, fsize);
+		   pathway.addLabel(x, y, w, h, text, color, fname, fweight, fstyle, fsize);
 		 }// end if Label
 		else if ("Shape".equalsIgnoreCase(element.getName())) {
      		double cx = 0;
@@ -612,7 +615,7 @@ public class GmmlReader {
 			}//end while hasNext()
 			x = cx - w;
 			y = cy - h;
-			pathway.addShape(x/15, y/15, w/15, h/15, type, color, rotation);
+			pathway.addShape(x, y, w, h, type, color, rotation);
 		} //end else if Shape
 		else if ("CellShape".equalsIgnoreCase(element.getName())) {
      		double cx = 0;
@@ -662,7 +665,7 @@ public class GmmlReader {
 		   } //end while hasNext()
 			x = cx - w;
 			y = cy - h;
-			//pathway.addCellShape(x/15, y/15, w/15, h/15, rotation);
+			//pathway.addCellShape(x, y, w, h, rotation);
 		} //end else if CellShape
 		else if ("Brace".equalsIgnoreCase(element.getName())) {
      		double sx = 0;

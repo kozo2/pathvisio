@@ -230,8 +230,23 @@ public class GmmlPathway {
           System.arraycopy (oldArray,0,newArray,0,preserveLength);
     	return newArray; 
 	 }
-<<<<<<< .mine
-=======
+	 
+	 public void echoConnections() {
+	 	System.out.println("Coord:");
+	   System.out.print("{{"+(int)lineCoord[0][0]+","+(int)lineCoord[0][1]+"}");
+	 	for(int i=1; i<lineCoord.length; i++) {
+		 System.out.print(",{"+(int)lineCoord[i][0]+","+(int)lineCoord[i][1]+"}");
+		}
+		System.out.println("}");
+		
+	 	System.out.println("Link:");
+	   System.out.print("{{"+rectConnection[0][0]+","+rectConnection[0][1]+"}");
+	 	for(int i=1; i<rectConnection.length; i++) {
+		 System.out.print(",{"+rectConnection[i][0]+","+rectConnection[i][1]+"}");
+		}
+		System.out.println("}");
+		
+	 }
 
 	public void checkConnection(){
  	 	/* in the first for loop a line i is selected
@@ -305,6 +320,5 @@ public class GmmlPathway {
 		//System.out.println("TEST 2: rectangle " + rectConnection[i][1] + " is connected to " + rectConnection[i][2] + " by line " + rectConnection[i][0]);
 	}
 	}//end of checkconnection
->>>>>>> .r86
     	
 } //end of GmmlPathway
