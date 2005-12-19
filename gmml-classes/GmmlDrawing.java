@@ -167,7 +167,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		for(int i=0; i<pathway.shapeCoord.length-1; i++) {
 			big.setColor(pathway.shapeColor[i]);
 			if (pathway.shapeType[i] == 0) {
-				big.draw(new Rectangle((int)pathway.shapeCoord[i][0],(int)pathway.shapeCoord[i][1],(int)pathway.shapeCoord[i][2],(int)pathway.shapeCoord[i][3]));
+				big.draw(new Rectangle((int)pathway.shapeCoord[i][0]+(int)pathway.shapeCoord[i][2]/2,(int)pathway.shapeCoord[i][1]+(int)pathway.shapeCoord[i][3]/2,(int)pathway.shapeCoord[i][2],(int)pathway.shapeCoord[i][3]));
 			} else if (pathway.shapeType[i] == 1) {
 				big.draw(new Ellipse2D.Double(pathway.shapeCoord[i][0],pathway.shapeCoord[i][1],2*pathway.shapeCoord[i][2],2*pathway.shapeCoord[i][3]));
 
