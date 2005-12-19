@@ -409,16 +409,16 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("StartX".equalsIgnoreCase(attribute.getName())) {
-						      	sx = Integer.parseInt(attribute.getValue());
+						      	sx = Double.parseDouble(attribute.getValue());
 						      } //end if startx
 						      else if("StartY".equalsIgnoreCase(attribute.getName())) {
-						      	sy = Integer.parseInt(attribute.getValue());
+						      	sy = Double.parseDouble(attribute.getValue());
 						      } //end if starty
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
-						      	width = Integer.parseInt(attribute.getValue());
+						      	width = Double.parseDouble(attribute.getValue());
 						      } //end if width
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
-						      	height = Integer.parseInt(attribute.getValue());
+						      	height = Double.parseDouble(attribute.getValue());
 						      } //end if height
 						      
 					      } //end if attribute					      
@@ -564,10 +564,10 @@ public class GmmlReader {
 						      } //end if height
 						      else if("Color".equalsIgnoreCase(attribute.getName())) {
 						      	color = attribute.getValue();
-						      } //end if height
+						      } //end if Color
 						      else if("Rotation".equalsIgnoreCase(attribute.getName())) {
 						      	rotation = Double.parseDouble(attribute.getValue());
-						      } //end if height
+						      } //end if Rotation
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
@@ -600,11 +600,64 @@ public class GmmlReader {
 			y = cy - h;
 			pathway.addShape(x/15, y/15, w/15, h/15, type, color, rotation);
 		} //end else if Shape
+		else if ("CellShape".equalsIgnoreCase(element.getName())) {
+     		double cx = 0;
+	      double cy = 0;
+     		double x = 0;
+	      double y = 0;
+	      double w = 0;
+			double h = 0;
+     		double rotation = 0;
+		   int type = 0;
+	      String color = "";
+						
+			//System.out.println("LineShape not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
+						      	cx = Double.parseDouble(attribute.getValue());
+						      } //end if startx
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      	cy = Double.parseDouble(attribute.getValue());
+						      } //end if starty
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      	w = Double.parseDouble(attribute.getValue());
+						      } //end if Width
+						      else if("Height".equalsIgnoreCase(attribute.getName())) {
+						      	h = Double.parseDouble(attribute.getValue());
+						      } //end if height
+						      else if("Rotation".equalsIgnoreCase(attribute.getName())) {
+						      	rotation = Double.parseDouble(attribute.getValue());
+						      } //end if Rotation
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				//System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+			x = cx - w;
+			y = cy - h;
+			pathway.addCellShape(x/15, y/15, w/15, h/15, rotation);
+		} //end else if CellShape
 		else if ("Brace".equalsIgnoreCase(element.getName())) {
      		double sx = 0;
 	      double sy = 0;
 	      double width = 0;
-			double PicPointOffset = 0;	
+			double PicPointOffset = 0;
+			int orientation=0	
 						
 			//System.out.println("Brace not fully not implemented yet");
 			List children = element.getContent();
@@ -622,17 +675,31 @@ public class GmmlReader {
 					      if (att instanceof Attribute) {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
-						      	sx = Integer.parseInt(attribute.getValue());
+						      	sx = Double.parseDouble(attribute.getValue());
 						      } //end if startx
 						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
-						      	sy = Integer.parseInt(attribute.getValue());
+						      	sy = Double.parseDouble(attribute.getValue());
 						      } //end if starty
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
-						      	width = Integer.parseInt(attribute.getValue());
+						      	width = Double.parseDouble(attribute.getValue());
 						      } //end if Width
 						      else if("PicPointOffset".equalsIgnoreCase(attribute.getName())) {
-						      	PicPointOffset = Integer.parseInt(attribute.getValue());
+						      	PicPointOffset = Double.parseDouble(attribute.getValue());
 						      } //end if PicPointOffset
+						      else if("Orientation".equalsIgnoreCase(attribute.getName())) {
+									if("top".equalsIgnoreCase(attribute.getName())) {
+										orientation=0;
+									}
+									else if("right".equalsIgnoreCase(attribute.getName())) {
+										orientation=1;
+									}
+									else if("bottom".equalsIgnoreCase(attribute.getName())) {
+										orientation=2;
+									}
+									else if("left".equalsIgnoreCase(attribute.getName())) {
+										orientation=3;
+									}
+						      } //end if orientation						      
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics

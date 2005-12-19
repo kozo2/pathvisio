@@ -204,7 +204,6 @@ public class GmmlPathway {
 			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
       }
    }
-   
 
     private static Object resizeArray (Object oldArray, int newSize) {
       int oldSize = java.lang.reflect.Array.getLength(oldArray);
