@@ -139,14 +139,25 @@ public class GmmlReader {
   }
   
   public void checkPathwayChilds(Object o, int depth) {
+  	//Here the tree structure of gmml-files will be read in. 
    
     printSpaces(depth);
     
     if (o instanceof Element) {
       Element element = (Element) o;
       //System.out.println("Element: " + element.getName());
+      
+      //From this point each element is checked if its name corresponds to a known gmml element
+      //First it is checked if the element has the name "Graphics", 
+      //if it does the program continues to the next element and it doesn't check if the name of the elemnt corresponds to any other known gmml elements
+      //but when the name of the element is not equal to the string "Graphics" the program checks if the name corresponds to "GeneProduct"
+      //The program keeps checking if the element corresponds to one of the known gmml elements until it does and then it moves on to the next element
+      //The program checks the known gmml elements in this order: Graphics, GeneProduct, Line, LineShape, Arc, Label, Shape, CellShape, Brace, CellComponent, ProteinComplex
       if("Graphics".equalsIgnoreCase(element.getName())) {
-      	int height = 0;      	
+      	//within this element "Graphics" there are two attributes: "BoardWidth" and "BoardHeight"
+	      //in this part of the code the list of attributes is checked if an attribute has the name "BoardWidth" or "BoardHeight"
+	      //if it does, the values of the attributes will be assigned to the variables "width" or "height" respectively
+	      int height = 0;      	
 	      int width = 0;
 	      List attributes = element.getAttributes();
 	      Iterator aiterator = attributes.iterator();
@@ -166,6 +177,8 @@ public class GmmlReader {
 		   pathway.setSize(width/15, height/15);
 		} //If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
+	      //Within an element "GeneProduct" there are attributes and elements
+	      //First the attributes will be obtained, this is done in the similar way as checking the attributes and elements that is explained above 
 	      List attributes = element.getAttributes();
 	      Iterator aiterator = attributes.iterator();
       	while (aiterator.hasNext()) {
@@ -192,6 +205,9 @@ public class GmmlReader {
 		         } //end if BackpageHead
 		      } //end if attribute
 		   } //end while hasNext()
+			
+			//This element "GeneProduct" contains elements itself
+			//those will be obtained here, again by listing them and then by checking the names of the content
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -224,11 +240,10 @@ public class GmmlReader {
 						      } //end if width
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
 						      	height = Integer.parseInt(attribute.getValue());
-						      } //end if heigh
+						      } //end if height
 					      } //end if attribute
 					   } //end while hasNext()
-					   x = cx - (width/2);
-					   
+					   x = cx - (width/2);	   
 					   y = cy - (height/2);
 					   pathway.addRect(x/15,y/15,width/15,height/15);
 		         } //end if graphics
@@ -684,16 +699,16 @@ public class GmmlReader {
 						      	PicPointOffset = Double.parseDouble(attribute.getValue());
 						      } //end if PicPointOffset
 						      else if("Orientation".equalsIgnoreCase(attribute.getName())) {
-									if("top".equalsIgnoreCase(attribute.getName())) {
+									if("top".equalsIgnoreCase(attribute.getValue())) {
 										orientation=0;
 									}
-									else if("right".equalsIgnoreCase(attribute.getName())) {
+									else if("right".equalsIgnoreCase(attribute.getValue())) {
 										orientation=1;
 									}
-									else if("bottom".equalsIgnoreCase(attribute.getName())) {
+									else if("bottom".equalsIgnoreCase(attribute.getValue())) {
 										orientation=2;
 									}
-									else if("left".equalsIgnoreCase(attribute.getName())) {
+									else if("left".equalsIgnoreCase(attribute.getValue())) {
 										orientation=3;
 									}
 						      } //end if orientation						      
