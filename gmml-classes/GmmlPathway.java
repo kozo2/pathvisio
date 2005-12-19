@@ -171,11 +171,27 @@ public class GmmlPathway {
 		arcs[length] = temp;
 
 	}
+
+	public void addLineShape(double sx, double sy, double ex, double ey) {
+		//hier komt addLineShape
+	}
 	
 	//Braces
 	public void addBrace(int cX, int cY, int W, int PPO, String Or) {
 		//hier komt addBrace.
 	}
+
+	public void addCellShape(double x, double y, double w, double h, double rotation) {
+		//hier komt addCellShape
+	}
+	
+	public void addCellComponent(double cx, double cy, int type) {
+		//hier komt addCellComponent
+	}
+	
+	public void addProteinComplex(double cx, double cy, int type) {
+		//hier komt addCellComponent
+	}		
 	
 	public void addShape(double x, double y, double w, double h, int type, String color, double rotation) {
 		int length = shapeCoord.length;
@@ -220,6 +236,8 @@ public class GmmlPathway {
           System.arraycopy (oldArray,0,newArray,0,preserveLength);
     	return newArray; 
 	 }
+<<<<<<< .mine
+=======
 
 	public void checkConnection(){
  	 	/* in the first for loop a line i is selected
@@ -293,5 +311,6 @@ public class GmmlPathway {
 		//System.out.println("TEST 2: rectangle " + rectConnection[i][1] + " is connected to " + rectConnection[i][2] + " by line " + rectConnection[i][0]);
 	}
 	}//end of checkconnection
+>>>>>>> .r86
     	
 } //end of GmmlPathway

@@ -323,7 +323,6 @@ public class GmmlReader {
 	      double ex = 0;
 			double ey = 0;			
 			String stype;
-			String sstyle;
 						
 			//System.out.println("LineShape not fully not implemented yet");
 			List children = element.getContent();
@@ -536,7 +535,7 @@ public class GmmlReader {
 	      String color = "";
 			String stype;
 						
-			//System.out.println("LineShape not fully not implemented yet");
+			//System.out.println("Shape not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -552,16 +551,16 @@ public class GmmlReader {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
 						      	cx = Double.parseDouble(attribute.getValue());
-						      } //end if startx
+						      } //end if CenterX
 						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
 						      	cy = Double.parseDouble(attribute.getValue());
-						      } //end if starty
-						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      } //end if CenterY
+						       else if("Width".equalsIgnoreCase(attribute.getName())) {
 						      	w = Double.parseDouble(attribute.getValue());
 						      } //end if Width
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
 						      	h = Double.parseDouble(attribute.getValue());
-						      } //end if height
+						      } //end if Height
 						      else if("Color".equalsIgnoreCase(attribute.getName())) {
 						      	color = attribute.getValue();
 						      } //end if Color
@@ -608,10 +607,8 @@ public class GmmlReader {
 	      double w = 0;
 			double h = 0;
      		double rotation = 0;
-		   int type = 0;
-	      String color = "";
 						
-			//System.out.println("LineShape not fully not implemented yet");
+			//System.out.println("CellShape not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -627,10 +624,10 @@ public class GmmlReader {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
 						      	cx = Double.parseDouble(attribute.getValue());
-						      } //end if startx
+						      } //end if CenterX
 						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
 						      	cy = Double.parseDouble(attribute.getValue());
-						      } //end if starty
+						      } //end if CenterY
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
 						      	w = Double.parseDouble(attribute.getValue());
 						      } //end if Width
@@ -676,10 +673,10 @@ public class GmmlReader {
 					      	Attribute attribute = (Attribute) att;
 					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
 						      	sx = Double.parseDouble(attribute.getValue());
-						      } //end if startx
+						      } //end if Centerx
 						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
 						      	sy = Double.parseDouble(attribute.getValue());
-						      } //end if starty
+						      } //end if Centery
 						      else if("Width".equalsIgnoreCase(attribute.getName())) {
 						      	width = Double.parseDouble(attribute.getValue());
 						      } //end if Width
@@ -708,7 +705,108 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-		} //end else if Brace				 
+		} //end else if Brace
+		else if ("CellComponent".equalsIgnoreCase(element.getName())) {
+     		double cx = 0;
+	      double cy = 0;
+		   int type = 0;
+			String stype;
+						
+			//System.out.println("CellComponent not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
+						      	cx = Double.parseDouble(attribute.getValue());
+						      } //end if CenterX
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      	cy = Double.parseDouble(attribute.getValue());
+						      } //end if CenterY
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				//System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+			List attributes = element.getAttributes();
+			Iterator aiterator = attributes.iterator();
+			while (aiterator.hasNext()) {
+				Object att = aiterator.next();
+				if (att instanceof Attribute) {
+					Attribute attribute = (Attribute) att;
+
+					if("Type".equalsIgnoreCase(attribute.getName())) {
+						stype = attribute.getValue();
+						if("OrganA".equalsIgnoreCase(stype)) {
+							type = 0;
+							//System.out.println("OrganA");
+						}//end if OrganA
+						else if("OrganB".equalsIgnoreCase(stype)) {
+							type = 1;
+						  	//System.out.println("OrganB");
+						}//end if OrganB
+						else if("OrganC".equalsIgnoreCase(stype)) {
+							type = 2;
+						  	//System.out.println("OrganC");
+						}//end if OrganC
+						else if("Ribosome".equalsIgnoreCase(stype)) {
+							type = 3;
+						  	//System.out.println("Ribosome");
+						}//end if Ribosome						
+					}//end if type
+				} //end if attribute
+			}//end while hasNext()
+		} //end else if CellComponent
+		else if ("ProteinComplex".equalsIgnoreCase(element.getName())) {
+     		double cx = 0;
+     		double cy = 0;
+	      double w = 0;
+						
+			//System.out.println("LineShape not fully not implemented yet");
+			List children = element.getContent();
+      	Iterator iterator = children.iterator();
+      	while (iterator.hasNext()) {
+        		Object child = iterator.next();
+        		if (child instanceof Element) {
+		        Element subelement = (Element) child;
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
+		        		List attributes = subelement.getAttributes();
+			        	Iterator aiterator = attributes.iterator();
+				      while (aiterator.hasNext()) {
+				      	Object att = aiterator.next();
+					      if (att instanceof Attribute) {
+					      	Attribute attribute = (Attribute) att;
+					      	if("CenterX".equalsIgnoreCase(attribute.getName())) {
+						      	cx = Double.parseDouble(attribute.getValue());
+						      } //end if CenterX
+						      else if("CenterY".equalsIgnoreCase(attribute.getName())) {
+						      	cy = Double.parseDouble(attribute.getValue());
+						      } //end if CenterY
+						      else if("Width".equalsIgnoreCase(attribute.getName())) {
+						      	w = Double.parseDouble(attribute.getValue());
+						      } //end if Width
+					      } //end if attribute					      
+					   } //end while hasNext()
+		        } //end if graphics
+				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
+      				//System.out.println("Notes");
+				   }//end if Notes
+		      } //end if element
+		   } //end while hasNext()
+		} //end else if ProteinComplex
+		 
     } //end if element
     else if (o instanceof Document) {
       System.out.println("Document");
