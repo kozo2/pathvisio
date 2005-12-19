@@ -62,6 +62,7 @@ public class GmmlPathway {
 		attributes[length][1] = value;
 	}
 	
+	//Rectangles
 	public void addRect(int x, int y, int w, int h) {
 		//System.out.println("Adding rect nr: "+rectCoord.length+" - x: "+x+" - y: "+y+" - w: "+w+" - h: "+h);
 		int length = rects.length;
@@ -73,6 +74,7 @@ public class GmmlPathway {
 		rects[length] = temp;
 	}
 	
+	//Lines
 	public void addLine(double sx, double sy, double ex, double ey, int style, int type) {
 		//System.out.println("Adding rect nr: "+lineCoord.length+" - x1: "+sx+" - y1: "+sy+" - x2: "+ex+" - y2: "+ey);
 		int length = lineCoord.length;
@@ -103,6 +105,7 @@ public class GmmlPathway {
 		lineLayout[length][1] = type;
 	}
 	
+	//Labels (text that doesn't belong to a rectangle)
 	public void addLabel(int x, int y, int w, int h, String text, String color, String font, String weight, String style, int fontsize) {
 		int length = labelCoord.length;	
 
@@ -146,6 +149,7 @@ public class GmmlPathway {
 		labelText[length] = text;
 	}
 	
+	//Text on the rectangles
 	public void addGeneProductText(String gpText) {
 		int length = rectText.length;
 		
@@ -155,6 +159,7 @@ public class GmmlPathway {
 		rectText[length] = gpText;
 	}
 	
+	//Arcs
 	public void addArc(double x, double y, double w, double h) {
 		int length = arcs.length;
 		
@@ -167,6 +172,7 @@ public class GmmlPathway {
 
 	}
 	
+	//Braces
 	public void addBrace(int cX, int cY, int W, int PPO, String Or) {
 		//hier komt addBrace.
 	}
