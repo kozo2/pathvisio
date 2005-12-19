@@ -1,10 +1,11 @@
 class Layout4 {
 
 /* This program optimises the 2D layout of a certain pathway (collection of blocks and linking lines), 
-based on the coordinates of the blocks as stored in nx2 matrix "coord" (e.g. {{1,1},{1,2},{2,3},{3,1},{4,5}})
+based on the coordinates of the blocks as stored in nx2 matrix "coord" (e.g. {{113,100},{124,232},{22,3},{301,122},{42,51}})
 and the links between blocks as stored in mx2 matrix "link" (e.g. {{1,5},{5,4},{5,2},{2,3}})
 NB matrix link should only contain single links; so for example, if a certain row of link is {3,2}, then
 there shouldn't be a row {2,3}
+NB2 Block one is defined to have number one; i.e. link cannot contain zeros
 
 Declared methods: 
 
@@ -23,11 +24,10 @@ have more space by bigger repulsion.
 int alpha: repulsion constant
 Equation used: (nLinks[first block]+1)*(nLinks[second block]+1)*(alpha/(distance squared)
 
-calculateDisplacement(double[][] forces, int displacementStepSize)
+calculateDisplacement(double[][] forces, int displacementStepSize, int numFixedBlock)
 Displacements of the blocks are taken in the direction of the force vectors on the blocks. The magnitude
 of a displacement is in order of magnitude displacementStepSize.
-Block one is kept in it's initial position!
-
+Block numFixedBlock is kept in it's initial position!
 
 This program is based on the assumption every newly declared matrix is by default filled with zeros /*
 
@@ -40,8 +40,7 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 	
 	//Calculating coordinate difference between linked blocks	
 	int[][] dCoord = new int[(link.length)][2];
-	int nRow=0;
-	for(nRow=0; nRow<(link.length); nRow++) {
+	for(int nRow=0; nRow<(link.length); nRow++) {
 		int[] blocksInvolved = {link[nRow][0],link[nRow][1]};
 		int[] coordBlockOne = {coord[(blocksInvolved[0])-1][0],coord[(blocksInvolved[0])-1][1]};
 		int[] coordBlockTwo = {coord[(blocksInvolved[1])-1][0],coord[(blocksInvolved[1])-1][1]};
@@ -50,11 +49,12 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 		dCoord[nRow][1] = (coordBlockOne[1]-coordBlockTwo[1]);
 		}
 	
-	//Calculating distance between linked blocks and using this to normalise dCoord as vectors of length one. 	
+	//Calculating distance between linked blocks and using this to normalise dCoord as vectors of length one;
+	//multiplying these later by the force magnitude gives the force vectors.	
 	double[][] direction = new double[(link.length)][2];
 	double[] distance = new double[(link.length)];
 		
-	for(nRow=0; nRow<(link.length); nRow++) {
+	for(int nRow=0; nRow<(link.length); nRow++) {
 		int dx=dCoord[nRow][0];
 		int dy=dCoord[nRow][1];
 		distance[nRow] = Math.sqrt(dx*dx+dy*dy);
@@ -62,9 +62,9 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 		direction[nRow][1]= ( dCoord[nRow][1] )/(distance[nRow]);
 	}
 				
-	//Calculating the magnitude of the spring force		
+	//Calculating spring force vector, using double[][] magnitude and double[][] direction
 	double[] magnitudeSpringForce =  new double[(link.length)];
-	for(nRow=0; nRow<(link.length); nRow++) {
+	for(int nRow=0; nRow<(link.length); nRow++) {
 		magnitudeSpringForce[nRow]= (((refL-distance[nRow])*(refL-distance[nRow])) /sC );
 	}
 	
@@ -75,11 +75,11 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 	double fy=0.0;
 				
 	double[][] springForce =  new double[(coord.length)][2];
-	for(nRow=0; nRow<(link.length); nRow++) {
+	for(int nRow=0; nRow<(link.length); nRow++) {
 		firstBlockInvolved=(link[nRow][0]-1);
 		secondBlockInvolved=(link[nRow][1]-1);
 
-		if (distance[nRow]>refL) {
+		if (distance[nRow]<=refL) {
 			//repulsion
 			fx=magnitudeSpringForce[nRow]*(direction[nRow][0]);
 			fy=magnitudeSpringForce[nRow]*(direction[nRow][1]);
@@ -89,9 +89,8 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 			springForce[secondBlockInvolved][0]-=fx;
 			springForce[secondBlockInvolved][1]-=fy;
 			}
-						
-						
-		else if (distance[nRow] <= refL) {
+											
+		else if (distance[nRow] > refL) {
 			//attraction: opposite signs
 			fx=magnitudeSpringForce[nRow]*(direction[nRow][0]);
 			fy=magnitudeSpringForce[nRow]*(direction[nRow][1]);
@@ -100,8 +99,6 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 			springForce[firstBlockInvolved][1]-=fy;
 			springForce[secondBlockInvolved][0]+=fx;
 			springForce[secondBlockInvolved][1]+=fy;
-
-
 			}
 		}
 	
@@ -115,145 +112,132 @@ public static double[][] calculateSpringForce(int[][] coord, int[][] link, int r
 public static double[][] calculateElectricForce(int[][] coord, int[][] link, int alpha) {
 	//alpha: electrical force constant
 	
-  //The number of links to a block is chosen as the charge of the block; this prevents crowding
-  int[] nLinks = new int[(coord.length)];
-  
-  int nRow=0;
-  int nBlock=0;
-  
-  for(nRow=0; nRow<(link.length); nRow++) {
-  	for(nBlock=0; nBlock<=(coord.length); nBlock++) {	  
-		if (link[nRow][0] == nBlock) {
-	  		nLinks[nBlock-1]++;
-			}
-	  	else if (link[nRow][1] == nBlock) {
-	  		nLinks[nBlock-1]++;
+	//The number of links to a block is chosen as the charge of the block; this prevents crowding
+	//by giving blocks with a lot of links more space (by bigger repulsion)
+	int[] nLinks = new int[(coord.length)];
+    
+	for(int nRow=0; nRow<(link.length); nRow++) {
+  		for(int nBlock=0; nBlock<=(coord.length); nBlock++) {	  
+			if (link[nRow][0] == nBlock) {
+	  			nLinks[nBlock-1]++;
+				}
+	  		else if (link[nRow][1] == nBlock) {
+	  			nLinks[nBlock-1]++;
+				}
 			}
 		}
-	}
 	
-	/*Calculating coordinate difference vectors and storing them in array dCoord */ 
+	//Calculating coordinate difference vectors and storing them in array dCoord
 	int[][][] dCoord = new int [(coord.length)][(coord.length)][2];
-	
- 	int nColumn=0;
- 	
-	for(nRow=0; nRow<(coord.length); nRow++) {
-		for(nColumn=0; nColumn<(coord.length); nColumn++) {
+	 	
+	for(int nRow=0; nRow<(coord.length); nRow++) {
+		for(int nColumn=0; nColumn<(coord.length); nColumn++) {
 			dCoord[nRow][nColumn][0]=(coord[nRow][0]-coord[nColumn][0]);
 			dCoord[nRow][nColumn][1]=(coord[nRow][1]-coord[nColumn][1]);
 			}
 		}
 			
-	/*Calculating squared distance distanceSqeare between linked blocks and and using 
-	this to normalise dCoord as vectors of length one. It is chosen to calculate the square
-	of the distance and not the distance itself since the square is needed in the force
-	equation */ 
+	/*Calculating double[][] distanceSqeare and using this to normalise dCoord 
+	as vectors of length one (stored in double[][] direction; multiplying these 
+	later by the force magnitude gives the force vectors.	
+	
+	It is chosen to calculate the square of the distance and not the distance itself 
+	to prevent unnescessary rounding since the square is needed in the force equation */ 
 	
 	double[][] distanceSquare = new double [(coord.length)][(coord.length)];
 	
-	int dx=0;
-	int dy=0;
-	
-	for(nRow=0; nRow<(coord.length); nRow++) {
-		for(nColumn=0; nColumn<(coord.length); nColumn++) {
-			dx=dCoord[nRow][nColumn][0];
-			dy=dCoord[nRow][nColumn][1];
+	for(int nRow=0; nRow<(coord.length); nRow++) {
+		for(int nColumn=0; nColumn<(coord.length); nColumn++) {
+			int dx=dCoord[nRow][nColumn][0];
+			int dy=dCoord[nRow][nColumn][1];
 			distanceSquare[nRow][nColumn]=((dx*dx)+(dy*dy));
 			}
 		}
 	
-	//Using distanceSquare to normalise dCoord to calculate direction vectors
 	double[][][] direction = new double [(coord.length)][(coord.length)][2];
 	double distance = 0;
 	
-	for(nRow=0; nRow<(coord.length); nRow++) {
-		for(nColumn=0; nColumn<(coord.length); nColumn++) {
+	for(int nRow=0; nRow<(coord.length); nRow++) {
+		for(int nColumn=0; nColumn<(coord.length); nColumn++) {
 			distance=Math.sqrt(distanceSquare[nRow][nColumn]);
 			if (distance > 0) {
 				direction[nRow][nColumn][0]=((dCoord[nRow][nColumn][0])/distance);
 				direction[nRow][nColumn][1]=((dCoord[nRow][nColumn][1])/distance);
 			}
-			}
 		}
+	}
 
 	//Calculating electric force magnitude
-	
 	double[][] electricForceMagnitude = new double [(coord.length)][(coord.length)];
 	
-	for(nRow=0; nRow<(coord.length); nRow++) {
-		for(nColumn=0; nColumn<(coord.length); nColumn++) {
+	for(int nRow=0; nRow<(coord.length); nRow++) {
+		for(int nColumn=0; nColumn<(coord.length); nColumn++) {
 			if (distanceSquare[nRow][nColumn] != 0) {
 				//Otherwise, the force magnitude keeps default value zero 
 				electricForceMagnitude[nRow][nColumn]=(nLinks[nRow]+1)*(nLinks[nColumn]+1)*(alpha/(distanceSquare[nRow][nColumn]));
 				/* The force is weighed with the number of links of the corresponding blocks; 1 is added to these values to prevent
-				non-linked of having zero force. */
+				non-linked blocks of having zero force. */
 				}
 			}
 		}
 	
 	//Calculating the net electric force on every block
 	double[][]electricForce = new double [(coord.length)][2];
-	double fx=0.0;
-	double fy=0.0;
 	
-	for(nRow=0; nRow<(coord.length); nRow++) {
-		for(nColumn=0; nColumn<(coord.length); nColumn++) {
+	for(int nRow=0; nRow<(coord.length); nRow++) {
+		for(int nColumn=0; nColumn<(coord.length); nColumn++) {
 		
-			fx=(direction[nRow][nColumn][0])*(electricForceMagnitude[nRow][nColumn]);
-			fy=(direction[nRow][nColumn][1])*(electricForceMagnitude[nRow][nColumn]);
+			double fx=(direction[nRow][nColumn][0])*(electricForceMagnitude[nRow][nColumn]);
+			double fy=(direction[nRow][nColumn][1])*(electricForceMagnitude[nRow][nColumn]);
 
-			electricForce[nRow][0]-=fx;
-			electricForce[nRow][1]-=fy;
+			electricForce[nRow][0]+=fx;
+			electricForce[nRow][1]+=fy;
 			}
 		}
 
 	return electricForce;
-
+	
 	}
 
 /***********************************************************************************************/
 
-/* Method to calculate block displacements; block 1 keeps it's initial position*/
+/* Method to calculate block displacements; block numFixedBlock keeps it's initial position*/
 
-public static int[][] calculateDisplacement(double[][] forces, int displacementStepSize) {
+public static int[][] calculateDisplacement(double[][] forces, int displacementStepSize, int numFixedBlock ) {
 	
-	/* First, the forces are normalised */
+	// First, the forces are normalised; the smallest component of the force vectors is normalised to one
 	double[][] normalisedForces= new double [forces.length][2];
 	
 	//Finding scaling factor sF
 	double sF = forces[0][0];
-	
-	int nRow=0;
-	int nColumn=0;
-	
-	for (nRow=0; nRow<(forces.length); nRow++) {
-		for (nColumn=0; nColumn<2; nColumn++) {
+		
+	for (int nRow=0; nRow<(forces.length); nRow++) {
+		for (int nColumn=0; nColumn<2; nColumn++) {
 			if((forces[nRow][nColumn])<sF) {
 				sF=(forces[nRow][nColumn]);
 				}
 			}
 		}		
 	
-	//Scaling forces by sF; the smallest component of the force vectors is now normalised to one
-	for (nRow=0; nRow<(forces.length); nRow++) {
-		for (nColumn=0; nColumn<2; nColumn++) {
+	for (int nRow=0; nRow<(forces.length); nRow++) {
+		for (int nColumn=0; nColumn<2; nColumn++) {
 			normalisedForces[nRow][nColumn]= (forces[nRow][nColumn])/sF;
 			}
 		}
 	
-	/*normalisedForces are rounded to integers; displacements are taken proporional to and
-	in the direction of normalisedForces. The multiplication factor is displacementStepSize*/
+	//Displacements are taken proporional to and in the direction of normalisedForces. 
+	//The multiplication factor is displacementStepSize
 	int[][] displacement= new int [forces.length][2];
 
-	for (nRow=0; nRow<(forces.length); nRow++) {
-		for (nColumn=0; nColumn<2; nColumn++) {
-			displacement[nRow][nColumn]=displacementStepSize * (int)normalisedForces[nRow][nColumn];
+	for (int nRow=0; nRow<(forces.length); nRow++) {
+		for (int nColumn=0; nColumn<2; nColumn++) {
+			displacement[nRow][nColumn]=(int)(displacementStepSize * normalisedForces[nRow][nColumn]);
 			}
 		}
 	
-	//Keeping block one on it's initial position
-	displacement[0][0]=0;
-	displacement[0][1]=0;
+	//Keeping block numFixedBlock on it's initial position
+	displacement[numFixedBlock ][0]=0;
+	displacement[numFixedBlock ][1]=0;
 	
 	return displacement;
 	
@@ -265,14 +249,13 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 
 	public static int[][] coordinateFix(int[][] coord) {
 		
-	//Declaring variables for while loop
-	int[] overlappingPoint=new int [coord.length];
-	int overlappingPointCheck =0;
-
-
+	int overlappingPointCheck = 1;	
+	
 	while(overlappingPointCheck != 0)	{	
-		
 		//Checking if blocks have same coordinate
+		
+		int[] overlappingPoint=new int [coord.length];
+
 		for(int pointChecked=0; pointChecked<(coord.length); pointChecked++) {
 			for(int nRow=0; nRow<(coord.length); nRow++) {
 				if ((coord[pointChecked][0]==coord[nRow][0]) && (coord[pointChecked][1]==coord[nRow][1]) && (nRow!=pointChecked)) {
@@ -281,22 +264,23 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 					}
 				}
 			}
-		
-		overlappingPointCheck =0;
-		
+
+		overlappingPointCheck = 0;
 		for(int nRow=0; nRow<(coord.length); nRow++) {
 			overlappingPointCheck+=overlappingPoint[nRow];
 			}
 			
-		//If so, random coordinate reassignment
-		if	(overlappingPointCheck != 0) {
+		//System.out.println("overlappingPointCheck: "+overlappingPointCheck);	
+					
+		//As long as blocks overlap: random coordinate reassignment
+		if(overlappingPointCheck != 0) {
 			for(int nRow=0; nRow<(coord.length); nRow++) {
 				if (overlappingPoint[nRow]==1) {
-					//Creating two rondom numbers between 0 and 10
-					int random1=(int)(10*(Math.random()));
-					int random2=(int)(10*(Math.random()));
-					coord[nRow][0]+=random1;
-					coord[nRow][1]+=random1;
+					//Creating number between 0 and 10
+					int random=(int)(10*(Math.random()));				
+					coord[nRow][0]+=random;
+					random=(int)(10*(Math.random()));
+					coord[nRow][1]+=random;
 					}
 				}
 			}
@@ -305,19 +289,25 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 		return coord;
 	}
 
-					
-
-							
-					
-					
-
-			
-		
+	
 /***********************************************************************************************/
 
 //Program code: tryout 
-  
-  //initialising
+public static void main(String[] args) {
+
+	int[][] coord={{300,400},{200,200},{400,200}};
+	
+	int[][]newCoord = coordinateFix(coord);
+	
+	System.out.println("newCoord: ");
+	for(int nRow=0; nRow<(newCoord.length); nRow++) {
+		System.out.println(newCoord[nRow][0]+" "+newCoord[nRow][1]);
+		}
+	
+	}
+}
+	  
+/*  //initialising
   public static void main(String[] args) {
     
   int[][] coord={{3000,4000},{2000,2000},{4000,2000}};
@@ -380,8 +370,8 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 	//System.out.println("forceMaxInitial is: "+forceMaxInitial);
 	//System.out.println();
 	
-	/*The force maximum of the current optimalisation cycle; for the first cycle this is
-	equal to forceMaxInitial*/
+	//The force maximum of the current optimalisation cycle; for the first cycle this is
+	//equal to forceMaxInitial
 	double forceMaxCycle = forceMaxInitial;
 	
 	int stepSize = 5;
@@ -394,7 +384,8 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 	//forces have to drop below 0,01% of their initial value to stop optimalisation
 	
 		//Calculating displacements
-		int[][] displacement = calculateDisplacement(forces, stepSize);
+		int[][] displacement = calculateDisplacement(forces, stepSize, 1);
+		//keeping block 1 in place
 	
 		//Updating coord
 		for(nRow=0; nRow<(coord.length); nRow++) {
@@ -470,8 +461,13 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 	//System.out.println(y[0]+" "+y[1]+" "+y[2]+" "+y[3]+" "+y[4]);
 	System.out.println(y[0]+" "+y[1]+" "+y[2]);
 	System.out.println();
+	
   }
 }	
+
+*/
+
+
 
 
 
