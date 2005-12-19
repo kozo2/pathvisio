@@ -1,3 +1,11 @@
+import java.awt.*;
+import javax.swing.*;
+import java.awt.event.*;
+import java.applet.Applet;
+import java.awt.geom.*;
+import java.awt.image.BufferedImage;
+import javax.swing.Timer;
+
 class Layout4 {
 
 /* This program optimises the 2D layout of a certain pathway (collection of blocks and linking lines), 
@@ -231,13 +239,13 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 
 	for (int nRow=0; nRow<(forces.length); nRow++) {
 		for (int nColumn=0; nColumn<2; nColumn++) {
-			displacement[nRow][nColumn]=(int)(displacementStepSize * normalisedForces[nRow][nColumn]);
+			displacement[nRow][nColumn]=(int) -(displacementStepSize * normalisedForces[nRow][nColumn]);
 			}
 		}
 	
 	//Keeping block numFixedBlock on it's initial position
-	displacement[numFixedBlock ][0]=0;
-	displacement[numFixedBlock ][1]=0;
+	displacement[numFixedBlock][0]=0;
+	displacement[numFixedBlock][1]=0;
 	
 	return displacement;
 	
@@ -292,7 +300,7 @@ public static int[][] calculateDisplacement(double[][] forces, int displacementS
 	
 /***********************************************************************************************/
 
-//Program code: tryout 
+/*Program code: tryout  
 public static void main(String[] args) {
 
 	int[][] coord={{300,400},{200,200},{400,200}};
@@ -305,13 +313,14 @@ public static void main(String[] args) {
 		}
 	
 	}
-}
+}  */
 	  
-/*  //initialising
+//initialising
   public static void main(String[] args) {
-    
-  int[][] coord={{3000,4000},{2000,2000},{4000,2000}};
-  int[][] link={{1,2},{1,3}};
+  TestPanel testPanel;
+  int[][] coord={{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800},{1800,1800}};
+  int[][] link={{1,3},{2,3},{3,8},{8,9},{9,10},{10,11},{11,14},{13,14},{12,13},{12,10},{14,21},{21,22},{22,23},{22,24},{22,25},{25,27},{27,28},{28,26},{25,26},{27,31},{29,31},{31,30},{21,32},{32,20},{32,19},{32,18},{16,18},{16,7},{6,7},{6,4},{4,3},{4,5},{16,15},{16,17}};
+  coord = coordinateFix(coord);
   
    //System.out.println("Initial coord is:");
 	//System.out.println(coord[0][0]+" "+coord[0][1]);
@@ -338,8 +347,8 @@ public static void main(String[] args) {
 
 
   int sC = 1;			//To calculate spring forces, the following equation is used: ((refL-distance)^2)/sC
-  int refL = 300;     //For this coord: attraction
-  int alpha = 100;	//Equation used: (nLinks[nRow]+1)*(nLinks[nColumn]+1)*(alpha/(distanceSquare[nRow][nColumn])
+  int refL = 100;     //For this coord: attraction
+  int alpha = 2000000000;	//Equation used: (nLinks[nRow]+1)*(nLinks[nColumn]+1)*(alpha/(distanceSquare[nRow][nColumn])
   
   //Calculating forces
   double[][] electricalForces = calculateElectricForce(coord, link, alpha);
@@ -374,17 +383,40 @@ public static void main(String[] args) {
 	//equal to forceMaxInitial
 	double forceMaxCycle = forceMaxInitial;
 	
-	int stepSize = 5;
+	int stepSize = 10;
 	//Step size displacements
 	
 	//Starting optimalisation; counter i counts the number of optimalisation cycles
 	int i=0;
 	
-	while(forceMaxCycle >(.0001*forceMaxInitial)) {
+	  JFrame f = new JFrame("Rene Test panel");
+	  f.addWindowListener(new WindowAdapter() {
+	    public void windowClosing(WindowEvent e) {System.exit(0);}
+	  });
+	  JApplet renetest = new JApplet();
+	  f.getContentPane().add(renetest, BorderLayout.CENTER);
+	  f.pack();
+	  f.setSize(new Dimension(1280,1024));
+	  f.setVisible(true);
+	  
+	  renetest.getContentPane().setLayout(new BorderLayout());
+	  testPanel = new TestPanel();
+	  testPanel.setBackground(Color.white);
+	  renetest.getContentPane().add(testPanel);
+	  
+  		testPanel.rectCoord = coord;
+		testPanel.lines = link;
+		testPanel.repaint();
+        	
+	while(forceMaxCycle >(.000*forceMaxInitial)) {
 	//forces have to drop below 0,01% of their initial value to stop optimalisation
-	
+
+		testPanel.rectCoord = coord;
+		testPanel.lines = link;
+		testPanel.paint(testPanel.getGraphics());
+		
 		//Calculating displacements
-		int[][] displacement = calculateDisplacement(forces, stepSize, 1);
+		int[][] displacement = calculateDisplacement(forces, stepSize, 20);
 		//keeping block 1 in place
 	
 		//Updating coord
@@ -431,7 +463,13 @@ public static void main(String[] args) {
 			i=i+1;	
 			//System.out.println("forceMaxCycle after cycle "+i+" is approximately: "+(int)forceMaxCycle);
 			//System.out.println();
-			
+		double[] length = new double[link.length];
+		/*for(int m=0; m<link.length; m++) {
+			int dxpt = ((coord[link[m][1]-1][0]-coord[link[m][0]-1][0])*(coord[link[m][1]-1][0]-coord[link[m][0]-1][0]));
+			int dypt = ((coord[link[m][1]-1][1]-coord[link[m][0]-1][1])*(coord[link[m][1]-1][1]-coord[link[m][0]-1][1]));
+			length[m] = Math.sqrt(dxpt+dypt);
+			System.out.println("Length for link "+m+" is "+length[m]);
+		  }	*/
 		}
   	
 	System.out.println();	
@@ -450,7 +488,7 @@ public static void main(String[] args) {
 	for (nRow=0; nRow<(coord.length); nRow++) {
 		x[nRow]=coord[nRow][0];
 		y[nRow]=coord[nRow][1];
-		}
+	}
 		
 	System.out.println("Optimal x is:");
 	//System.out.println(x[0]+" "+x[1]+" "+x[2]+" "+x[3]+" "+x[4]);
@@ -462,20 +500,13 @@ public static void main(String[] args) {
 	System.out.println(y[0]+" "+y[1]+" "+y[2]);
 	System.out.println();
 	
+	double[] length = new double[link.length];
+	
+	for(int m=0; m<link.length; m++) {
+		int dxpt = ((coord[link[m][1]-1][0]-coord[link[m][0]-1][0])*(coord[link[m][1]-1][0]-coord[link[m][0]-1][0]));
+		int dypt = ((coord[link[m][1]-1][1]-coord[link[m][0]-1][1])*(coord[link[m][1]-1][1]-coord[link[m][0]-1][1]));
+		length[m] = Math.sqrt(dxpt+dypt);
+		System.out.println("Length for link "+m+" is "+length[m]);
+  }
   }
 }	
-
-*/
-
-
-
-
-
-
-			
-	
-		
-	
-	
-					
-
