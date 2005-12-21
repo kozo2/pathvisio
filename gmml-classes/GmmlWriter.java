@@ -24,7 +24,17 @@ public class GmmlWriter {
 	public void dumpToScreen() {
 		try {
 			XMLOutputter screendump = new XMLOutputter(Format.getPrettyFormat());
-			File file = new File("test.xml");
+	     	screendump.output(doc, System.out);
+   	}
+    	catch (IOException e) {
+      	System.err.println(e);
+    	}
+   }
+   
+	public void writeToFile(String filename) {
+		try {
+			XMLOutputter screendump = new XMLOutputter(Format.getPrettyFormat());
+			File file = new File(filename);
 			FileWriter writer = new FileWriter(file);
 	     	screendump.output(doc, writer);
    	}
@@ -49,6 +59,8 @@ public class GmmlWriter {
    public void fillRootElement () {
    	for (int i = 0; i < pathway.rects.length; i++) {
 	   	Element geneproduct = new Element("GeneProduct");
+		   
+		   geneproduct.setAttribute("GeneID",pathway.rectText[i]);
 		   
 		   Element graphics = new Element("Graphics");
 		   

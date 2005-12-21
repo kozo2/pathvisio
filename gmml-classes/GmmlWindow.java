@@ -122,22 +122,24 @@ public class GmmlWindow {
   protected void addButtons(JToolBar toolBar) {
     JButton button = null; //Create an empty button
     //Button 1
-    button = new JButton("Button1");
-    button.setToolTipText("This is Button1");
-    button.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        System.out.println("Button1 pressed!");
-      }
-    });
-    toolBar.add(button);
-    //Button 2
-    button = new JButton("Button2");
-    button.setToolTipText("This is Button2");
+    button = new JButton("Show XML");
+    button.setToolTipText("Display output XML");
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         System.out.println("XML Output");
         GmmlWriter output = new GmmlWriter(drawing.pathway);
         output.dumpToScreen();
+      }
+    });
+    toolBar.add(button);
+    //Button 2
+    button = new JButton("Write");
+    button.setToolTipText("Write this file to text.xml");
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        System.out.println("XML Output");
+        GmmlWriter output = new GmmlWriter(drawing.pathway);
+        output.writeToFile("text.xml");
       }
     });
     toolBar.add(button);
