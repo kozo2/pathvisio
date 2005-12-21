@@ -11,6 +11,7 @@ import java.io.*;
  
 public class GmmlWindow {
   private JFrame f;
+  GmmlConnection connection;
   GmmlPathway pathway;
   JTextField zoomField;
   GmmlDrawing drawing;
@@ -48,10 +49,10 @@ public class GmmlWindow {
    	//Add some content
 	   GmmlReader reader = new GmmlReader(file);
 		pathway = reader.getPathway();
-		pathway.checkConnection();
+		connection = new GmmlConnection(pathway);
 
 		//Create a drawing (this is an extended JPanel class)
-		drawing = new GmmlDrawing(pathway);
+		GmmlDrawing drawing = new GmmlDrawing(pathway, connection);
 		
 		//Try to make a scrolling area
 		JScrollPane scroll = new JScrollPane(drawing);

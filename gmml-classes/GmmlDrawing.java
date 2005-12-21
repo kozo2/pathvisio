@@ -3,11 +3,13 @@ import java.awt.event.*;
 import java.applet.Applet;
 import java.awt.image.*;
 import java.awt.geom.*;
+import java.awt.Graphics2D.*;
 import javax.swing.JPanel;
 
 public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener {
 	double zf = 15; //zoomfactor
 	GmmlPathway pathway;
+	GmmlConnection connection;
 	BufferedImage bi;
 	Graphics2D big;
 	
@@ -28,8 +30,9 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	static protected Label label;
 	
-	GmmlDrawing(GmmlPathway inputpathway) {
+	GmmlDrawing(GmmlPathway inputpathway, GmmlConnection inputconnection) {
 		pathway = inputpathway;
+		connection = inputconnection;
 		
 		rectsLength = pathway.rects.length;
 		rectClick = new boolean[rectsLength];
@@ -168,14 +171,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.setStroke(new BasicStroke(1.0f));
 		for(int i=0; i<pathway.shapeCoord.length-1; i++) {
 			big.setColor(pathway.shapeColor[i]);
+			big.rotate((180 - pathway.shapeCoord[i][4]) / (180/Math.PI));
 			if (pathway.shapeType[i] == 0) {
 				big.draw(new Rectangle((int)(pathway.shapeCoord[i][0]/zf + pathway.shapeCoord[i][2]/(2*zf)),(int)(pathway.shapeCoord[i][1]/zf + pathway.shapeCoord[i][3]/(2*zf)),(int)(pathway.shapeCoord[i][2]/zf),(int)(pathway.shapeCoord[i][3]/zf)));
 			} else if (pathway.shapeType[i] == 1) {
 				big.draw(new Ellipse2D.Double(pathway.shapeCoord[i][0]/zf,pathway.shapeCoord[i][1]/zf,2*pathway.shapeCoord[i][2]/zf,2*pathway.shapeCoord[i][3]/zf));
-
 			}
 		}
-
+		big.rotate(0); //reset rotation
+		 
 		//Draws lines
 		big.setColor(Color.black);
 		for (int i=0; i<pathway.lineLayout.length-1; i++) {
@@ -189,13 +193,13 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			}
 			big.draw(new Line2D.Double(pathway.lineCoord[i][0]/zf,pathway.lineCoord[i][1]/zf,pathway.lineCoord[i][2]/zf,pathway.lineCoord[i][3]/zf));
 		}
-		for (int i=0; i<pathway.rectConnection.length; i++) {
-			big.setColor(Color.green);
+		for (int i=0; i<connection.Connection.length; i++) {
+			big.setColor(Color.orange);
 			big.setStroke(new BasicStroke(2.0f));
-			double x1 = pathway.rects[pathway.rectConnection[i][1]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getWidth();
-			double y1 = pathway.rects[pathway.rectConnection[i][1]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][1]].getHeight();
-			double x2 = pathway.rects[pathway.rectConnection[i][2]].getX() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getWidth();
-			double y2 = pathway.rects[pathway.rectConnection[i][2]].getY() + 0.5 * pathway.rects[pathway.rectConnection[i][2]].getHeight();
+			double x1 = pathway.rects[connection.Connection[i][1]].getX() + 0.5 * pathway.rects[connection.Connection[i][1]].getWidth();
+			double y1 = pathway.rects[connection.Connection[i][1]].getY() + 0.5 * pathway.rects[connection.Connection[i][1]].getHeight();
+			double x2 = pathway.rects[connection.Connection[i][2]].getX() + 0.5 * pathway.rects[connection.Connection[i][2]].getWidth();
+			double y2 = pathway.rects[connection.Connection[i][2]].getY() + 0.5 * pathway.rects[connection.Connection[i][2]].getHeight();
 			big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
 		}
 		

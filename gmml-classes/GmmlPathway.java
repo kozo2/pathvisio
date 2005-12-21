@@ -3,6 +3,10 @@ import java.awt.event.*;
 import java.awt.image.*;
 import javax.swing.JApplet;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.Graphics2D.*;
+import java.awt.geom.AffineTransform;
 
 public class GmmlPathway {
 	//Pathway
@@ -15,7 +19,7 @@ public class GmmlPathway {
 	//Lines
 	double[][] lineCoord = new double[0][4];
 	int[][] lineLayout = new int[0][2];
-	int[][] rectConnection = new int[0][3];
+
 	
 	//Label
 	int[][] labelCoord = new int[0][4];
@@ -231,94 +235,22 @@ public class GmmlPathway {
     	return newArray; 
 	 }
 	 
-	 public void echoConnections() {
-	 	System.out.println("Coord:");
-	   System.out.print("{{"+(int)lineCoord[0][0]+","+(int)lineCoord[0][1]+"}");
-	 	for(int i=1; i<lineCoord.length; i++) {
-		 System.out.print(",{"+(int)lineCoord[i][0]+","+(int)lineCoord[i][1]+"}");
-		}
-		System.out.println("}");
-		
-	 	System.out.println("Link:");
-	   System.out.print("{{"+rectConnection[0][0]+","+rectConnection[0][1]+"}");
-	 	for(int i=1; i<rectConnection.length; i++) {
-		 System.out.print(",{"+rectConnection[i][0]+","+rectConnection[i][1]+"}");
-		}
-		System.out.println("}");
-		
-	 }
+//	 public void echoConnections() {
+//	 	System.out.println("Coord:");
+//	   System.out.print("{{"+(int)lineCoord[0][0]+","+(int)lineCoord[0][1]+"}");
+//		for(int i=1; i<lineCoord.length; i++) {
+//		System.out.print(",{"+(int)lineCoord[i][0]+","+(int)lineCoord[i][1]+"}");
+//		}
+//		System.out.println("}");
+//		
+//	 	System.out.println("Link:");
+//	   System.out.print("{{"+rectConnection[0][0]+","+rectConnection[0][1]+"}");
+//	 	for(int i=1; i<rectConnection.length; i++) {
+//		 System.out.print(",{"+rectConnection[i][0]+","+rectConnection[i][1]+"}");
+//		}
+//		System.out.println("}");
+//		
+//	 }
 
-	public void checkConnection(){
- 	 	/* in the first for loop a line i is selected
-		 * in the second for loop is checked if the begin or the end of line i lays in rectangle j
-		 * because most lines don't finish or start in a renctangle, the lines are extended by a maximum of 15 pixels
-		 * when a line doesn't end in a rectangle, line i in connec is filled with -1
-		 * after al lines are checked a second loop is started
-		 * the second loop fills a new array with the lines that connect rectangles
-		 * after this loop the temporary array is written to rectConnection
-		 */
-		 
-		int[][] connec = new int[lineCoord.length][2];
-	 	int count = 0;
-		for (int i=0; i < lineCoord.length; i++){
-			System.out.println("Checking line: "+i);
-			double theta=Math.atan(Math.abs((lineCoord[i][3]-lineCoord[i][1])/(lineCoord[i][2]-lineCoord[i][0])));
-			double dx=Math.cos(theta);
-			double dy=Math.sin(theta);
-			boolean test1=false;
-			boolean test2=false;
-			if (lineCoord[i][0]>lineCoord[i][2]){
-				dx=-dx;
-			}
-			if (lineCoord[i][1]>lineCoord[i][3]){
-				dy=-dy;
-			}
-			for (int j=0; j < rects.length; j++){
-				Rectangle temprectj = rects[j];
-				//for (int n=0; n < 50; n++){
-				int n=0;
-				while (!test1&&(n<25)){
-					if (temprectj.contains((lineCoord[i][0]-(n*dx)), (lineCoord[i][1]-(n*dy))) && (!test1)) {
-						System.out.println("Hit for 1 coord: "+j);
-						connec[i][0]=j;
-						test1=true;
-					}
-					n++;
-				}
-				n=0;	
-				//for (int i=0; n < 50; n++){	
-				while (!test2&&(n<25)) {
-					if (temprectj.contains(lineCoord[i][2]+(n*dx), lineCoord[i][3]+(n*dy)) && (!test2)) {
-						System.out.println("Hit for 2 coord: "+j);
-						connec[i][1]=j;				
-						test2=true;
-					}
-					n++;
-				}
-				if (test1 && test2) {
-				}
-			} //end for loop that searches the rectangles
-			if (!test1 || !test2) {
-				connec[i][0]=-1;
-				connec[i][1]=-1;
-				count=count+1;
-			}
-		}
-		int n = 0;
-		int[][] tempConnection=new int[connec.length-count][3];
-		for (int i = 0; i < connec.length; i++) {
-			if (connec[i][0]!=-1 && connec[i][1]!=-1) {
-				System.out.println("TEST 1: rectangle " + connec[i][0] + " is connecte to " + connec[i][1] + " by line " + i);
-				tempConnection[n][0]= i;
-				tempConnection[n][1]= connec[i][0];
-				tempConnection[n][2]= connec[i][1];
-				n=n+1;		
-			}
-		}
-	rectConnection = tempConnection;
-	for (int i = 0; i<rectConnection.length; i++){
-		//System.out.println("TEST 2: rectangle " + rectConnection[i][1] + " is connected to " + rectConnection[i][2] + " by line " + rectConnection[i][0]);
-	}
-	}//end of checkconnection
-    	
+	
 } //end of GmmlPathway
