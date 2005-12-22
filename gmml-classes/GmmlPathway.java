@@ -25,9 +25,7 @@ public class GmmlPathway {
 	GmmlArc[] arcs = new GmmlArc[0];
 
 	//Shape
-	double[][] shapeCoord = new double[0][5];
-	Color[] shapeColor = new Color[0];
-	int[] shapeType = new int[0];
+	GmmlShape[] shapes = new GmmlShape[0];
 		
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
@@ -115,26 +113,11 @@ public class GmmlPathway {
 	}		
 	
 	public void addShape(double x, double y, double w, double h, int type, String color, double rotation) {
-		int length = shapeCoord.length;
+		int length = shapes.length;
 		
 		//RESIZE PART
-		shapeCoord = (double[][]) resizeArray(shapeCoord, (length+1));
-		// new array is [length+1][3 or Null]
-  		for (int i=0; i<shapeCoord.length; i++) {
-			if (shapeCoord[i] == null) {
-     			shapeCoord[i] = new double[5];
-			}
-		}
-		shapeColor = (Color[]) resizeArray(shapeColor, (length+1));
-		shapeType = (int[]) resizeArray(shapeType, (length+1));
-		
-		shapeCoord[length][0] = x;
-		shapeCoord[length][1] = y;
-		shapeCoord[length][2] = w;
-		shapeCoord[length][3] = h;
-		shapeCoord[length][4] = rotation;
-		shapeColor[length] = GmmlColor.convertColor(color);
-		shapeType[length] = type;
+		shapes = (GmmlShape[]) resizeArray(shapes, (length+1));
+		shapes[length] = new GmmlShape(x, y, w, h, type, color, rotation);
 	}
 	
 	public void setSize(int w, int h) {

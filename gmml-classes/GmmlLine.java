@@ -21,5 +21,11 @@ public class GmmlLine {
 		boolean contains = templine.contains(x, y);
 		return contains;
 	}
+	
+	public boolean contains (double x, double y, double zf) {
+		Line2D.Double templine = new Line2D.Double(startx, starty, endx, endy);
+		boolean contains = templine.contains(x*zf, y*zf);
+		return contains;
+	}
 }
 	

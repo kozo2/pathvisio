@@ -23,6 +23,11 @@ public class GmmlLabel {
 		boolean contains = rect.contains(inputx, inputy);
 		return contains;
 	}
+	public boolean contains (double inputx, double inputy, double zf) {
+		Rectangle rect = new Rectangle(x, y, width, height);
+		boolean contains = rect.contains(inputx * zf, inputy * zf);
+		return contains;
+	}
 }
 		
 	
