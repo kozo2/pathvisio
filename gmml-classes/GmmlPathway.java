@@ -24,6 +24,9 @@ public class GmmlPathway {
 	//Arc
 	GmmlArc[] arcs = new GmmlArc[0];
 
+	//Brace
+	GmmlBrace[] braces = new GmmlBrace[0];
+
 	//Shape
 	GmmlShape[] shapes = new GmmlShape[0];
 		
@@ -83,12 +86,12 @@ public class GmmlPathway {
 		labels[length] = new GmmlLabel(x, y, w, h, text, font, weight, style, fontsize, GmmlColor.convertColor(color));
 	}
 	
-	public void addArc(double x, double y, double w, double h) {
+	public void addArc(double x, double y, double w, double h, String color) {
 		int length = arcs.length;
 		
 		//RESIZE PART
 		arcs = (GmmlArc[]) resizeArray(arcs, (length+1));
-		GmmlArc temp = new GmmlArc(x,y,w,h);
+		GmmlArc temp = new GmmlArc(x,y,w,h,color);
 		arcs[length]=temp;
 	}
 
@@ -96,8 +99,14 @@ public class GmmlPathway {
 		//hier komt addLineShape
 	}
 	
-	public void addBrace(int cX, int cY, int W, int PPO, String Or) {
-		//hier komt addBrace.
+	public void addBrace(int cX, int cY, int w, int ppo, int or, String color) {
+		int length = braces.length;
+				
+		//Resize part
+		geneProducts = (GmmlGeneProduct[]) resizeArray(geneProducts, (length+1));
+		GmmlBrace temp = new GmmlBrace(cX,cY,w,ppo,or,color);
+		braces[length]=temp;
+
 	}
 
 	public void addCellShape(double x, double y, double w, double h, double rotation) {
