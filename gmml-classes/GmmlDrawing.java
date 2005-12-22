@@ -237,7 +237,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		else if (line.style==1){ 
 			big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 		}
-		big.draw(new Line2D.Double(line.startx/zf,line.starty/zf,line.endx/zf,line.starty/zf));
+		Line2D.Double drawline = new Line2D.Double(line.startx/zf,line.starty/zf,line.endx/zf,line.endy/zf);
+		big.draw(drawline);
 		if (line.type==1) {
 			drawArrowHead(line);
 		}
