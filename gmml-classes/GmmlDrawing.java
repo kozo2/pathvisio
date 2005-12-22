@@ -391,7 +391,18 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			arcsOfBrace[3].setArc(cX,cY+(0.5*w)-ppo,ppo,ppo,-90,-90,0); //arc on the bottom
 
 		} // end of orientation is left
-	}
+		
+		big.setColor(brace.color);
+		big.setStroke(new BasicStroke(2.0f));
+		
+		big.draw(linesOfBrace[0]);
+		big.draw(linesOfBrace[1]);
+		big.draw(arcsOfBrace[0]);
+		big.draw(arcsOfBrace[1]);
+		big.draw(arcsOfBrace[2]);
+		big.draw(arcsOfBrace[3]);
+		
+	} //end of drawBrace
 
 	/*
     * Checks if the rectangle is contained within the applet window.  If the rectangle
