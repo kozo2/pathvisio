@@ -56,5 +56,10 @@ Color color;
 		
 	}
 	
+	public void setLocation(double newx, double newy){
+		x=newx;
+		y=newy;
+	}
+	
 
 } //end of GmmlShape
