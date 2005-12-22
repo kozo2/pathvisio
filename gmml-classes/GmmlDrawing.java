@@ -196,11 +196,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		for (int i=0; i<connection.Connection.length; i++) {
 			big.setColor(Color.orange);
 			big.setStroke(new BasicStroke(2.0f));
-			double x1 = pathway.rects[connection.Connection[i][1]].getX() + 0.5 * pathway.rects[connection.Connection[i][1]].getWidth();
-			double y1 = pathway.rects[connection.Connection[i][1]].getY() + 0.5 * pathway.rects[connection.Connection[i][1]].getHeight();
-			double x2 = pathway.rects[connection.Connection[i][2]].getX() + 0.5 * pathway.rects[connection.Connection[i][2]].getWidth();
-			double y2 = pathway.rects[connection.Connection[i][2]].getY() + 0.5 * pathway.rects[connection.Connection[i][2]].getHeight();
-			big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
+//			System.out.println("Type 1: "+connection.Connection[i][3]);
+//			System.out.println("Type 2: "+connection.Connection[i][4]);
+			if (connection.Connection[i][3]==0 && connection.Connection[i][4]==0) {
+				double x1 = pathway.rects[connection.Connection[i][1]].getX() + 0.5 * pathway.rects[connection.Connection[i][1]].getWidth();
+				double y1 = pathway.rects[connection.Connection[i][1]].getY() + 0.5 * pathway.rects[connection.Connection[i][1]].getHeight();
+				double x2 = pathway.rects[connection.Connection[i][2]].getX() + 0.5 * pathway.rects[connection.Connection[i][2]].getWidth();
+				double y2 = pathway.rects[connection.Connection[i][2]].getY() + 0.5 * pathway.rects[connection.Connection[i][2]].getHeight();
+				big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
+			}
 		}
 		
 		//Creates arrows
