@@ -1,9 +1,9 @@
-import java.awt.*;
+/*import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import javax.swing.JApplet;
 import java.awt.geom.Arc2D;
-import java.awt.geom.Line2D;
+import java.awt.geom.Line2D;*/
 
 public class GmmlBrace {
 	
