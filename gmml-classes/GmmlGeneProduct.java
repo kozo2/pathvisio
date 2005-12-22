@@ -3,15 +3,15 @@ import java.awt.Color;
 public class GmmlGeneProduct {
 	int x, y, width, height;
 	Color color;
-	String text, ref;
+	String geneID, ref;
 	
-	public GmmlGeneProduct(int inputx, int inputy, int inputwidth, int inputheight, Color inputcolor, String inputtext, String inputref) {
+	public GmmlGeneProduct(int inputx, int inputy, int inputwidth, int inputheight, String inputcolor, String inputgeneID, String inputref) {
 		x=inputx;
 		y=inputy;
 		width=inputwidth;
 		height=inputheight;
-		color=inputcolor;
-		text=inputtext;
+		color=GmmlColor.convertColor(inputcolor);
+		geneID=inputgeneID;
 		ref=inputref;
 	} //end of constructor
 	

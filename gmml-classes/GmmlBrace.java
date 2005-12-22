@@ -8,7 +8,7 @@ import java.awt.geom.Line2D;*/
 public class GmmlBrace {
 	
 	double cX, cY, w, ppo;
-	int or;
+	int or; //or is the orientation: 0=top, 1=right, 2=bottom, 3=left
 	
 	public GmmlBrace(double inputcX, double inputcY, double inputw, double inputppo, int inputor) {
 		cX=inputcX;

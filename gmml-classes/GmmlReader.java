@@ -727,7 +727,8 @@ public class GmmlReader {
 		pathway.addBrace(sx/15, sy/15, width/15, PicPointOffset/15, orientation);
 		System.out.println("a brace is added");   
 		} //end else if Brace				 
-			else if ("CellComponent".equalsIgnoreCase(element.getName())) {
+		} //end else if Brace
+		else if ("CellComponent".equalsIgnoreCase(element.getName())) {
      		double cx = 0;
 	      double cy = 0;
 		   int type = 0;

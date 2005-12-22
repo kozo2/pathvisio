@@ -13,8 +13,7 @@ public class GmmlPathway {
 	int[] size = new int[2];
 	
 	//Geneproduct
-	Rectangle[] rects = new Rectangle[0];
-	String[] rectText = new String[0];
+	GmmlGeneProduct[] geneProducts = new GmmlGeneProduct[0];
 		
 	//Lines
 	double[][] lineCoord = new double[0][4];
@@ -28,7 +27,7 @@ public class GmmlPathway {
 	String[] labelText = new String[0];
 	
 	//Arc
-	Arc2D.Double[] arcs = new Arc2D.Double[0];
+	GmmlArc[] arcs = new GmmlArc[0];
 
 	//Shape
 	double[][] shapeCoord = new double[0][5];
@@ -65,15 +64,13 @@ public class GmmlPathway {
 		attributes[length][1] = value;
 	}
 	
-	public void addRect(int x, int y, int w, int h) {
-		//System.out.println("Adding rect nr: "+rectCoord.length+" - x: "+x+" - y: "+y+" - w: "+w+" - h: "+h);
-		int length = rects.length;
-		
-		//RESIZE PART
-		rects = (Rectangle[]) resizeArray(rects, (length+1));
-		
-		Rectangle temp = new Rectangle(x, y, w, h);
-		rects[length] = temp;
+	public void addGeneProduct(int x, int y, int width, int height, String color, String geneID, String ref) {
+		int length = geneProducts.length;
+				
+		//Resize part
+		geneProducts = (GmmlGeneProduct[]) resizeArray(geneProducts, (length+1));
+		GmmlGeneProduct temp = new GmmlGeneProduct(x,y,width,height,color,geneID,ref);
+		geneProducts[length]=temp;
 	}
 	
 	public void addLine(double sx, double sy, double ex, double ey, int style, int type) {
@@ -149,25 +146,13 @@ public class GmmlPathway {
 		labelText[length] = text;
 	}
 	
-	public void addGeneProductText(String gpText) {
-		int length = rectText.length;
-		
-		//RESIZE PART
-		rectText = (String[]) resizeArray(rectText, (length+1));
-		
-		rectText[length] = gpText;
-	}
-	
 	public void addArc(double x, double y, double w, double h) {
 		int length = arcs.length;
 		
 		//RESIZE PART
-		arcs = (Arc2D.Double[]) resizeArray(arcs, (length+1));
-		
-		Arc2D.Double temp = new Arc2D.Double(0);
-		temp.setArc(x-w,y-h,2*w,2*h,0,180,0);
-		arcs[length] = temp;
-
+		arcs = (GmmlArc[]) resizeArray(arcs, (length+1));
+		GmmlArc temp = new GmmlArc(x,y,w,h);
+		arcs[length]=temp;
 	}
 
 	public void addLineShape(double sx, double sy, double ex, double ey) {
