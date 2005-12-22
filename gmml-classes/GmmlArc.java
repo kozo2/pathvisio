@@ -12,7 +12,7 @@ double x,y,width,height;
 		
 	} //end of constructor GmmlArc
 	
-	public boolean contains(int linex, int liney) {
+	public boolean contains(double linex, double liney) {
 		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
 		
 		if (arc.contains(linex,liney)) {
@@ -23,7 +23,7 @@ double x,y,width,height;
 		}
 	}
 	
-	public boolean contains(int mousex, int mousey, int zf) {
+	public boolean contains(double mousex, double mousey, double zf) {
 		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
 		
 		if (arc.contains(mousex*zf,mousey*zf)) {
@@ -34,4 +34,5 @@ double x,y,width,height;
 		}	
 	}
 	
+
 } //end of GmmlArc

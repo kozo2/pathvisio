@@ -20,7 +20,7 @@ public class GmmlBrace {
 	} //end constructor GmmlBrace
 	
 	//Contains without zoomfactor, for the connections for example
-	public boolean contains(int linex, int liney) {
+	public boolean contains(double linex, double liney) {
 		if (or==0 || or==2) {
 			if (cX-0.5*w<=linex && linex<=cX+0.5*w && cY-0.5*ppo<=liney && liney<=cY+0.5*ppo) {
 				return true;
@@ -40,7 +40,7 @@ public class GmmlBrace {
 	} //end of contains
 
 	//Contains with zoomfactor, for the mouselistener
-	public boolean contains(int mousex, int mousey, int zf) {
+	public boolean contains(double mousex, double mousey, double zf) {
 		if (or==0 || or==2) {
 			if (cX-0.5*w<=mousex*zf && mousex*zf<=cX+0.5*w && cY-0.5*ppo<=mousey*zf && mousey*zf<=cY+0.5*ppo) {
 				return true;

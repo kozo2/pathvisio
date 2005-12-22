@@ -17,12 +17,10 @@ class GmmlConnection {
 
 	
 	public GmmlConnection(GmmlPathway inputpathway){
-		pathway = inputpathway;
-		Connection = new int[pathway.lineCoord.length][5];
 		 /** GmmlConnection checks for each line if it connects two 'shapes'
 		   * and which shapes it connects.
 		   * the shapetypes of the connected shapes are stored in the 
-		   * last two columns of connec and Connections
+		   * last two columns of Connections
 		   * types:
 		   *			0: rectangle from rects
 		   *			1: rectangle form shape
@@ -33,54 +31,56 @@ class GmmlConnection {
 		   *			6: brace
 		   */
 
-		double[][] tempAnchor = new double[2*pathway.lineCoord.length][2];
+		pathway = inputpathway;
+		Connection = new int[pathway.lines.length][5];
+		double[][] tempAnchor = new double[2*pathway.lines.length][2];
 	 	int count=0;
-		for (int i=0; i < pathway.lineCoord.length; i++){
+		for (int i=0; i < pathway.lines.length; i++){
+			double x1 = pathway.lines[i].startx;
+			double y1 = pathway.lines[i].starty;
+			double x2 = pathway.lines[i].endx;
+			double y2 = pathway.lines[i].endy;
 			Connection[i][0]=i;
 			test1=false;
 			test2=false;			
-			increase(i);
+			increase(i, x1, x2, y1, y2);
 			int j = 0;
-			while ((j < pathway.rects.length)&&(!test1||!test2)) {
-				checkRectangles(i,j);
+			while ((!test1||!test2)&&(j < pathway.geneProducts.length)) {
+				checkGeneProduct(i,j,x1,y1,x2,y2);
 				j++;
-			}// close while
+			}
 			j=0;
-			while ((j < pathway.shapeCoord.length)&&(!test1||!test2)) {
-				double w = pathway.shapeCoord[j][2];
-				double h = pathway.shapeCoord[j][3];
-				if (pathway.shapeType[j] == 0) {
-					checkShapeRect(w,h,i,j);
-				} else if (pathway.shapeType[j] == 1) {
-					checkShapeEllip(w,h,i,j);
-				}
-				j++;
-			}// close while
+			//while ((j < pathway.shapes.length)&&(!test1||!test2)) {
+			// connections with shape 
+			//}
 			j=0;
-			while ((j < pathway.arcs.length)&&(!test1||!test2)){
-				checkArc(i,j);
+			while ((!test1||!test2)&&(j < pathway.arcs.length)){
+				checkArc(i,j,x1,y1,x2,y2);
 				j++;
-			}// close while
+			}
 			j=0;
-			while ((j < pathway.arcs.length)&&(!test1||!test2)){
-				checkLabel(i,j);
+			
+			while ((!test1||!test2)&&(j < pathway.labels.length)){
+				checkLabel(i,j,x1,y1,x2,y2);
 				j++;
-			}// close while
+			}
+			
 			j=0;
-			while ((j < pathway.braces.length)&&(!test1||!test2)){
-				checkBrace(i,j);
+			while ((!test1||!test2)&&(j < pathway.braces.length)){
+				checkBrace(i,j,x1,y1,x2,y2);
 				j++;
-			}// close			
+			}
+					
 			if (!test1) {
-				tempAnchor[count][0]=pathway.lineCoord[i][0];
-				tempAnchor[count][1]=pathway.lineCoord[i][1];
+				tempAnchor[count][0]=x1;
+				tempAnchor[count][1]=y1;
 				Connection[i][1] = count;
 				Connection[i][3] = 3;
 				count++;		
 			}
 			if (!test2) {
-				tempAnchor[count][0]=pathway.lineCoord[i][2];
-				tempAnchor[count][1]=pathway.lineCoord[i][3];
+				tempAnchor[count][0]=x2;
+				tempAnchor[count][1]=y2;
 				Connection[i][2] = count;
 				Connection[i][4] = 3;
 				count++;
@@ -94,189 +94,112 @@ class GmmlConnection {
 		System.out.println("aantal ankerpunten: " + count);
 	}// end of gmmlConnections()
 
-	public void increase(int i){
-		double theta=Math.atan(Math.abs((pathway.lineCoord[i][3]-pathway.lineCoord[i][1])/(pathway.lineCoord[i][2]-pathway.lineCoord[i][0])));
+	public void increase(int i, double x1, double y1, double x2, double y2){
+		/** calculates the increase of a line
+		  * this value is used to extend the lines
+		  */
+		  
+		double theta=Math.atan(Math.abs((y2-y1)/(x2-x1)));
 		dx=Math.cos(theta);
 		dy=Math.sin(theta);
-		if (pathway.lineCoord[i][0]>pathway.lineCoord[i][2]){
+		if (x1>x2){
 			dx=-dx;
 		}
-		if (pathway.lineCoord[i][1]>pathway.lineCoord[i][3]){
+		if (y1>y2){
 			dy=-dy;
 		}
 	}// end of increase
 		
-	public void checkRectangles(int i, int j){
-		Rectangle temprect = pathway.rects[j];
+	public void checkGeneProduct(int i, int j, double x1, double y1, double x2, double y2){
+		/** checks for connections of a line with geneproducts */
 		int n=0;
 		while (!test1&&(n<25)){
-			if (temprect.contains((pathway.lineCoord[i][0]-(n*dx)), (pathway.lineCoord[i][1]-(n*dy))) && (!test1)) {
-				//System.out.println("Hit for 1 coord: "+j);
+			if ((!test1)&&(pathway.geneProducts[j].contains(x1+n*dx,y1+n*dy))){
 				Connection[i][1]=j;
 				Connection[i][3]=0;
 				test1=true;
 			}
 			n++;
 		}
-		n=0;	
-		while (!test2&&(n<25)) {
-			if (temprect.contains(pathway.lineCoord[i][2]+(n*dx), pathway.lineCoord[i][3]+(n*dy)) && (!test2)) {
-				//System.out.println("Hit for 2 coord: "+j);
+		n=0;
+		while (!test2&&(n<25)){
+			if ((!test2)&&(pathway.geneProducts[j].contains(x2-n*dx,y2-n*dy))){
 				Connection[i][2]=j;
-				Connection[i][4]=0;										
+				Connection[i][4]=0;
 				test2=true;
 			}
 			n++;
 		}
-	}// checkRectangles	
+	}// checkGeneProduct	
 		
-	public void checkShapeRect(double w, double h, int i, int j){	
-		Rectangle2D tempshape = new Rectangle2D.Double(pathway.shapeCoord[j][0],pathway.shapeCoord[j][1],2*w,2*h);
-		AffineTransform at = AffineTransform.getTranslateInstance(w/2, h/2);				
-		at.rotate(Math.toRadians(pathway.shapeCoord[j][4]));					
-		int n=0;		
-		while (!test1&&(n<25)){
-			if (tempshape.contains((pathway.lineCoord[i][0]-(n*dx)), (pathway.lineCoord[i][1]-(n*dy))) && (!test1)) {
-				//System.out.println("Hit for 1 coord: "+j);						
-				Connection[i][1]=j;
-				Connection[i][3]=pathway.shapeType[j]+1;
-				test1=true;
-			}
-			n++;
-		}
-		n=0;	
-		while (!test2&&(n<25)) {
-			if (tempshape.contains(pathway.lineCoord[i][2]+(n*dx), pathway.lineCoord[i][3]+(n*dy)) && (!test2)) {
-				//System.out.println("Hit for 2 coord: "+j);
-				Connection[i][2]=j;
-				Connection[i][4]=pathway.shapeType[j]+1;				
-				test2=true;
-			}
-			n++;
-		}			
+	public void checkShapeRect(){		
 	}// end of checkShapesRect
 		
-	public void checkShapeEllip(double w, double h, int i, int j) {
-		Ellipse2D tempshape = new Ellipse2D.Double(pathway.shapeCoord[j][0],pathway.shapeCoord[j][1],2*w,2*h);
-		AffineTransform at = AffineTransform.getTranslateInstance(w/2, h/2);
-		at.rotate(Math.toRadians(pathway.shapeCoord[j][4]));							int n=0;
-		int m=0;
-		while (!test1&&(m<25)){
-			if (tempshape.contains((pathway.lineCoord[i][0]-(m*dx)), (pathway.lineCoord[i][1]-(m*dy)))) {
-				//System.out.println("Hit for 1 coord: "+j);
-				Connection[i][1]=j;
-				Connection[i][3]=pathway.shapeType[j]+1;
-				test1=true;
-			}
-			m++;
-		}
-		m=0;	
-		while (!test2&&(m<25)) {
-			if (tempshape.contains(pathway.lineCoord[i][2]+(m*dx), pathway.lineCoord[i][3]+(m*dy))){
-				//System.out.println("Hit for 2 coord: "+j);
-				Connection[i][2]=j;
-				Connection[i][4]=pathway.shapeType[j]+1;				
-				test2=true;
-			}
-			m++;
-		}			
+	public void checkShapeEllip() {
 	}// end of checkShapes1
 
-	public void checkArc(int i, int j){
-		Arc2D.Double temparc = pathway.arcs[j];
-		int m=0;
-		while (!test1&&(m<25)){
-			if (temparc.contains(pathway.lineCoord[i][0]+(m*dx), pathway.lineCoord[i][1]+(m*dy))){
+	public void checkArc(int i, int j, double x1, double y1, double x2, double y2){
+		int n=0;
+		while (!test1&&(n<25)){
+			if ((!test1)&&(pathway.arcs[j].contains(x1+n*dx,y1+n*dy))){
 				Connection[i][1]=j;
 				Connection[i][3]=4;
 				test1=true;
 			}
-			m++;
+			n++;
 		}
-		m=0;
-		while (!test2&&(m<25)){
-			if (temparc.contains(pathway.lineCoord[i][2]+(m*dx), pathway.lineCoord[i][3]+(m*dy))){
+		n=0;
+		while (!test2&&(n<25)){
+			if ((!test2)&&(pathway.arcs[j].contains(x2-n*dx,y2-n*dy))){
 				Connection[i][2]=j;
 				Connection[i][4]=4;
 				test2=true;
 			}
-			m++;
-		}		
+			n++;
+		}
 	}// end of checkArc
 	
-	public void checkLabel(int i, int j){
-		Rectangle templabel = new Rectangle(pathway.labelCoord[j][0],pathway.labelCoord[j][1],pathway.labelCoord[j][2],pathway.labelCoord[j][3]);
-		int m=0;
-		while (!test1&&(m<25)){
-			if (templabel.contains(pathway.lineCoord[i][0]+(m*dx), pathway.lineCoord[i][1]+(m*dy))){
+	public void checkLabel(int i, int j, double x1, double y1, double x2, double y2){
+		int n=0;
+		while (!test1&&(n<25)){
+			if ((!test1)&&(pathway.labels[j].contains(x1+n*dx,y1+n*dy))){
 				Connection[i][1]=j;
 				Connection[i][3]=5;
 				test1=true;
 			}
-			m++;
+			n++;
 		}
-		m=0;
-		while (!test1&&(m<25)){
-			if (templabel.contains(pathway.lineCoord[i][2]+(m*dx), pathway.lineCoord[i][3]+(m*dy))){
+		n=0;
+		while (!test2&&(n<25)){
+			if ((!test2)&&(pathway.labels[j].contains(x2-n*dx,y2-n*dy))){
 				Connection[i][2]=j;
 				Connection[i][4]=5;
 				test2=true;
 			}
-			m++;
-		}
-	}// en of checkLabel
+			n++;
+		}		
+	}// end of checkLabel
 	
-	public void checkBrace(int i, int j){
-		GmmlBrace tempbrace = pathway.braces[j];
-		int n = 0;
-		int m = 0;
-		while (!test1&&(n<4)){
-			while (!test1&&(m<25)){
-				if (tempbrace.arcsOfBrace[n].contains(pathway.lineCoord[i][0]+(m*dx), pathway.lineCoord[i][1]+(m*dy))){
-					Connection[i][1]=j;
-					Connection[i][3]=6;
-					test1=true;
-				}
-				m++;
+	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){
+		int n=0;
+		while (!test1&&(n<25)){
+			if ((!test1)&&(pathway.braces[j].contains(x1+n*dx,y1+n*dy))){
+				Connection[i][1]=j;
+				Connection[i][3]=6;
+				test1=true;
 			}
 			n++;
 		}
-		while (!test1&&(n<2)){
-			while (!test1&&(m<25)){
-				if (tempbrace.linesOfBrace[n].contains(pathway.lineCoord[i][0]+(m*dx), pathway.lineCoord[i][1]+(m*dy))){
-					Connection[i][1]=j;
-					Connection[i][3]=6;
-					test1=true;
-				}
-				m++;
+		n=0;
+		while (!test2&&(n<25)){
+			if ((!test2)&&(pathway.braces[j].contains(x2-n*dx,y2-n*dy))){
+				Connection[i][2]=j;
+				Connection[i][4]=6;
+				test2=true;
 			}
 			n++;
-		}
-		n = 0;
-		m = 0;
-		while (!test2&&(n<4)){
-			while (!test1&&(m<25)){
-				if (tempbrace.arcsOfBrace[n].contains(pathway.lineCoord[i][2]+(m*dx), pathway.lineCoord[i][3]+(m*dy))){
-					Connection[i][2]=j;
-					Connection[i][4]=6;
-					test2=true;
-				}
-				m++;
-			}
-			n++;
-		}
-		while (!test2&&(n<2)){
-			while (!test2&&(m<25)){
-				if (tempbrace.linesOfBrace[n].contains(pathway.lineCoord[i][2]+(m*dx), pathway.lineCoord[i][3]+(m*dy))){
-					Connection[i][2]=j;
-					Connection[i][4]=6;
-					test2=true;
-				}
-				m++;
-			}
-			n++;
-		}
-	}			
+		}		
+	}// end of checkBrace			
 			
 }// end of class
 			
