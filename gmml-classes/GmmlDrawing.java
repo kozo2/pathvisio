@@ -332,8 +332,11 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	//Draw a brace
 	public void drawBrace (GmmlBrace brace) {
-		double cX, cY, w, ppo;
-		int or;
+		double cX  = brace.cX;
+		double cY  = brace.cY;
+		double w   = brace.w;
+		double ppo = brace.ppo;
+		int or = brace.or;
 		
 		Arc2D.Double[] arcsOfBrace = new Arc2D.Double[4]; //4 Arcs are used to create a brace
 		Line2D.Double[] linesOfBrace = new Line2D.Double[2];; //2 Lines are used to creata a brace

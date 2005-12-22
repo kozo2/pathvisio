@@ -103,9 +103,8 @@ public class GmmlPathway {
 		int length = braces.length;
 				
 		//Resize part
-		geneProducts = (GmmlGeneProduct[]) resizeArray(geneProducts, (length+1));
-		GmmlBrace temp = new GmmlBrace(cX,cY,w,ppo,or,color);
-		braces[length]=temp;
+		braces = (GmmlBrace[]) resizeArray(braces, (length+1));
+		braces[length] = new GmmlBrace(cX,cY,w,ppo,or,color);
 
 	}
 
