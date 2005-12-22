@@ -95,7 +95,7 @@ class GmmlConnection {
 	}// end of gmmlConnections()
 
 	public void increase(int i, double x1, double y1, double x2, double y2){
-		/** calculates the increase of a line
+		/** calculates the increase of line i
 		  * this value is used to extend the lines
 		  */
 		  

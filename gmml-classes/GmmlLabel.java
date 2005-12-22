@@ -28,6 +28,12 @@ public class GmmlLabel {
 		boolean contains = rect.contains(inputx * zf, inputy * zf);
 		return contains;
 	}
+	
+	public void setLocation(int newx, int newy){
+		x = newx;
+		y = newy;
+	}
+
 }
 		
 	

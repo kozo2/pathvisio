@@ -27,5 +27,12 @@ public class GmmlLine {
 		boolean contains = templine.contains(x*zf, y*zf);
 		return contains;
 	}
+
+	public void setLocation(double newstartx, double newstarty, double newendx, double newendy){
+		startx = newstartx;
+		starty = newstarty;
+		endx = newendx;
+		endy = newendy;
+	}
 }
 	
