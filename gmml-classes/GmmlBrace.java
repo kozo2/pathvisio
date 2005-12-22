@@ -6,8 +6,62 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
 
 public class GmmlBrace {
+	
+	double cX, cY, w, ppo;
+	int or;
+	
+	public GmmlBrace(double inputcX, double inputcY, double inputw, double inputppo, int inputor) {
+		cX=inputcX;
+		cY=inputcY;
+		w=inputw;
+		ppo=inputppo;
+		or=inputor;
+		
+	} //end constructor GmmlBrace
+	
+	//Contains without zoomfactor, for the connections for example
+	public boolean contains(int linex, int liney) {
+		if (or==0 || or==2) {
+			if (cX-0.5*w<=linex && linex<=cX+0.5*w && cY-0.5*ppo<=liney && liney<=cY+0.5*ppo) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		} //end if orientation
+		else {
+			if (cY-0.5*w<=liney && liney<=cY+0.5*w && cX-0.5*ppo<=linex && linex<=cX+0.5*ppo) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		} // end else orientation
+	} //end of contains
 
-	Arc2D.Double[] arcsOfBrace = new Arc2D.Double[4]; //4 Arcs are used to create a brace
+	//Contains with zoomfactor, for the mouselistener
+	public boolean contains(int mousex, int mousey, int zf) {
+		if (or==0 || or==2) {
+			if (cX-0.5*w<=mousex*zf && mousex*zf<=cX+0.5*w && cY-0.5*ppo<=mousey*zf && mousey*zf<=cY+0.5*ppo) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		} //end if orientation
+		else {
+			if (cY-0.5*w<=mousey*zf && mousey*zf<=cY+0.5*w && cX-0.5*ppo<=mousex*zf && mousex*zf<=cX+0.5*ppo) {
+				return true;
+			} 
+			else {
+				return false;
+			}
+		} // end else orientation
+
+	} //end of contains
+
+
+	/*Arc2D.Double[] arcsOfBrace = new Arc2D.Double[4]; //4 Arcs are used to create a brace
 	Line2D.Double[] linesOfBrace = new Line2D.Double[2];; //2 Lines are used to creata a brace
 	Line2D.Double[] lines = new Line2D.Double[2];
 	
@@ -64,9 +118,8 @@ public class GmmlBrace {
 		} // end of orientation is left
 	
 	} //end of constructor GmmlBrace
+	*/
 	
-	public Line2D.Double[] getLine() {
-		lines=linesOfBrace;
-		return lines;
-	} //end of getLine(int i)
+	
+
 } //end of GmmlBrace
