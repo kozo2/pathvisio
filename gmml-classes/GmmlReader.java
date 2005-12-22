@@ -723,8 +723,11 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-		} //end else if Brace
-		else if ("CellComponent".equalsIgnoreCase(element.getName())) {
+		System.out.println("centerX: "+sx/15+" centerY: "+sy/15+" ppo: "+PicPointOffset/15+" orientation: "+orientation);
+		pathway.addBrace(sx/15, sy/15, width/15, PicPointOffset/15, orientation);
+		System.out.println("a brace is added");   
+		} //end else if Brace				 
+			else if ("CellComponent".equalsIgnoreCase(element.getName())) {
      		double cx = 0;
 	      double cy = 0;
 		   int type = 0;

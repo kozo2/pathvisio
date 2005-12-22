@@ -297,7 +297,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			big.drawString(pathway.labelText[i],(int)(pathway.labelCoord[i][0]/zf), (int)(pathway.labelCoord[i][1]/zf+lfHeight));
 		}
 		
-		// Draws arcs
+		// Draw arcs
 		for (int i=0; i<pathway.arcs.length; i++) {
 			big.setColor(Color.black);
 			big.setStroke(new BasicStroke(2.0f));
@@ -305,6 +305,21 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			Arc2D.Double temp = new Arc2D.Double(pathway.arcs[i].x/zf, pathway.arcs[i].y/zf, pathway.arcs[i].width/zf, pathway.arcs[i].height/zf, pathway.arcs[i].start, pathway.arcs[i].extent, 0);
 			big.draw(temp);
 		}
+		
+		//Draw braces
+		System.out.println("pathway.braces.length= "+pathway.braces.length);
+		for (int i=0; i<pathway.braces.length; i++) {
+			big.setColor(Color.black);
+			big.setStroke(new BasicStroke(2.0f));
+			
+			big.draw(pathway.braces[i].linesOfBrace[0]);
+			big.draw(pathway.braces[i].linesOfBrace[1]);
+			
+			big.draw(pathway.braces[i].arcsOfBrace[0]);
+			big.draw(pathway.braces[i].arcsOfBrace[1]);
+			big.draw(pathway.braces[i].arcsOfBrace[2]);
+			big.draw(pathway.braces[i].arcsOfBrace[3]);
+		} 
 		
 		// Draws the buffered image to the screen.
 		g2.drawImage(bi, 0, 0, this);
