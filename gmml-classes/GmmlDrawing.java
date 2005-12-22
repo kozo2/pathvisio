@@ -276,7 +276,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	public void drawGeneProduct (GmmlGeneProduct geneproduct) {
 		big.setColor(Color.black);
 		big.setStroke(new BasicStroke(2.0f));
-		Rectangle rect = new Rectangle((int)(geneproduct.x/zf),(int)(geneproduct.y/zf),(int)(geneproduct.width/zf),(int)(geneproduct.y/zf));
+		Rectangle rect = new Rectangle((int)(geneproduct.x/zf),(int)(geneproduct.y/zf),(int)(geneproduct.width/zf),(int)(geneproduct.height/zf));
 		big.draw(rect);
 				
 		// Draws text on the newly positioned rectangles.
