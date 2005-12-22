@@ -1,14 +1,17 @@
 import java.awt.geom.Arc2D;
+import java.awt.Color;
 
 public class GmmlArc {
 
 double x,y,width,height;
+Color color;
 
-	public GmmlArc(double inputx, double inputy, double inputw, double inputh) {
+	public GmmlArc(double inputx, double inputy, double inputw, double inputh, String inputcolor) {
 		x=inputx;
 		y=inputy;
 		width=inputw;
 		height=inputh;
+		color=GmmlColor.convertColor(inputcolor);
 		
 	} //end of constructor GmmlArc
 	
@@ -34,5 +37,9 @@ double x,y,width,height;
 		}	
 	}
 	
-
+	public void setLocation(double newx, double newy) {
+		x=newx;
+		y=newy;
+	}
+	
 } //end of GmmlArc
