@@ -16,15 +16,10 @@ public class GmmlPathway {
 	GmmlGeneProduct[] geneProducts = new GmmlGeneProduct[0];
 		
 	//Lines
-	double[][] lineCoord = new double[0][4];
-	int[][] lineLayout = new int[0][2];
+	GmmlLine[] lines = new GmmlLine[0];
 
 	//Label
-	int[][] labelCoord = new int[0][4];
-	Color[] labelColor = new Color[0];
-	String[][] labelFont = new String[0][3];
-	int[] labelFontSize = new int[0];
-	String[] labelText = new String[0];
+	GmmlLabel[] labels = new GmmlLabel[0];
 	
 	//Arc
 	GmmlArc[] arcs = new GmmlArc[0];
@@ -48,7 +43,6 @@ public class GmmlPathway {
 	}
 	
 	public void addAttribute(String attribute, String value) {
-		//System.out.println("Adding attribute at "+attributes.length+" - attr: "+attribute+" - value: "+value);
 		int length = attributes.length;
 		
 		//RESIZE PART
@@ -73,77 +67,22 @@ public class GmmlPathway {
 		geneProducts[length]=temp;
 	}
 	
-	public void addLine(double sx, double sy, double ex, double ey, int style, int type) {
-		//System.out.println("Adding rect nr: "+lineCoord.length+" - x1: "+sx+" - y1: "+sy+" - x2: "+ex+" - y2: "+ey);
-		int length = lineCoord.length;
+	public void addLine(double sx, double sy, double ex, double ey, int style, int type, String scolor) {
+		int length = lines.length;
 		
 		//RESIZE PART
-		lineCoord = (double[][]) resizeArray(lineCoord, (length+1));
-		// new array is [length+1][4 or Null]
-  		for (int i=0; i<lineCoord.length; i++) {
-			if (lineCoord[i] == null) {
-     			lineCoord[i] = new double[4];
-			}
-		}
-		
-		//RESIZE PART
-		lineLayout = (int[][]) resizeArray(lineLayout, (length+1));
-		// new array is [length+1][2 or Null]
-  		for (int i=0; i<lineLayout.length; i++) {
-			if (lineLayout[i] == null) {
-     			lineLayout[i] = new int[2];
-			}
-		}
-		
-		lineCoord[length][0] = sx;
-		lineCoord[length][1] = sy;
-		lineCoord[length][2] = ex;
-		lineCoord[length][3] = ey;
-		lineLayout[length][0] = style;
-		lineLayout[length][1] = type;
+		lines = (GmmlLine[]) resizeArray(lines, (length+1));
+		Color color = GmmlColor.convertColor(scolor);
+		lines[length] = new GmmlLine(sx, sy, ex, ey, style, type, color);
 	}
 	
 	public void addLabel(int x, int y, int w, int h, String text, String color, String font, String weight, String style, int fontsize) {
-		int length = labelCoord.length;	
+		int length = labels.length;	
 
 		//RESIZE PART
-		labelColor = (Color[]) resizeArray(labelColor, (length+1));
+		labels = (GmmlLabel[]) resizeArray(labels, (length+1));
 
-		//RESIZE PART
-		labelFontSize = (int[]) resizeArray(labelFontSize, (length+1));
-		
-		//RESIZE PART
-		labelText = (String[]) resizeArray(labelText, (length+1));
-
-		//RESIZE PART
-		labelCoord = (int[][]) resizeArray(labelCoord, (length+1));
-		// new array is [length+1][4 or Null]
-  		for (int i=0; i<labelCoord.length; i++) {
-			if (labelCoord[i] == null) {
-     			labelCoord[i] = new int[4];
-			}
-		}
-		
-		//RESIZE PART
-		labelFont = (String[][]) resizeArray(labelFont, (length+1));
-		// new array is [length+1][3 or Null]
-  		for (int i=0; i<labelFont.length; i++) {
-			if (labelFont[i] == null) {
-     			labelFont[i] = new String[3];
-			}
-		}
-		
-		//System.out.println("Storing label "+length+" in pathway...");
-		labelColor[length] = GmmlColor.convertColor(color);
-		labelFontSize[length] = fontsize;
-		labelCoord[length][0] = x;
-		labelCoord[length][1] = y;
-		labelCoord[length][2] = h;
-		labelCoord[length][3] = w;
-		labelFont[length][0] = font;
-		labelFont[length][1] = weight;
-		labelFont[length][2] = style;
-		labelText[length] = text;
+		labels[length] = new GmmlLabel(x, y, w, h, text, font, weight, style, fontsize, GmmlColor.convertColor(color));
 	}
 	
 	public void addArc(double x, double y, double w, double h) {

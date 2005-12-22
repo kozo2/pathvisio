@@ -34,7 +34,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		pathway = inputpathway;
 		connection = inputconnection;
 		
-		rectsLength = pathway.rects.length;
+		rectsLength = pathway.geneProducts.length;
 		rectClick = new boolean[rectsLength];
 				
 		setBackground(Color.white);
@@ -75,12 +75,12 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		pressOut = false;
 		int CS = 0;
 		for (int i=rectsLength-1; i>=0; i--) {
-			if(pathway.rects[i].contains(e.getX()*zf, e.getY()*zf)){ //if the user presses the mouses on a coordinate which is contained by rect
+			if(pathway.geneProducts[i].contains(e.getX()*zf, e.getY()*zf)){ //if the user presses the mouses on a coordinate which is contained by rect
 				
 				rectClick[i]=true;
 				
-				lastx[i] = (int) (pathway.rects[i].x - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
-				lasty[i] = (int) (pathway.rects[i].y - e.getY()*zf);
+				lastx[i] = (int) (pathway.geneProducts[i].x - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
+				lasty[i] = (int) (pathway.geneProducts[i].y - e.getY()*zf);
 				
 				updateLocation(i,e);
 			}
@@ -128,7 +128,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	//updateLocation
 	public void updateLocation(int i, MouseEvent e){
-		pathway.rects[i].setLocation((int)(lastx[i] + e.getX()*zf), (int)(lasty[i] + e.getY()*zf));
+		pathway.geneProducts[i].setLocation((int)(lastx[i] + e.getX()*zf), (int)(lasty[i] + e.getY()*zf));
                 /*
                  * Updates the label to reflect the location of the
                  * current rectangle 
@@ -136,8 +136,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
                  */
                 if (checkRect(i)) { //true if rect is in area, false if rect is not in area, rect is put back into area
                    label.setText("Rectangle "+i+" located at " +
-                                                     pathway.rects[i].getX() + ", " +
-                                                    pathway.rects[i].getY());
+                                                     pathway.geneProducts[i].x + ", " +
+                                                    pathway.geneProducts[i].y);
              } else {
                     label.setText("Please don't try to "+
                                                     " drag outside the area.");
@@ -183,10 +183,10 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 //			System.out.println("Type 1: "+connection.Connection[i][3]);
 //			System.out.println("Type 2: "+connection.Connection[i][4]);
 			if (connection.Connection[i][3]==0 && connection.Connection[i][4]==0) {
-				double x1 = pathway.rects[connection.Connection[i][1]].getX() + 0.5 * pathway.rects[connection.Connection[i][1]].getWidth();
-				double y1 = pathway.rects[connection.Connection[i][1]].getY() + 0.5 * pathway.rects[connection.Connection[i][1]].getHeight();
-				double x2 = pathway.rects[connection.Connection[i][2]].getX() + 0.5 * pathway.rects[connection.Connection[i][2]].getWidth();
-				double y2 = pathway.rects[connection.Connection[i][2]].getY() + 0.5 * pathway.rects[connection.Connection[i][2]].getHeight();
+				double x1 = pathway.geneProducts[connection.Connection[i][1]].x + 0.5 * pathway.geneProducts[connection.Connection[i][1]].width;
+				double y1 = pathway.geneProducts[connection.Connection[i][1]].y + 0.5 * pathway.geneProducts[connection.Connection[i][1]].height;
+				double x2 = pathway.geneProducts[connection.Connection[i][2]].x + 0.5 * pathway.geneProducts[connection.Connection[i][2]].width;
+				double y2 = pathway.geneProducts[connection.Connection[i][2]].y + 0.5 * pathway.geneProducts[connection.Connection[i][2]].height;
 				big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
 			}
 		}
@@ -231,10 +231,10 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	public void drawLine (GmmlLine line) {
 		big.setColor(line.color);
 		float[] dash = {3.0f};
-		if (line.layout==0) {
+		if (line.style==0) {
 			big.setStroke(new BasicStroke(1.0f));
 		}
-		else if (line.layout==1){ 
+		else if (line.style==1){ 
 			big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 		}
 		big.draw(new Line2D.Double(line.startx/zf,line.starty/zf,line.endx/zf,line.starty/zf));
@@ -258,8 +258,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		big.setStroke(new BasicStroke(1.0f));
 
-		a = pathway.line.endx-line.startx;
-		b = pathway.line.endy-line.starty;
+		a = line.endx-line.startx;
+		b = line.endy-line.starty;
 		norm = 8/(Math.sqrt((a*a)+(b*b)));				
 		p[0] = ( a*rot[0] + b*rot[1] ) * norm + line.endx/zf;
 		p[1] = (-a*rot[1] + b*rot[0] ) * norm + line.endy/zf;
@@ -290,13 +290,13 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		int rectWidth = geneproduct.width;
 		int rectHeight = geneproduct.height;
-		int textWidth = fm.stringWidth(geneproduct.genID);
+		int textWidth = fm.stringWidth(geneproduct.geneID);
 		int fHeight = fm.getHeight();
 				
 		int x = (int)(geneproduct.x + (rectWidth  - zf * textWidth) / 2);
 		int y = (int)(geneproduct.y + (rectHeight + zf * fHeight  ) / 2);
 		
-		big.drawString(geneproduct.genID,(int)(x/zf),(int)(y/zf));
+		big.drawString(geneproduct.geneID,(int)(x/zf),(int)(y/zf));
 	}
 	
 	//Draw a label
@@ -326,7 +326,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.setColor(arc.color);
 		big.setStroke(new BasicStroke(2.0f));
 			
-		Arc2D.Double temparc = new Arc2D.Double(arc.x/zf, arc.y/zf, pathway.arcs[i].width/zf, arc.height/zf, arc.start, arc.extent, 0);
+		Arc2D.Double temparc = new Arc2D.Double((arc.x - arc.width)/zf, (arc.y - arc.height)/zf, 2*arc.width/zf, 2*arc.height/zf, 0, 180, 0);
 		big.draw(temparc);
 	}
 	
@@ -400,26 +400,26 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		if (area == null) {
 			return false;
 		}
-		if(area.contains(pathway.rects[i].x/zf, pathway.rects[i].y/zf, pathway.rects[i].width/zf, pathway.rects[i].height/zf)){
+		if(area.contains(pathway.geneProducts[i].x/zf, pathway.geneProducts[i].y/zf, pathway.geneProducts[i].width/zf, pathway.geneProducts[i].height/zf)){
 			return true;
 		}		
 	
-		int new_x = pathway.rects[i].x;
-		int new_y = pathway.rects[i].y;
+		int new_x = pathway.geneProducts[i].x;
+		int new_y = pathway.geneProducts[i].y;
 
-		if((pathway.rects[i].x+pathway.rects[i].width)/zf>area.width){
-			new_x = (int)(area.width*zf-pathway.rects[i].width+1);
+		if((pathway.geneProducts[i].x+pathway.geneProducts[i].width)/zf>area.width){
+			new_x = (int)(area.width*zf-pathway.geneProducts[i].width+1);
 		}
-		if(pathway.rects[i].x < 0){  
+		if(pathway.geneProducts[i].x < 0){  
 			new_x = -1;
 		}
-		if((pathway.rects[i].y+pathway.rects[i].height)/zf>area.height){
-			new_y = (int)(area.height*zf-pathway.rects[i].height+1); 
+		if((pathway.geneProducts[i].y+pathway.geneProducts[i].height)/zf>area.height){
+			new_y = (int)(area.height*zf-pathway.geneProducts[i].height+1); 
 		}
-		if(pathway.rects[i].y < 0){  
+		if(pathway.geneProducts[i].y < 0){  
 			new_y = -1;
 		}
-		pathway.rects[i].setLocation(new_x, new_y);
+		pathway.geneProducts[i].setLocation(new_x, new_y);
 		return false;
 	}
 	

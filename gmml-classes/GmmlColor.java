@@ -4,7 +4,7 @@
 /*
 /*********************************************************/
 
-import java.awt.*;
+import java.awt.Color;
 
 //TODO add something to find and use int colors! This is not supported atm! 
 

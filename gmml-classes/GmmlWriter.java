@@ -57,19 +57,19 @@ public class GmmlWriter {
 	   doc = new Document(root);
 	}
    public void fillRootElement () {
-   	for (int i = 0; i < pathway.rects.length; i++) {
+   	for (int i = 0; i < pathway.geneProducts.length; i++) {
 	   	Element geneproduct = new Element("GeneProduct");
 		   
-		   geneproduct.setAttribute("GeneID",pathway.rectText[i]);
+		   geneproduct.setAttribute("GeneID",pathway.geneProducts[i].geneID);
 		   
 		   Element graphics = new Element("Graphics");
 		   
 		   double w, h, x, y, cx, cy;
 		   
-		   w = pathway.rects[i].getWidth();
-		   h = pathway.rects[i].getHeight();
-	   	x = pathway.rects[i].getX();
-		   y = pathway.rects[i].getY();
+		   w = pathway.geneProducts[i].width;
+		   h = pathway.geneProducts[i].height;
+	   	x = pathway.geneProducts[i].x;
+		   y = pathway.geneProducts[i].y;
 		   cx = x + w/2;
 		   cy = y + h/2;
 		   

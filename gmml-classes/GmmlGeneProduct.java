@@ -17,7 +17,7 @@ public class GmmlGeneProduct {
 	
 	
 	//Contains without zoomfactor, for the connections for example
-	public boolean contains(int linex, int liney) {
+	public boolean contains(double linex, double liney) {
 		if (x<=linex && linex<=x+width && y<=liney && liney<=y+height) {
 			return true;
 		}
@@ -34,7 +34,11 @@ public class GmmlGeneProduct {
 		else {
 			return false;
 		}
-		
 	} //end of contains
+	
+	public void setLocation(int inputx, int inputy) {
+		x = inputx;
+		y = inputy;
+	}
 	
 } //end of GmmlGeneProduct
