@@ -149,7 +149,7 @@ public class GmmlReader {
       
       //From this point each element is checked if its name corresponds to a known gmml element
       //First it is checked if the element has the name "Graphics", 
-      //if it does the program continues to the next element and it doesn't check if the name of the elemnt corresponds to any other known gmml elements
+      //if it does the program continues (after executing the lines within the if statement) to the next element and it doesn't check if the name of the element corresponds to any other known gmml elements
       //but when the name of the element is not equal to the string "Graphics" the program checks if the name corresponds to "GeneProduct"
       //The program keeps checking if the element corresponds to one of the known gmml elements until it does and then it moves on to the next element
       //The program checks the known gmml elements in this order: Graphics, GeneProduct, Line, LineShape, Arc, Label, Shape, CellShape, Brace, CellComponent, ProteinComplex
@@ -161,7 +161,8 @@ public class GmmlReader {
 	      int width = 0;
 	      List attributes = element.getAttributes();
 	      Iterator aiterator = attributes.iterator();
-      	while (aiterator.hasNext()) {
+      	while (aiterator.hasNext()) {	//Here it is checked if the list of the attributes from Graphics still has an unchecked item
+	      										//If it does it is checked if it's named boardwidth or boardheight
         		Object att = aiterator.next();
 		      if (att instanceof Attribute) {
 	            Attribute attribute = (Attribute) att;
@@ -175,10 +176,14 @@ public class GmmlReader {
 		   } //end while hasNext()
 		   System.out.println("Setting size of the pathway to: '"+width+"'x'"+height+"'");
 		   pathway.setSize(width, height);
-		} //If Graphics
+		} //end If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
 	      //Within an element "GeneProduct" there are attributes and elements
 	      //First the attributes will be obtained, this is done in the similar way as checking the attributes and elements that is explained above 
+	      //Geneproduct contains the attributes: GeneID, Type, GeneProduct-Data-Source, Short-name, Xref, BackpageHead
+	      String ref="";
+	      String geneID="";
+	      
 	      List attributes = element.getAttributes();
 	      Iterator aiterator = attributes.iterator();
       	while (aiterator.hasNext()) {
@@ -186,7 +191,7 @@ public class GmmlReader {
 		      if (att instanceof Attribute) {
 	            Attribute attribute = (Attribute) att;
 					if("GeneID".equalsIgnoreCase(attribute.getName())) {
-				      pathway.addGeneProductText(attribute.getValue());
+				      geneID = attribute.getValue();
 		         } //end if GeneID
 		         else if("Type".equalsIgnoreCase(attribute.getName())) {
 		        		//System.out.println("Type");
@@ -198,7 +203,7 @@ public class GmmlReader {
 		        		//System.out.println("Short-Name");
 		         } //end if Short-Name
 					else if("Xref".equalsIgnoreCase(attribute.getName())) {
-		        		//System.out.println("Xref");
+		        		ref = attribute.getValue(); 
 		         } //end if Xref
 					else if("BackpageHead".equalsIgnoreCase(attribute.getName())) {
 		        		//System.out.println("BackpageHead");
@@ -208,21 +213,25 @@ public class GmmlReader {
 			
 			//This element "GeneProduct" contains elements itself
 			//those will be obtained here, again by listing them and then by checking the names of the content
+			//Geneproduct contains three elements: Graphics, comment and notes.
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
         		Object child = iterator.next();
         		if (child instanceof Element) {
 		        Element subelement = (Element) child;
-		        if("Graphics".equalsIgnoreCase(subelement.getName())) {
-		        		//System.out.println("Found GP grapgics");
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {   
+		        		//System.out.println("Found GP graphics");
+				      //Here will be created some variables where the attribute values will be stored  
 		        		int x = 0;
 				      int y = 0;
 				      int cx = 0;
 						int cy = 0;
 						int width = 0;
 						int height = 0;
-
+						//This element Graphics (of Geneproduct) contains 4 attributes:
+		        		//CenterX, CenterY, width, height
+						//these attributes specify a rectangle
 		        		List sattributes = subelement.getAttributes();
 			        	Iterator saiterator = sattributes.iterator();
 				      while (saiterator.hasNext()) {
@@ -246,9 +255,7 @@ public class GmmlReader {
 					   
 					   x = cx - (width/2);
 					   y = cy - (height/2);
-					   
-					   pathway.addRect(x,y,width,height);
-					   
+   				   pathway.addGeneProduct(x,y,width,height,geneID,ref);
 		         } //end if graphics
 		         else if ("Comment".equalsIgnoreCase(subelement.getName())) {
       				//System.out.println("Comment");
@@ -256,8 +263,9 @@ public class GmmlReader {
 				   else if ("Notes".equalsIgnoreCase(subelement.getName())) {
       				//System.out.println("Notes");
 				   }//end if Notes   
-		      } //end if element
+		      } //end if element   
 		   } //end while hasNext()
+		   
 		} //end else if Geneproduct
 	   else if ("Line".equalsIgnoreCase(element.getName())) {
 	   	int style = 0;
@@ -268,6 +276,7 @@ public class GmmlReader {
 			double ey = 0;
 			String stype;
 			String sstyle;
+			String color="";
 						
 			//System.out.println("Line not fully not implemented yet");
 			List children = element.getContent();
@@ -295,6 +304,9 @@ public class GmmlReader {
 						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
 						      	ey = Integer.parseInt(attribute.getValue());
 						      } //end if endy
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	color = attribute.getValue();
+						      } //end if color
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
@@ -333,7 +345,7 @@ public class GmmlReader {
 				} //end if attribute
 			}//end while hasNext()
 		   	
-		   pathway.addLine(sx,sy,ex,ey, style, type);
+		   pathway.addLine(sx,sy,ex,ey, style, type, color);
 		} //end else if Line
 		else if ("LineShape".equalsIgnoreCase(element.getName())) {
      		double sx = 0;
@@ -411,7 +423,8 @@ public class GmmlReader {
 	      double sy = 0;
 	      double width = 0;
 			double height = 0;
-		
+			String color="";
+			
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -437,7 +450,9 @@ public class GmmlReader {
 						      else if("Height".equalsIgnoreCase(attribute.getName())) {
 						      	height = Double.parseDouble(attribute.getValue());
 						      } //end if height
-						      
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	color = attribute.getValue();
+							   }
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
@@ -449,7 +464,7 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-		   pathway.addArc(sx, sy, width, height);
+		   pathway.addArc(sx, sy, width, height, color);
 		 }// end if Arc
 		 else if ("Label".equalsIgnoreCase(element.getName())) {
 			String fname = "";
@@ -673,6 +688,7 @@ public class GmmlReader {
 	      double width = 0;
 			double PicPointOffset = 0;
 			int orientation=0;	
+			String color="";
 						
 			//System.out.println("Brace not fully not implemented yet");
 			List children = element.getContent();
@@ -701,6 +717,9 @@ public class GmmlReader {
 						      else if("PicPointOffset".equalsIgnoreCase(attribute.getName())) {
 						      	PicPointOffset = Double.parseDouble(attribute.getValue());
 						      } //end if PicPointOffset
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	color = attribute.getValue();
+							   }
 						      else if("Orientation".equalsIgnoreCase(attribute.getName())) {
 									if("top".equalsIgnoreCase(attribute.getValue())) {
 										orientation=0;
@@ -724,10 +743,10 @@ public class GmmlReader {
 		      } //end if element
 		   } //end while hasNext()
 		System.out.println("centerX: "+sx/15+" centerY: "+sy/15+" ppo: "+PicPointOffset/15+" orientation: "+orientation);
-		pathway.addBrace(sx/15, sy/15, width/15, PicPointOffset/15, orientation);
+		pathway.addBrace(sx/15, sy/15, width/15, PicPointOffset/15, orientation, color);
 		System.out.println("a brace is added");   
 		} //end else if Brace				 
-		} //end else if Brace
+
 		else if ("CellComponent".equalsIgnoreCase(element.getName())) {
      		double cx = 0;
 	      double cy = 0;

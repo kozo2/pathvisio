@@ -59,12 +59,12 @@ public class GmmlPathway {
 		attributes[length][1] = value;
 	}
 	
-	public void addGeneProduct(int x, int y, int width, int height, String color, String geneID, String ref) {
+	public void addGeneProduct(int x, int y, int width, int height, String geneID, String ref) {
 		int length = geneProducts.length;
 				
 		//Resize part
 		geneProducts = (GmmlGeneProduct[]) resizeArray(geneProducts, (length+1));
-		GmmlGeneProduct temp = new GmmlGeneProduct(x,y,width,height,color,geneID,ref);
+		GmmlGeneProduct temp = new GmmlGeneProduct(x,y,width,height,geneID,ref);
 		geneProducts[length]=temp;
 	}
 	
@@ -99,7 +99,7 @@ public class GmmlPathway {
 		//hier komt addLineShape
 	}
 	
-	public void addBrace(int cX, int cY, int w, int ppo, int or, String color) {
+	public void addBrace(double cX, double cY, double w, double ppo, int or, String color) {
 		int length = braces.length;
 				
 		//Resize part
