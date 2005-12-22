@@ -168,31 +168,15 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.clearRect(0, 0, area.width, area.height);
 
 		//Draw shapes
-		big.setStroke(new BasicStroke(1.0f));
-		for(int i=0; i<pathway.shapeCoord.length-1; i++) {
-			big.setColor(pathway.shapeColor[i]);
-			big.rotate((180 - pathway.shapeCoord[i][4]) / (180/Math.PI));
-			if (pathway.shapeType[i] == 0) {
-				big.draw(new Rectangle((int)(pathway.shapeCoord[i][0]/zf + pathway.shapeCoord[i][2]/(2*zf)),(int)(pathway.shapeCoord[i][1]/zf + pathway.shapeCoord[i][3]/(2*zf)),(int)(pathway.shapeCoord[i][2]/zf),(int)(pathway.shapeCoord[i][3]/zf)));
-			} else if (pathway.shapeType[i] == 1) {
-				big.draw(new Ellipse2D.Double(pathway.shapeCoord[i][0]/zf,pathway.shapeCoord[i][1]/zf,2*pathway.shapeCoord[i][2]/zf,2*pathway.shapeCoord[i][3]/zf));
-			}
+		for(int i=0; i<pathway.shapes.length; i++) {
+			drawShape(pathway.shapes[i]);
 		}
-		big.rotate(0); //reset rotation
 		 
 		//Draws lines
-		big.setColor(Color.black);
-		for (int i=0; i<pathway.lineLayout.length-1; i++) {
-			big.setColor(Color.black);
-			float[] dash = {3.0f};
-			if (pathway.lineLayout[i][0]==0) {
-				big.setStroke(new BasicStroke(1.0f));
-			}
-			else if (pathway.lineLayout[i][0]==1){ 
-				big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
-			}
-			big.draw(new Line2D.Double(pathway.lineCoord[i][0]/zf,pathway.lineCoord[i][1]/zf,pathway.lineCoord[i][2]/zf,pathway.lineCoord[i][3]/zf));
+		for (int i=0; i<pathway.lines.length; i++) {
+			drawLine(pathway.lines[i]);
 		}
+		
 		for (int i=0; i<connection.Connection.length; i++) {
 			big.setColor(Color.orange);
 			big.setStroke(new BasicStroke(2.0f));
@@ -207,125 +191,205 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			}
 		}
 		
-		//Creates arrows
-		//This doesn't have to be in the forloop so putting it here saves speed
-		big.setColor(Color.black);
-		double angle = 25.0;
-		double theta = (180 - angle) / (180/Math.PI);
-		double[] rot = new double[2];
-		rot[0] = Math.cos(theta);
-		rot[1] = Math.sin(theta);
-		
-		//The for loop
-		for (int i=0; i<pathway.lineLayout.length-1; i++) {
-			double[] p = new double[2];
-			double[] q = new double[2];
-			double a, b, norm;
-			
-			big.setStroke(new BasicStroke(1.0f));
-			if (pathway.lineLayout[i][1]==1) {
-				a = pathway.lineCoord[i][2]-pathway.lineCoord[i][0];
-				b = pathway.lineCoord[i][3]-pathway.lineCoord[i][1];
-				norm = 8/(Math.sqrt((a*a)+(b*b)));				
-				p[0] = ( a*rot[0] + b*rot[1] ) * norm + pathway.lineCoord[i][2]/zf;
-				p[1] = (-a*rot[1] + b*rot[0] ) * norm + pathway.lineCoord[i][3]/zf;
-				q[0] = ( a*rot[0] - b*rot[1] ) * norm + pathway.lineCoord[i][2]/zf;
-				q[1] = ( a*rot[1] + b*rot[0] ) * norm + pathway.lineCoord[i][3]/zf;
-//				big.draw(new Line2D.Double(p[0],p[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
-//				big.draw(new Line2D.Double(q[0],q[1],pathway.lineCoord[i][2],pathway.lineCoord[i][3]));
-				int[] x = {(int) (pathway.lineCoord[i][2]/zf),(int) (p[0]),(int) (q[0])};
-				int[] y = {(int) (pathway.lineCoord[i][3]/zf),(int) (p[1]),(int) (q[1])};
-				Polygon arrowhead = new Polygon(x,y,3);
-				big.draw(arrowhead);
-				big.fill(arrowhead);
-//				System.out.println(" a = " + pathway.lineCoord[i][0] +", "+ pathway.lineCoord[i][1] + " b = " + pathway.lineCoord[i][2] + ", "+ pathway.lineCoord[i][3] + " p = " + p[0] + ", " + p[1] +" q = " + q[0] + ", " + q[1]);
-			}
-		}
-
-		// Draws and fills the newly positioned rectangle to the buffer.
-		for (int i=0; i<rectsLength; i++) {
-			big.setColor(Color.blue);
-			big.setStroke(new BasicStroke(2.0f));
-			Rectangle temp = new Rectangle((int)(pathway.rects[i].getX()/zf),(int)(pathway.rects[i].getY()/zf),(int)(pathway.rects[i].getWidth()/zf),(int)(pathway.rects[i].getHeight()/zf));
-			big.draw(temp);
-			//big.setColor(colors[i]);
-			big.setColor(Color.orange);
-			big.fill(temp);
+		//Draw geneproducts
+		for (int i=0; i<pathway.geneProducts.length; i++) {
+			drawGeneProduct(pathway.geneProducts[i]);
 		}
 		
-		// Draws text on the newly positioned rectangles.
-		Font gpfont = new Font("Arial", Font.PLAIN, (int)(150/zf));
-		big.setFont(gpfont);
-		FontMetrics fm = big.getFontMetrics();
-		int fHeight = fm.getHeight();
-		int textWidth;
-		int rectWidth;
-		int rectHeight;
-		
-		for (int i=0; i<pathway.rectText.length; i++) {
-			big.setColor(Color.black);
-			big.setStroke(new BasicStroke(1.0f));
-			
-			rectWidth = (int)pathway.rects[i].getWidth();
-			rectHeight = (int)pathway.rects[i].getHeight();
-			textWidth = fm.stringWidth(pathway.rectText[i]);
-						
-			int x = (int)(pathway.rects[i].getX() + (rectWidth  - zf * textWidth) / 2);
-			int y = (int)(pathway.rects[i].getY() + (rectHeight + zf * fHeight  ) / 2);
-			big.drawString(pathway.rectText[i],(int)(x/zf),(int)(y/zf));
+		//Draw text labels
+		for (int i=0; i<pathway.labels.length; i++) {
+			drawLabel(pathway.labels[i]);
 		}
 		
-		// Draw text labels
-		for (int i=0; i<pathway.labelCoord.length; i++) {
-			big.setColor(pathway.labelColor[i]);
-			Font font = new Font(pathway.labelFont[i][0], Font.PLAIN, (int) (pathway.labelFontSize[i]*(15/zf)));
-			if (pathway.labelFont[i][1].equalsIgnoreCase("bold")) {
-				if (pathway.labelFont[i][2].equalsIgnoreCase("italic")) {
-					font = font.deriveFont(Font.BOLD+Font.ITALIC);
-				} else {
-					font = font.deriveFont(Font.BOLD);
-				}
-			} else if (pathway.labelFont[i][2].equalsIgnoreCase("italic")) {
-				font = font.deriveFont(Font.ITALIC);
-			} 
-			
-			big.setFont(font); 
-			
-			FontMetrics lfm = big.getFontMetrics();
-			int lfHeight = fm.getHeight();
-
-			big.drawString(pathway.labelText[i],(int)(pathway.labelCoord[i][0]/zf), (int)(pathway.labelCoord[i][1]/zf+lfHeight));
-		}
-		
-		// Draw arcs
+		//Draw arcs
 		for (int i=0; i<pathway.arcs.length; i++) {
-			big.setColor(Color.black);
-			big.setStroke(new BasicStroke(2.0f));
-			
-			Arc2D.Double temp = new Arc2D.Double(pathway.arcs[i].x/zf, pathway.arcs[i].y/zf, pathway.arcs[i].width/zf, pathway.arcs[i].height/zf, pathway.arcs[i].start, pathway.arcs[i].extent, 0);
-			big.draw(temp);
+			drawArc(pathway.arcs[i]);
 		}
 		
 		//Draw braces
-		System.out.println("pathway.braces.length= "+pathway.braces.length);
 		for (int i=0; i<pathway.braces.length; i++) {
-			big.setColor(Color.black);
-			big.setStroke(new BasicStroke(2.0f));
-			
-			big.draw(pathway.braces[i].linesOfBrace[0]);
-			big.draw(pathway.braces[i].linesOfBrace[1]);
-			
-			big.draw(pathway.braces[i].arcsOfBrace[0]);
-			big.draw(pathway.braces[i].arcsOfBrace[1]);
-			big.draw(pathway.braces[i].arcsOfBrace[2]);
-			big.draw(pathway.braces[i].arcsOfBrace[3]);
-		} 
+			drawBrace(pathway.braces[i]);
+		}
 		
 		// Draws the buffered image to the screen.
 		g2.drawImage(bi, 0, 0, this);
 		
 	} //end of update
 	
+	public void drawShape (GmmlShape shape) {
+		big.setStroke(new BasicStroke(1.0f));
+		big.setColor(shape.color);
+		big.rotate((180 - shape.rotation) / (180/Math.PI));
+		if (shape.type == 0) {
+			big.draw(new Rectangle((int)(shape.x/zf + shape.width/(2*zf)),(int)(shape.y/zf + shape.height/(2*zf)),(int)(shape.width/zf),(int)(shape.height/zf)));
+		} else if (shape.type == 1) {
+			big.draw(new Ellipse2D.Double(shape.x/zf,shape.y/zf,2*shape.width/zf,2*shape.height/zf));
+		}
+		big.rotate(0); //reset rotation
+	}
+	
+	public void drawLine (GmmlLine line) {
+		big.setColor(line.color);
+		float[] dash = {3.0f};
+		if (line.layout==0) {
+			big.setStroke(new BasicStroke(1.0f));
+		}
+		else if (line.layout==1){ 
+			big.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+		}
+		big.draw(new Line2D.Double(line.startx/zf,line.starty/zf,line.endx/zf,line.starty/zf));
+		if (line.type==1) {
+			drawArrowHead(line);
+		}
+	}
+	
+	public void drawArrowHead (GmmlLine line) {
+		//Creates arrowhead
+		big.setColor(line.color);
+		double angle = 25.0;
+		double theta = Math.toRadians(180 - angle);
+		double[] rot = new double[2];
+		double[] p = new double[2];
+		double[] q = new double[2];
+		double a, b, norm;
+		
+		rot[0] = Math.cos(theta);
+		rot[1] = Math.sin(theta);
+		
+		big.setStroke(new BasicStroke(1.0f));
+
+		a = pathway.line.endx-line.startx;
+		b = pathway.line.endy-line.starty;
+		norm = 8/(Math.sqrt((a*a)+(b*b)));				
+		p[0] = ( a*rot[0] + b*rot[1] ) * norm + line.endx/zf;
+		p[1] = (-a*rot[1] + b*rot[0] ) * norm + line.endy/zf;
+		q[0] = ( a*rot[0] - b*rot[1] ) * norm + line.endx/zf;
+		q[1] = ( a*rot[1] + b*rot[0] ) * norm + line.endy/zf;
+		int[] x = {(int) (line.endx/zf),(int) (p[0]),(int) (q[0])};
+		int[] y = {(int) (line.endy/zf),(int) (p[1]),(int) (q[1])};
+		Polygon arrowhead = new Polygon(x,y,3);
+		big.draw(arrowhead);
+		big.fill(arrowhead);
+	}
+	
+	// Draws the Geneproduct.
+	public void drawGeneProduct (GmmlGeneProduct geneproduct) {
+		big.setColor(geneproduct.color);
+		big.setStroke(new BasicStroke(2.0f));
+		Rectangle rect = new Rectangle((int)(geneproduct.x/zf),(int)(geneproduct.y/zf),(int)(geneproduct.width/zf),(int)(geneproduct.y/zf));
+		big.draw(rect);
+				
+		// Draws text on the newly positioned rectangles.
+		Font gpfont = new Font("Arial", Font.PLAIN, (int)(150/zf));
+		big.setFont(gpfont);
+		
+		big.setColor(geneproduct.color);
+		big.setStroke(new BasicStroke(1.0f));
+
+		FontMetrics fm = big.getFontMetrics();
+		
+		int rectWidth = geneproduct.width;
+		int rectHeight = geneproduct.height;
+		int textWidth = fm.stringWidth(geneproduct.genID);
+		int fHeight = fm.getHeight();
+				
+		int x = (int)(geneproduct.x + (rectWidth  - zf * textWidth) / 2);
+		int y = (int)(geneproduct.y + (rectHeight + zf * fHeight  ) / 2);
+		
+		big.drawString(geneproduct.genID,(int)(x/zf),(int)(y/zf));
+	}
+	
+	//Draw a label
+	public void drawLabel (GmmlLabel label) {
+		big.setColor(label.color);
+		Font font = new Font(label.font, Font.PLAIN, (int) (label.fontSize*(15/zf)));
+		if (label.fontWeight.equalsIgnoreCase("bold")) {
+			if (label.fontStyle.equalsIgnoreCase("italic")) {
+				font = font.deriveFont(Font.BOLD+Font.ITALIC);
+			} else {
+				font = font.deriveFont(Font.BOLD);
+			}
+		} else if (label.fontStyle.equalsIgnoreCase("italic")) {
+			font = font.deriveFont(Font.ITALIC);
+		} 
+		
+		big.setFont(font); 
+		
+		FontMetrics fm = big.getFontMetrics();
+		int lfHeight = fm.getHeight();
+		
+		big.drawString(label.text,(int)(label.x/zf), (int)(label.y/zf+lfHeight));
+	}
+	
+	//Draw an arc
+	public void drawArc (GmmlArc arc) {
+		big.setColor(arc.color);
+		big.setStroke(new BasicStroke(2.0f));
+			
+		Arc2D.Double temparc = new Arc2D.Double(arc.x/zf, arc.y/zf, pathway.arcs[i].width/zf, arc.height/zf, arc.start, arc.extent, 0);
+		big.draw(temparc);
+	}
+	
+	//Draw a brace
+	public void drawBrace (GmmlBrace brace) {
+		double cX, cY, w, ppo;
+		int or;
+		
+		Arc2D.Double[] arcsOfBrace = new Arc2D.Double[4]; //4 Arcs are used to create a brace
+		Line2D.Double[] linesOfBrace = new Line2D.Double[2];; //2 Lines are used to creata a brace
+		Line2D.Double[] lines = new Line2D.Double[2];
+		
+		linesOfBrace[0] = new Line2D.Double();
+		linesOfBrace[1] = new Line2D.Double();
+	
+		for (int i=0; i<4; i++){
+			arcsOfBrace[i] = new Arc2D.Double();
+		}
+		
+		if (or==0) { //Orientation is top
+			linesOfBrace[0].setLine(cX+0.5*ppo,cY,cX+0.5*w-0.5*ppo,cY); //line on the right
+			linesOfBrace[1].setLine(cX-0.5*ppo,cY,cX-0.5*w+0.5*ppo,cY); //line on the left
+			
+			arcsOfBrace[0].setArc(cX-(0.5*w),cY,ppo,ppo,-180,-90,0); //arc on the left
+			arcsOfBrace[1].setArc(cX-ppo,cY-ppo,ppo,ppo,-90,90,0); //left arc in the middle
+			arcsOfBrace[2].setArc(cX,cY-ppo,ppo,ppo,-90,-90,0); //right arc in the middle
+			arcsOfBrace[3].setArc(cX+(0.5*w)-ppo,cY,ppo,ppo,0,90,0); //arc on the right
+		} // end of orientation is top
+		
+		else if (or==1) { //Orientation is right
+			linesOfBrace[0].setLine(cX,cY+0.5*ppo,cX,cY+0.5*w-0.5*ppo); //line on the bottom
+			linesOfBrace[1].setLine(cX,cY-0.5*ppo,cX,cY-0.5*w+0.5*ppo); //line on the top
+			
+			arcsOfBrace[0].setArc(cX-ppo,cY-(0.5*w),ppo,ppo,0,90,0); //arc on the top
+			arcsOfBrace[1].setArc(cX,cY-ppo,ppo,ppo,-90,-90,0); //upper arc in the middle
+			arcsOfBrace[2].setArc(cX,cY,ppo,ppo,90,90,0); //lower arc in the middle
+			arcsOfBrace[3].setArc(cX-ppo,cY+(0.5*w)-ppo,ppo,ppo,0,-90,0); //arc on the bottom
+
+		} // end of orientation is right
+		
+		else if (or==2) { //Orientation is bottom
+			linesOfBrace[0].setLine(cX+0.5*ppo,cY,cX+0.5*w-0.5*ppo,cY); //line on the right
+			linesOfBrace[1].setLine(cX-0.5*ppo,cY,cX-0.5*w+0.5*ppo,cY); //line on the left
+			
+			arcsOfBrace[0].setArc(cX-(0.5*w),cY-ppo,ppo,ppo,-180,90,0); //arc on the left
+			arcsOfBrace[1].setArc(cX-ppo,cY,ppo,ppo,90,-90,0); //left arc in the middle
+			arcsOfBrace[2].setArc(cX,cY,ppo,ppo,90,90,0); //right arc in the middle
+			arcsOfBrace[3].setArc(cX+(0.5*w)-ppo,cY-ppo,ppo,ppo,0,-90,0); //arc on the right
+
+		} // end of orientation is bottom
+		
+		else if (or==3) { //Orientation is left
+			linesOfBrace[0].setLine(cX,cY+0.5*ppo,cX,cY+0.5*w-0.5*ppo); //line on the bottom
+			linesOfBrace[1].setLine(cX,cY-0.5*ppo,cX,cY-0.5*w+0.5*ppo); //line on the top
+			
+			arcsOfBrace[0].setArc(cX,cY-(0.5*w),ppo,ppo,-180,-90,0); //arc on the top
+			arcsOfBrace[1].setArc(cX-ppo,cY-ppo,ppo,ppo,-90,90,0); //upper arc in the middle
+			arcsOfBrace[2].setArc(cX-ppo,cY,ppo,ppo,90,-90,0); //lower arc in the middle
+			arcsOfBrace[3].setArc(cX,cY+(0.5*w)-ppo,ppo,ppo,-90,-90,0); //arc on the bottom
+
+		} // end of orientation is left
+	}
+
 	/*
     * Checks if the rectangle is contained within the applet window.  If the rectangle
     * is not contained withing the applet window, it is redrawn so that it is adjacent

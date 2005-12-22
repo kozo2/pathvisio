@@ -20,7 +20,6 @@ public class GmmlPathway {
 	double[][] lineCoord = new double[0][4];
 	int[][] lineLayout = new int[0][2];
 
-	
 	//Label
 	int[][] labelCoord = new int[0][4];
 	Color[] labelColor = new Color[0];
@@ -35,9 +34,6 @@ public class GmmlPathway {
 	double[][] shapeCoord = new double[0][5];
 	Color[] shapeColor = new Color[0];
 	int[] shapeType = new int[0];
-	
-	//Brace
-	GmmlBrace[] braces = new GmmlBrace[0];
 		
 	//Attributes + notes element + comment element
 	String[][] attributes = new String[0][2];
@@ -178,15 +174,9 @@ public class GmmlPathway {
 		//hier komt addLineShape
 	}
 	
-	public void addBrace(double cX, double cY, double w, double ppo, int or) {
-		int length = braces.length;
-				
-		//Resize part
-		braces = (GmmlBrace[]) resizeArray(braces, (length+1));
-		GmmlBrace temp = new GmmlBrace(cX, cY, w, ppo, or);
-		braces[length]=temp;
-			
-	} //end of addBrace
+	public void addBrace(int cX, int cY, int W, int PPO, String Or) {
+		//hier komt addBrace.
+	}
 
 	public void addCellShape(double x, double y, double w, double h, double rotation) {
 		//hier komt addCellShape
