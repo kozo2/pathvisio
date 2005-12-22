@@ -58,7 +58,14 @@ public class GmmlColor {
 		GmmlColor temp = new GmmlColor(scolor);
 		Color returncolor = temp.getColor();
 		return returncolor;
-	}	
+	}
+	public static String convertColorString(Color color) {
+		String rhex = Integer.toHexString(color.getRed());
+		String ghex = Integer.toHexString(color.getGreen());
+		String bhex = Integer.toHexString(color.getBlue());
+		String hexcolor = (rhex+ghex+bhex).toUpperCase();
+		return hexcolor;
+	}
 
 		
 	//StoreColor method

@@ -81,6 +81,7 @@ public class GmmlWriter {
 		   geneproduct.addContent(graphics);
 		   root.addContent(geneproduct);
 	   }
+	   
 	}
 
 }

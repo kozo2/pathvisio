@@ -274,7 +274,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	// Draws the Geneproduct.
 	public void drawGeneProduct (GmmlGeneProduct geneproduct) {
-		big.setColor(geneproduct.color);
+		big.setColor(Color.black);
 		big.setStroke(new BasicStroke(2.0f));
 		Rectangle rect = new Rectangle((int)(geneproduct.x/zf),(int)(geneproduct.y/zf),(int)(geneproduct.width/zf),(int)(geneproduct.y/zf));
 		big.draw(rect);
@@ -283,7 +283,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		Font gpfont = new Font("Arial", Font.PLAIN, (int)(150/zf));
 		big.setFont(gpfont);
 		
-		big.setColor(geneproduct.color);
+		big.setColor(Color.black);
 		big.setStroke(new BasicStroke(1.0f));
 
 		FontMetrics fm = big.getFontMetrics();
