@@ -1,14 +1,29 @@
-/**********************************************************
 /*
-/*        The GMML Window class by Hakim 5/12/2005
-/*
-/*********************************************************/
+Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
+M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and 
+limitations under the License.
+*/
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.*;
- 
+
+/**
+ *        The GmmlWindow class is basicly the Graphic User Interface of the program as you see when you open it. The applet is started and the menu's, toolbar and drawing area are added.
+ */
+  
 public class GmmlWindow {
   private JFrame f;
   GmmlConnection connection;
@@ -16,6 +31,10 @@ public class GmmlWindow {
   JTextField zoomField;
   GmmlDrawing drawing;
   
+  /**
+   * Create a new program window.
+   */
+
   public GmmlWindow() {
   	 f = new JFrame("The GMML Window");
 	 javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); //This line will fix the menu hiding behind the canvas.
@@ -36,6 +55,9 @@ public class GmmlWindow {
     f.setVisible(true);
   }
   
+  /**
+   *  Load an xml into to the program and create a drawing of it.
+   */
   public void openPathway(String file) {
   		//Read a pathway and open it in the applet
       f.getContentPane().removeAll();
@@ -66,7 +88,7 @@ public class GmmlWindow {
 		f.show();
   }
 	
-  public static void setJavaLookAndFeel() {
+  private static void setJavaLookAndFeel() {
     try {
       UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
     } catch(Exception e) {
@@ -131,7 +153,7 @@ public class GmmlWindow {
     f.setJMenuBar(menubar);			
   }
   
-  protected void addButtons(JToolBar toolBar) {
+  private void addButtons(JToolBar toolBar) {
     JButton button = null; //Create an empty button
     //Button 1
     button = new JButton("Show XML");

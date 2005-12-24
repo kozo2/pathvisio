@@ -1,3 +1,20 @@
+/*
+Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
+M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and 
+limitations under the License.
+*/
+
 import org.jdom.JDOMException;
 import org.jdom.input.*;
 import org.jdom.output.*;
@@ -10,6 +27,10 @@ import java.util.*;
 import java.io.FileWriter;
 import java.io.File;
 
+/**
+ * The GmmlWriter class build a jdom document from a given pathway. It also include methods to dump a document to an output.
+ */
+ 
 public class GmmlWriter {
 
 	GmmlPathway pathway;
@@ -21,6 +42,9 @@ public class GmmlWriter {
 		buildDoc();
 	}
 	
+	/**
+	  * This method will dump the document to the console as valid xml using the jdom package
+	  */
 	public void dumpToScreen() {
 		try {
 			XMLOutputter screendump = new XMLOutputter(Format.getPrettyFormat());
@@ -31,6 +55,10 @@ public class GmmlWriter {
     	}
    }
    
+   /**
+     * This method will write the document to the given file using the jdom package.
+     */
+     
 	public void writeToFile(String filename) {
 		try {
 			XMLOutputter screendump = new XMLOutputter(Format.getPrettyFormat());
@@ -43,6 +71,10 @@ public class GmmlWriter {
     	}
    } 
    
+   /**
+     * This method builds a document from the pathay, used only internally. Maybe make this private? Or make a public overloaded version that requires a pathway input?
+     */
+     
    public void buildDoc() {
    	System.out.println("Building document...");
    	root = new Element("Pathway");
@@ -56,7 +88,7 @@ public class GmmlWriter {
 	   fillRootElement();
 	   doc = new Document(root);
 	}
-   public void fillRootElement () {
+   private void fillRootElement () {
    	for (int i = 0; i < pathway.geneProducts.length; i++) {
 	   	Element geneproduct = new Element("GeneProduct");
 		   

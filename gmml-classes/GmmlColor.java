@@ -1,37 +1,64 @@
-/**********************************************************
 /*
-/*        The GMML Color class by Hakim 5/12/2005
-/*
-/*********************************************************/
+Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
+M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and 
+limitations under the License.
+*/
 
 import java.awt.Color;
 
-//TODO add something to find and use int colors! This is not supported atm! 
+/**
+ * This class takes care of colors given as a string-gmml format. This can contain hex, integer or string color data. This class is a helper to sort this out and get the propper color data out of the string.
+ * TODO add something to find and use int colors! This is not supported atm! 
+ *
+ */
 
 public class GmmlColor {
 	float[] color = new float[3];
 	
 	//Constructor
+	/**
+	 * Create an empty GmmlColor
+	 */
 	public GmmlColor() {
         //Main can be empty       
     }
 
+   /**
+    * Create a new GmmlColor and store the color in it, note that if the string is an invalid gmml color string it will result in black.
+    */
 	public GmmlColor(String input) {
         storeColor(input);        
     }
    
-	//GetColor method returning a Color
+	/**
+	 * This method returns a Color that awt can use
+	 */
 	public Color getColor() {
 		Color returncolor = new Color(color[0],color[1],color[2]);
 		return returncolor;
 	}
 	
-	//GetColor method returning a float[]
+	/**
+	 * This method returns a color in the format of a float[3] with r,g,b stored in it.
+	 */
 	public float[] getColorFloat() {
 		return color;
 	}
 	
-	//Store a color of unknown type
+	/**
+	 * Store a gmml valid color string
+	 */
 	public void storeColor(String scolor) {
 		if(!storeStringColor(scolor)) {
 			if(!storeHexColor(scolor)) {
@@ -46,19 +73,27 @@ public class GmmlColor {
 		}
 	}
 
-	//Convert a string into a float[3] a color of unknown type
+	/**
+	 * Convert a gmml valid color string into a float[3]
+	 */
 	public static float[] convertColorFloat(String scolor) {
 		GmmlColor temp = new GmmlColor(scolor);
 		float[] fcolor = temp.getColorFloat();
 		return fcolor;
 	}
 	
-	//Convert a string into a float[3] a color of unknown type
+	/**
+	 * Convert a gmml valid color string into a Color awt can use
+	 */
 	public static Color convertColor(String scolor) {
 		GmmlColor temp = new GmmlColor(scolor);
 		Color returncolor = temp.getColor();
 		return returncolor;
 	}
+
+	/**
+	 * Convert an awt Color object into a valid hex string for storing in files
+	 */	
 	public static String convertColorString(Color color) {
 		String rhex = Integer.toHexString(color.getRed());
 		String ghex = Integer.toHexString(color.getGreen());
@@ -69,7 +104,7 @@ public class GmmlColor {
 
 		
 	//StoreColor method
-	public boolean storeHexColor(String scolor) {
+	private boolean storeHexColor(String scolor) {
 		//Trim the string and break it into bytes
 		String trimcolor = scolor.trim();
 		
@@ -98,7 +133,7 @@ public class GmmlColor {
 		
 		return false;	//Not a propper Hex Value!
 	}
-	public boolean storeStringColor(String scolor) {
+	private boolean storeStringColor(String scolor) {
 		//Color string table
 		String[][] colortable = {
 		{"Aqua","0","1","1"},
