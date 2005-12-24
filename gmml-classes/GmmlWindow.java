@@ -52,7 +52,7 @@ public class GmmlWindow {
 		connection = new GmmlConnection(pathway);
 
 		//Create a drawing (this is an extended JPanel class)
-		GmmlDrawing drawing = new GmmlDrawing(pathway, connection);
+		drawing = new GmmlDrawing(pathway, connection);
 		
 		//Try to make a scrolling area
 		JScrollPane scroll = new JScrollPane(drawing);
@@ -100,7 +100,18 @@ public class GmmlWindow {
 	
     saveitem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        //Empty
+        if (drawing!=null) {
+          JFileChooser chooser = new JFileChooser();
+          chooser.setFileFilter(new XmlFilter());
+          int returnVal = chooser.showSaveDialog(null);
+          if(returnVal == JFileChooser.APPROVE_OPTION) {
+            String file = chooser.getSelectedFile().getPath();
+			   GmmlWriter output = new GmmlWriter(drawing.pathway);
+            output.writeToFile(file);
+          }
+        } else {
+          JOptionPane.showMessageDialog(null, "No GMML file loaded!", "error", JOptionPane.ERROR_MESSAGE);
+        }
       }
     });
 
@@ -127,20 +138,22 @@ public class GmmlWindow {
     button.setToolTipText("Display output XML");
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        System.out.println("XML Output");
-        GmmlWriter output = new GmmlWriter(drawing.pathway);
-        output.dumpToScreen();
+        if(drawing!=null) {
+          System.out.println("XML Output");
+          GmmlWriter output = new GmmlWriter(drawing.pathway);
+          output.dumpToScreen();
+        } else {
+           JOptionPane.showMessageDialog(null, "No GMML file loaded!", "error", JOptionPane.ERROR_MESSAGE);
+        }
       }
     });
     toolBar.add(button);
     //Button 2
-    button = new JButton("Write");
+    button = new JButton("Unused");
     button.setToolTipText("Write this file to text.xml");
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        System.out.println("XML Output");
-        GmmlWriter output = new GmmlWriter(drawing.pathway);
-        output.writeToFile("text.xml");
+        System.out.println("Button is unused");
       }
     });
     toolBar.add(button);

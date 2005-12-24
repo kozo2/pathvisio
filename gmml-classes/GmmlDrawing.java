@@ -13,9 +13,6 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	BufferedImage bi;
 	Graphics2D big;
 	
-	//Zoomfactor
-	int zoom;
-	
 	//Holds the coordinates of the user's last mousePressed event.
 	int[] lastx;
 	int[] lasty;

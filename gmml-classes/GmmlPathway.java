@@ -68,7 +68,7 @@ public class GmmlPathway {
 		geneProducts[length]=temp;
 	}
 	
-	public void addLine(double sx, double sy, double ex, double ey, int style, int type, String scolor) {
+	public void addLine(double sx, double sy, double ex, double ey, int type, int style, String scolor) {
 		int length = lines.length;
 		
 		//RESIZE PART
