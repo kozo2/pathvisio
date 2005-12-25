@@ -103,7 +103,7 @@ public class GmmlWindow {
     //Create the filemenu and it's items
     JMenu filemenu = new JMenu("File");
     JMenuItem openitem = new JMenuItem("Open");
-    JMenuItem saveitem = new JMenuItem("Save");
+    JMenuItem saveitem = new JMenuItem("Save As...");
     JMenuItem exititem = new JMenuItem("Exit");
 	 
 	 
@@ -128,8 +128,28 @@ public class GmmlWindow {
           int returnVal = chooser.showSaveDialog(null);
           if(returnVal == JFileChooser.APPROVE_OPTION) {
             String file = chooser.getSelectedFile().getPath();
-			   GmmlWriter output = new GmmlWriter(drawing.pathway);
-            output.writeToFile(file);
+            if(!file.endsWith(".xml")) {
+            	file = file+".xml";
+	         }
+	         
+	         int confirmed = 1;
+	         File tempfile = new File(file);
+	         
+	         if(tempfile.exists()) {
+	         	String[] options = { "OK", "CANCEL" };
+		         JOptionPane pane = new JOptionPane();
+					confirmed = pane.showOptionDialog(null, "The selected file already exists, overwrite?", "Warning", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+	         }  else {
+	         	confirmed = 0;
+	         }
+		      
+		      if (confirmed == 0) {
+				   GmmlWriter output = new GmmlWriter(drawing.pathway);
+   	         output.writeToFile(file);
+	            System.out.println("Saved");
+	         } else {
+	         	System.out.println("Canceled");
+		      }
           }
         } else {
           JOptionPane.showMessageDialog(null, "No GMML file loaded!", "error", JOptionPane.ERROR_MESSAGE);
