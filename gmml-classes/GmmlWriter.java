@@ -88,9 +88,20 @@ public class GmmlWriter {
 	   fillRootElement();
 	   doc = new Document(root);
 	}
+	
    private void fillRootElement () {
-   	for (int i = 0; i < pathway.geneProducts.length; i++) {
-	   	Element geneproduct = new Element("GeneProduct");
+   	addGeneProducts();
+	   addLines();
+	   addLineShapes();
+	   addArcs();
+	   addLabels();
+	   addShapes();
+	   addBraces();
+	}
+	
+	private void addGeneProducts() {
+		for (int i = 0; i < pathway.geneProducts.length; i++) {
+			Element geneproduct = new Element("GeneProduct");
 		   
 		   geneproduct.setAttribute("GeneID",pathway.geneProducts[i].geneID);
 		   
@@ -103,8 +114,8 @@ public class GmmlWriter {
 	   	x = pathway.geneProducts[i].x;
 		   y = pathway.geneProducts[i].y;
 		   cx = x + w/2;
-		   cy = y + h/2;
-		   
+		   cy = y + h/2; 
+	   
 		   graphics.setAttribute("CenterX",Integer.toString((int)cx));
 		   graphics.setAttribute("CenterY",Integer.toString((int)cy));
 		   graphics.setAttribute("Width",Integer.toString((int)w));
@@ -112,8 +123,171 @@ public class GmmlWriter {
 		   
 		   geneproduct.addContent(graphics);
 		   root.addContent(geneproduct);
-	   }
-	   
+		}
 	}
+	
+	private void addLines() {
+		for (int i = 0; i < pathway.lines.length; i++) {
+			Element line = new Element("Line");
 
+			String type, style;
+
+		   type = "Line"; //Default is line
+		   
+		   if (pathway.lines[i].type==1) {
+		   	type = "Arrow";
+			}
+			
+		   style = "Solid"; //Default is solid
+		   
+		   if (pathway.lines[i].style==1) {
+		   	style = "Broken";
+			}	
+			
+			line.setAttribute("Type",type);
+		   line.setAttribute("Style",style);
+		   
+		   Element graphics = new Element("Graphics"); 
+	   
+		   graphics.setAttribute("StartX",Integer.toString((int)pathway.lines[i].startx));
+		   graphics.setAttribute("StartY",Integer.toString((int)pathway.lines[i].starty));
+		   graphics.setAttribute("EndX",Integer.toString((int)pathway.lines[i].endx));
+		   graphics.setAttribute("EndY",Integer.toString((int)pathway.lines[i].endy));
+		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.lines[i].color));
+		   
+		   line.addContent(graphics);
+		   root.addContent(line);
+		}
+	}
+	
+	private void addLineShapes() {
+		//We haven't implemented this yet
+	}
+	
+	private void addArcs() {
+		for (int i = 0; i<pathway.arcs.length; i++) {
+			Element arc = new Element("Arc");
+			
+			Element graphics = new Element("Graphics"); 
+	   
+		   graphics.setAttribute("StartX",Integer.toString((int)pathway.arcs[i].x));
+		   graphics.setAttribute("StartY",Integer.toString((int)pathway.arcs[i].y));
+		   graphics.setAttribute("Width",Integer.toString((int)pathway.arcs[i].width));
+		   graphics.setAttribute("Height",Integer.toString((int)pathway.arcs[i].height));
+		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.arcs[i].color));
+		   graphics.setAttribute("Rotation",Double.toString(pathway.arcs[i].rotation));
+		   
+		   arc.addContent(graphics);
+		   root.addContent(arc);
+		}
+	}
+	
+	private void addLabels() {
+		for (int i = 0; i < pathway.labels.length; i++) {
+			Element label = new Element("Label");
+		
+			label.setAttribute("TextLabel",pathway.labels[i].text);
+		
+			Element graphics = new Element("Graphics");
+		
+		   double w, h, x, y, cx, cy;
+		   
+		   w = pathway.labels[i].width;
+		   h = pathway.labels[i].height;
+	   	x = pathway.labels[i].x;
+		   y = pathway.labels[i].y;
+		   cx = x + w/2;
+		   cy = y + h/2;
+
+		   String fontWeight = pathway.labels[i].fontWeight;
+		   
+		   if (fontWeight=="") {
+		   	fontWeight = "Regular";
+			}
+			
+		   String fontStyle = pathway.labels[i].fontStyle;
+		   
+		   if (fontStyle=="") {
+		   	fontStyle = "Normal";
+			}
+		   
+		   graphics.setAttribute("CenterX",Integer.toString((int)cx));
+		   graphics.setAttribute("CenterY",Integer.toString((int)cy));
+		   graphics.setAttribute("Width",Integer.toString((int)w));
+		   graphics.setAttribute("Height",Integer.toString((int)h));
+		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.labels[i].color));
+		   graphics.setAttribute("FontName",pathway.labels[i].font);
+		   graphics.setAttribute("FontSize",Integer.toString(pathway.labels[i].fontSize));
+		   graphics.setAttribute("FontWeight",fontWeight);
+		   graphics.setAttribute("FontStyle",fontStyle);
+		   
+		   label.addContent(graphics);
+		   root.addContent(label);
+		}
+
+	}
+	
+	private void addShapes() {
+		for (int i = 0; i < pathway.shapes.length; i++) {
+			Element shape = new Element("Shape");
+			
+			String type = "Rectangle"; //Default is rectangle
+		   
+		   if (pathway.shapes[i].type==1) {
+		   	type = "Oval";
+			}	
+			
+			shape.setAttribute("Type",type);
+		
+			Element graphics = new Element("Graphics");
+		
+		   double w, h, x, y, cx, cy;
+		   
+		   w = pathway.shapes[i].width;
+		   h = pathway.shapes[i].height;
+	   	x = pathway.shapes[i].x;
+		   y = pathway.shapes[i].y;
+		   cx = x + w;
+		   cy = y + h;
+   
+		   graphics.setAttribute("CenterX",Integer.toString((int)cx));
+		   graphics.setAttribute("CenterY",Integer.toString((int)cy));
+		   graphics.setAttribute("Width",Integer.toString((int)w));
+		   graphics.setAttribute("Height",Integer.toString((int)h));
+		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.shapes[i].color));
+		   graphics.setAttribute("Rotation",Integer.toString((int)pathway.shapes[i].rotation));
+		   
+		   shape.addContent(graphics);
+		   root.addContent(shape);
+		}
+
+	}
+	
+	private void addBraces() {
+		for (int i = 0; i<pathway.braces.length; i++) {
+			Element brace = new Element("Brace");
+			
+			Element graphics = new Element("Graphics"); 
+	   
+	   	String orientation = "top";
+		   if(pathway.braces[i].or==1) {
+		   		orientation = "right";
+		   } else if(pathway.braces[i].or==2) {
+		   		orientation = "bottom";
+		   }
+		   else if(pathway.braces[i].or==3) {
+		   		orientation = "left";
+		   }
+		   
+		   graphics.setAttribute("CenterX",Integer.toString((int)pathway.braces[i].cX));
+		   graphics.setAttribute("CenterY",Integer.toString((int)pathway.braces[i].cY));
+		   graphics.setAttribute("Width",Integer.toString((int)pathway.braces[i].w));
+		   graphics.setAttribute("PicPointOffset",Integer.toString((int)pathway.braces[i].ppo));
+		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.braces[i].color));
+		   graphics.setAttribute("Orientation", orientation);
+		   
+		   brace.addContent(graphics);
+		   root.addContent(brace);
+		}
+	}
 }

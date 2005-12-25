@@ -98,6 +98,9 @@ public class GmmlColor {
 		String rhex = Integer.toHexString(color.getRed());
 		String ghex = Integer.toHexString(color.getGreen());
 		String bhex = Integer.toHexString(color.getBlue());
+		if (color.getRed() < 16) {rhex = "0"+rhex;}
+		if (color.getGreen() < 16) {ghex = "0"+ghex;}
+		if (color.getBlue() < 16) {bhex = "0"+bhex;}
 		String hexcolor = (rhex+ghex+bhex).toUpperCase();
 		return hexcolor;
 	}

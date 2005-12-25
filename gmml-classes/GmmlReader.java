@@ -760,7 +760,7 @@ public class GmmlReader {
 		      } //end if element
 		   } //end while hasNext()
 		System.out.println("centerX: "+sx/15+" centerY: "+sy/15+" ppo: "+PicPointOffset/15+" orientation: "+orientation);
-		pathway.addBrace(sx/15, sy/15, width/15, PicPointOffset/15, orientation, color);
+		pathway.addBrace(sx, sy, width, PicPointOffset, orientation, color);
 		System.out.println("a brace is added");   
 		} //end else if Brace				 
 

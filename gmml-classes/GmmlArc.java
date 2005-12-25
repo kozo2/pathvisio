@@ -20,7 +20,7 @@ import java.awt.Color;
 
 public class GmmlArc {
 
-double x,y,width,height;
+double x, y, width, height, rotation;
 Color color;
 
 	public GmmlArc(double inputx, double inputy, double inputw, double inputh, String inputcolor) {
