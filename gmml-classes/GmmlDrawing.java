@@ -233,13 +233,13 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	public void drawShape (GmmlShape shape) {
 		big.setStroke(new BasicStroke(1.0f));
 		big.setColor(shape.color);
-		big.rotate((180 - shape.rotation) / (180/Math.PI));
+		big.rotate(Math.toRadians(shape.rotation), (shape.x/zf + shape.width/zf), (shape.y/zf + shape.height/zf));
 		if (shape.type == 0) {
 			big.draw(new Rectangle((int)(shape.x/zf + shape.width/(2*zf)),(int)(shape.y/zf + shape.height/(2*zf)),(int)(shape.width/zf),(int)(shape.height/zf)));
 		} else if (shape.type == 1) {
 			big.draw(new Ellipse2D.Double(shape.x/zf,shape.y/zf,2*shape.width/zf,2*shape.height/zf));
 		}
-		big.rotate(0); //reset rotation
+		big.rotate(-Math.toRadians(shape.rotation),  (shape.x/zf + shape.width/zf), (shape.y/zf + shape.height/zf));  //reset rotation
 	}
 	
 	public void drawLine (GmmlLine line) {
