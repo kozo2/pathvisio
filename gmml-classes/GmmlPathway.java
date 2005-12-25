@@ -34,6 +34,9 @@ public class GmmlPathway {
 		
 	//Lines
 	GmmlLine[] lines = new GmmlLine[0];
+	
+	//Lineshapes
+	GmmlLineShape[] lineshapes = new GmmlLineShape[0];
 
 	//Label
 	GmmlLabel[] labels = new GmmlLabel[0];
@@ -112,8 +115,13 @@ public class GmmlPathway {
 		arcs[length]=temp;
 	}
 
-	public void addLineShape(double sx, double sy, double ex, double ey) {
-		//hier komt addLineShape
+	public void addLineShape(double sx, double sy, double ex, double ey, String scolor, int type) {
+		int length = lineshapes.length;
+		
+		//RESIZE PART
+		lineshapes = (GmmlLineShape[]) resizeArray(lineshapes, (length+1));
+		Color color = GmmlColor.convertColor(scolor);
+		lineshapes[length] = new GmmlLineShape(sx, sy, ex, ey, color, type);
 	}
 	
 	public void addBrace(double cX, double cY, double w, double ppo, int or, String color) {

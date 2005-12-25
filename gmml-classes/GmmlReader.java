@@ -370,6 +370,8 @@ public class GmmlReader {
 	      double ex = 0;
 			double ey = 0;			
 			String stype;
+			String color = "";
+			int type = 0;
 						
 			//System.out.println("LineShape not fully not implemented yet");
 			List children = element.getContent();
@@ -397,6 +399,9 @@ public class GmmlReader {
 						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
 						      	ey = Integer.parseInt(attribute.getValue());
 						      } //end if endy
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	color = attribute.getValue();
+						      } //end if color
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
@@ -405,7 +410,7 @@ public class GmmlReader {
 				  }//end if Comment
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
       				//System.out.println("Notes");
-				   }//end if Notes
+				  }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
 			List attributes = element.getAttributes();
@@ -416,24 +421,26 @@ public class GmmlReader {
 					Attribute attribute = (Attribute) att;
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
-						if("ReceptorRound".equalsIgnoreCase(stype)) {
-							//System.out.println("ReceptorRound");
+						if("Tbar".equalsIgnoreCase(stype)) {
+						  	type = 0;
 						}
-						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
-						  	//System.out.println("ReceptorSquare");
+						else if("ReceptorRound".equalsIgnoreCase(stype)) {
+							type = 1;
 						}
 						else if("LigandRound".equalsIgnoreCase(stype)) {
-						  	//System.out.println("LigandRound");
+						  	type = 2;
+						}
+						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
+						  	type = 3;
 						}
 						else if("LigandSquare".equalsIgnoreCase(stype)) {
-						  	//System.out.println("LigandSquare");
+						  	type = 4;
 						}
-						else if("Tbar".equalsIgnoreCase(stype)) {
-						  	//System.out.println("Tbar");
-						}
+
 					}//end if Type
 				} //end if attribute
 			}//end while hasNext()
+			pathway.addLineShape(sx, sy, ex, ey, color, type);
 		} //end else if LineShape
 		else if ("Arc".equalsIgnoreCase(element.getName())) {
      		double sx = 0;

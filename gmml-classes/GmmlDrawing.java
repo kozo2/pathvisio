@@ -191,6 +191,11 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			drawLine(pathway.lines[i]);
 		}
 		
+		//Draws lineshapes
+		for (int i=0; i<pathway.lineshapes.length; i++) {
+			drawLineShape(pathway.lineshapes[i]);
+		}
+		
 		for (int i=0; i<connection.Connection.length; i++) {
 			big.setColor(Color.orange);
 			big.setStroke(new BasicStroke(2.0f));
@@ -285,6 +290,31 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		Polygon arrowhead = new Polygon(x,y,3);
 		big.draw(arrowhead);
 		big.fill(arrowhead);
+	}
+	
+	public void drawLineShape (GmmlLineShape lineshape) {
+		big.setColor(lineshape.color);
+		big.setStroke(new BasicStroke(1.0f));
+		
+		if (lineshape.type==0) {
+			double x1 = lineshape.startx/zf;
+			double x2 = lineshape.endx/zf;
+			double y1 = lineshape.starty/zf;
+			double y2 = lineshape.endy/zf;
+			
+			Line2D.Double drawline = new Line2D.Double(x1,y1,x2,y2);
+			big.draw(drawline);
+			
+			double s  = Math.sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1))) / 8;
+			
+			double capx1 = ((-y2 + y1)/s) + x2;
+			double capy1 = (( x2 - x1)/s) + y2;
+			double capx2 = (( y2 - y1)/s) + x2;
+			double capy2 = ((-x2 + x1)/s) + y2;
+			
+			Line2D.Double drawcap = new Line2D.Double(capx1,capy1,capx2,capy2);
+			big.draw(drawcap);
+		}
 	}
 	
 	// Draws the Geneproduct.
