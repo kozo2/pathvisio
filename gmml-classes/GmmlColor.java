@@ -37,8 +37,8 @@ public class GmmlColor {
    /**
     * Create a new GmmlColor and store the color in it, note that if the string is an invalid gmml color string it will result in black.
     */
-	public GmmlColor(String input) {
-        storeColor(input);        
+	public GmmlColor(String colorstring) {
+        storeColor(colorstring);        
     }
    
 	/**
@@ -59,11 +59,11 @@ public class GmmlColor {
 	/**
 	 * Store a gmml valid color string
 	 */
-	public void storeColor(String scolor) {
-		if(!storeStringColor(scolor)) {
-			if(!storeHexColor(scolor)) {
-				if(Integer.parseInt(scolor.trim()) != -1) {
-					System.out.println("Not a valid color value!");
+	public void storeColor(String colorstring) {
+		if(!storeStringColor(colorstring)) {
+			if(!storeHexColor(colorstring)) {
+				if(Integer.parseInt(colorstring.trim()) != -1) {
+					System.out.println("'"+colorstring + "' is not a valid color value!");
 				} else {
 					color[0] = 0;
 					color[1] = 0;
@@ -76,25 +76,25 @@ public class GmmlColor {
 	/**
 	 * Convert a gmml valid color string into a float[3]
 	 */
-	public static float[] convertColorFloat(String scolor) {
-		GmmlColor temp = new GmmlColor(scolor);
-		float[] fcolor = temp.getColorFloat();
-		return fcolor;
+	public static float[] convertStringToFloat(String colorstring) {
+		GmmlColor temp = new GmmlColor(colorstring);
+		float[] colorfloat = temp.getColorFloat();
+		return colorfloat;
 	}
 	
 	/**
 	 * Convert a gmml valid color string into a Color awt can use
 	 */
-	public static Color convertColor(String scolor) {
-		GmmlColor temp = new GmmlColor(scolor);
-		Color returncolor = temp.getColor();
-		return returncolor;
+	public static Color convertStringToColor(String colorstring) {
+		GmmlColor temp = new GmmlColor(colorstring);
+		Color color = temp.getColor();
+		return color;
 	}
 
 	/**
 	 * Convert an awt Color object into a valid hex string for storing in files
 	 */	
-	public static String convertColorString(Color color) {
+	public static String convertColorToString(Color color) {
 		String rhex = Integer.toHexString(color.getRed());
 		String ghex = Integer.toHexString(color.getGreen());
 		String bhex = Integer.toHexString(color.getBlue());

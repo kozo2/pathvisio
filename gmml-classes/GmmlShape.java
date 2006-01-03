@@ -24,18 +24,17 @@ double x,y,width,height,rotation;
 int type;
 Color color;
 
-	public GmmlShape(double inputx, double inputy, double inputw, double inputh, int inputtype, String inputcolor, double inputrotation) {
-		x=inputx;
-		y=inputy;
-		width=inputw;
-		height=inputh;
-		color=GmmlColor.convertColor(inputcolor);
-		type=inputtype;
-		rotation=inputrotation;		
-		
+	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.color = GmmlColor.convertStringToColor(color);
+		this.type = type;
+		this.rotation = rotation;			
 	} //end of GmmlShape constructor
 	
-	public boolean contains(double linex,double liney) {
+	public boolean contains(double mousex, double mousey) {
 	
 		if (type==0) {				
 				double theta = Math.toRadians(rotation);
@@ -59,7 +58,7 @@ Color color;
 				
 				Polygon temp = new Polygon(xs,ys,4);
 				
-				if (temp.contains(linex,liney)) {
+				if (temp.contains(mousex, mousey)) {
 					return true;
 				}
 				else {
@@ -73,9 +72,9 @@ Color color;
 		
 	}
 	
-	public void setLocation(double newx, double newy){
-		x=newx;
-		y=newy;
+	public void setLocation(double x, double y){
+		this.x = x;
+		this.y = y;
 	}
 	
 

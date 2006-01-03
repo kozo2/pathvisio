@@ -44,9 +44,9 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	static protected Label label;
 	
-	GmmlDrawing(GmmlPathway inputpathway, GmmlConnection inputconnection) {
-		pathway = inputpathway;
-		connection = inputconnection;
+	GmmlDrawing(GmmlPathway pathway, GmmlConnection connection) {
+		this.pathway = pathway;
+		this.connection = connection;
 		
 		rectsLength = pathway.geneProducts.length;
 		rectClick = new boolean[rectsLength];

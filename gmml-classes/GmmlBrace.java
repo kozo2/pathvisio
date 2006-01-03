@@ -23,20 +23,20 @@ public class GmmlBrace {
 	int or; //or is the orientation: 0=top, 1=right, 2=bottom, 3=left
 	Color color;
 	
-	public GmmlBrace(double inputcX, double inputcY, double inputw, double inputppo, int inputor, String inputcolor) {
-		cX=inputcX;
-		cY=inputcY;
-		w=inputw;
-		ppo=inputppo;
-		or=inputor;
-		color=GmmlColor.convertColor(inputcolor);
+	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, String color) {
+		cX=centerX;
+		cY=centerY;
+		w=width;
+		this.ppo=ppo;
+		or=orientation;
+		this.color=GmmlColor.convertStringToColor(color);
 		
 	} //end constructor GmmlBrace
 	
 	//Contains without zoomfactor, for the connections for example
-	public boolean contains(double linex, double liney) {
+	public boolean contains(double mousex, double mousey) {
 		if (or==0 || or==2) {
-			if (cX-0.5*w<=linex && linex<=cX+0.5*w && cY-0.5*ppo<=liney && liney<=cY+0.5*ppo) {
+			if (cX-0.5*w<=mousex&& mousex<=cX+0.5*w && cY-0.5*ppo<=mousey && mousey<=cY+0.5*ppo) {
 				return true;
 			}
 			else {
@@ -44,7 +44,7 @@ public class GmmlBrace {
 			}
 		} //end if orientation
 		else {
-			if (cY-0.5*w<=liney && liney<=cY+0.5*w && cX-0.5*ppo<=linex && linex<=cX+0.5*ppo) {
+			if (cY-0.5*w<=mousey && mousey<=cY+0.5*w && cX-0.5*ppo<=mousex && mousex<=cX+0.5*ppo) {
 				return true;
 			}
 			else {
@@ -54,9 +54,9 @@ public class GmmlBrace {
 	} //end of contains
 
 	//Contains with zoomfactor, for the mouselistener
-	public boolean contains(double mousex, double mousey, double zf) {
+	public boolean contains(double mousex, double mousey, double zoomfactor) {
 		if (or==0 || or==2) {
-			if (cX-0.5*w<=mousex*zf && mousex*zf<=cX+0.5*w && cY-0.5*ppo<=mousey*zf && mousey*zf<=cY+0.5*ppo) {
+			if (cX-0.5*w<=mousex*zoomfactor && mousex*zoomfactor<=cX+0.5*w && cY-0.5*ppo<=mousey*zoomfactor && mousey*zoomfactor<=cY+0.5*ppo) {
 				return true;
 			}
 			else {
@@ -64,7 +64,7 @@ public class GmmlBrace {
 			}
 		} //end if orientation
 		else {
-			if (cY-0.5*w<=mousey*zf && mousey*zf<=cY+0.5*w && cX-0.5*ppo<=mousex*zf && mousex*zf<=cX+0.5*ppo) {
+			if (cY-0.5*w<=mousey*zoomfactor && mousey*zoomfactor<=cY+0.5*w && cX-0.5*ppo<=mousex*zoomfactor && mousex*zoomfactor<=cX+0.5*ppo) {
 				return true;
 			} 
 			else {
@@ -74,9 +74,9 @@ public class GmmlBrace {
 
 	} //end of contains
 	
-	public void setLocation(double newx, double newy) {
-		cX=newx;
-		cY=newy;
+	public void setLocation(double centerX, double centerY) {
+		cX = centerX;
+		cY = centerY;
 	}
 
 } //end of GmmlBrace

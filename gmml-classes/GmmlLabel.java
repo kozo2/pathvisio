@@ -23,32 +23,32 @@ public class GmmlLabel {
 	int x, y, width, height, fontSize;
 	Color color;
 	
-	public GmmlLabel (int inputx, int inputy, int inputwidth, int inputheight, String inputtext, String inputfont, String inputfontWeight, String inputfontStyle, int inputfontSize, Color inputcolor) {
-		x = inputx;
-		y = inputy;
-		width = inputwidth;
-		height = inputheight;
-		text = inputtext;
-		font = inputfont;
-		fontWeight = inputfontWeight;
-		fontStyle = inputfontStyle;
-		fontSize = inputfontSize;
-		color = inputcolor;
+	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, String fontStyle, int fontSize, Color color) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.text = text;
+		this.font = font;
+		this.fontWeight = fontWeight;
+		this.fontStyle = fontStyle;
+		this.fontSize = fontSize;
+		this.color = color;
 	}
-	public boolean contains (double inputx, double inputy) {
+	public boolean contains (double mousex, double mousey) {
 		Rectangle rect = new Rectangle(x, y, width, height);
-		boolean contains = rect.contains(inputx, inputy);
+		boolean contains = rect.contains(mousex, mousey);
 		return contains;
 	}
-	public boolean contains (double inputx, double inputy, double zf) {
+	public boolean contains (double mousex, double mousey, double zoomfactor) {
 		Rectangle rect = new Rectangle(x, y, width, height);
-		boolean contains = rect.contains(inputx * zf, inputy * zf);
+		boolean contains = rect.contains(mousex * zoomfactor, mousey * zoomfactor);
 		return contains;
 	}
 	
-	public void setLocation(int newx, int newy){
-		x = newx;
-		y = newy;
+	public void setLocation(int x, int y){
+		this.x = x;
+		this.y = y;
 	}
 
 }

@@ -23,19 +23,19 @@ public class GmmlArc {
 double x, y, width, height, rotation;
 Color color;
 
-	public GmmlArc(double inputx, double inputy, double inputw, double inputh, String inputcolor) {
-		x=inputx;
-		y=inputy;
-		width=inputw;
-		height=inputh;
-		color=GmmlColor.convertColor(inputcolor);
+	public GmmlArc(double x, double y, double width, double height, String color) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.color = GmmlColor.convertStringToColor(color);
 		
 	} //end of constructor GmmlArc
 	
-	public boolean contains(double linex, double liney) {
+	public boolean contains(double mousex, double mousey) {
 		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
 		
-		if (arc.contains(linex,liney)) {
+		if (arc.contains(mousex,mousey)) {
 			return true;
 		}
 		else {
@@ -43,10 +43,10 @@ Color color;
 		}
 	}
 	
-	public boolean contains(double mousex, double mousey, double zf) {
+	public boolean contains(double mousex, double mousey, double zoomfactor) {
 		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
 		
-		if (arc.contains(mousex*zf,mousey*zf)) {
+		if (arc.contains(mousex*zoomfactor,mousey*zoomfactor)) {
 			return true;
 		}
 		else {
@@ -54,9 +54,9 @@ Color color;
 		}	
 	}
 	
-	public void setLocation(double newx, double newy) {
-		x=newx;
-		y=newy;
+	public void setLocation(double x, double y) {
+		this.x = x;
+		this.y = y;
 	}
 	
 } //end of GmmlArc

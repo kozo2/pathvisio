@@ -37,8 +37,8 @@ public class GmmlWriter {
 	Document doc;
 	Element root;
 	
-	public GmmlWriter(GmmlPathway output) {
-		pathway = output;
+	public GmmlWriter(GmmlPathway pathway) {
+		this.pathway = pathway;
 		buildDoc();
 	}
 	
@@ -153,7 +153,7 @@ public class GmmlWriter {
 		   graphics.setAttribute("StartY",Integer.toString((int)pathway.lines[i].starty));
 		   graphics.setAttribute("EndX",Integer.toString((int)pathway.lines[i].endx));
 		   graphics.setAttribute("EndY",Integer.toString((int)pathway.lines[i].endy));
-		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.lines[i].color));
+		   graphics.setAttribute("Color",GmmlColor.convertColorToString(pathway.lines[i].color));
 		   
 		   line.addContent(graphics);
 		   root.addContent(line);
@@ -189,7 +189,7 @@ public class GmmlWriter {
 		   graphics.setAttribute("StartY",Integer.toString((int)pathway.lineshapes[i].starty));
 		   graphics.setAttribute("EndX",Integer.toString((int)pathway.lineshapes[i].endx));
 		   graphics.setAttribute("EndY",Integer.toString((int)pathway.lineshapes[i].endy));
-		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.lineshapes[i].color));
+		   graphics.setAttribute("Color",GmmlColor.convertColorToString(pathway.lineshapes[i].color));
 		   
 		   lineshape.addContent(graphics);
 		   root.addContent(lineshape);
@@ -206,7 +206,7 @@ public class GmmlWriter {
 		   graphics.setAttribute("StartY",Integer.toString((int)pathway.arcs[i].y));
 		   graphics.setAttribute("Width",Integer.toString((int)pathway.arcs[i].width));
 		   graphics.setAttribute("Height",Integer.toString((int)pathway.arcs[i].height));
-		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.arcs[i].color));
+		   graphics.setAttribute("Color",GmmlColor.convertColorToString(pathway.arcs[i].color));
 		   graphics.setAttribute("Rotation",Double.toString(pathway.arcs[i].rotation));
 		   
 		   arc.addContent(graphics);
@@ -247,7 +247,7 @@ public class GmmlWriter {
 		   graphics.setAttribute("CenterY",Integer.toString((int)cy));
 		   graphics.setAttribute("Width",Integer.toString((int)w));
 		   graphics.setAttribute("Height",Integer.toString((int)h));
-		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.labels[i].color));
+		   graphics.setAttribute("Color",GmmlColor.convertColorToString(pathway.labels[i].color));
 		   graphics.setAttribute("FontName",pathway.labels[i].font);
 		   graphics.setAttribute("FontSize",Integer.toString(pathway.labels[i].fontSize));
 		   graphics.setAttribute("FontWeight",fontWeight);
@@ -286,7 +286,7 @@ public class GmmlWriter {
 		   graphics.setAttribute("CenterY",Integer.toString((int)cy));
 		   graphics.setAttribute("Width",Integer.toString((int)w));
 		   graphics.setAttribute("Height",Integer.toString((int)h));
-		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.shapes[i].color));
+		   graphics.setAttribute("Color",GmmlColor.convertColorToString(pathway.shapes[i].color));
 		   graphics.setAttribute("Rotation",Integer.toString((int)pathway.shapes[i].rotation));
 		   
 		   shape.addContent(graphics);
@@ -315,7 +315,7 @@ public class GmmlWriter {
 		   graphics.setAttribute("CenterY",Integer.toString((int)pathway.braces[i].cY));
 		   graphics.setAttribute("Width",Integer.toString((int)pathway.braces[i].w));
 		   graphics.setAttribute("PicPointOffset",Integer.toString((int)pathway.braces[i].ppo));
-		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.braces[i].color));
+		   graphics.setAttribute("Color",GmmlColor.convertColorToString(pathway.braces[i].color));
 		   graphics.setAttribute("Orientation", orientation);
 		   
 		   brace.addContent(graphics);

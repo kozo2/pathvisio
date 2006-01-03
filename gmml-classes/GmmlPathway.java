@@ -55,12 +55,12 @@ public class GmmlPathway {
 	String notes = new String();
 	String comment = new String();
 
-	public void setNotes(String n) {
-		notes = n;
+	public void setNotes(String notes) {
+		this.notes = notes;
 	}
 	
-	public void setComment(String c) {
-		comment = c;
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 	
 	public void addAttribute(String attribute, String value) {
@@ -88,74 +88,74 @@ public class GmmlPathway {
 		geneProducts[length]=temp;
 	}
 	
-	public void addLine(double sx, double sy, double ex, double ey, int type, int style, String scolor) {
+	public void addLine(double startx, double starty, double endx, double endy, int type, int style, String colorstring) {
 		int length = lines.length;
 		
 		//RESIZE PART
 		lines = (GmmlLine[]) resizeArray(lines, (length+1));
-		Color color = GmmlColor.convertColor(scolor);
-		lines[length] = new GmmlLine(sx, sy, ex, ey, style, type, color);
+		Color color = GmmlColor.convertStringToColor(colorstring);
+		lines[length] = new GmmlLine(startx, starty, endx, endy, style, type, color);
 	}
 	
-	public void addLabel(int x, int y, int w, int h, String text, String color, String font, String weight, String style, int fontsize) {
+	public void addLabel(int x, int y, int width, int height, String text, String color, String font, String weight, String style, int fontsize) {
 		int length = labels.length;	
 
 		//RESIZE PART
 		labels = (GmmlLabel[]) resizeArray(labels, (length+1));
 
-		labels[length] = new GmmlLabel(x, y, w, h, text, font, weight, style, fontsize, GmmlColor.convertColor(color));
+		labels[length] = new GmmlLabel(x, y, width, height, text, font, weight, style, fontsize, GmmlColor.convertStringToColor(color));
 	}
 	
-	public void addArc(double x, double y, double w, double h, String color) {
+	public void addArc(double x, double y, double width, double height, String color) {
 		int length = arcs.length;
 		
 		//RESIZE PART
 		arcs = (GmmlArc[]) resizeArray(arcs, (length+1));
-		GmmlArc temp = new GmmlArc(x,y,w,h,color);
+		GmmlArc temp = new GmmlArc(x, y, width, height, color);
 		arcs[length]=temp;
 	}
 
-	public void addLineShape(double sx, double sy, double ex, double ey, String scolor, int type) {
+	public void addLineShape(double startx, double starty, double endx, double endy, String scolor, int type) {
 		int length = lineshapes.length;
 		
 		//RESIZE PART
 		lineshapes = (GmmlLineShape[]) resizeArray(lineshapes, (length+1));
-		Color color = GmmlColor.convertColor(scolor);
-		lineshapes[length] = new GmmlLineShape(sx, sy, ex, ey, color, type);
+		Color color = GmmlColor.convertStringToColor(scolor);
+		lineshapes[length] = new GmmlLineShape(startx, starty, endx, endy, type, color);
 	}
 	
-	public void addBrace(double cX, double cY, double w, double ppo, int or, String color) {
+	public void addBrace(double centerX, double centerY, double width, double ppo, int orientation, String color) {
 		int length = braces.length;
 				
 		//Resize part
 		braces = (GmmlBrace[]) resizeArray(braces, (length+1));
-		braces[length] = new GmmlBrace(cX,cY,w,ppo,or,color);
+		braces[length] = new GmmlBrace(centerX,centerY,width,ppo,orientation,color);
 
 	}
 
-	public void addCellShape(double x, double y, double w, double h, double rotation) {
+	public void addCellShape(double x, double y, double width, double height, double rotation) {
 		//hier komt addCellShape
 	}
 	
-	public void addCellComponent(double cx, double cy, int type) {
+	public void addCellComponent(double centerX, double centerY, int type) {
 		//hier komt addCellComponent
 	}
 	
-	public void addProteinComplex(double cx, double cy, int type) {
+	public void addProteinComplex(double centerX, double centerY, int type) {
 		//hier komt addCellComponent
 	}		
 	
-	public void addShape(double x, double y, double w, double h, int type, String color, double rotation) {
+	public void addShape(double x, double y, double width, double height, int type, String color, double rotation) {
 		int length = shapes.length;
 		
 		//RESIZE PART
 		shapes = (GmmlShape[]) resizeArray(shapes, (length+1));
-		shapes[length] = new GmmlShape(x, y, w, h, type, color, rotation);
+		shapes[length] = new GmmlShape(x, y, width, height, type, color, rotation);
 	}
 	
-	public void setSize(int w, int h) {
-		size[0] = w;
-		size[1] = h;
+	public void setSize(int width, int height) {
+		size[0] = width;
+		size[1] = height;
 	}
 	public void echoAtt() {
 		System.out.println("Checking for stored attributes - number: "+attributes.length);

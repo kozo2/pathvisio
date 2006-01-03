@@ -23,14 +23,14 @@ public class GmmlLine {
 	int type, style;
 	Color color;
 	
-	public GmmlLine (double inputstartx, double inputstarty, double inputendx, double inputendy, int inputtype, int inputstyle, Color inputcolor) {
-		startx = inputstartx;
-		starty = inputstarty;
-		endx = inputendx;
-		endy = inputendy;
-		type = inputtype;
-		style = inputstyle;
-		color = inputcolor;
+	public GmmlLine (double startx, double starty, double endx, double endy, int type, int style, Color color) {
+		this.startx = startx;
+		this.starty = starty;
+		this.endx = endx;
+		this.endy = endy;
+		this.type = type;
+		this.style = style;
+		this.color = color;
 	}
 	
 	public boolean contains (double x, double y) {
@@ -39,17 +39,17 @@ public class GmmlLine {
 		return contains;
 	}
 	
-	public boolean contains (double x, double y, double zf) {
+	public boolean contains (double x, double y, double zoomfactor) {
 		Line2D.Double templine = new Line2D.Double(startx, starty, endx, endy);
-		boolean contains = templine.contains(x*zf, y*zf);
+		boolean contains = templine.contains(x * zoomfactor, y * zoomfactor);
 		return contains;
 	}
 
-	public void setLocation(double newstartx, double newstarty, double newendx, double newendy){
-		startx = newstartx;
-		starty = newstarty;
-		endx = newendx;
-		endy = newendy;
+	public void setLocation(double startx, double starty, double endx, double endy){
+		this.startx = startx;
+		this.starty = starty;
+		this.endx = endx;
+		this.endy = endy;
 	}
 }
 	

@@ -21,19 +21,19 @@ public class GmmlGeneProduct {
 	int x, y, width, height;
 	String geneID, ref;
 	
-	public GmmlGeneProduct(int inputx, int inputy, int inputwidth, int inputheight, String inputgeneID, String inputref) {
-		x=inputx;
-		y=inputy;
-		width=inputwidth;
-		height=inputheight;
-		geneID=inputgeneID;
-		ref=inputref;
+	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.geneID = geneID;
+		this.ref = ref;
 	} //end of constructor
 	
 	
 	//Contains without zoomfactor, for the connections for example
-	public boolean contains(double linex, double liney) {
-		if (x<=linex && linex<=x+width && y<=liney && liney<=y+height) {
+	public boolean contains(double mousex, double mousey) {
+		if (x<=mousex && mousex<=x+width && y<=mousey && mousey<=y+height) {
 			return true;
 		}
 		else {
@@ -42,8 +42,8 @@ public class GmmlGeneProduct {
 	} //end of contains
 
 	//Contains with zoomfactor, for the mouselistener
-	public boolean contains(int mousex, int mousey, int zf) {
-		if (x<=mousex*zf && mousex*zf<=x+width && y<=mousey*zf && mousey*zf<=y+height) {
+	public boolean contains(int mousex, int mousey, int zoomfactor) {
+		if (x<=mousex*zoomfactor && mousex*zoomfactor<=x+width && y<=mousey*zoomfactor && mousey*zoomfactor<=y+height) {
 			return true;
 		}
 		else {
@@ -51,9 +51,9 @@ public class GmmlGeneProduct {
 		}
 	} //end of contains
 	
-	public void setLocation(int inputx, int inputy) {
-		x = inputx;
-		y = inputy;
+	public void setLocation(int x, int y) {
+		this.x = x;
+		this.y = y;
 	}
 	
 } //end of GmmlGeneProduct
