@@ -161,7 +161,39 @@ public class GmmlWriter {
 	}
 	
 	private void addLineShapes() {
-		//We haven't implemented this yet
+		for (int i = 0; i < pathway.lineshapes.length; i++) {
+			Element lineshape = new Element("LineShape");
+
+			String type, style;
+
+		   type = "TBar"; //Default is tbar
+		   
+		   if (pathway.lineshapes[i].type==1) {
+		   	type = "ReceptorRound";
+			}	   
+		   if (pathway.lineshapes[i].type==2) {
+		   	type = "LigandRound";
+			}	
+			if (pathway.lineshapes[i].type==3) {
+		   	type = "ReceptorSquare";
+			}	   
+		   if (pathway.lineshapes[i].type==4) {
+		   	type = "LigandSquare";
+			}
+			
+			lineshape.setAttribute("Type",type);
+		   
+		   Element graphics = new Element("Graphics"); 
+	   
+		   graphics.setAttribute("StartX",Integer.toString((int)pathway.lineshapes[i].startx));
+		   graphics.setAttribute("StartY",Integer.toString((int)pathway.lineshapes[i].starty));
+		   graphics.setAttribute("EndX",Integer.toString((int)pathway.lineshapes[i].endx));
+		   graphics.setAttribute("EndY",Integer.toString((int)pathway.lineshapes[i].endy));
+		   graphics.setAttribute("Color",GmmlColor.convertColorString(pathway.lineshapes[i].color));
+		   
+		   lineshape.addContent(graphics);
+		   root.addContent(lineshape);
+		}
 	}
 	
 	private void addArcs() {

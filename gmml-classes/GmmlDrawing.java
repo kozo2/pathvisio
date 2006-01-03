@@ -296,6 +296,12 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		big.setColor(lineshape.color);
 		big.setStroke(new BasicStroke(1.0f));
 		
+		//Types:
+		// 0 - Tbar
+		// 1 - Receptor round
+		// 2 - Ligand round
+		// 3 - Receptor square
+		// 4 - Ligand square
 		if (lineshape.type==0) {
 			double x1 = lineshape.startx/zf;
 			double x2 = lineshape.endx/zf;
@@ -315,6 +321,108 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			Line2D.Double drawcap = new Line2D.Double(capx1,capy1,capx2,capy2);
 			big.draw(drawcap);
 		}
+		if (lineshape.type==1) {
+			double x1 = lineshape.startx/zf;
+			double x2 = lineshape.endx/zf;
+			double y1 = lineshape.starty/zf;
+			double y2 = lineshape.endy/zf;
+			
+			double s  = Math.sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)));
+						
+			double dx = (x2-x1)/s;
+			double dy = (y2-y1)/s;
+						
+			Line2D.Double drawline = new Line2D.Double(x1,y1,x2-(6*dx),y2-(6*dy));
+			big.draw(drawline);
+			
+			Ellipse2D.Double ligandround = new Ellipse2D.Double(x2-5, y2-5, 10, 10);
+			big.draw(ligandround);
+			big.fill(ligandround);
+
+		}
+		if (lineshape.type==2) {
+			double x1 = lineshape.startx/zf;
+			double x2 = lineshape.endx/zf;
+			double y1 = lineshape.starty/zf;
+			double y2 = lineshape.endy/zf;
+			
+			double theta = Math.toDegrees(Math.atan((x2-x1)/(y2-y1)));
+			
+			double s  = Math.sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)));
+			
+			double dx = (x2-x1)/s;
+			double dy = (y2-y1)/s;
+						
+			Line2D.Double drawline = new Line2D.Double(x1,y1,x2-(8*dx),y2-(8*dy));
+			big.draw(drawline);
+			
+			Arc2D.Double receptorround = new Arc2D.Double(x2-8, y2-8, 16, 16, theta+180, -180, Arc2D.OPEN);
+			big.draw(receptorround);
+		}
+		if (lineshape.type==3) {
+			double x1 = lineshape.startx/zf;
+			double x2 = lineshape.endx/zf;
+			double y1 = lineshape.starty/zf;
+			double y2 = lineshape.endy/zf;
+			
+			double s  = Math.sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1))) / 8;
+			
+			double x3 = x2 - ((x2-x1)/s);
+			double y3 = y2 - ((y2-y1)/s);
+			
+			Line2D.Double drawline = new Line2D.Double(x1,y1,x3,y3);
+			big.draw(drawline);
+			
+			double capx1 = ((-y2 + y1)/s) + x3;
+			double capy1 = (( x2 - x1)/s) + y3;
+			double capx2 = (( y2 - y1)/s) + x3;
+			double capy2 = ((-x2 + x1)/s) + y3;
+			
+			Line2D.Double drawcap = new Line2D.Double(capx1,capy1,capx2,capy2);
+			big.draw(drawcap);
+			
+			double rx1 = capx1 + 1.5*(x2-x1)/s;
+			double ry1 = capy1 + 1.5*(y2-y1)/s;
+			double rx2 = capx2 + 1.5*(x2-x1)/s;
+			double ry2 = capy2 + 1.5*(y2-y1)/s;
+			
+			Line2D.Double receptor1 = new Line2D.Double(capx1,capy1,rx1,ry1);
+			big.draw(receptor1);
+			Line2D.Double receptor2 = new Line2D.Double(capx2,capy2,rx2,ry2);
+			big.draw(receptor2);
+		}
+		if (lineshape.type==4) {
+			double x1 = lineshape.startx/zf;
+			double x2 = lineshape.endx/zf;
+			double y1 = lineshape.starty/zf;
+			double y2 = lineshape.endy/zf;
+			
+			double s  = Math.sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1))) / 6;
+			
+			double x3 = x2 - ((x2-x1)/s);
+			double y3 = y2 - ((y2-y1)/s);
+			
+			Line2D.Double drawline = new Line2D.Double(x1,y1,x3,y3);
+			big.draw(drawline);
+			
+			int[] polyx = new int[4];
+			int[] polyy = new int[4];
+			
+			polyx[0] = (int) (((-y2 + y1)/s) + x3);
+			polyy[0] = (int) ((( x2 - x1)/s) + y3);
+			polyx[1] = (int) ((( y2 - y1)/s) + x3);
+			polyy[1] = (int) (((-x2 + x1)/s) + y3);
+
+			polyx[2] = (int) (polyx[1] + 1.5*(x2-x1)/s);
+			polyy[2] = (int) (polyy[1] + 1.5*(y2-y1)/s);			
+			polyx[3] = (int) (polyx[0] + 1.5*(x2-x1)/s);
+			polyy[3] = (int) (polyy[0] + 1.5*(y2-y1)/s);
+	
+			Polygon ligandsquare  = new Polygon(polyx,polyy,4);
+			big.draw(ligandsquare);
+			big.fill(ligandsquare);
+		}
+		
 	}
 	
 	// Draws the Geneproduct.
