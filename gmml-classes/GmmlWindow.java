@@ -24,12 +24,20 @@ import java.io.*;
  *        The GmmlWindow class is basicly the Graphic User Interface of the program as you see when you open it. The applet is started and the menu's, toolbar and drawing area are added.
  */
   
+
 public class GmmlWindow {
   private JFrame f;
   GmmlConnection connection;
   GmmlPathway pathway;
   JTextField zoomField;
   GmmlDrawing drawing;
+  
+  public static void main(String[]args) {
+	
+	GmmlWindow gw = new GmmlWindow();
+
+}
+
   
   /**
    * Create a new program window.
