@@ -67,17 +67,20 @@ class GmmlConnection {
 				j++;
 			}
 			j=0;
+			while (!(test1&&test2)&&(j < pathway.shapes.length)) {
+				checkShape(i,j,x1,y1,x2,y2);
+				j++;
+			}
+			j=0;
 			while (!(test1&&test2)&&(j < pathway.arcs.length)){
 				checkArc(i,j,x1,y1,x2,y2);
 				j++;
 			}
-			j=0;
-			
+			j=0;			
 			while (!(test1&&test2)&&(j < pathway.labels.length)){
 				checkLabel(i,j,x1,y1,x2,y2);
 				j++;
-			}
-			
+			}	
 			j=0;
 			while (!(test1&&test2)&&(j < pathway.braces.length)){
 				checkBrace(i,j,x1,y1,x2,y2);
@@ -145,12 +148,28 @@ class GmmlConnection {
 		}
 	}// checkGeneProduct	
 		
-	public void checkShapeRect(){		
-	}// end of checkShapesRect
+	public void checkShape(int i, int j, double x1, double y1, double x2, double y2){
+		/** checks for connections of a line with shapes */
+		int n=0;
+		while (!test1&&(n<25)){
+			if ((!test1)&&(pathway.shapes[j].contains(x1+n*dx,y1+n*dy))){
+				Connection[i][1]=j;
+				Connection[i][3]=0;
+				test1=true;
+			}
+			n++;
+		}
+		n=0;
+		while (!test2&&(n<25)){
+			if ((!test2)&&(pathway.shapes[j].contains(x2-n*dx,y2-n*dy))){
+				Connection[i][2]=j;
+				Connection[i][4]=0;
+				test2=true;
+			}
+			n++;
+		}
+	}// checkGeneProduct	
 		
-	public void checkShapeEllip() {
-	}// end of checkShapes1
-
 	public void checkArc(int i, int j, double x1, double y1, double x2, double y2){
 		int n=0;
 		while (!test1&&(n<25)){
