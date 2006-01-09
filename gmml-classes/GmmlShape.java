@@ -17,6 +17,7 @@ limitations under the License.
 
 import java.awt.Color;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 
 public class GmmlShape {
 
@@ -37,37 +38,63 @@ Color color;
 	public boolean contains(double mousex, double mousey) {
 	
 		if (type==0) {				
-				double theta = Math.toRadians(rotation);
-				double[] rot = new double[2];
+			double theta = Math.toRadians(rotation);
+			double[] rot = new double[2];
 				
-				rot[0] = Math.cos(theta);
-				rot[1] = Math.sin(theta);
+			rot[0] = Math.cos(theta);
+			rot[1] = Math.sin(theta);
+		
+			int[] xs = new int[4];
+			int[] ys = new int[4];
+			
+			xs[0]= (int)(( 0.5*width*rot[0]-0.5*height*rot[1])+x+width); //upper right
+			xs[1]= (int)(( 0.5*width*rot[0]+0.5*height*rot[1])+x+width); //lower right
+			xs[2]= (int)((-0.5*width*rot[0]+0.5*height*rot[1])+x+width); //lower left
+			xs[3]= (int)((-0.5*width*rot[0]-0.5*height*rot[1])+x+width); //upper left
+			
+			ys[0]= (int)(( 0.5*width*rot[1]+0.5*height*rot[0])+y+height); //upper right
+			ys[1]= (int)(( 0.5*width*rot[1]-0.5*height*rot[0])+y+height); //lower right
+			ys[2]= (int)((-0.5*width*rot[1]-0.5*height*rot[0])+y+height); //lower left
+			ys[3]= (int)((-0.5*width*rot[1]+0.5*height*rot[0])+y+height); //upper left
 				
-				int[] xs = new int[4];
-				int[] ys = new int[4];
-				
-				xs[1]= (int)(0.5*width*rot[0]-0.5*height*rot[1]); //upper right
-				xs[2]= (int)(0.5*width*rot[0]+0.5*height*rot[1]); //lower right
-				xs[3]= (int)(-0.5*width*rot[0]+0.5*height*rot[1]); //lower left
-				xs[4]= (int)(-0.5*width*rot[0]-0.5*height*rot[1]); //upper left
-				
-				ys[1]= (int)(0.5*width*rot[1]+0.5*height*rot[0]); //upper right
-				ys[1]= (int)(0.5*width*rot[1]-0.5*height*rot[0]); //lower right
-				ys[1]= (int)(-0.5*width*rot[1]-0.5*height*rot[0]); //lower left
-				ys[1]= (int)(-0.5*width*rot[1]+0.5*height*rot[0]); //upper left
-				
-				Polygon temp = new Polygon(xs,ys,4);
-				
-				if (temp.contains(mousex, mousey)) {
-					return true;
-				}
-				else {
-					return false;
-				}
+			Polygon temp = new Polygon(xs,ys,4);
+			
+			if (temp.contains(mousex, mousey)) {
+				return true;
+			}
+			else {
+				return false;
+			}
 				
 		}
 		else {
-			return false;
+			double theta = Math.toRadians(rotation);
+			double[] rot = new double[2];
+				
+			rot[0] = Math.cos(theta);
+			rot[1] = Math.sin(theta);
+		
+			int[] xs = new int[4];
+			int[] ys = new int[4];
+			
+			xs[0]= (int)(( width*rot[0]-height*rot[1])+x+width); //upper right
+			xs[1]= (int)(( width*rot[0]+height*rot[1])+x+width); //lower right
+			xs[2]= (int)((-width*rot[0]+height*rot[1])+x+width); //lower left
+			xs[3]= (int)((-width*rot[0]-height*rot[1])+x+width); //upper left
+			
+			ys[0]= (int)(( width*rot[1]+height*rot[0])+y+height); //upper right
+			ys[1]= (int)(( width*rot[1]-height*rot[0])+y+height); //lower right
+			ys[2]= (int)((-width*rot[1]-height*rot[0])+y+height); //lower left
+			ys[3]= (int)((-width*rot[1]+height*rot[0])+y+height); //upper left
+				
+			Polygon temp = new Polygon(xs,ys,4);
+			
+			if (temp.contains(mousex, mousey)) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 		
 	}
@@ -75,6 +102,30 @@ Color color;
 	public void setLocation(double x, double y){
 		this.x = x;
 		this.y = y;
+	}
+	
+	public Rectangle[] getHelpers(double zf) {
+		double theta = Math.toRadians(rotation);
+		double[] rot = new double[2];
+		
+		rot[0] = Math.cos(theta);
+		rot[1] = Math.sin(theta);
+		
+		Rectangle[] helpers = new Rectangle[3];
+		
+//		new Rectangle((int)(shape.x/zf + shape.width/(2*zf)),(int)(shape.y/zf + shape.height/(2*zf)),(int)(shape.width/zf),(int)(shape.height/zf))
+		if (type == 0) {
+			helpers[0] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)((y/zf) + (height/zf)) - 2, 5, 5);
+			helpers[1] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)((y/zf) + (0.5*height/zf))- 2, 5, 5);
+			helpers[2] = new Rectangle( (int)((x/zf) + (1.5*width/zf)) - 2, (int)((y/zf) + (height/zf)) - 2, 5, 5);
+		}
+		if (type == 1) {
+			helpers[0] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)((y/zf) + (height/zf)) - 2, 5, 5);
+			helpers[1] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf)- 2, 5, 5);
+			helpers[2] = new Rectangle( (int)((x/zf) + (2*width/zf)) - 2, (int)((y/zf) + (height/zf)) - 2, 5, 5);
+		}
+		
+		return helpers;
 	}
 	
 

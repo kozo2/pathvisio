@@ -16,6 +16,7 @@ limitations under the License.
 */
 
 import java.awt.Color;
+import java.awt.Rectangle;
 
 public class GmmlBrace {
 	
@@ -77,6 +78,48 @@ public class GmmlBrace {
 	public void setLocation(double centerX, double centerY) {
 		cX = centerX;
 		cY = centerY;
+	}
+	
+	public Rectangle[] getHelpers() {
+		Rectangle[] helpers = new Rectangle[2];
+		helpers[0] = new Rectangle((int)cX - 2 ,(int)cY - 2, 5, 5);
+		helpers[1] = new Rectangle();
+		switch (or) {
+			case 0:
+				helpers[1].setBounds((int)(cX + (0.5*w)) - 2 ,(int)cY - 2, 5, 5);
+				break;
+			case 1: 
+				helpers[1].setBounds((int)cX - 2 ,(int)(cY + (0.5*w)) - 2, 5, 5);
+				break;
+			case 2:
+				helpers[1].setBounds((int)(cX - (0.5*w)) - 2 ,(int)cY - 2, 5, 5);
+				break;
+			case 3:
+				helpers[1].setBounds((int)cX - 2 ,(int)(cY - (0.5*w)) - 2, 5, 5);
+				break;
+		}
+		return helpers;
+	}
+	
+	public Rectangle[] getHelpers(double zf) {
+		Rectangle[] helpers = new Rectangle[2];
+		helpers[0] = new Rectangle((int)(cX/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
+		helpers[1] = new Rectangle();
+		switch (or) {
+			case 0:
+				helpers[1].setBounds((int)((cX + (0.5*w))/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
+				break;
+			case 1: 
+				helpers[1].setBounds((int)(cX/zf) - 2 ,(int)((cY + (0.5*w))/zf) - 2, 5, 5);
+				break;
+			case 2:
+				helpers[1].setBounds((int)((cX - (0.5*w))/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
+				break;
+			case 3:
+				helpers[1].setBounds((int)(cX/zf) - 2 ,(int)((cY - (0.5*w))/zf) - 2, 5, 5);
+				break;
+		}
+		return helpers;
 	}
 
 } //end of GmmlBrace

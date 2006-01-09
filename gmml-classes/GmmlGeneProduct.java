@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import java.awt.*;
 import java.awt.Color;
 
 public class GmmlGeneProduct {
@@ -54,6 +55,16 @@ public class GmmlGeneProduct {
 	public void setLocation(int x, int y) {
 		this.x = x;
 		this.y = y;
+	}
+	
+	public Rectangle[] getHelpers(double zf) {
+		Rectangle[] helpers = new Rectangle[3];
+		
+		helpers[0] = new Rectangle( (int)((x/zf) + (0.5*width/zf)) - 2, (int)((y/zf) + (0.5*height/zf)) - 2, 5, 5);
+		helpers[1] = new Rectangle( (int)((x/zf) + (0.5*width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
+		helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)((y/zf) + (0.5*height/zf)) - 2, 5, 5);
+		
+		return helpers;
 	}
 	
 } //end of GmmlGeneProduct

@@ -17,6 +17,7 @@ limitations under the License.
 
 import java.awt.geom.Arc2D;
 import java.awt.Color;
+import java.awt.Rectangle;
 
 public class GmmlArc {
 
@@ -59,4 +60,19 @@ Color color;
 		this.y = y;
 	}
 	
+	public Rectangle[] getHelpers(double zf) {
+		double theta = Math.toRadians(rotation);
+		double[] rot = new double[2];
+		
+		rot[0] = Math.cos(theta);
+		rot[1] = Math.sin(theta);
+		
+		Rectangle[] helpers = new Rectangle[3];
+		
+		helpers[0] = new Rectangle( (int)(x/zf) - 2, (int)(y/zf) - 2, 5, 5);
+		helpers[1] = new Rectangle( (int)(x/zf) - 2, (int)((y/zf) - (height/zf)) - 2, 5, 5);
+		helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
+		
+		return helpers;
+	}
 } //end of GmmlArc

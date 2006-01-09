@@ -50,6 +50,14 @@ public class GmmlLabel {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public Rectangle[] getHelpers(double zf) {
+		Rectangle[] helpers = new Rectangle[1];
+		
+		helpers[0] = new Rectangle( (int)((x/zf) + (0.5*width/zf)) - 2, (int)((y/zf) + (0.5*height/zf)) - 2, 5, 5);
+		
+		return helpers;
+	}
 
 }
 		
