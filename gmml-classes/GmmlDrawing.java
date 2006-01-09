@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener {
 	double zf = 15; //zoomfactor
 	GmmlPathway pathway;
-	GmmlConnection connection;
+	//GmmlConnection connection;
 	BufferedImage bi;
 	Graphics2D big;
 	
@@ -54,9 +54,9 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	static protected Label label;
 	
-	GmmlDrawing(GmmlPathway pathway, GmmlConnection connection) {
+	GmmlDrawing(GmmlPathway pathway) {
 		this.pathway = pathway;
-		this.connection = connection;
+		//this.connection = connection;
 					
 		setBackground(Color.white);
 		addMouseMotionListener(this);
@@ -577,17 +577,17 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			drawLineShape(pathway.lineshapes[i]);
 		}
 		
-		for (int i=0; i<connection.Connection.length; i++) {
-			big.setColor(Color.orange);
-			big.setStroke(new BasicStroke(2.0f));
-			if (connection.Connection[i][3]==0 && connection.Connection[i][4]==0) {
-				double x1 = pathway.geneProducts[connection.Connection[i][1]].x + 0.5 * pathway.geneProducts[connection.Connection[i][1]].width;
-				double y1 = pathway.geneProducts[connection.Connection[i][1]].y + 0.5 * pathway.geneProducts[connection.Connection[i][1]].height;
-				double x2 = pathway.geneProducts[connection.Connection[i][2]].x + 0.5 * pathway.geneProducts[connection.Connection[i][2]].width;
-				double y2 = pathway.geneProducts[connection.Connection[i][2]].y + 0.5 * pathway.geneProducts[connection.Connection[i][2]].height;
-				big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
-			}
-		}
+//		for (int i=0; i<connection.Connection.length; i++) {
+//			big.setColor(Color.orange);
+//			big.setStroke(new BasicStroke(2.0f));
+//			if (connection.Connection[i][3]==0 && connection.Connection[i][4]==0) {
+//				double x1 = pathway.geneProducts[connection.Connection[i][1]].x + 0.5 * pathway.geneProducts[connection.Connection[i][1]].width;
+//				double y1 = pathway.geneProducts[connection.Connection[i][1]].y + 0.5 * pathway.geneProducts[connection.Connection[i][1]].height;
+//				double x2 = pathway.geneProducts[connection.Connection[i][2]].x + 0.5 * pathway.geneProducts[connection.Connection[i][2]].width;
+//				double y2 = pathway.geneProducts[connection.Connection[i][2]].y + 0.5 * pathway.geneProducts[connection.Connection[i][2]].height;
+//				big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
+//			}
+//		}
 		
 		//Draw geneproducts
 		for (int i=0; i<pathway.geneProducts.length; i++) {

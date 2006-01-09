@@ -81,7 +81,7 @@ public class GmmlWriter {
    } 
    
    /**
-     * This method builds a document from the pathay, used only internally. Maybe make this private? Or make a public overloaded version that requires a pathway input?
+     * This method builds a document from the pathay, used only internally. Maybe make this private? Or make a public overloaded version that requires a pathway input
      */
      
    public void buildDoc() {

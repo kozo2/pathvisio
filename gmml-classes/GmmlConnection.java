@@ -22,6 +22,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.Graphics2D.*;
 import java.awt.geom.AffineTransform;
 
+// GmmlConnection is not used in the program so far
+// it can be used to connect objects and to keep those connected when the objects are moved.
+
 class GmmlConnection {
 
 	GmmlPathway pathway;
@@ -45,6 +48,15 @@ class GmmlConnection {
 		   *			5: label
 		   *			6: brace
 		   */	
+		
+		/* TO DO
+			GmmlConnection only checks for connections between lines and large objects like geneproducts.
+			So the following functions can be added:
+				- connection checks between lineshapes and large objects
+				- connection checks between lines and lineshapes
+				- anchorpoints from lineshapes
+		*/
+		
 	public GmmlConnection(GmmlPathway inputpathway){
 
 
@@ -288,4 +300,4 @@ class GmmlConnection {
 	}// end of checkBrace			
 			
 }// end of class
-			
+
