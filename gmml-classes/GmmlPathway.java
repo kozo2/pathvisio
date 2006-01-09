@@ -166,6 +166,7 @@ public class GmmlPathway {
 	  * <DD>width - width of the arc
 	  * <DD>heigth - heigth of the arc
 	  * <DD>color - color of the arc
+	  * <DD>rotation - rotation of the arc in radians
 	  * </DL>
 	  */		
 	public void addArc(double x, double y, double width, double height, String color, double rotation) {

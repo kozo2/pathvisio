@@ -41,12 +41,15 @@ public class GmmlLabel {
 		this.fontSize = fontSize;
 		this.color = color;
 	}
+	
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an label contains these coordinates. To do this, a rectangle is created, on which the normal contains method is used.
-	  */
-	public boolean contains (double mousex, double mousey) {
+	  *Method contains uses the coordinates of a specific point (pointx, pointy) 
+	  *to determine whether a label contains this point. 
+	  *To do this, a 'real' rectangle object is formed, on which the normal contains method is used.
+	  */	
+	public boolean contains (double pointx, double pointy) {
 		Rectangle rect = new Rectangle(x, y, width, height);
-		boolean contains = rect.contains(mousex, mousey);
+		boolean contains = rect.contains(pointx, pointy);
 		return contains;
 	}
 	

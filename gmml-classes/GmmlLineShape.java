@@ -39,9 +39,12 @@ public class GmmlLineShape {
 	}
 	
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an lineshape contains these coordinates. To do this, a polygon is created, on which the normal contains method is used.
+	  *Method contains uses the coordinates of a specific point (pointx, pointy) 
+	  *to determine whether a lineshape contains this point. 
+	  *To do this, a polygon is created, on which the normal contains method is used. 
+	  *This polygon is created to enlarge the line, because it is rather difficult to click a line.
 	  */
-	public boolean contains (double mousex, double mousey) {
+	public boolean contains (double pointx, double pointy) {
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
 		int[] x = new int[4];
 		int[] y = new int[4];
@@ -57,7 +60,7 @@ public class GmmlLineShape {
 			
 		Polygon temp = new Polygon(x,y,4);
 				
-		if (temp.contains(mousex, mousey)) {
+		if (temp.contains(pointx, pointy)) {
 			return true;
 		}
 		else {

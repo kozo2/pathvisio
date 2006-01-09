@@ -104,6 +104,8 @@ public class GmmlWindow {
     }
   }
   
+  /** Creates the menubar with an open button, a save button and and exit button.
+	 */
   private void buildMenu() {
     //Create the menubar
     JMenuBar menubar = new JMenuBar();
@@ -181,6 +183,9 @@ public class GmmlWindow {
     f.setJMenuBar(menubar);			
   }
   
+  /** creates the button in the toolbar to show the XML
+    * and creates the zoomfactor input box and a button to apply the zoomfactor.
+    */
   private void addButtons(JToolBar toolBar) {
     JButton button = null; //Create an empty button
     //Button 1
@@ -216,6 +221,8 @@ public class GmmlWindow {
     toolBar.add(button);   
   }
 }
+/** The XmlFilter checks if the selected file is a XML file.
+  */
 class XmlFilter extends javax.swing.filechooser.FileFilter {
 	public boolean accept (File f) {
 		return f.getName ().toLowerCase ().endsWith (".xml")

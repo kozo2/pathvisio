@@ -39,14 +39,14 @@ public class GmmlBrace {
 		this.color=GmmlColor.convertStringToColor(color);
 		
 	} //end constructor GmmlBrace
-	
+
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, there is checekd whether the mouse is in a certain rectangle
-	  */
- 
-	public boolean contains(double mousex, double mousey) {
+	  *Method contains uses the coordinates of a specific point (pointx, pointy) to determine whether a brace contains this point. 
+	  *To do this, there is checked whether this point is in a certain rectangle.
+	  */	 
+	public boolean contains(double pointx, double pointy) {
 		if (or==0 || or==2) {
-			if (cX-0.5*w<=mousex&& mousex<=cX+0.5*w && cY-0.5*ppo<=mousey && mousey<=cY+0.5*ppo) {
+			if (cX-0.5*w<=pointx&& pointx<=cX+0.5*w && cY-0.5*ppo<=pointy && pointy<=cY+0.5*ppo) {
 				return true;
 			}
 			else {
@@ -54,7 +54,7 @@ public class GmmlBrace {
 			}
 		} //end if orientation
 		else {
-			if (cY-0.5*w<=mousey && mousey<=cY+0.5*w && cX-0.5*ppo<=mousex && mousex<=cX+0.5*ppo) {
+			if (cY-0.5*w<=pointy && pointy<=cY+0.5*w && cX-0.5*ppo<=pointx && pointx<=cX+0.5*ppo) {
 				return true;
 			}
 			else {

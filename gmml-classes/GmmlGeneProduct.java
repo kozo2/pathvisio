@@ -38,10 +38,12 @@ public class GmmlGeneProduct {
 	} //end of constructor
 	
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an geneproduct contains these coordinates.
-	  */
-	public boolean contains(double mousex, double mousey) {
-		if (x<=mousex && mousex<=x+width && y<=mousey && mousey<=y+height) {
+	  *Method contains uses the coordinates of a specific point (pointx, pointy) 
+	  *to determine whether a geneproduct contains this point. 
+	  *To do this, there is checked whether the point is in the area of the geneproduct.
+	  */	
+	public boolean contains(double pointx, double pointy) {
+		if (x<=pointx && pointx<=x+width && y<=pointy && pointy<=y+height) {
 			return true;
 		}
 		else {

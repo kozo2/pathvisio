@@ -39,12 +39,13 @@ Color color;
 	} //end of constructor GmmlArc
 	
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, a 'real' arc object is formed, on which the normal contains method is used.
+	  *Method contains uses the coordinates of a specific point (pointx, pointy) to determine whether an arc contains this point. 
+	  *To do this, a 'real' arc object is formed, on which the normal contains method is used.
 	  */
-	public boolean contains(double mousex, double mousey) {
+	public boolean contains(double pointx, double pointy) {
 		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,180-rotation,180,0);
 		
-		if (arc.contains(mousex,mousey)) {
+		if (arc.contains(pointx,pointy)) {
 			return true;
 		}
 		else {

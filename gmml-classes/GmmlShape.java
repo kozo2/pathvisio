@@ -42,9 +42,11 @@ Color color;
 	} //end of GmmlShape constructor
 	
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an shape contains these coordinates. To do this, a polygon is created, on which the normal contains method is used. The polygon can be rotated, that's why a rotation matrix is used.
+	  *Method contains uses the coordinates of a specific point (pointx, pointy) 
+	  *to determine whether a shape contains this point. 
+	  *To do this, a polygon is created, on which the normal contains method is used.
 	  */
-	public boolean contains(double mousex, double mousey) {
+	public boolean contains(double pointx, double pointy) {
 	
 		if (type==0) {				
 			double theta = Math.toRadians(rotation);
@@ -68,7 +70,7 @@ Color color;
 				
 			Polygon temp = new Polygon(xs,ys,4);
 			
-			if (temp.contains(mousex, mousey)) {
+			if (temp.contains(pointx, pointy)) {
 				return true;
 			}
 			else {
@@ -98,7 +100,7 @@ Color color;
 				
 			Polygon temp = new Polygon(xs,ys,4);
 			
-			if (temp.contains(mousex, mousey)) {
+			if (temp.contains(pointx, pointy)) {
 				return true;
 			}
 			else {
