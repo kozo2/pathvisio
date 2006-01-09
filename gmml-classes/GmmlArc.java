@@ -61,20 +61,24 @@ Color color;
 	}
 	/**
 	  *Method getHelpers returns an array of rectangles on the arc, which are used to drag and transform the arc.
+	  *TO DO: the rotation should be implemented correctly with a rotation matrix, but to do that, other methods that use the helpers should be changed too. (For example the size of the arc should be calculated correctly)
 	  */
 	public Rectangle[] getHelpers(double zf) {
-		double theta = Math.toRadians(rotation);
-		double[] rot = new double[2];
-		
-		rot[0] = Math.cos(theta);
-		rot[1] = Math.sin(theta);
-		
 		Rectangle[] helpers = new Rectangle[3];
 		
-		helpers[0] = new Rectangle( (int)(x/zf) - 2, (int)(y/zf) - 2, 5, 5);
-		helpers[1] = new Rectangle( (int)(x/zf) - 2, (int)((y/zf) - (height/zf)) - 2, 5, 5);
-		helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
+		if(rotation <90){
+			helpers[0] = new Rectangle( (int)(x/zf) - 2, (int)(y/zf) - 2, 5, 5);
+			helpers[1] = new Rectangle( (int)(x/zf) - 2, (int)((y/zf) + (height/zf)) - 2, 5, 5);
+			helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
 		
-		return helpers;
+			return helpers;
+		}
+		else {
+			helpers[0] = new Rectangle( (int)(x/zf) - 2, (int)(y/zf) - 2, 5, 5);
+			helpers[1] = new Rectangle( (int)(x/zf) - 2, (int)((y/zf) - (height/zf)) - 2, 5, 5);
+			helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
+			
+			return helpers;
+		}
 	}
 } //end of GmmlArc
