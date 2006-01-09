@@ -168,12 +168,12 @@ public class GmmlPathway {
 	  * <DD>color - color of the arc
 	  * </DL>
 	  */		
-	public void addArc(double x, double y, double width, double height, String color) {
+	public void addArc(double x, double y, double width, double height, String color, double rotation) {
 		int length = arcs.length;
 		
 		//RESIZE PART
 		arcs = (GmmlArc[]) resizeArray(arcs, (length+1));
-		GmmlArc temp = new GmmlArc(x, y, width, height, color);
+		GmmlArc temp = new GmmlArc(x, y, width, height, color, rotation);
 		arcs[length]=temp;
 	}
 	

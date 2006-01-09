@@ -34,7 +34,7 @@ Color color;
 		this.width = width;
 		this.height = height;
 		this.color = GmmlColor.convertStringToColor(color);
-		this.rotation = rotation;
+		this.rotation = Math.toDegrees(rotation);
 		
 	} //end of constructor GmmlArc
 	
@@ -42,7 +42,7 @@ Color color;
 	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, a 'real' arc object is formed, on which the normal contains method is used.
 	  */
 	public boolean contains(double mousex, double mousey) {
-		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
+		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,180-rotation,180,0);
 		
 		if (arc.contains(mousex,mousey)) {
 			return true;

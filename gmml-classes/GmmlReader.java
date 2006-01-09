@@ -1,3 +1,20 @@
+/*
+Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
+M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and 
+limitations under the License.
+*/
+
 import org.jdom.JDOMException;
 import org.jdom.input.*;
 import org.jdom.output.*;
@@ -145,28 +162,24 @@ public class GmmlReader {
     
     if (o instanceof Element) {
       Element element = (Element) o;
+      //System.out.println("Element: " + element.getName());
       
-      /*
-      *From this point each element is checked if its name corresponds to a known gmml element
-      *First it is checked if the element has the name "Graphics", 
-      *if it does the program continues (after executing the lines within the if statement) to the next element and it doesn't check if the name of the element corresponds to any other known gmml elements
-      *but when the name of the element is not equal to the string "Graphics" the program checks if the name corresponds to "GeneProduct"
-      *The program keeps checking if the element corresponds to one of the known gmml elements until it does and then it moves on to the next element
-      *The program checks the known gmml elements in this order: Graphics, GeneProduct, Line, LineShape, Arc, Label, Shape, CellShape, Brace, CellComponent, ProteinComplex
-      */
+      //From this point each element is checked if its name corresponds to a known gmml element
+      //First it is checked if the element has the name "Graphics", 
+      //if it does the program continues (after executing the lines within the if statement) to the next element and it doesn't check if the name of the element corresponds to any other known gmml elements
+      //but when the name of the element is not equal to the string "Graphics" the program checks if the name corresponds to "GeneProduct"
+      //The program keeps checking if the element corresponds to one of the known gmml elements until it does and then it moves on to the next element
+      //The program checks the known gmml elements in this order: Graphics, GeneProduct, Line, LineShape, Arc, Label, Shape, CellShape, Brace, CellComponent, ProteinComplex
       if("Graphics".equalsIgnoreCase(element.getName())) {
-      	/*within this element "Graphics" there are two attributes: "BoardWidth" and "BoardHeight"
-	      *in this part of the code the list of attributes is checked if an attribute has the name "BoardWidth" or "BoardHeight"
-	      *if it does, the values of the attributes will be assigned to the variables "width" or "height" respectively
-	      */
+      	//within this element "Graphics" there are two attributes: "BoardWidth" and "BoardHeight"
+	      //in this part of the code the list of attributes is checked if an attribute has the name "BoardWidth" or "BoardHeight"
+	      //if it does, the values of the attributes will be assigned to the variables "width" or "height" respectively
 	      int height = 0;      	
 	      int width = 0;
 	      List attributes = element.getAttributes();
 	      Iterator aiterator = attributes.iterator();
-      	while (aiterator.hasNext()) {	/*
-	      										*Here it is checked if the list of the attributes from Graphics still has an unchecked item
-	      										*If it does it is checked if it's named boardwidth or boardheight
-											      */
+      	while (aiterator.hasNext()) {	//Here it is checked if the list of the attributes from Graphics still has an unchecked item
+	      										//If it does it is checked if it's named boardwidth or boardheight
         		Object att = aiterator.next();
 		      if (att instanceof Attribute) {
 	            Attribute attribute = (Attribute) att;
@@ -182,11 +195,9 @@ public class GmmlReader {
 		   pathway.setSize(width, height);
 		} //end If Graphics
 		else if ("GeneProduct".equalsIgnoreCase(element.getName())) {
-	      /*
-	      *Within an element "GeneProduct" there are attributes and elements
-	      *First the attributes will be obtained, this is done in the similar way as checking the attributes and elements that is explained above 
-	      *Geneproduct contains the attributes: GeneID, Type, GeneProduct-Data-Source, Short-name, Xref, BackpageHead
-	      */
+	      //Within an element "GeneProduct" there are attributes and elements
+	      //First the attributes will be obtained, this is done in the similar way as checking the attributes and elements that is explained above 
+	      //Geneproduct contains the attributes: GeneID, Type, GeneProduct-Data-Source, Short-name, Xref, BackpageHead
 	      String ref="";
 	      String geneID="";
 	      
@@ -217,29 +228,27 @@ public class GmmlReader {
 		      } //end if attribute
 		   } //end while hasNext()
 			
-			/*
-			*This element "GeneProduct" contains elements itself
-			*those will be obtained here, again by listing them and then by checking the names of the content
-			*Geneproduct contains three elements: Graphics, comment and notes.
-			*/
+			//This element "GeneProduct" contains elements itself
+			//those will be obtained here, again by listing them and then by checking the names of the content
+			//Geneproduct contains three elements: Graphics, comment and notes.
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
         		Object child = iterator.next();
         		if (child instanceof Element) {
 		        Element subelement = (Element) child;
-		        if("Graphics".equalsIgnoreCase(subelement.getName())) {		       
-				      /*Here some variables will be created where the attribute values will be stored  */  
+		        if("Graphics".equalsIgnoreCase(subelement.getName())) {   
+		        		//System.out.println("Found GP graphics");
+				      //Here will be created some variables where the attribute values will be stored  
 		        		int x = 0;
 				      int y = 0;
 				      int cx = 0;
 						int cy = 0;
 						int width = 0;
 						int height = 0;
-						/*This element Graphics (of Geneproduct) contains 4 attributes:
-		        		*CenterX, CenterY, width, height
-						*these attributes specify a rectangle
-						*/
+						//This element Graphics (of Geneproduct) contains 4 attributes:
+		        		//CenterX, CenterY, width, height
+						//these attributes specify a rectangle
 		        		List sattributes = subelement.getAttributes();
 			        	Iterator saiterator = sattributes.iterator();
 				      while (saiterator.hasNext()) {
@@ -275,13 +284,8 @@ public class GmmlReader {
 		   } //end while hasNext()
 		   
 		} //end else if Geneproduct
-	   
-	   /*Here the program checks if the element is a "Line"
-	   *Within this element "Line", the subelements "Graphics", "Comment", "Notes", the attributes "Style" and "Type" will be encountered
-	   */ 
 	   else if ("Line".equalsIgnoreCase(element.getName())) {
-	   	/*Creating variables where the attribute values of the subelement "Graphics" and the values of the attributes "Type" and "Style" will be stored */
-		   int style = 0;
+	   	int style = 0;
 		   int type= 0;
      		double sx = 0;
 	      double sy = 0;
@@ -291,7 +295,7 @@ public class GmmlReader {
 			String sstyle;
 			String color="";
 						
-			//Reading in subelements.
+			//System.out.println("Line not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -331,17 +335,12 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-			
-			//Reading in attributes
 			List attributes = element.getAttributes();
 			Iterator aiterator = attributes.iterator();
 			while (aiterator.hasNext()) {
 				Object att = aiterator.next();
 				if (att instanceof Attribute) {
 					Attribute attribute = (Attribute) att;
-					/*The attribute "Style can have two different values: "Solid" or "broken"
-					*These values will be stored in the variable "style" the value 0 stands for "Solid" the value 1 stands for "Broken"
-					*/
 					if("Style".equalsIgnoreCase(attribute.getName())) {
 						sstyle = attribute.getValue();
 						if("Solid".equalsIgnoreCase(sstyle)) {
@@ -351,9 +350,6 @@ public class GmmlReader {
 					   	style = 1;
 						}
 					}
-					/*The attribute "Type" can have two different values: "Line" or "Arrow"
-					*These values will be stored in the variable "type" the value 0 stands for "Line" the value 1 stands for "Arrow"
-					*/
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
 						if("Line".equalsIgnoreCase(stype)) {
@@ -368,21 +364,16 @@ public class GmmlReader {
 		   	
 		   pathway.addLine(sx,sy,ex,ey, style, type, color);
 		} //end else if Line
-		
-	   /*Here the program checks if the element is a "LineShape"
-	   *Within this element "LineShape", the subelements "Graphics", "Comment", "Notes", and the attribute "Type" will be encountered
-	   */		
 		else if ("LineShape".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" will be stored*/  
-		   double sx = 0;
+     		double sx = 0;
 	      double sy = 0;
 	      double ex = 0;
 			double ey = 0;			
-			/*In this variable the value of the attribute "Type" will be stored*/
 			String stype;
+			String color = "";
+			int type = 0;
 						
-			//Reading in subelements
+			//System.out.println("LineShape not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -408,6 +399,9 @@ public class GmmlReader {
 						      else if("EndY".equalsIgnoreCase(attribute.getName())) {
 						      	ey = Integer.parseInt(attribute.getValue());
 						      } //end if endy
+						      else if("Color".equalsIgnoreCase(attribute.getName())) {
+						      	color = attribute.getValue();
+						      } //end if color
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics
@@ -416,56 +410,46 @@ public class GmmlReader {
 				  }//end if Comment
 				  else if ("Notes".equalsIgnoreCase(subelement.getName())) {
       				//System.out.println("Notes");
-				   }//end if Notes
+				  }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-			
-			//Reading in attributes
 			List attributes = element.getAttributes();
 			Iterator aiterator = attributes.iterator();
 			while (aiterator.hasNext()) {
 				Object att = aiterator.next();
 				if (att instanceof Attribute) {
 					Attribute attribute = (Attribute) att;
-					
-					/*The attribute "Type" can have five different values: "ReceptorRound", "ReceptorSquare", "LigandRound", "LigandSquare" or "Tbar"*/
 					if("Type".equalsIgnoreCase(attribute.getName())) {
 						stype = attribute.getValue();
-						if("ReceptorRound".equalsIgnoreCase(stype)) {
-							//System.out.println("ReceptorRound");
+						if("Tbar".equalsIgnoreCase(stype)) {
+						  	type = 0;
 						}
-						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
-						  	//System.out.println("ReceptorSquare");
+						else if("ReceptorRound".equalsIgnoreCase(stype)) {
+							type = 1;
 						}
 						else if("LigandRound".equalsIgnoreCase(stype)) {
-						  	//System.out.println("LigandRound");
+						  	type = 2;
+						}
+						else if("ReceptorSquare".equalsIgnoreCase(stype)) {
+						  	type = 3;
 						}
 						else if("LigandSquare".equalsIgnoreCase(stype)) {
-						  	//System.out.println("LigandSquare");
+						  	type = 4;
 						}
-						else if("Tbar".equalsIgnoreCase(stype)) {
-						  	//System.out.println("Tbar");
-						}
+
 					}//end if Type
 				} //end if attribute
 			}//end while hasNext()
+			pathway.addLineShape(sx, sy, ex, ey, color, type);
 		} //end else if LineShape
-		
-	   /*Here the program checks if the element is an "Arc"
-	   *Within this element "Arc", the subelements "Graphics", "Comment" and "Notes"will be encountered
-	   *"Arc" contains no direct attributes
-	   */		
 		else if ("Arc".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" will be stored*/
-		   double sx = 0;
+     		double sx = 0;
 	      double sy = 0;
 	      double width = 0;
 			double height = 0;
 			double rotation = 0;
 			String color="";
 			
-			//Reading in subelements
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -508,15 +492,9 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-		   pathway.addArc(sx, sy, width, height, color);
+		   pathway.addArc(sx, sy, width, height, color, rotation);
 		 }// end if Arc
-		 
-	   /*Here the program checks if the element is a "Label"
-	   *Within this element "Label", the subelements "Graphics", "Comment" and "Notes" will be encountered
-	   */		 
-		else if ("Label".equalsIgnoreCase(element.getName())) {
-			
-		   /*In these variables the attributes of the subelement "Graphics" and the value of "TextLabel" will be stored*/
+		 else if ("Label".equalsIgnoreCase(element.getName())) {
 			String fname = "";
 			String fstyle = "";
 			String fweight = "";
@@ -530,7 +508,6 @@ public class GmmlReader {
 			int w = 0;
 			int fsize = 0;
 			
-			//Reading in attributes
 			List attributes = element.getAttributes();
         	Iterator aiterator = attributes.iterator();
 	      while (aiterator.hasNext()) {
@@ -542,8 +519,7 @@ public class GmmlReader {
 					}//end if TextLabel
 				}//end if attribute
 			}//end while hasNext()
-			
-			//Reading in subelements	
+				
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -608,14 +584,8 @@ public class GmmlReader {
 		   y = cy - (h/2);
 		   pathway.addLabel(x, y, w, h, text, color, fname, fweight, fstyle, fsize);
 		 }// end if Label
-		 
-	   /*Here the program checks if the element is a "Shape"
-	   *Within this element "Shape", the subelements "Graphics", "Notes", and the attribute "Type" will be encountered
-	   */		 
 		else if ("Shape".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" and the value of the attribute "Type" will be stored*/		     
-		   double cx = 0;
+     		double cx = 0;
 	      double cy = 0;
      		double x = 0;
 	      double y = 0;
@@ -626,7 +596,7 @@ public class GmmlReader {
 	      String color = "";
 			String stype;
 						
-			//Reading in subelements
+			//System.out.println("Shape not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -666,8 +636,6 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-		   
-		   //Reading in attributes
 			List attributes = element.getAttributes();
 			Iterator aiterator = attributes.iterator();
 			while (aiterator.hasNext()) {
@@ -679,9 +647,11 @@ public class GmmlReader {
 						stype = attribute.getValue();
 						if("Rectangle".equalsIgnoreCase(stype)) {
 							type = 0;
+							//System.out.println("Rectangle");
 						}//end if rectangle
 						else if("Oval".equalsIgnoreCase(stype)) {
 							type = 1;
+						  	//System.out.println("Oval");
 						}//end if oval						
 					}//end if type
 				} //end if attribute
@@ -690,15 +660,8 @@ public class GmmlReader {
 			y = cy - h;
 			pathway.addShape(x, y, w, h, type, color, rotation);
 		} //end else if Shape
-		
-	   /*Here the program checks if the element is a "CellShape"
-	   *Within this element "CellShape", the subelements "Graphics" and "Notes" will be encountered
-	   *"CellShape" contains no direct attributes
-	   */		
 		else if ("CellShape".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" will be stored*/		     
-		   double cx = 0;
+     		double cx = 0;
 	      double cy = 0;
      		double x = 0;
 	      double y = 0;
@@ -706,7 +669,7 @@ public class GmmlReader {
 			double h = 0;
      		double rotation = 0;
 						
-			//Reading in subelements
+			//System.out.println("CellShape not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -747,22 +710,15 @@ public class GmmlReader {
 			y = cy - h;
 			//pathway.addCellShape(x, y, w, h, rotation);
 		} //end else if CellShape
-		
-	   /*Here the program checks if the element is a "Brace"
-	   *Within this element "Brace", the subelements "Graphics" and "Notes" will be encountered
-	   *"Brace" contains no direct attributes
-	   */		
 		else if ("Brace".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" will be stored*/	     
-		   double sx = 0;
+     		double sx = 0;
 	      double sy = 0;
 	      double width = 0;
 			double PicPointOffset = 0;
 			int orientation=0;	
 			String color="";
 						
-			//Reading in subelements
+			//System.out.println("Brace not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -815,22 +771,17 @@ public class GmmlReader {
 		      } //end if element
 		   } //end while hasNext()
 		System.out.println("centerX: "+sx/15+" centerY: "+sy/15+" ppo: "+PicPointOffset/15+" orientation: "+orientation);
-		pathway.addBrace(sx/15, sy/15, width/15, PicPointOffset/15, orientation, color);
+		pathway.addBrace(sx, sy, width, PicPointOffset, orientation, color);
 		System.out.println("a brace is added");   
 		} //end else if Brace				 
 
-		/*Here the program checks if the element is a "CellComponent"
-	   *Within this element "CellComponent", the subelements "Graphics", "Notes" and the attribute "Type" will be encountered
-	   */
 		else if ("CellComponent".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" and the value of the attribute "Type" will be stored*/   		     
-		   double cx = 0;
+     		double cx = 0;
 	      double cy = 0;
 		   int type = 0;
 			String stype;
-			
-			//Reading in subelements			
+						
+			//System.out.println("CellComponent not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
@@ -858,8 +809,6 @@ public class GmmlReader {
 				   }//end if Notes
 		      } //end if element
 		   } //end while hasNext()
-			
-			//Reading in subelements
 			List attributes = element.getAttributes();
 			Iterator aiterator = attributes.iterator();
 			while (aiterator.hasNext()) {
@@ -889,19 +838,12 @@ public class GmmlReader {
 				} //end if attribute
 			}//end while hasNext()
 		} //end else if CellComponent
-		
-		/*Here the program checks if the element is a "ProteinComplex"
-	   *Within this element "ProteinComplex", the subelements "Graphics" and "Notes"
-	   *"ProteinComplex" contains no attributes
-	   */		
 		else if ("ProteinComplex".equalsIgnoreCase(element.getName())) {
-     		
-		   /*In these variables the attributes of the subelement "Graphics" will be stored*/		     
-		   double cx = 0;
+     		double cx = 0;
      		double cy = 0;
 	      double w = 0;
 						
-			//Reading in subelements
+			//System.out.println("LineShape not fully not implemented yet");
 			List children = element.getContent();
       	Iterator iterator = children.iterator();
       	while (iterator.hasNext()) {
