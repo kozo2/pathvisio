@@ -32,8 +32,6 @@ class GmmlConnection {
 	boolean test1;
 	boolean test2;
 
-	
-	public GmmlConnection(GmmlPathway inputpathway){
 		 /** GmmlConnection checks for each line if it connects two 'shapes'
 		   * and which shapes it connects.
 		   * the shapetypes of the connected shapes are stored in the 
@@ -46,7 +44,9 @@ class GmmlConnection {
 		   *			4: arc
 		   *			5: label
 		   *			6: brace
-		   */
+		   */	
+	public GmmlConnection(GmmlPathway inputpathway){
+
 
 		pathway = inputpathway;
 		Connection = new int[pathway.lines.length][5];
@@ -110,16 +110,15 @@ class GmmlConnection {
 		System.out.println("aantal ankerpunten: " + count);
 	}// end of gmmlConnections()
 
+	/** increase calculates the increase of a line, this value is used to extend the lines
+	  * <B>Parameters</B>
+	  * 	i - index of the line
+	  * 	x1 - x-coordinate of the starting point of the line
+	  * 	y1 - y-coordinate of the starting point of the line
+	  *		x2 - x-coordinate of the ending point of the line
+	  *		y2 - y-coordinate of the ending point of the line
+	  */	
 	public void increase(int i, double x1, double y1, double x2, double y2){
-		/** calculates the increase of a line, this value is used to extend the lines
-		  * <B>Parameters</B>
-		  * 	i - index of the line
-		  * 	x1 - x-coordinate of the starting point of the line
-		  * 	y1 - y-coordinate of the starting point of the line
-		  *		x2 - x-coordinate of the ending point of the line
-		  *		y2 - y-coordinate of the ending point of the line
-		  */		  
-
 		double theta=Math.atan(Math.abs((y2-y1)/(x2-x1)));
 		dx=Math.cos(theta);
 		dy=Math.sin(theta);
@@ -130,18 +129,17 @@ class GmmlConnection {
 			dy=-dy;
 		}
 	}// end of increase
-		
-	public void checkGeneProduct(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with a geneproduct 
-		  * <B>Parameters</B>
-		  *		i - index of the line
-		  *		j - index of the geneproduct
-		  * 	x1 - x-coordinate of the starting point of the line
-		  * 	y1 - y-coordinate of the starting point of the line
-		  *		x2 - x-coordinate of the ending point of the line
-		  *		y2 - y-coordinate of the ending point of the line
-		  */
-		  
+
+	/** checks for connections of a line with a geneproduct 
+	  * <B>Parameters</B>
+	  *		i - index of the line
+	  *		j - index of the geneproduct
+	  * 	x1 - x-coordinate of the starting point of the line
+	  * 	y1 - y-coordinate of the starting point of the line
+	  *		x2 - x-coordinate of the ending point of the line
+	  *		y2 - y-coordinate of the ending point of the line
+	  */		
+	public void checkGeneProduct(int i, int j, double x1, double y1, double x2, double y2){ 
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.geneProducts[j].contains(x1+n*dx,y1+n*dy))){
@@ -161,18 +159,17 @@ class GmmlConnection {
 			n++;
 		}
 	}// checkGeneProduct	
-		
-	public void checkShape(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with a shape 
-		  * <B>Parameters</B>
-		  *		i - index of the line
-		  *		j - index of the shape
-		  * 	x1 - x-coordinate of the starting point of the line
-		  * 	y1 - y-coordinate of the starting point of the line
-		  *		x2 - x-coordinate of the ending point of the line
-		  *		y2 - y-coordinate of the ending point of the line
-		  */
-		  
+	
+	/** checks for connections of a line with a shape 
+	  * <B>Parameters</B>
+	  *		i - index of the line
+	  *		j - index of the shape
+	  * 	x1 - x-coordinate of the starting point of the line
+	  * 	y1 - y-coordinate of the starting point of the line
+	  *		x2 - x-coordinate of the ending point of the line
+	  *		y2 - y-coordinate of the ending point of the line
+	  */		
+	public void checkShape(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.shapes[j].contains(x1+n*dx,y1+n*dy))){
@@ -192,18 +189,17 @@ class GmmlConnection {
 			n++;
 		}
 	}// checkGeneProduct	
-		
+
+	/** the method checkArc checks for connections of a line with an arc 
+	  * <B>Parameters</B>
+	  *		i - index of the line
+	  *		j - index of the arc
+	  * 	x1 - x-coordinate of the starting point of the line
+	  * 	y1 - y-coordinate of the starting point of the line
+	  *		x2 - x-coordinate of the ending point of the line
+	  *		y2 - y-coordinate of the ending point of the line
+	  */		
 	public void checkArc(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with an arc 
-		  * <B>Parameters</B>
-		  *		i - index of the line
-		  *		j - index of the arc
-		  * 	x1 - x-coordinate of the starting point of the line
-		  * 	y1 - y-coordinate of the starting point of the line
-		  *		x2 - x-coordinate of the ending point of the line
-		  *		y2 - y-coordinate of the ending point of the line
-		  */
-		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.arcs[j].contains(x1+n*dx,y1+n*dy))){
@@ -223,18 +219,17 @@ class GmmlConnection {
 			n++;
 		}
 	}// end of checkArc
-	
+		
+	/** checks for connections of a line with a label 
+	  * <B>Parameters</B>
+	  *		i - index of the line
+	  *		j - index of the label
+	  * 	x1 - x-coordinate of the starting point of the line
+	  * 	y1 - y-coordinate of the starting point of the line
+	  *		x2 - x-coordinate of the ending point of the line
+	  *		y2 - y-coordinate of the ending point of the line
+	  */	
 	public void checkLabel(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with a label 
-		  * <B>Parameters</B>
-		  *		i - index of the line
-		  *		j - index of the label
-		  * 	x1 - x-coordinate of the starting point of the line
-		  * 	y1 - y-coordinate of the starting point of the line
-		  *		x2 - x-coordinate of the ending point of the line
-		  *		y2 - y-coordinate of the ending point of the line
-		  */
-		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.labels[j].contains(x1+n*dx,y1+n*dy))){
@@ -254,18 +249,17 @@ class GmmlConnection {
 			n++;
 		}		
 	}// end of checkLabel
-	
-	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with a brace 
-		  * <B>Parameters</B>
-		  *		i - index of the line
-		  *		j - index of the brace
-		  * 	x1 - x-coordinate of the starting point of the line
-		  * 	y1 - y-coordinate of the starting point of the line
-		  *		x2 - x-coordinate of the ending point of the line
-		  *		y2 - y-coordinate of the ending point of the line
-		  */
-		  
+		
+	/** checks for connections of a line with a brace 
+	  * <B>Parameters</B>
+	  *		i - index of the line
+	  *		j - index of the brace
+	  * 	x1 - x-coordinate of the starting point of the line
+	  * 	y1 - y-coordinate of the starting point of the line
+	  *		x2 - x-coordinate of the ending point of the line
+	  *		y2 - y-coordinate of the ending point of the line
+	  */	
+	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.braces[j].contains(x1+n*dx,y1+n*dy))){
