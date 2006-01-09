@@ -37,6 +37,9 @@ public class GmmlWriter {
 	Document doc;
 	Element root;
 	
+	/**
+	  * The constructor will load the pathway and automaticly build a document of it.
+	  */
 	public GmmlWriter(GmmlPathway pathway) {
 		this.pathway = pathway;
 		buildDoc();
@@ -47,7 +50,9 @@ public class GmmlWriter {
 	  */
 	public void dumpToScreen() {
 		try {
+			//Get the XML code
 			XMLOutputter screendump = new XMLOutputter(Format.getPrettyFormat());
+			//Dump the XML code to the screen
 	     	screendump.output(doc, System.out);
    	}
     	catch (IOException e) {
@@ -61,9 +66,13 @@ public class GmmlWriter {
      
 	public void writeToFile(String filename) {
 		try {
+			//Get the XML code
 			XMLOutputter screendump = new XMLOutputter(Format.getPrettyFormat());
+			//Get the filename
 			File file = new File(filename);
+			//Open a filewriter
 			FileWriter writer = new FileWriter(file);
+			//Send XML code to the filewriter
 	     	screendump.output(doc, writer);
    	}
     	catch (IOException e) {
@@ -77,19 +86,26 @@ public class GmmlWriter {
      
    public void buildDoc() {
    	System.out.println("Building document...");
-   	root = new Element("Pathway");
+   	root = new Element("Pathway"); //Create the root element, this is for GMML Always the pathway
+	   //Add all the attributes to the pathway
 	   for (int i = 0; i < pathway.attributes.length; i++) {
 	   	root.setAttribute(pathway.attributes[i][0], pathway.attributes[i][1]);
 	   }
+	   //Create the graphics element
 	   Element graphics = new Element("Graphics");
+	   //Set the attributes for the graphics element
 	   graphics.setAttribute("BoardHeight",Integer.toString(pathway.size[1]));
 	   graphics.setAttribute("BoardWidth",Integer.toString(pathway.size[0]));
+	   //Add the graphics element to the root element
 	   root.addContent(graphics);
+	   //Call the method that adds all other elements to the root element
 	   fillRootElement();
+	   //Create the document out of the root element
 	   doc = new Document(root);
 	}
 	
    private void fillRootElement () {
+   	//This calls the functions for adding all kinds of elements supported by the writer
    	addGeneProducts();
 	   addLines();
 	   addLineShapes();
@@ -101,10 +117,13 @@ public class GmmlWriter {
 	
 	private void addGeneProducts() {
 		for (int i = 0; i < pathway.geneProducts.length; i++) {
+			//Create a new geneproduct element
 			Element geneproduct = new Element("GeneProduct");
 		   
+		   //Set the geneproduct attributes
 		   geneproduct.setAttribute("GeneID",pathway.geneProducts[i].geneID);
 		   
+		   //Create a new graphics element
 		   Element graphics = new Element("Graphics");
 		   
 		   double w, h, x, y, cx, cy;
@@ -113,15 +132,19 @@ public class GmmlWriter {
 		   h = pathway.geneProducts[i].height;
 	   	x = pathway.geneProducts[i].x;
 		   y = pathway.geneProducts[i].y;
+		   //Calculate the centers from the x, y, width, height
 		   cx = x + w/2;
 		   cy = y + h/2; 
 	   
+	   	//Add the attributes to the graphics element
 		   graphics.setAttribute("CenterX",Integer.toString((int)cx));
 		   graphics.setAttribute("CenterY",Integer.toString((int)cy));
 		   graphics.setAttribute("Width",Integer.toString((int)w));
 		   graphics.setAttribute("Height",Integer.toString((int)h));
 		   
+		   //Add the graphics element to the geneproduct
 		   geneproduct.addContent(graphics);
+		   //Add the geneproduct to the root element (the pathway)
 		   root.addContent(geneproduct);
 		}
 	}
