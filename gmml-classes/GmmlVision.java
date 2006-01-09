@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.io.*;
+import javax.swing.ImageIcon;
 
 /**
  *        The GmmlVision class is basicly the Graphic User Interface of the program as you see when you open it. The applet is started and the menu's, toolbar and drawing area are added.
@@ -116,6 +117,9 @@ public class GmmlVision {
     JMenuItem saveitem = new JMenuItem("Save As...");
     JMenuItem exititem = new JMenuItem("Exit");
 	 
+	 //Create the filemenu and it's items
+    JMenu helpmenu = new JMenu("Help");
+    JMenuItem aboutitem = new JMenuItem("About");
 	 
 	 //Add actions to the menu       
     openitem.addActionListener(new ActionListener() {
@@ -173,11 +177,21 @@ public class GmmlVision {
       }
     }); 
 	
+	 aboutitem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        GmmlVisionAboutBox aboutbox = new GmmlVisionAboutBox();
+      }
+    });
+    
 	 //Link the menu together
     filemenu.add(openitem);
     filemenu.add(saveitem);
     filemenu.add(exititem);
     menubar.add(filemenu);
+    
+    //The help menu
+    helpmenu.add(aboutitem);
+    menubar.add(helpmenu);
     
     //Apply the menubar
     f.setJMenuBar(menubar);			
@@ -232,4 +246,29 @@ class XmlFilter extends javax.swing.filechooser.FileFilter {
 		return "GMML Files (*.xml)";
 	}
 } // class XmlFilter
+
+class GmmlVisionAboutBox extends JPanel {
+	 GmmlVisionAboutBox () {
+		 JFrame f = new JFrame("About GMML-Vision");
+		 javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); //This line will fix the menu hiding behind the canvas.
+	    f.setSize(320, 175);
+
+	    Container content = f.getContentPane();
+	    content.setBackground(new Color(0x000000));
+	    	    
+	    //Add the label
+	    String text = "<html><center><h1>GMML-Vision</h1>H.C. Achterberg<br>R.M.H. Besseling<br>I.Kaashoek<br>M.M.Palm<br>E.D Pelgrim<br>BiGCaT<br><center>";
+	    ImageIcon logo = new ImageIcon("images/logo.jpg", "GMML-Vision Logo");
+	    JLabel label = new JLabel(text, logo ,JLabel.CENTER);
+		 label.setFont(new Font("Arial", Font.BOLD, 12));
+		 label.setForeground(new Color(0x88AAFF));
+	    
+       f.getContentPane().add(label, BorderLayout.CENTER);
+	    
+	    f.show();
+			     
+	    f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	    f.setVisible(true);
+	 }
+}
 
