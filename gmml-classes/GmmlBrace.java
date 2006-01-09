@@ -17,6 +17,9 @@ limitations under the License.
 
 import java.awt.Color;
 import java.awt.Rectangle;
+/**
+  *This class contains the braces. It contains a constructor, and the methods contains, setLocation and getHelpers
+  */
 
 public class GmmlBrace {
 	
@@ -24,6 +27,9 @@ public class GmmlBrace {
 	int or; //or is the orientation: 0=top, 1=right, 2=bottom, 3=left
 	Color color;
 	
+	/**
+	  *Constructor GmmlBrace has 4 doubles for the coordinates, an int for the orientation and a string for the color as input. Width is the longest side of the brace, ppo the shortest side. This input is assigned to the object brace, but no real brace is constructed. Orientation is 0 for top, 1 for right, 2 for bottom or 3 for left.  
+	  */
 	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, String color) {
 		cX=centerX;
 		cY=centerY;
@@ -34,7 +40,10 @@ public class GmmlBrace {
 		
 	} //end constructor GmmlBrace
 	
-	//Contains without zoomfactor, for the connections for example
+	/**
+	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, there is checekd whether the mouse is in a certain rectangle
+	  */
+ 
 	public boolean contains(double mousex, double mousey) {
 		if (or==0 || or==2) {
 			if (cX-0.5*w<=mousex&& mousex<=cX+0.5*w && cY-0.5*ppo<=mousey && mousey<=cY+0.5*ppo) {
@@ -53,54 +62,18 @@ public class GmmlBrace {
 			}
 		} // end else orientation
 	} //end of contains
-
-	//Contains with zoomfactor, for the mouselistener
-	public boolean contains(double mousex, double mousey, double zoomfactor) {
-		if (or==0 || or==2) {
-			if (cX-0.5*w<=mousex*zoomfactor && mousex*zoomfactor<=cX+0.5*w && cY-0.5*ppo<=mousey*zoomfactor && mousey*zoomfactor<=cY+0.5*ppo) {
-				return true;
-			}
-			else {
-				return false;
-			}
-		} //end if orientation
-		else {
-			if (cY-0.5*w<=mousey*zoomfactor && mousey*zoomfactor<=cY+0.5*w && cX-0.5*ppo<=mousex*zoomfactor && mousex*zoomfactor<=cX+0.5*ppo) {
-				return true;
-			} 
-			else {
-				return false;
-			}
-		} // end else orientation
-
-	} //end of contains
 	
+	/**
+	  *Method setLocation changes the double centerX and centerY coordinate to the centerX and centerY that are arguments for this method
+	  */
 	public void setLocation(double centerX, double centerY) {
 		cX = centerX;
 		cY = centerY;
 	}
 	
-	public Rectangle[] getHelpers() {
-		Rectangle[] helpers = new Rectangle[2];
-		helpers[0] = new Rectangle((int)cX - 2 ,(int)cY - 2, 5, 5);
-		helpers[1] = new Rectangle();
-		switch (or) {
-			case 0:
-				helpers[1].setBounds((int)(cX + (0.5*w)) - 2 ,(int)cY - 2, 5, 5);
-				break;
-			case 1: 
-				helpers[1].setBounds((int)cX - 2 ,(int)(cY + (0.5*w)) - 2, 5, 5);
-				break;
-			case 2:
-				helpers[1].setBounds((int)(cX - (0.5*w)) - 2 ,(int)cY - 2, 5, 5);
-				break;
-			case 3:
-				helpers[1].setBounds((int)cX - 2 ,(int)(cY - (0.5*w)) - 2, 5, 5);
-				break;
-		}
-		return helpers;
-	}
-	
+	/**
+	  *Method getHelpers returns an array of rectangles on the brace, which are used to drag and transform the brace.
+	  */
 	public Rectangle[] getHelpers(double zf) {
 		Rectangle[] helpers = new Rectangle[2];
 		helpers[0] = new Rectangle((int)(cX/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);

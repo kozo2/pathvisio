@@ -17,12 +17,18 @@ limitations under the License.
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+/**
+  *This class contains the lineshapes. It contains a constructor, and the methods contains, setLocation and getHelpers
+  */
 
 public class GmmlLineShape {
 	double startx, starty, endx, endy;
 	int type;
 	Color color;
 	
+	/**
+	  *Constructor GmmlLineShape has 4 doubles for the coordinates, an int for the type and a color object for the color as input.
+	  */
 	public GmmlLineShape (double startx, double starty, double endx, double endy, int type, Color color) {
 		this.startx = startx;
 		this.starty = starty;
@@ -32,6 +38,9 @@ public class GmmlLineShape {
 		this.color = color;
 	}
 	
+	/**
+	  *Method contains uses the coordinates of the mouse to determine wether an lineshape contains these coordinates. To do this, a polygon is created, on which the normal contains method is used.
+	  */
 	public boolean contains (double mousex, double mousey) {
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
 		int[] x = new int[4];
@@ -56,19 +65,9 @@ public class GmmlLineShape {
 		}
 	}
 	
-	public boolean contains (double x, double y, double zoomfactor) {
-		Line2D.Double templine = new Line2D.Double(startx, starty, endx, endy);
-		boolean contains = templine.contains(x * zoomfactor, y * zoomfactor);
-		return contains;
-	}
-
-	public void setLocation(double startx, double starty, double endx, double endy){
-		this.startx = startx;
-		this.starty = starty;
-		this.endx = endx;
-		this.endy = endy;
-	}
-	
+	/**
+	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
+	  */	
 	public void setLocation(double startx, double starty){
 		double diffx = startx - this.startx;
 		double diffy = starty - this.starty;
@@ -77,13 +76,10 @@ public class GmmlLineShape {
 		endx = endx + diffx;
 		endy = endy + diffy;
 	}
-	public Rectangle[] getHelpers() {
-		Rectangle helpers[] = new Rectangle[2];
-		helpers[0] = new Rectangle((int)startx - 2 ,(int)starty - 2, 5, 5);
-		helpers[1] = new Rectangle((int)endx - 2 ,(int)endy - 2, 5, 5);
-		
-		return helpers;
-	}
+	
+	/**
+	  *Method getHelpers returns an array of rectangles on the lineshape, which are used to drag and transform the lineshape.
+	  */
 	public Rectangle[] getHelpers(double zf) {
 		Rectangle helpers[] = new Rectangle[2];
 		helpers[0] = new Rectangle((int)(startx/zf) - 2 ,(int)(starty/zf) - 2, 5, 5);

@@ -18,13 +18,19 @@ limitations under the License.
 import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+/**
+  *This class contains the shapes. It contains a constructor, and the methods contains, setLocation and getHelpers
+  */
 
 public class GmmlShape {
 
 double x,y,width,height,rotation;
 int type;
 Color color;
-
+	
+	/**
+	  *Constructor GmmlShape has 4 doubles for the coordinates, an int for the type, a double for the rotation and a color object for the color as input.
+	  */
 	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation) {
 		this.x = x;
 		this.y = y;
@@ -35,6 +41,9 @@ Color color;
 		this.rotation = rotation;			
 	} //end of GmmlShape constructor
 	
+	/**
+	  *Method contains uses the coordinates of the mouse to determine wether an shape contains these coordinates. To do this, a polygon is created, on which the normal contains method is used. The polygon can be rotated, that's why a rotation matrix is used.
+	  */
 	public boolean contains(double mousex, double mousey) {
 	
 		if (type==0) {				
@@ -99,11 +108,17 @@ Color color;
 		
 	}
 	
+	/**
+	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
+	  */
 	public void setLocation(double x, double y){
 		this.x = x;
 		this.y = y;
 	}
 	
+	/**
+	  *Method getHelpers returns an array of rectangles on the shape, which are used to drag and transform the shape.
+	  */
 	public Rectangle[] getHelpers(double zf) {
 		double theta = Math.toRadians(rotation);
 		double[] rot = new double[2];

@@ -18,12 +18,16 @@ limitations under the License.
 import java.awt.geom.Arc2D;
 import java.awt.Color;
 import java.awt.Rectangle;
-
+/**
+  *This class contains the arcs. It contains a constructor, and the methods contains, setLocation and getHelpers
+  */
 public class GmmlArc {
 
 double x, y, width, height, rotation;
 Color color;
-
+	/**
+	  *Constructor GmmlArc has 4 doubles for the coordinates and a string for the color as input. This input is assigned to the object arc, but no real arc is constructed.
+	  */
 	public GmmlArc(double x, double y, double width, double height, String color) {
 		this.x = x;
 		this.y = y;
@@ -33,6 +37,9 @@ Color color;
 		
 	} //end of constructor GmmlArc
 	
+	/**
+	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, a 'real' arc object is formed, on which the normal contains method is used.
+	  */
 	public boolean contains(double mousex, double mousey) {
 		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
 		
@@ -43,23 +50,16 @@ Color color;
 			return false;
 		}
 	}
-	
-	public boolean contains(double mousex, double mousey, double zoomfactor) {
-		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,0,180,0);
-		
-		if (arc.contains(mousex*zoomfactor,mousey*zoomfactor)) {
-			return true;
-		}
-		else {
-			return false;
-		}	
-	}
-	
+	/**
+	  *Method setLocation changes the double x and y coordinate to the x and y that are arguments for this method
+	  */
 	public void setLocation(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
-	
+	/**
+	  *Method getHelpers returns an array of rectangles on the arc, which are used to drag and transform the arc.
+	  */
 	public Rectangle[] getHelpers(double zf) {
 		double theta = Math.toRadians(rotation);
 		double[] rot = new double[2];

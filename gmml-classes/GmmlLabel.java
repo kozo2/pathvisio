@@ -17,12 +17,18 @@ limitations under the License.
 
 import java.awt.Color;
 import java.awt.Rectangle;
+/**
+  *This class contains the labels. It contains a constructor, and the methods contains, setLocation and getHelpers
+  */
 
 public class GmmlLabel {
 	String text, font, fontWeight, fontStyle;
 	int x, y, width, height, fontSize;
 	Color color;
 	
+	/**
+	  *Constructor GmmlLabel has 4 doubles for the coordinates, 4 Strings for the text, the font, the font weight and the font style, an int for the font size and a color object for the color as input.
+	  */
 	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, String fontStyle, int fontSize, Color color) {
 		this.x = x;
 		this.y = y;
@@ -35,22 +41,26 @@ public class GmmlLabel {
 		this.fontSize = fontSize;
 		this.color = color;
 	}
+	/**
+	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, a rectangle is created, on which the normal contains method is used.
+	  */
 	public boolean contains (double mousex, double mousey) {
 		Rectangle rect = new Rectangle(x, y, width, height);
 		boolean contains = rect.contains(mousex, mousey);
 		return contains;
 	}
-	public boolean contains (double mousex, double mousey, double zoomfactor) {
-		Rectangle rect = new Rectangle(x, y, width, height);
-		boolean contains = rect.contains(mousex * zoomfactor, mousey * zoomfactor);
-		return contains;
-	}
 	
+	/**
+	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
+	  */	
 	public void setLocation(int x, int y){
 		this.x = x;
 		this.y = y;
 	}
 	
+	/**
+	  *Method getHelpers returns an array of rectangles on the labe, which are used to drag and transform the label.
+	  */
 	public Rectangle[] getHelpers(double zf) {
 		Rectangle[] helpers = new Rectangle[1];
 		

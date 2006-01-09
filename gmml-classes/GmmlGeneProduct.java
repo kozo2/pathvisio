@@ -17,11 +17,17 @@ limitations under the License.
 
 import java.awt.*;
 import java.awt.Color;
+/**
+  *This class contains the gene products. It contains a constructor, and the methods contains, setLocation and getHelpers
+  */
 
 public class GmmlGeneProduct {
 	int x, y, width, height;
 	String geneID, ref;
 	
+	/**
+	  *Constructor GmmlGeneProduct has 4 ints for the coordinates, a string for the geneID, and a string for the reference as input. This input is assigned to the object geneproduct, but no real rectangle object is constructed.
+	  */
 	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref) {
 		this.x = x;
 		this.y = y;
@@ -31,8 +37,9 @@ public class GmmlGeneProduct {
 		this.ref = ref;
 	} //end of constructor
 	
-	
-	//Contains without zoomfactor, for the connections for example
+	/**
+	  *Method contains uses the coordinates of the mouse to determine wether an geneproduct contains these coordinates.
+	  */
 	public boolean contains(double mousex, double mousey) {
 		if (x<=mousex && mousex<=x+width && y<=mousey && mousey<=y+height) {
 			return true;
@@ -42,21 +49,17 @@ public class GmmlGeneProduct {
 		}
 	} //end of contains
 
-	//Contains with zoomfactor, for the mouselistener
-	public boolean contains(int mousex, int mousey, int zoomfactor) {
-		if (x<=mousex*zoomfactor && mousex*zoomfactor<=x+width && y<=mousey*zoomfactor && mousey*zoomfactor<=y+height) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	} //end of contains
-	
+	/**
+	  *Method setLocation changes the int x and int y coordinate to the x and y that are arguments for this method
+	  */
 	public void setLocation(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
 	
+	/**
+	  *Method getHelpers returns an array of rectangles on the geneproduct, which are used to drag and transform the geneproduct. The rectangles are in the middle of the geneproduct, in the middle of the upper line and in the middle of the right line of the geneproduct.
+	  */
 	public Rectangle[] getHelpers(double zf) {
 		Rectangle[] helpers = new Rectangle[3];
 		
