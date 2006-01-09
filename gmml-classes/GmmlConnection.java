@@ -111,10 +111,15 @@ class GmmlConnection {
 	}// end of gmmlConnections()
 
 	public void increase(int i, double x1, double y1, double x2, double y2){
-		/** calculates the increase of line i
-		  * this value is used to extend the lines
-		  */
-		  
+		/** calculates the increase of a line, this value is used to extend the lines
+		  * <B>Parameters</B>
+		  * 	i - index of the line
+		  * 	x1 - x-coordinate of the starting point of the line
+		  * 	y1 - y-coordinate of the starting point of the line
+		  *		x2 - x-coordinate of the ending point of the line
+		  *		y2 - y-coordinate of the ending point of the line
+		  */		  
+
 		double theta=Math.atan(Math.abs((y2-y1)/(x2-x1)));
 		dx=Math.cos(theta);
 		dy=Math.sin(theta);
@@ -127,7 +132,16 @@ class GmmlConnection {
 	}// end of increase
 		
 	public void checkGeneProduct(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with geneproducts */
+		/** checks for connections of a line with a geneproduct 
+		  * <B>Parameters</B>
+		  *		i - index of the line
+		  *		j - index of the geneproduct
+		  * 	x1 - x-coordinate of the starting point of the line
+		  * 	y1 - y-coordinate of the starting point of the line
+		  *		x2 - x-coordinate of the ending point of the line
+		  *		y2 - y-coordinate of the ending point of the line
+		  */
+		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.geneProducts[j].contains(x1+n*dx,y1+n*dy))){
@@ -149,7 +163,16 @@ class GmmlConnection {
 	}// checkGeneProduct	
 		
 	public void checkShape(int i, int j, double x1, double y1, double x2, double y2){
-		/** checks for connections of a line with shapes */
+		/** checks for connections of a line with a shape 
+		  * <B>Parameters</B>
+		  *		i - index of the line
+		  *		j - index of the shape
+		  * 	x1 - x-coordinate of the starting point of the line
+		  * 	y1 - y-coordinate of the starting point of the line
+		  *		x2 - x-coordinate of the ending point of the line
+		  *		y2 - y-coordinate of the ending point of the line
+		  */
+		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.shapes[j].contains(x1+n*dx,y1+n*dy))){
@@ -171,6 +194,16 @@ class GmmlConnection {
 	}// checkGeneProduct	
 		
 	public void checkArc(int i, int j, double x1, double y1, double x2, double y2){
+		/** checks for connections of a line with an arc 
+		  * <B>Parameters</B>
+		  *		i - index of the line
+		  *		j - index of the arc
+		  * 	x1 - x-coordinate of the starting point of the line
+		  * 	y1 - y-coordinate of the starting point of the line
+		  *		x2 - x-coordinate of the ending point of the line
+		  *		y2 - y-coordinate of the ending point of the line
+		  */
+		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.arcs[j].contains(x1+n*dx,y1+n*dy))){
@@ -192,6 +225,16 @@ class GmmlConnection {
 	}// end of checkArc
 	
 	public void checkLabel(int i, int j, double x1, double y1, double x2, double y2){
+		/** checks for connections of a line with a label 
+		  * <B>Parameters</B>
+		  *		i - index of the line
+		  *		j - index of the label
+		  * 	x1 - x-coordinate of the starting point of the line
+		  * 	y1 - y-coordinate of the starting point of the line
+		  *		x2 - x-coordinate of the ending point of the line
+		  *		y2 - y-coordinate of the ending point of the line
+		  */
+		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.labels[j].contains(x1+n*dx,y1+n*dy))){
@@ -213,6 +256,16 @@ class GmmlConnection {
 	}// end of checkLabel
 	
 	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){
+		/** checks for connections of a line with a brace 
+		  * <B>Parameters</B>
+		  *		i - index of the line
+		  *		j - index of the brace
+		  * 	x1 - x-coordinate of the starting point of the line
+		  * 	y1 - y-coordinate of the starting point of the line
+		  *		x2 - x-coordinate of the ending point of the line
+		  *		y2 - y-coordinate of the ending point of the line
+		  */
+		  
 		int n=0;
 		while (!test1&&(n<25)){
 			if ((!test1)&&(pathway.braces[j].contains(x1+n*dx,y1+n*dy))){
