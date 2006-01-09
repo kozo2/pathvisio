@@ -198,15 +198,6 @@ public class GmmlWindow {
       }
     });
     toolBar.add(button);
-    //Button 2
-    button = new JButton("Unused");
-    button.setToolTipText("Write this file to text.xml");
-    button.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        System.out.println("Button is unused");
-      }
-    });
-    toolBar.add(button);
     
     //Input box
     zoomField = new JTextField(2);

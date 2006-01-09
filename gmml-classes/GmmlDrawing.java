@@ -30,14 +30,6 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	BufferedImage bi;
 	Graphics2D big;
 	
-	//Holds the coordinates of the user's last mousePressed event.
-	int[] lastx;
-	int[] lasty;
-	
-	//length of Coordlength = amount of rectangles
-	int rectsLength;
-	boolean[] rectClick;
-	
 	//Some variables for interactivity
 	boolean mousePressedOnObject;
 	int clickedObjectNumber;
@@ -65,16 +57,11 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	GmmlDrawing(GmmlPathway pathway, GmmlConnection connection) {
 		this.pathway = pathway;
 		this.connection = connection;
-		
-		rectsLength = pathway.geneProducts.length;
-		rectClick = new boolean[rectsLength];
-				
+					
 		setBackground(Color.white);
 		addMouseMotionListener(this);
 		addMouseListener(this);
 		
-		lastx = new int[rectsLength];
-		lasty = new int[rectsLength];
 		setPreferredSize(new Dimension((int)(pathway.size[0]/zf),(int)(pathway.size[1]/zf)));
 		setSize(new Dimension((int)(pathway.size[0]/zf),(int)(pathway.size[1]/zf)));
 	} //end of GmmlDrawing(inputpathway)
@@ -131,7 +118,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.shapes[i].x - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.shapes[i].y - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
+				updateLocation(e);
 				
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
@@ -151,7 +138,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.arcs[i].x - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.arcs[i].y - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
+				updateLocation(e);
 				
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
@@ -171,9 +158,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.braces[i].cX - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.braces[i].cY - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
-				System.out.println("Brace found as target!");
-				
+				updateLocation(e);
+			
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
 				selectedObjectNumber = i;		
@@ -192,14 +178,13 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.lines[i].startx - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.lines[i].starty - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
+				updateLocation(e);
 				
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
 				selectedObjectNumber = i;		
 				selectedObjectType = 4;
 				
-				System.out.println("Line found as target!");
 				break;
 			}
 		}
@@ -214,14 +199,13 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.lineshapes[i].startx - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.lineshapes[i].starty - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
+				updateLocation(e);
 				
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
 				selectedObjectNumber = i;		
 				selectedObjectType = 3;
 				
-				System.out.println("Lineshape found as target!");
 				break;
 			}
 		}
@@ -235,8 +219,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.geneProducts[i].x - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.geneProducts[i].y - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
-				System.out.println("Geneproduct found as target!");
+				updateLocation(e);
 				
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
@@ -256,8 +239,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				slastx = (int) (pathway.labels[i].x - e.getX()*zf); //lastx = position pathway.rects[i] - position mouse when pressed
 				slasty = (int) (pathway.labels[i].y - e.getY()*zf);
 				
-				updateLocation(clickedObjectNumber, clickedObjectType, e);
-				System.out.println("Label found as target!");
+				updateLocation(e);
 				
 				//Test code for a possible new interactive way to handle objects, this should be closer to genmapp
 				nonSelected = false;
@@ -275,7 +257,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			updateHelper(e);
 		}
 		else if (mousePressedOnObject) { //always mousePressed before mouseDragged -> pressOut true when start dragging outside of rect.
-		 	updateLocation(clickedObjectNumber, clickedObjectType, e);
+		 	updateLocation(e);
 		} 
 		else {  
 			label.setText("First position the cursor on the rectangle and then drag.");
@@ -401,6 +383,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		}
 		repaint(); //The component will be repainted after all of the currently pending events have been dispatched
 	}
+	
 	private void updateHelper(MouseEvent e) {
 		double[] newCoord;
 		switch (selectedObjectType) {
@@ -408,7 +391,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				switch (selectedHelper) {
 					case 0:
 						helpers[0].setLocation((int)(slastx + e.getX()), (int)(slasty + e.getY()));
-						updateLocation((int)(helpers[0].x*zf) - (int)(0.5*pathway.labels[selectedObjectNumber].width),(int)(helpers[0].y*zf) - (int)(0.5*pathway.labels[selectedObjectNumber].height));
+						updateLocation((int)((2+helpers[0].x)*zf) - (int)(0.5*pathway.labels[selectedObjectNumber].width),(int)((2+helpers[0].y)*zf) - (int)(0.5*pathway.labels[selectedObjectNumber].height));
 						break;
 				}
 				break;
@@ -416,29 +399,29 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				switch (selectedHelper) {
 					case 0:
 						helpers[0].setLocation((int)(slastx + e.getX()), (int)(slasty + e.getY()));
-						updateLocation((int)(helpers[0].x*zf) - (int)(0.5*pathway.geneProducts[selectedObjectNumber].width),(int)(helpers[0].y*zf) - (int)(0.5*pathway.geneProducts[selectedObjectNumber].height));
+						updateLocation((int)((2+helpers[0].x)*zf) - (int)(0.5*pathway.geneProducts[selectedObjectNumber].width),(int)((2+helpers[0].y)*zf) - (int)(0.5*pathway.geneProducts[selectedObjectNumber].height));
 						break;
 					case 1:
-						int oldheight = pathway.geneProducts[clickedObjectNumber].height;
+						int oldheight = pathway.geneProducts[selectedObjectNumber].height;
 						if ((slasty + e.getY()) < helpers[0].y) {
 							newCoord = checkPoint(helpers[1].x, (int)(slasty + e.getY()));
 						} else {
 							newCoord = checkPoint(helpers[1].x, helpers[0].y - 1);
 						}
 						helpers[1].setLocation((int)newCoord[0],(int)newCoord[1]);
-						pathway.geneProducts[clickedObjectNumber].height = Math.abs((int)(2 * zf * (helpers[0].y - helpers[1].y)));
-						pathway.geneProducts[clickedObjectNumber].y -= (int)(0.5 * (pathway.geneProducts[clickedObjectNumber].height - oldheight));
+						pathway.geneProducts[selectedObjectNumber].height = Math.abs((int)(2 * zf * (helpers[0].y - helpers[1].y)));
+						pathway.geneProducts[selectedObjectNumber].y -= (int)(0.5 * (pathway.geneProducts[selectedObjectNumber].height - oldheight));
 						break;
 					case 2:
-						int oldwidth = pathway.geneProducts[clickedObjectNumber].width;
+						int oldwidth = pathway.geneProducts[selectedObjectNumber].width;
 						if ((slastx + e.getX()) > helpers[0].x) {
 							newCoord = checkPoint(slastx + e.getX(), helpers[2].y);
 						} else {
 							newCoord = checkPoint(helpers[0].x + 1, helpers[2].y);
 						}
 						helpers[2].setLocation((int)newCoord[0],(int)newCoord[1]);
-						pathway.geneProducts[clickedObjectNumber].width = Math.abs((int)(2 * zf * (helpers[2].x - helpers[0].x)));
-						pathway.geneProducts[clickedObjectNumber].x -= (int)(0.5 * (pathway.geneProducts[clickedObjectNumber].width - oldwidth));
+						pathway.geneProducts[selectedObjectNumber].width = Math.abs((int)(2 * zf * (helpers[2].x - helpers[0].x)));
+						pathway.geneProducts[clickedObjectNumber].x -= (int)(0.5 * (pathway.geneProducts[selectedObjectNumber].width - oldwidth));
 						break;
 				}
 				break;
@@ -447,14 +430,14 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 					case 0:
 						newCoord = checkPoint(slastx + e.getX(), slasty + e.getY());
 						helpers[0].setLocation((int) newCoord[0], (int)newCoord[1]);
-						pathway.lineshapes[clickedObjectNumber].startx = helpers[0].x*zf;
-						pathway.lineshapes[clickedObjectNumber].starty = helpers[0].y*zf;
+						pathway.lineshapes[selectedObjectNumber].startx = (2+helpers[0].x)*zf;
+						pathway.lineshapes[selectedObjectNumber].starty = (2+helpers[0].y)*zf;
 						break;
 					case 1:
 						newCoord = checkPoint(slastx + e.getX(), slasty + e.getY());
 						helpers[1].setLocation((int) newCoord[0], (int)newCoord[1]);
-						pathway.lineshapes[clickedObjectNumber].endx = helpers[1].x*zf;
-						pathway.lineshapes[clickedObjectNumber].endy = helpers[1].y*zf;
+						pathway.lineshapes[selectedObjectNumber].endx = (2+helpers[1].x)*zf;
+						pathway.lineshapes[selectedObjectNumber].endy = (2+helpers[1].y)*zf;
 						break;
 				}
 				break;
@@ -463,14 +446,14 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 					case 0:
 						newCoord = checkPoint(slastx + e.getX(), slasty + e.getY());
 						helpers[0].setLocation((int) newCoord[0], (int)newCoord[1]);
-						pathway.lines[clickedObjectNumber].startx = helpers[0].x*zf;
-						pathway.lines[clickedObjectNumber].starty = helpers[0].y*zf;
+						pathway.lines[selectedObjectNumber].startx = (2+helpers[0].x)*zf;
+						pathway.lines[selectedObjectNumber].starty = (2+helpers[0].y)*zf;
 						break;
 					case 1:
 						newCoord = checkPoint(slastx + e.getX(), slasty + e.getY());
 						helpers[1].setLocation((int) newCoord[0], (int)newCoord[1]);
-						pathway.lines[clickedObjectNumber].endx = helpers[1].x*zf;
-						pathway.lines[clickedObjectNumber].endy = helpers[1].y*zf;
+						pathway.lines[selectedObjectNumber].endx = (2+helpers[1].x)*zf;
+						pathway.lines[selectedObjectNumber].endy = (2+helpers[1].y)*zf;
 						break;
 				}
 				break;
@@ -478,17 +461,17 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				switch (selectedHelper) {
 					case 0:
 						helpers[0].setLocation((int)(slastx + e.getX()), (int)(slasty + e.getY()));
-						updateLocation(helpers[0].x*zf, helpers[0].y*zf);
+						updateLocation((2+helpers[0].x)*zf, (2+helpers[0].y)*zf);
 						break;
 					case 1:
-						if(pathway.braces[clickedObjectNumber].or==0 || pathway.braces[clickedObjectNumber].or==2) {
+						if(pathway.braces[selectedObjectNumber].or==0 || pathway.braces[selectedObjectNumber].or==2) {
 							newCoord = checkPoint((int)(slastx + e.getX()), helpers[1].y);
 							helpers[1].setLocation((int) newCoord[0], (int)newCoord[1]);
-							pathway.braces[clickedObjectNumber].w = zf*2*Math.abs(helpers[0].x-helpers[1].x);
-						} else if (pathway.braces[clickedObjectNumber].or==1 || pathway.braces[clickedObjectNumber].or==3) {
+							pathway.braces[selectedObjectNumber].w = zf*2*Math.abs(helpers[0].x-helpers[1].x);
+						} else if (pathway.braces[selectedObjectNumber].or==1 || pathway.braces[selectedObjectNumber].or==3) {
 							newCoord = checkPoint(helpers[1].x, (int)(slasty + e.getY()));
 							helpers[1].setLocation((int) newCoord[0], (int)newCoord[1]);
-							pathway.braces[clickedObjectNumber].w = zf*2*Math.abs(helpers[0].y-helpers[1].y); 
+							pathway.braces[selectedObjectNumber].w = zf*2*Math.abs(helpers[0].y-helpers[1].y); 
 						}
 						break;
 				}
@@ -497,19 +480,19 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				switch (selectedHelper) {
 					case 0:
 						helpers[0].setLocation((int)(slastx + e.getX()), (int)(slasty + e.getY()));
-						updateLocation((int)(helpers[0].x*zf),(int)(helpers[0].y*zf));
+						updateLocation((int)((2+helpers[0].x)*zf),(int)((2+helpers[0].y)*zf));
 						break;
 					case 1:
-						double oldheight = pathway.arcs[clickedObjectNumber].height;
+						double oldheight = pathway.arcs[selectedObjectNumber].height;
 						newCoord = checkPoint(helpers[1].x, (int)(slasty + e.getY()));
 						helpers[1].setLocation((int) newCoord[0], (int)newCoord[1]);
-						pathway.arcs[clickedObjectNumber].height = Math.abs((int)(zf * (helpers[0].y - helpers[1].y)));
+						pathway.arcs[selectedObjectNumber].height = Math.abs((int)(zf * (helpers[0].y - helpers[1].y)));
 						break;
 					case 2:
-						double oldwidth = pathway.arcs[clickedObjectNumber].width;
+						double oldwidth = pathway.arcs[selectedObjectNumber].width;
 						newCoord = checkPoint((int)(slastx + e.getX()), helpers[2].y);
 						helpers[2].setLocation((int) newCoord[0], (int)newCoord[1]);
-						pathway.arcs[clickedObjectNumber].width = Math.abs((int)(zf * (helpers[2].x - helpers[0].x)));
+						pathway.arcs[selectedObjectNumber].width = Math.abs((int)(zf * (helpers[2].x - helpers[0].x)));
 						break;
 				}
 				break;
@@ -517,10 +500,10 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				switch (selectedHelper) {
 					case 0:
 						helpers[0].setLocation((int)(slastx + e.getX()), (int)(slasty + e.getY()));
-						updateLocation((int)(helpers[0].x*zf) - (int)(pathway.shapes[selectedObjectNumber].width),(int)(helpers[0].y*zf) - (int)(pathway.shapes[selectedObjectNumber].height));
+						updateLocation((int)((2+helpers[0].x)*zf) - (int)(pathway.shapes[selectedObjectNumber].width),(int)((2+helpers[0].y)*zf) - (int)(pathway.shapes[selectedObjectNumber].height));
 						break;
 					case 1:
-						double oldheight = pathway.shapes[clickedObjectNumber].height;
+						double oldheight = pathway.shapes[selectedObjectNumber].height;
 						newCoord = checkPoint(helpers[1].x, (int)(slasty + e.getY()));
 						helpers[1].setLocation((int) newCoord[0], (int)newCoord[1]);
 						if(pathway.shapes[selectedObjectNumber].type==0) {
@@ -528,18 +511,18 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 						} else if(pathway.shapes[selectedObjectNumber].type==1) {
 							pathway.shapes[selectedObjectNumber].height = Math.abs((int)(zf * (helpers[0].y - helpers[1].y)));
 						}
-						pathway.shapes[clickedObjectNumber].y -= (int)(pathway.shapes[clickedObjectNumber].height - oldheight);
+						pathway.shapes[selectedObjectNumber].y -= (int)(pathway.shapes[selectedObjectNumber].height - oldheight);
 						break;
 					case 2:
-						double oldwidth = pathway.shapes[clickedObjectNumber].width;
+						double oldwidth = pathway.shapes[selectedObjectNumber].width;
 						newCoord = checkPoint((int)(slastx + e.getX()), helpers[2].y);
 						helpers[2].setLocation((int) newCoord[0], (int)newCoord[1]);
-						if(pathway.shapes[clickedObjectNumber].type==0) {
-							pathway.shapes[clickedObjectNumber].width = Math.abs((int)(2 * zf * (helpers[2].x - helpers[0].x)));
-						} else if(pathway.shapes[clickedObjectNumber].type==1) {
-							pathway.shapes[clickedObjectNumber].width = Math.abs((int)(zf * (helpers[2].x - helpers[0].x)));
+						if(pathway.shapes[selectedObjectNumber].type==0) {
+							pathway.shapes[selectedObjectNumber].width = Math.abs((int)(2 * zf * (helpers[2].x - helpers[0].x)));
+						} else if(pathway.shapes[selectedObjectNumber].type==1) {
+							pathway.shapes[selectedObjectNumber].width = Math.abs((int)(zf * (helpers[2].x - helpers[0].x)));
 						}
-						pathway.shapes[clickedObjectNumber].x -= (int)(pathway.shapes[clickedObjectNumber].width - oldwidth);
+						pathway.shapes[selectedObjectNumber].x -= (int)(pathway.shapes[selectedObjectNumber].width - oldwidth);
 						break;
 				}
 				break;
@@ -597,8 +580,6 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		for (int i=0; i<connection.Connection.length; i++) {
 			big.setColor(Color.orange);
 			big.setStroke(new BasicStroke(2.0f));
-//			System.out.println("Type 1: "+connection.Connection[i][3]);
-//			System.out.println("Type 2: "+connection.Connection[i][4]);
 			if (connection.Connection[i][3]==0 && connection.Connection[i][4]==0) {
 				double x1 = pathway.geneProducts[connection.Connection[i][1]].x + 0.5 * pathway.geneProducts[connection.Connection[i][1]].width;
 				double y1 = pathway.geneProducts[connection.Connection[i][1]].y + 0.5 * pathway.geneProducts[connection.Connection[i][1]].height;
@@ -983,88 +964,41 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			big.draw(helpers[i]);
 		}
 	}
-	/*
-	private void drawHelpers () {
-		if(nonSelected) return;
-		if (selectedObjectType==3) {
-			Rectangle startpoint = new Rectangle((int)(pathway.lineshapes[selectedObjectNumber].startx/zf) - 2 ,(int)(pathway.lineshapes[selectedObjectNumber].starty/zf) - 2, 5, 5);
-			Rectangle endpoint = new Rectangle((int)(pathway.lineshapes[selectedObjectNumber].endx/zf) - 2 ,(int)(pathway.lineshapes[selectedObjectNumber].endy/zf) - 2, 5, 5);
-			big.setColor(Color.orange);
-			big.draw(startpoint);
-			big.draw(endpoint);
-			big.setColor(Color.blue);
-			big.fill(startpoint);
-			big.setColor(Color.red);
-			big.fill(endpoint);
-		}
-		if (selectedObjectType==4) {
-			Rectangle startpoint = new Rectangle((int)(pathway.lines[selectedObjectNumber].startx/zf) - 2 ,(int)(pathway.lines[selectedObjectNumber].starty/zf) - 2, 5, 5);
-			Rectangle endpoint = new Rectangle((int)(pathway.lines[selectedObjectNumber].endx/zf) - 2 ,(int)(pathway.lines[selectedObjectNumber].endy/zf) - 2, 5, 5);
-			big.setColor(Color.orange);
-			big.draw(startpoint);
-			big.draw(endpoint);
-			big.setColor(Color.blue);
-			big.fill(startpoint);
-			big.setColor(Color.red);
-			big.fill(endpoint);
-		}
-		if (selectedObjectType==5) {
-			Rectangle centerpoint = new Rectangle((int)(pathway.braces[selectedObjectNumber].cX/zf) - 2 ,(int)(pathway.braces[selectedObjectNumber].cY/zf) - 2, 5, 5);
-			Rectangle widthpoint = new Rectangle();
-			switch (pathway.braces[selectedObjectNumber].or) {
-				case 0:
-					widthpoint.setBounds((int)((pathway.braces[selectedObjectNumber].cX + (0.5*pathway.braces[selectedObjectNumber].w))/zf) - 2 ,(int)(pathway.braces[selectedObjectNumber].cY/zf) - 2, 5, 5);
-					break;
-				case 1: 
-					widthpoint.setBounds((int)(pathway.braces[selectedObjectNumber].cX/zf) - 2 ,(int)((pathway.braces[selectedObjectNumber].cY + (0.5*pathway.braces[selectedObjectNumber].w))/zf) - 2, 5, 5);
-					break;
-				case 2:
-					widthpoint.setBounds((int)((pathway.braces[selectedObjectNumber].cX - (0.5*pathway.braces[selectedObjectNumber].w))/zf) - 2 ,(int)(pathway.braces[selectedObjectNumber].cY/zf) - 2, 5, 5);
-					break;
-				case 3:
-					widthpoint.setBounds((int)(pathway.braces[selectedObjectNumber].cX/zf) - 2 ,(int)((pathway.braces[selectedObjectNumber].cY - (0.5*pathway.braces[selectedObjectNumber].w))/zf) - 2, 5, 5);
-					break;
-			}
-			big.setColor(Color.orange);
-			big.draw(centerpoint);
-			big.draw(widthpoint);
-			big.setColor(Color.blue);
-			big.fill(centerpoint);
-			big.setColor(Color.red);
-			big.fill(widthpoint);
-		}
-	} /*
+	
 	/*
     * Checks if the rectangle is contained within the applet window.  If the rectangle
     * is not contained withing the applet window, it is redrawn so that it is adjacent
     * to the edge of the window and just inside the window.
 	 */
 	 
-	boolean checkRect(int i){
+	double[] checkRect(double new_x, double new_y, double new_width, double new_height){
 		if (area == null) {
-			return false;
+			double[] checkedCoord = {0,0,0,0};
+			
+			return checkedCoord;
 		}
-		if(area.contains(pathway.geneProducts[i].x/zf, pathway.geneProducts[i].y/zf, pathway.geneProducts[i].width/zf, pathway.geneProducts[i].height/zf)){
-			return true;
+		if(area.contains(new_x/zf, new_y/zf, new_width/zf, new_height/zf)){
+			double[] checkedCoord = {new_x, new_y, new_width, new_height};
+		
+			return checkedCoord;
 		}		
 	
-		int new_x = pathway.geneProducts[i].x;
-		int new_y = pathway.geneProducts[i].y;
-
-		if((pathway.geneProducts[i].x+pathway.geneProducts[i].width)/zf>area.width){
-			new_x = (int)(area.width*zf-pathway.geneProducts[i].width+1);
+		if((new_x+new_width)/zf>area.width){
+			new_x = (int)(area.width*zf-new_width+1);
 		}
-		if(pathway.geneProducts[i].x < 0){  
+		if(new_x < 0){  
 			new_x = -1;
 		}
-		if((pathway.geneProducts[i].y+pathway.geneProducts[i].height)/zf>area.height){
-			new_y = (int)(area.height*zf-pathway.geneProducts[i].height+1); 
+		if((new_y+new_height)/zf>area.height){
+			new_y = (int)(area.height*zf-new_height+1); 
 		}
-		if(pathway.geneProducts[i].y < 0){  
+		if(new_y < 0){  
 			new_y = -1;
 		}
-		pathway.geneProducts[i].setLocation(new_x, new_y);
-		return false;
+		
+		double[] checkedCoord = {new_x, new_y};
+		
+		return checkedCoord;
 	}
 	
 	double[] checkPoint(double new_x, double new_y) {
