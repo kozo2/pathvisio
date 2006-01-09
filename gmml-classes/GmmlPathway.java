@@ -25,6 +25,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.Graphics2D.*;
 import java.awt.geom.AffineTransform;
 
+/** GmmlPathway creates the objects geneProducts, lines, lineshapes, labels, arcs, braces and shapes.
+  * Also the strings with the attributes, notes and comment are created.
+  */
 public class GmmlPathway {
 	//Pathway
 	int[] size = new int[2];
@@ -55,14 +58,25 @@ public class GmmlPathway {
 	String notes = new String();
 	String comment = new String();
 
+	/** setNotes sets the attribute notes of a specified object.
+	  */
 	public void setNotes(String notes) {
 		this.notes = notes;
 	}
-	
+
+	/** setComment sets the attribute Comment of a specified object.
+	  */
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
 	
+	/** addAttribute adds an attribute to the array of strings attributes.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>attribute - type of the attribute
+	  * <DD>value - value of the attribute
+	  * </DL>
+	  */
 	public void addAttribute(String attribute, String value) {
 		int length = attributes.length;
 		
@@ -78,7 +92,18 @@ public class GmmlPathway {
 		attributes[length][0] = attribute;
 		attributes[length][1] = value;
 	}
-	
+
+	/** addGeneProduct adds a geneproduct to the array of geneproducts.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>x - upper left x-coordinate of the rectangle
+	  * <DD>y - upper left y-coordinate of the rectangle
+	  * <DD>width - width of the rectangle
+	  * <DD>heigth - heigth of the rectangle
+	  * <DD>geneID - ID of the gene
+	  * <DD>ref - the reference of the gene
+	  * </DL>
+	  */	
 	public void addGeneProduct(int x, int y, int width, int height, String geneID, String ref) {
 		int length = geneProducts.length;
 				
@@ -87,7 +112,19 @@ public class GmmlPathway {
 		GmmlGeneProduct temp = new GmmlGeneProduct(x,y,width,height,geneID,ref);
 		geneProducts[length]=temp;
 	}
-	
+
+	/** addLine adds a line to the array of lines.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>startx - starting x-coordinate of the line
+	  * <DD>starty - starting y-coordinate of the line
+	  * <DD>endx - ending x-coordinate of the line
+	  * <DD>endy - ending y-coordinate of the line
+	  * <DD>type - type of the line; 0: line, 1: arrow
+	  * <DD>style - style of the line: 0: solid line, 1: broken line
+	  * <DD>colorstring - the color of the line
+	  * </DL>
+	  */		
 	public void addLine(double startx, double starty, double endx, double endy, int type, int style, String colorstring) {
 		int length = lines.length;
 		
@@ -96,7 +133,22 @@ public class GmmlPathway {
 		Color color = GmmlColor.convertStringToColor(colorstring);
 		lines[length] = new GmmlLine(startx, starty, endx, endy, style, type, color);
 	}
-	
+
+	/** addLabel adds a label to the array of labels.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>x - upper left x-coordinate of the text
+	  * <DD>y - upper left y-coordinate of the text
+	  * <DD>width - width of the text
+	  * <DD>heigth - heigth of the text
+	  * <DD>text - the text
+	  * <DD>color - the color of the text
+	  * <DD>font - the font of the text
+	  * <DD>weight - the weight of the text (bold or not)
+	  * <DD>style - style of the font (italic or underlined)
+	  * <DD>fontsize - size of the font
+	  * </DL>
+	  */		
 	public void addLabel(int x, int y, int width, int height, String text, String color, String font, String weight, String style, int fontsize) {
 		int length = labels.length;	
 
@@ -106,6 +158,16 @@ public class GmmlPathway {
 		labels[length] = new GmmlLabel(x, y, width, height, text, font, weight, style, fontsize, GmmlColor.convertStringToColor(color));
 	}
 	
+	/** addArc adds an arc to the array of arcs.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>x - starting x-coordinate of the arc
+	  * <DD>y - starting y-coordinate of the arc
+	  * <DD>width - width of the arc
+	  * <DD>heigth - heigth of the arc
+	  * <DD>color - color of the arc
+	  * </DL>
+	  */		
 	public void addArc(double x, double y, double width, double height, String color) {
 		int length = arcs.length;
 		
@@ -114,7 +176,18 @@ public class GmmlPathway {
 		GmmlArc temp = new GmmlArc(x, y, width, height, color);
 		arcs[length]=temp;
 	}
-
+	
+	/** addLineShape adds a lineshape to the array of lineshapes.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>startx - starting x-coordinate of the line
+	  * <DD>starty - starting y-coordinate of the line
+	  * <DD>endx - ending x-coordinate of the line
+	  * <DD>endy - ending y-coordinate of the line
+	  * <DD>scolor - the color of the line
+	  * <DD>type - type of the end of the line; 0: tbar, 1: ReceptorRound, 2: LigandRound, 3: ReceptorSquare, 4: LigandSquare.
+	  * </DL>
+	  */	
 	public void addLineShape(double startx, double starty, double endx, double endy, String scolor, int type) {
 		int length = lineshapes.length;
 		
@@ -124,6 +197,17 @@ public class GmmlPathway {
 		lineshapes[length] = new GmmlLineShape(startx, starty, endx, endy, type, color);
 	}
 	
+	/** addBrace adds a brace to the array of braces.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>centerX - center x-coordinate of the brace
+	  * <DD>centerY - center y-coordinate of the brace
+	  * <DD>width - width of the brace
+	  * <DD>ppo - the PicPointOffset of the braces
+	  * <DD>orientation - orientation of the brace; 0 refers to top, 1 refers to right, 2 refers to bottom, 3 refers to left
+	  * <DD>color - the color of the brace
+	  * </DL>
+	  */		
 	public void addBrace(double centerX, double centerY, double width, double ppo, int orientation, String color) {
 		int length = braces.length;
 				
@@ -134,17 +218,29 @@ public class GmmlPathway {
 	}
 
 	public void addCellShape(double x, double y, double width, double height, double rotation) {
-		//hier komt addCellShape
+		//to do: make addCellShape
 	}
 	
 	public void addCellComponent(double centerX, double centerY, int type) {
-		//hier komt addCellComponent
+		//to do: make addCellComponent
 	}
 	
 	public void addProteinComplex(double centerX, double centerY, int type) {
-		//hier komt addCellComponent
+		//to do: make addCellComponent
 	}		
 	
+	/** addGeneProduct adds a geneproduct to the array of geneproducts.
+	  * <BR>
+	  * <DL><B>Parameters</B>
+	  * <DD>x - upper left x-coordinate of the shape
+	  * <DD>y - upper left y-coordinate of the shape
+	  * <DD>width - width of the shape
+	  * <DD>heigth - heigth of the shape
+	  * <DD>type - type of the shape; 0: rectangle, 1: ellips
+	  * <DD>color - color of the shape
+	  * <DD>rotation - rotation of the shape
+	  * </DL>
+	  */		
 	public void addShape(double x, double y, double width, double height, int type, String color, double rotation) {
 		int length = shapes.length;
 		
@@ -157,6 +253,9 @@ public class GmmlPathway {
 		size[0] = width;
 		size[1] = height;
 	}
+	
+	/** echoAtt checks for stored attributes and prints those
+	  */
 	public void echoAtt() {
 		System.out.println("Checking for stored attributes - number: "+attributes.length);
 		for(int i=0; i<attributes.length; i++) {
@@ -174,22 +273,6 @@ public class GmmlPathway {
     	return newArray; 
 	 }
 	 
-//	 public void echoConnections() {
-//	 	System.out.println("Coord:");
-//	   System.out.print("{{"+(int)lineCoord[0][0]+","+(int)lineCoord[0][1]+"}");
-//		for(int i=1; i<lineCoord.length; i++) {
-//		System.out.print(",{"+(int)lineCoord[i][0]+","+(int)lineCoord[i][1]+"}");
-//		}
-//		System.out.println("}");
-//		
-//	 	System.out.println("Link:");
-//	   System.out.print("{{"+rectConnection[0][0]+","+rectConnection[0][1]+"}");
-//	 	for(int i=1; i<rectConnection.length; i++) {
-//		 System.out.print(",{"+rectConnection[i][0]+","+rectConnection[i][1]+"}");
-//		}
-//		System.out.println("}");
-//		
-//	 }
 
 	
 } //end of GmmlPathway

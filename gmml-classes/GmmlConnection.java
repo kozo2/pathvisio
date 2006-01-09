@@ -111,12 +111,13 @@ class GmmlConnection {
 	}// end of gmmlConnections()
 
 	/** increase calculates the increase of a line, this value is used to extend the lines
-	  * <B>Parameters</B>
-	  * 	i - index of the line
-	  * 	x1 - x-coordinate of the starting point of the line
-	  * 	y1 - y-coordinate of the starting point of the line
-	  *		x2 - x-coordinate of the ending point of the line
-	  *		y2 - y-coordinate of the ending point of the line
+	  *<DL><B>Parameters</B>
+	  *<DD> i - index of the line
+	  *<DD> x1 - x-coordinate of the starting point of the line
+	  *<DD> y1 - y-coordinate of the starting point of the line
+	  *	<DD> x2 - x-coordinate of the ending point of the line
+	  *	<DD> y2 - y-coordinate of the ending point of the line
+	  *</DL>
 	  */	
 	public void increase(int i, double x1, double y1, double x2, double y2){
 		double theta=Math.atan(Math.abs((y2-y1)/(x2-x1)));
@@ -131,13 +132,14 @@ class GmmlConnection {
 	}// end of increase
 
 	/** checks for connections of a line with a geneproduct 
-	  * <B>Parameters</B>
-	  *		i - index of the line
-	  *		j - index of the geneproduct
-	  * 	x1 - x-coordinate of the starting point of the line
-	  * 	y1 - y-coordinate of the starting point of the line
-	  *		x2 - x-coordinate of the ending point of the line
-	  *		y2 - y-coordinate of the ending point of the line
+	  *<DL><B>Parameters</B>
+	  *<DD> i - index of the line
+	  *<DD> j - index of the geneproduct
+	  *<DD> x1 - x-coordinate of the starting point of the line
+	  *<DD> y1 - y-coordinate of the starting point of the line
+	  *	<DD> x2 - x-coordinate of the ending point of the line
+	  *	<DD> y2 - y-coordinate of the ending point of the line
+	  *</DL>
 	  */		
 	public void checkGeneProduct(int i, int j, double x1, double y1, double x2, double y2){ 
 		int n=0;
@@ -161,13 +163,15 @@ class GmmlConnection {
 	}// checkGeneProduct	
 	
 	/** checks for connections of a line with a shape 
-	  * <B>Parameters</B>
-	  *		i - index of the line
-	  *		j - index of the shape
-	  * 	x1 - x-coordinate of the starting point of the line
-	  * 	y1 - y-coordinate of the starting point of the line
-	  *		x2 - x-coordinate of the ending point of the line
-	  *		y2 - y-coordinate of the ending point of the line
+	  *<DL><B>Parameters</B>
+	  *<DD> i - index of the line
+	  *<DD> j - index of the shape
+	  *<DD> x1 - x-coordinate of the starting point of the line
+	  *<DD> y1 - y-coordinate of the starting point of the line
+	  *	<DD> x2 - x-coordinate of the ending point of the line
+	  *	<DD> y2 - y-coordinate of the ending point of the line
+	  *</DL>
+
 	  */		
 	public void checkShape(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
@@ -191,13 +195,14 @@ class GmmlConnection {
 	}// checkGeneProduct	
 
 	/** the method checkArc checks for connections of a line with an arc 
-	  * <B>Parameters</B>
-	  *		i - index of the line
-	  *		j - index of the arc
-	  * 	x1 - x-coordinate of the starting point of the line
-	  * 	y1 - y-coordinate of the starting point of the line
-	  *		x2 - x-coordinate of the ending point of the line
-	  *		y2 - y-coordinate of the ending point of the line
+	  *<DL><B>Parameters</B>
+	  *<DD> i - index of the line
+	  *<DD> j - index of the arc
+	  *<DD> x1 - x-coordinate of the starting point of the line
+	  *<DD> y1 - y-coordinate of the starting point of the line
+	  *	<DD> x2 - x-coordinate of the ending point of the line
+	  *	<DD> y2 - y-coordinate of the ending point of the line
+	  *</DL>
 	  */		
 	public void checkArc(int i, int j, double x1, double y1, double x2, double y2){
 		int n=0;
@@ -221,13 +226,14 @@ class GmmlConnection {
 	}// end of checkArc
 		
 	/** checks for connections of a line with a label 
-	  * <B>Parameters</B>
-	  *		i - index of the line
-	  *		j - index of the label
-	  * 	x1 - x-coordinate of the starting point of the line
-	  * 	y1 - y-coordinate of the starting point of the line
-	  *		x2 - x-coordinate of the ending point of the line
-	  *		y2 - y-coordinate of the ending point of the line
+	  *<DL><B>Parameters</B>
+	  *<DD> i - index of the line
+	  *<DD> j - index of the label
+	  *<DD> x1 - x-coordinate of the starting point of the line
+	  *<DD> y1 - y-coordinate of the starting point of the line
+	  *	<DD> x2 - x-coordinate of the ending point of the line
+	  *	<DD> y2 - y-coordinate of the ending point of the line
+	  *</DL>
 	  */	
 	public void checkLabel(int i, int j, double x1, double y1, double x2, double y2){
 		int n=0;
@@ -251,13 +257,14 @@ class GmmlConnection {
 	}// end of checkLabel
 		
 	/** checks for connections of a line with a brace 
-	  * <B>Parameters</B>
-	  *		i - index of the line
-	  *		j - index of the brace
-	  * 	x1 - x-coordinate of the starting point of the line
-	  * 	y1 - y-coordinate of the starting point of the line
-	  *		x2 - x-coordinate of the ending point of the line
-	  *		y2 - y-coordinate of the ending point of the line
+	  *<DL><B>Parameters</B>
+	  *<DD> i - index of the line
+	  *<DD> j - index of the brace
+	  *<DD> x1 - x-coordinate of the starting point of the line
+	  *<DD> y1 - y-coordinate of the starting point of the line
+	  *	<DD> x2 - x-coordinate of the ending point of the line
+	  *	<DD> y2 - y-coordinate of the ending point of the line
+	  *</DL>
 	  */	
 	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
