@@ -62,28 +62,24 @@ class GmmlConnection {
 			test2=false;			
 			increase(i, x1, x2, y1, y2);
 			int j = 0;
-			while ((!test1||!test2)&&(j < pathway.geneProducts.length)) {
+			while (!(test1&&test2)&&(j < pathway.geneProducts.length)) {
 				checkGeneProduct(i,j,x1,y1,x2,y2);
 				j++;
 			}
 			j=0;
-			//while ((j < pathway.shapes.length)&&(!test1||!test2)) {
-			// connections with shape 
-			//}
-			j=0;
-			while ((!test1||!test2)&&(j < pathway.arcs.length)){
+			while (!(test1&&test2)&&(j < pathway.arcs.length)){
 				checkArc(i,j,x1,y1,x2,y2);
 				j++;
 			}
 			j=0;
 			
-			while ((!test1||!test2)&&(j < pathway.labels.length)){
+			while (!(test1&&test2)&&(j < pathway.labels.length)){
 				checkLabel(i,j,x1,y1,x2,y2);
 				j++;
 			}
 			
 			j=0;
-			while ((!test1||!test2)&&(j < pathway.braces.length)){
+			while (!(test1&&test2)&&(j < pathway.braces.length)){
 				checkBrace(i,j,x1,y1,x2,y2);
 				j++;
 			}
