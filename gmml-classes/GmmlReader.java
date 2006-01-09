@@ -462,6 +462,7 @@ public class GmmlReader {
 	      double sy = 0;
 	      double width = 0;
 			double height = 0;
+			double rotation = 0;
 			String color="";
 			
 			//Reading in subelements
@@ -492,7 +493,10 @@ public class GmmlReader {
 						      } //end if height
 						      else if("Color".equalsIgnoreCase(attribute.getName())) {
 						      	color = attribute.getValue();
-							   }
+							   } //end if color
+							   else if("Rotation".equalsIgnoreCase(attribute.getName())) {
+						      	rotation = Double.parseDouble(attribute.getValue());
+							   } //end if Rotation
 					      } //end if attribute					      
 					   } //end while hasNext()
 		        } //end if graphics

@@ -42,7 +42,7 @@ public class GmmlLabel {
 		this.color = color;
 	}
 	/**
-	  *Method contains uses the coordinates of the mouse to determine wether an arc contains these coordinates. To do this, a rectangle is created, on which the normal contains method is used.
+	  *Method contains uses the coordinates of the mouse to determine wether an label contains these coordinates. To do this, a rectangle is created, on which the normal contains method is used.
 	  */
 	public boolean contains (double mousex, double mousey) {
 		Rectangle rect = new Rectangle(x, y, width, height);
@@ -59,7 +59,7 @@ public class GmmlLabel {
 	}
 	
 	/**
-	  *Method getHelpers returns an array of rectangles on the labe, which are used to drag and transform the label.
+	  *Method getHelpers returns an array of rectangles on the label, which are used to drag and transform the label.
 	  */
 	public Rectangle[] getHelpers(double zf) {
 		Rectangle[] helpers = new Rectangle[1];

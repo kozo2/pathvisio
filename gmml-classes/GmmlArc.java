@@ -28,12 +28,13 @@ Color color;
 	/**
 	  *Constructor GmmlArc has 4 doubles for the coordinates and a string for the color as input. This input is assigned to the object arc, but no real arc is constructed.
 	  */
-	public GmmlArc(double x, double y, double width, double height, String color) {
+	public GmmlArc(double x, double y, double width, double height, String color, rotation) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.color = GmmlColor.convertStringToColor(color);
+		this.rotation = rotation
 		
 	} //end of constructor GmmlArc
 	

@@ -931,6 +931,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	public void drawArc (GmmlArc arc) {
 		big.setColor(arc.color);
 		big.setStroke(new BasicStroke(2.0f));
+		big.rotate(arc.rotation, (arc.x/zf + arc.width/zf), (arc.y/zf + arc.height/zf));
 			
 		Arc2D.Double temparc = new Arc2D.Double((arc.x - arc.width)/zf, (arc.y - arc.height)/zf, 2*arc.width/zf, 2*arc.height/zf, 0, 180, 0);
 		big.draw(temparc);
