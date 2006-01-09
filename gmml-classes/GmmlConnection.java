@@ -50,50 +50,61 @@ class GmmlConnection {
 		   */	
 		
 		/* TO DO
-			GmmlConnection only checks for connections between lines and large objects like geneproducts.
-			So the following functions can be added:
-				- connection checks between lineshapes and large objects
-				- connection checks between lines and lineshapes
-				- anchorpoints from lineshapes
+			GmmlConnection only checks for connections between lines or lineshapes and large objects like geneproducts.
+			So this class has to be extended with a part that checks for connections between lines and lineshapes.
 		*/
 		
 	public GmmlConnection(GmmlPathway inputpathway){
 
 
 		pathway = inputpathway;
-		Connection = new int[pathway.lines.length][5];
-		double[][] tempAnchor = new double[2*pathway.lines.length][2];
+		Connection = new int[pathway.lines.length+pathway.lineshapes.length][5];
+		double[][] tempAnchor = new double[2*(pathway.lines.length+pathway.lineshapes.length)][2];
 	 	int count=0;
-		for (int i=0; i < pathway.lines.length; i++){
-			double x1 = pathway.lines[i].startx;
-			double y1 = pathway.lines[i].starty;
-			double x2 = pathway.lines[i].endx;
-			double y2 = pathway.lines[i].endy;
+		double x1,y1,x2,y2;
+		for (int i=0; i < pathway.lines.length+pathway.lineshapes.length; i++){
+			if (i < pathway.lines.length){
+				x1 = pathway.lines[i].startx;
+				y1 = pathway.lines[i].starty;
+				x2 = pathway.lines[i].endx;
+				y2 = pathway.lines[i].endy;
+			}
+			else {
+				x1 = pathway.lineshapes[i-pathway.lines.length].startx;
+				y1 = pathway.lineshapes[i-pathway.lines.length].starty;
+				x2 = pathway.lineshapes[i-pathway.lines.length].endx;
+				y2 = pathway.lineshapes[i-pathway.lines.length].endy;
+			}				
 			Connection[i][0]=i;
 			test1=false;
 			test2=false;			
 			increase(i, x1, x2, y1, y2);
 			int j = 0;
+			// check connection line - geneproduct
 			while (!(test1&&test2)&&(j < pathway.geneProducts.length)) {
 				checkGeneProduct(i,j,x1,y1,x2,y2);
 				j++;
 			}
 			j=0;
+			// check connection line - shape
 			while (!(test1&&test2)&&(j < pathway.shapes.length)) {
 				checkShape(i,j,x1,y1,x2,y2);
 				j++;
 			}
 			j=0;
+			// check connection line - arc
 			while (!(test1&&test2)&&(j < pathway.arcs.length)){
 				checkArc(i,j,x1,y1,x2,y2);
 				j++;
 			}
-			j=0;			
+			j=0;	
+			// check connection line - label		
 			while (!(test1&&test2)&&(j < pathway.labels.length)){
 				checkLabel(i,j,x1,y1,x2,y2);
 				j++;
 			}	
 			j=0;
+			// check connection line - brace
 			while (!(test1&&test2)&&(j < pathway.braces.length)){
 				checkBrace(i,j,x1,y1,x2,y2);
 				j++;
