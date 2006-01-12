@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener {
 	double zf = 15; //zoomfactor
 	GmmlPathway pathway;
-	//GmmlConnection connection;
+	GmmlConnection connection;
 	BufferedImage bi;
 	Graphics2D big;
 	
@@ -56,7 +56,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	GmmlDrawing(GmmlPathway pathway) {
 		this.pathway = pathway;
-		//this.connection = connection;
+		
+		connection = new GmmlConnection(pathway);
 					
 		setBackground(Color.white);
 		addMouseMotionListener(this);
@@ -577,17 +578,97 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 			drawLineShape(pathway.lineshapes[i]);
 		}
 		
-//		for (int i=0; i<connection.Connection.length; i++) {
-//			big.setColor(Color.orange);
-//			big.setStroke(new BasicStroke(2.0f));
-//			if (connection.Connection[i][3]==0 && connection.Connection[i][4]==0) {
-//				double x1 = pathway.geneProducts[connection.Connection[i][1]].x + 0.5 * pathway.geneProducts[connection.Connection[i][1]].width;
-//				double y1 = pathway.geneProducts[connection.Connection[i][1]].y + 0.5 * pathway.geneProducts[connection.Connection[i][1]].height;
-//				double x2 = pathway.geneProducts[connection.Connection[i][2]].x + 0.5 * pathway.geneProducts[connection.Connection[i][2]].width;
-//				double y2 = pathway.geneProducts[connection.Connection[i][2]].y + 0.5 * pathway.geneProducts[connection.Connection[i][2]].height;
-//				big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
-//			}
-//		}
+		for (int i=0; i<connection.Connection.length; i++)  {
+			big.setColor(Color.orange);
+			big.setStroke(new BasicStroke(2.0f));
+			double x1 = 0;
+			double y1 = 0;
+			double x2 = 0;
+			double y2 = 0;
+			switch (connection.Connection[i][4]) {
+				case 1:
+					x1 = pathway.labels[connection.Connection[i][2]].x + 0.5 * pathway.labels[connection.Connection[i][2]].width;
+					y1 = pathway.labels[connection.Connection[i][2]].y + 0.5 * pathway.labels[connection.Connection[i][2]].height;
+					break;
+				case 2:
+					x1 = pathway.geneProducts[connection.Connection[i][2]].x + 0.5 * pathway.geneProducts[connection.Connection[i][2]].width;
+					y1 = pathway.geneProducts[connection.Connection[i][2]].y + 0.5 * pathway.geneProducts[connection.Connection[i][2]].height;
+					break;
+				case 3:
+					System.out.println("Invalid connection type: 3");
+					break;
+				case 4:
+					System.out.println("Invalid connection type: 4");
+					break;
+				case 5:
+					x1 = pathway.braces[connection.Connection[i][2]].cX;
+					y1 = pathway.braces[connection.Connection[i][2]].cY;
+					break;
+				case 6:
+					x1 = pathway.arcs[connection.Connection[i][2]].x + 0.5 * pathway.arcs[connection.Connection[i][2]].width;
+					y1 = pathway.arcs[connection.Connection[i][2]].y + 0.5 * pathway.arcs[connection.Connection[i][2]].height;
+					break;
+				case 7:
+					x1 = pathway.shapes[connection.Connection[i][2]].x + 0.5 * pathway.shapes[connection.Connection[i][2]].width;
+					y1 = pathway.shapes[connection.Connection[i][2]].y + 0.5 * pathway.shapes[connection.Connection[i][2]].height;
+					break;
+				case 8:
+					if(connection.Connection[i][1]==3) {
+						x1 = pathway.lineshapes[connection.Connection[i][0]].startx;
+						y1 = pathway.lineshapes[connection.Connection[i][0]].starty;
+					}
+					if(connection.Connection[i][1]==4) {
+						x1 = pathway.lines[connection.Connection[i][0]].startx;
+						y1 = pathway.lines[connection.Connection[i][0]].starty;
+					}
+
+					break;
+			}
+			switch (connection.Connection[i][5]) {
+				case 1:
+					x2 = pathway.labels[connection.Connection[i][3]].x + 0.5 * pathway.labels[connection.Connection[i][3]].width;
+					y2 = pathway.labels[connection.Connection[i][3]].y + 0.5 * pathway.labels[connection.Connection[i][3]].height;
+					break;
+				case 2:
+					x2 = pathway.geneProducts[connection.Connection[i][3]].x + 0.5 * pathway.geneProducts[connection.Connection[i][3]].width;
+					y2 = pathway.geneProducts[connection.Connection[i][3]].y + 0.5 * pathway.geneProducts[connection.Connection[i][3]].height;
+					break;
+				case 3:
+					System.out.println("Invalid connection type: 3");
+					break;
+				case 4:
+					System.out.println("Invalid connection type: 4");
+					break;
+				case 5:
+					x2 = pathway.braces[connection.Connection[i][3]].cX;
+					y2 = pathway.braces[connection.Connection[i][3]].cY;
+					break;
+				case 6:
+					x2 = pathway.arcs[connection.Connection[i][3]].x + 0.5 * pathway.arcs[connection.Connection[i][3]].width;
+					y2 = pathway.arcs[connection.Connection[i][3]].y + 0.5 * pathway.arcs[connection.Connection[i][3]].height;
+					break;
+				case 7:
+					x2 = pathway.shapes[connection.Connection[i][3]].x + 0.5 * pathway.shapes[connection.Connection[i][3]].width;
+					y2 = pathway.shapes[connection.Connection[i][3]].y + 0.5 * pathway.shapes[connection.Connection[i][3]].height;
+					break;
+				case 8:
+					if(connection.Connection[i][1]==3) {
+						x2 = pathway.lineshapes[connection.Connection[i][0]].endx;
+						y2 = pathway.lineshapes[connection.Connection[i][0]].endy;
+					}
+					if(connection.Connection[i][1]==4) {
+						x2 = pathway.lines[connection.Connection[i][0]].endx;
+						y2 = pathway.lines[connection.Connection[i][0]].endy;
+					}
+					break;
+			}
+			
+			if(x1==0 || y1==0 || x2==0 || y2==0) {
+				System.out.println("x1: "+x1+" y1: "+y1+" x2: "+x2+" y2: "+y2);
+				System.out.println("Type a: "+connection.Connection[i][4]+" Type a: "+connection.Connection[i][5]);
+			}
+			big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
+		}
 		
 		//Draw geneproducts
 		for (int i=0; i<pathway.geneProducts.length; i++) {

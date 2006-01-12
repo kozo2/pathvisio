@@ -28,7 +28,6 @@ import javax.swing.ImageIcon;
 
 public class GmmlVision {
   private JFrame f;
-  //GmmlConnection connection;
   GmmlPathway pathway;
   JTextField zoomField;
   GmmlDrawing drawing;
@@ -77,10 +76,9 @@ public class GmmlVision {
 		addButtons(toolBar);
 		f.getContentPane().add(toolBar, BorderLayout.NORTH);
 	
-   	//Add some content
+	   	//Add some content
 	   GmmlReader reader = new GmmlReader(file);
 		pathway = reader.getPathway();
-		//connection = new GmmlConnection(pathway);
 
 		//Create a drawing (this is an extended JPanel class)
 		drawing = new GmmlDrawing(pathway);

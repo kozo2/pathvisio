@@ -34,31 +34,33 @@ class GmmlConnection {
 	double dy;
 	boolean test1;
 	boolean test2;
+	
+	int searchLength = 300;
 
 		 /** GmmlConnection checks for each line if it connects two 'shapes'
 		   * and which shapes it connects.
-		   * the shapetypes of the connected shapes are stored in the 
-		   * last two columns of Connections
-		   * types:
-		   *			0: rectangle from rects
-		   *			1: rectangle form shape
-		   *			2: ellipse form shape
-		   *			3: anchorpoint
-		   *			4: arc
-		   *			5: label
-		   *			6: brace
+		   * In the array connections the data of the connections is stored.
+		   * In the first column the index of the line or lineshape is stored,
+		   * in the second the type. 
+		   * In the third and fourth column the indices ofthe objects that are connected are stored
+		   * and in the last fifth and the sixth column the object types are stored.
+		   * <DL>Types:
+		   * <DD>		1: label
+		   * <DD>		2: geneproduct
+		   * <DD>		3: lineshape
+		   * <DD>		4: line
+		   * <DD>		5: brace
+		   * <DD>		6: arc
+		   * <DD>		7: shape
+		   * <DD>		8: anchorpoint
+		   * </DL>
 		   */	
-		
-		/* TO DO
-			GmmlConnection only checks for connections between lines or lineshapes and large objects like geneproducts.
-			So this class has to be extended with a part that checks for connections between lines and lineshapes.
-		*/
 		
 	public GmmlConnection(GmmlPathway inputpathway){
 
 
 		pathway = inputpathway;
-		Connection = new int[pathway.lines.length+pathway.lineshapes.length][5];
+		Connection = new int[pathway.lines.length+pathway.lineshapes.length][6];
 		double[][] tempAnchor = new double[2*(pathway.lines.length+pathway.lineshapes.length)][2];
 	 	int count=0;
 		double x1,y1,x2,y2;
@@ -68,14 +70,17 @@ class GmmlConnection {
 				y1 = pathway.lines[i].starty;
 				x2 = pathway.lines[i].endx;
 				y2 = pathway.lines[i].endy;
+				Connection[i][1]=4;
+				Connection[i][0]=i;
 			}
 			else {
 				x1 = pathway.lineshapes[i-pathway.lines.length].startx;
 				y1 = pathway.lineshapes[i-pathway.lines.length].starty;
 				x2 = pathway.lineshapes[i-pathway.lines.length].endx;
 				y2 = pathway.lineshapes[i-pathway.lines.length].endy;
+				Connection[i][1]=3;
+				Connection[i][0]=i-pathway.lines.length;
 			}				
-			Connection[i][0]=i;
 			test1=false;
 			test2=false;			
 			increase(i, x1, x2, y1, y2);
@@ -113,15 +118,15 @@ class GmmlConnection {
 			if (!test1) {
 				tempAnchor[count][0]=x1;
 				tempAnchor[count][1]=y1;
-				Connection[i][1] = count;
-				Connection[i][3] = 3;
+				Connection[i][2] = count;
+				Connection[i][4] = 8;
 				count++;		
 			}
 			if (!test2) {
 				tempAnchor[count][0]=x2;
 				tempAnchor[count][1]=y2;
-				Connection[i][2] = count;
-				Connection[i][4] = 3;
+				Connection[i][3] = count;
+				Connection[i][5] = 8;
 				count++;
 			}				
 		}// end of for loop with lines
@@ -166,19 +171,19 @@ class GmmlConnection {
 	  */		
 	public void checkGeneProduct(int i, int j, double x1, double y1, double x2, double y2){ 
 		int n=0;
-		while (!test1&&(n<25)){
+		while (!test1&&(n<searchLength)){
 			if ((!test1)&&(pathway.geneProducts[j].contains(x1+n*dx,y1+n*dy))){
-				Connection[i][1]=j;
-				Connection[i][3]=0;
+				Connection[i][2]=j;
+				Connection[i][4]=2;
 				test1=true;
 			}
 			n++;
 		}
 		n=0;
-		while (!test2&&(n<25)){
+		while (!test2&&(n<searchLength)){
 			if ((!test2)&&(pathway.geneProducts[j].contains(x2-n*dx,y2-n*dy))){
-				Connection[i][2]=j;
-				Connection[i][4]=0;
+				Connection[i][3]=j;
+				Connection[i][5]=2;
 				test2=true;
 			}
 			n++;
@@ -198,19 +203,19 @@ class GmmlConnection {
 	  */		
 	public void checkShape(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
-		while (!test1&&(n<25)){
+		while (!test1&&(n<searchLength)){
 			if ((!test1)&&(pathway.shapes[j].contains(x1+n*dx,y1+n*dy))){
-				Connection[i][1]=j;
-				Connection[i][3]=0;
+				Connection[i][2]=j;
+				Connection[i][4]=7;
 				test1=true;
 			}
 			n++;
 		}
 		n=0;
-		while (!test2&&(n<25)){
+		while (!test2&&(n<searchLength)){
 			if ((!test2)&&(pathway.shapes[j].contains(x2-n*dx,y2-n*dy))){
-				Connection[i][2]=j;
-				Connection[i][4]=0;
+				Connection[i][3]=j;
+				Connection[i][5]=7;
 				test2=true;
 			}
 			n++;
@@ -229,19 +234,19 @@ class GmmlConnection {
 	  */		
 	public void checkArc(int i, int j, double x1, double y1, double x2, double y2){
 		int n=0;
-		while (!test1&&(n<25)){
+		while (!test1&&(n<searchLength)){
 			if ((!test1)&&(pathway.arcs[j].contains(x1+n*dx,y1+n*dy))){
-				Connection[i][1]=j;
-				Connection[i][3]=4;
+				Connection[i][2]=j;
+				Connection[i][4]=4;
 				test1=true;
 			}
 			n++;
 		}
 		n=0;
-		while (!test2&&(n<25)){
+		while (!test2&&(n<searchLength)){
 			if ((!test2)&&(pathway.arcs[j].contains(x2-n*dx,y2-n*dy))){
-				Connection[i][2]=j;
-				Connection[i][4]=4;
+				Connection[i][3]=j;
+				Connection[i][5]=4;
 				test2=true;
 			}
 			n++;
@@ -260,19 +265,19 @@ class GmmlConnection {
 	  */	
 	public void checkLabel(int i, int j, double x1, double y1, double x2, double y2){
 		int n=0;
-		while (!test1&&(n<25)){
+		while (!test1&&(n<searchLength)){
 			if ((!test1)&&(pathway.labels[j].contains(x1+n*dx,y1+n*dy))){
-				Connection[i][1]=j;
-				Connection[i][3]=5;
+				Connection[i][2]=j;
+				Connection[i][4]=1;
 				test1=true;
 			}
 			n++;
 		}
 		n=0;
-		while (!test2&&(n<25)){
+		while (!test2&&(n<searchLength)){
 			if ((!test2)&&(pathway.labels[j].contains(x2-n*dx,y2-n*dy))){
-				Connection[i][2]=j;
-				Connection[i][4]=5;
+				Connection[i][3]=j;
+				Connection[i][5]=1;
 				test2=true;
 			}
 			n++;
@@ -291,19 +296,19 @@ class GmmlConnection {
 	  */	
 	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
-		while (!test1&&(n<25)){
+		while (!test1&&(n<searchLength)){
 			if ((!test1)&&(pathway.braces[j].contains(x1+n*dx,y1+n*dy))){
-				Connection[i][1]=j;
-				Connection[i][3]=6;
+				Connection[i][2]=j;
+				Connection[i][4]=5;
 				test1=true;
 			}
 			n++;
 		}
 		n=0;
-		while (!test2&&(n<25)){
+		while (!test2&&(n<searchLength)){
 			if ((!test2)&&(pathway.braces[j].contains(x2-n*dx,y2-n*dy))){
-				Connection[i][2]=j;
-				Connection[i][4]=6;
+				Connection[i][3]=j;
+				Connection[i][5]=5;
 				test2=true;
 			}
 			n++;

@@ -130,7 +130,7 @@ public class GmmlWriter {
 		   
 		   w = pathway.geneProducts[i].width;
 		   h = pathway.geneProducts[i].height;
-	   	x = pathway.geneProducts[i].x;
+	   		x = pathway.geneProducts[i].x;
 		   y = pathway.geneProducts[i].y;
 		   //Calculate the centers from the x, y, width, height
 		   cx = x + w/2;
@@ -249,7 +249,7 @@ public class GmmlWriter {
 		   
 		   w = pathway.labels[i].width;
 		   h = pathway.labels[i].height;
-	   	x = pathway.labels[i].x;
+	   		x = pathway.labels[i].x;
 		   y = pathway.labels[i].y;
 		   cx = x + w/2;
 		   cy = y + h/2;
@@ -300,7 +300,7 @@ public class GmmlWriter {
 		   
 		   w = pathway.shapes[i].width;
 		   h = pathway.shapes[i].height;
-	   	x = pathway.shapes[i].x;
+	   		x = pathway.shapes[i].x;
 		   y = pathway.shapes[i].y;
 		   cx = x + w;
 		   cy = y + h;
