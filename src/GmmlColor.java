@@ -23,7 +23,8 @@ import java.awt.Color;
  *
  */
 
-public class GmmlColor {
+public class GmmlColor
+{
 	float[] color = new float[3];
 	
 	//Constructor
@@ -31,20 +32,22 @@ public class GmmlColor {
 	 * Create an empty GmmlColor
 	 */
 	public GmmlColor() {
-        //Main can be empty       
+		//Constructor can be empty       
     }
 
    /**
     * Create a new GmmlColor and store the color in it, note that if the string is an invalid gmml color string it will result in black.
     */
-	public GmmlColor(String colorstring) {
-        storeColor(colorstring);        
+	public GmmlColor(String colorstring)
+	{
+		storeColor(colorstring);        
     }
    
 	/**
 	 * This method returns a Color that awt can use
 	 */
-	public Color getColor() {
+	public Color getColor()
+	{
 		Color returncolor = new Color(color[0],color[1],color[2]);
 		return returncolor;
 	}
@@ -52,17 +55,22 @@ public class GmmlColor {
 	/**
 	 * This method returns a color in the format of a float[3] with r,g,b stored in it.
 	 */
-	public float[] getColorFloat() {
+	public float[] getColorFloat()
+	{
 		return color;
 	}
 	
 	/**
 	 * Store a gmml valid color string
 	 */
-	public void storeColor(String colorstring) {
-		if(!storeStringColor(colorstring)) {
-			if(!storeHexColor(colorstring)) {
-				if(Integer.parseInt(colorstring.trim()) != -1) {
+	public void storeColor(String colorstring)
+	{
+		if(!storeStringColor(colorstring))
+		{
+			if(!storeHexColor(colorstring))
+			{
+				if(Integer.parseInt(colorstring.trim()) != -1)
+				{
 					System.out.println("'"+colorstring + "' is not a valid color value!");
 				} else {
 					color[0] = 0;
@@ -76,7 +84,8 @@ public class GmmlColor {
 	/**
 	 * Convert a gmml valid color string into a float[3]
 	 */
-	public static float[] convertStringToFloat(String colorstring) {
+	public static float[] convertStringToFloat(String colorstring)
+	{
 		GmmlColor temp = new GmmlColor(colorstring);
 		float[] colorfloat = temp.getColorFloat();
 		return colorfloat;
@@ -85,7 +94,8 @@ public class GmmlColor {
 	/**
 	 * Convert a gmml valid color string into a Color awt can use
 	 */
-	public static Color convertStringToColor(String colorstring) {
+	public static Color convertStringToColor(String colorstring)
+	{
 		GmmlColor temp = new GmmlColor(colorstring);
 		Color color = temp.getColor();
 		return color;
@@ -94,7 +104,8 @@ public class GmmlColor {
 	/**
 	 * Convert an awt Color object into a valid hex string for storing in files
 	 */	
-	public static String convertColorToString(Color color) {
+	public static String convertColorToString(Color color)
+	{
 		String rhex = Integer.toHexString(color.getRed());
 		String ghex = Integer.toHexString(color.getGreen());
 		String bhex = Integer.toHexString(color.getBlue());
@@ -107,17 +118,20 @@ public class GmmlColor {
 
 		
 	//StoreColor method
-	private boolean storeHexColor(String scolor) {
+	private boolean storeHexColor(String scolor)
+	{
 		//Trim the string and break it into bytes
 		String trimcolor = scolor.trim();
 		
-		if(trimcolor.length()==6) {
+		if(trimcolor.length()==6)
+		{
 			//Break appart the string
 			String red = ""+trimcolor.charAt(0)+trimcolor.charAt(1);
 			String green = ""+trimcolor.charAt(2)+trimcolor.charAt(3);
 			String blue = ""+trimcolor.charAt(4)+trimcolor.charAt(5);
 			
-			try {
+			try
+			{
 				//Convert a hex string into an integer
 				int r = Integer.parseInt( red.trim(), 16 /* radix */ );
 				int g = Integer.parseInt( green.trim(), 16 /* radix */ );
@@ -136,25 +150,28 @@ public class GmmlColor {
 		
 		return false;	//Not a propper Hex Value!
 	}
-	private boolean storeStringColor(String scolor) {
+
+	private boolean storeStringColor(String scolor)
+	{
 		//Color string table
 		String[][] colortable = {
-		{"Aqua","0","1","1"},
-		{"Black","0","0","0"},
-		{"Blue","0","0","1"},
-		{"Fuchsia","1","0","1"},
-		{"Gray","0.5","0.5","0.5"},
-		{"Green","0","0.5","0"},
-		{"Lime","0","1","0"},
-		{"Maroon","0.5","0","0"},
-		{"Navy","0","0","0.5"},
-		{"Olive","0.5","0.5","0"},
-		{"Purple","0.5","0","0.5"},
-		{"Red","1","0","0"},
-		{"Silver","0.75","0.75","0.75"},
-		{"Teal","0","0.5","0.5"},
-		{"White","1","1","1"},
-		{"Yellow","1","1","0"}};
+			{"Aqua","0","1","1"},
+			{"Black","0","0","0"},
+			{"Blue","0","0","1"},
+			{"Fuchsia","1","0","1"},
+			{"Gray","0.5","0.5","0.5"},
+			{"Green","0","0.5","0"},
+			{"Lime","0","1","0"},
+			{"Maroon","0.5","0","0"},
+			{"Navy","0","0","0.5"},
+			{"Olive","0.5","0.5","0"},
+			{"Purple","0.5","0","0.5"},
+			{"Red","1","0","0"},
+			{"Silver","0.75","0.75","0.75"},
+			{"Teal","0","0.5","0.5"},
+			{"White","1","1","1"},
+			{"Yellow","1","1","0"}
+		};
 
 		String trimcolor = scolor.trim();
 		
@@ -171,6 +188,5 @@ public class GmmlColor {
 		}
 		return false;	//Not a recognised color name
 	}
-		
-		
+
 }

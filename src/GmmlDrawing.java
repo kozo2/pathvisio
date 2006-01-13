@@ -23,7 +23,8 @@ import java.awt.geom.*;
 import java.awt.Graphics2D.*;
 import javax.swing.JPanel;
 
-public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener {
+public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
+{
 	double zf = 15; //zoomfactor
 	GmmlPathway pathway;
 	GmmlConnection connection;
@@ -537,7 +538,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 
 	public void update(Graphics g){
 		Graphics2D g2 = (Graphics2D)g;
-                 
+
 			if(firstTime){
 				Dimension dim = getSize(); //Size of frame f
 				int w = dim.width;

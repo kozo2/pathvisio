@@ -25,7 +25,8 @@ import java.awt.geom.AffineTransform;
 // GmmlConnection is not used in the program so far
 // it can be used to connect objects and to keep those connected when the objects are moved.
 
-class GmmlConnection {
+class GmmlConnection
+{
 
 	GmmlPathway pathway;
 	int[][] Connection;
@@ -296,7 +297,8 @@ class GmmlConnection {
 	  */	
 	public void checkBrace(int i, int j, double x1, double y1, double x2, double y2){		  
 		int n=0;
-		while (!test1&&(n<searchLength)){
+		while (!test1&&(n<searchLength))
+		{
 			if ((!test1)&&(pathway.braces[j].contains(x1+n*dx,y1+n*dy))){
 				Connection[i][2]=j;
 				Connection[i][4]=5;
@@ -305,15 +307,17 @@ class GmmlConnection {
 			n++;
 		}
 		n=0;
-		while (!test2&&(n<searchLength)){
-			if ((!test2)&&(pathway.braces[j].contains(x2-n*dx,y2-n*dy))){
+		while (!test2&&(n<searchLength))
+		{
+			if ((!test2)&&(pathway.braces[j].contains(x2-n*dx,y2-n*dy)))
+			{
 				Connection[i][3]=j;
 				Connection[i][5]=5;
 				test2=true;
 			}
 			n++;
-		}		
-	}// end of checkBrace			
-			
-}// end of class
+		}
+	}
+
+}
 

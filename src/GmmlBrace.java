@@ -21,8 +21,8 @@ import java.awt.Rectangle;
   *This class contains the braces. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
 
-public class GmmlBrace {
-	
+public class GmmlBrace
+{
 	double cX, cY, w, ppo;
 	int or; //or is the orientation: 0=top, 1=right, 2=bottom, 3=left
 	Color color;
@@ -30,7 +30,8 @@ public class GmmlBrace {
 	/**
 	  *Constructor GmmlBrace has 4 doubles for the coordinates, an int for the orientation and a string for the color as input. Width is the longest side of the brace, ppo the shortest side. This input is assigned to the object brace, but no real brace is constructed. Orientation is 0 for top, 1 for right, 2 for bottom or 3 for left.  
 	  */
-	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, String color) {
+	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, String color)
+	{
 		cX=centerX;
 		cY=centerY;
 		w=width;
@@ -44,20 +45,27 @@ public class GmmlBrace {
 	  *Method contains uses the coordinates of a specific point (pointx, pointy) to determine whether a brace contains this point. 
 	  *To do this, there is checked whether this point is in a certain rectangle.
 	  */	 
-	public boolean contains(double pointx, double pointy) {
-		if (or==0 || or==2) {
-			if (cX-0.5*w<=pointx&& pointx<=cX+0.5*w && cY-0.5*ppo<=pointy && pointy<=cY+0.5*ppo) {
+	public boolean contains(double pointx, double pointy)
+	{
+		if (or==0 || or==2)
+		{
+			if (cX-0.5*w<=pointx&& pointx<=cX+0.5*w && cY-0.5*ppo<=pointy && pointy<=cY+0.5*ppo)
+			{
 				return true;
 			}
-			else {
+			else
+			{
 				return false;
 			}
 		} //end if orientation
-		else {
-			if (cY-0.5*w<=pointy && pointy<=cY+0.5*w && cX-0.5*ppo<=pointx && pointx<=cX+0.5*ppo) {
+		else
+		{
+			if (cY-0.5*w<=pointy && pointy<=cY+0.5*w && cX-0.5*ppo<=pointx && pointx<=cX+0.5*ppo)
+			{
 				return true;
 			}
-			else {
+			else
+			{
 				return false;
 			}
 		} // end else orientation
@@ -66,7 +74,8 @@ public class GmmlBrace {
 	/**
 	  *Method setLocation changes the double centerX and centerY coordinate to the centerX and centerY that are arguments for this method
 	  */
-	public void setLocation(double centerX, double centerY) {
+	public void setLocation(double centerX, double centerY)
+	{
 		cX = centerX;
 		cY = centerY;
 	}
@@ -74,7 +83,8 @@ public class GmmlBrace {
 	/**
 	  *Method getHelpers returns an array of rectangles on the brace, which are used to drag and transform the brace.
 	  */
-	public Rectangle[] getHelpers(double zf) {
+	public Rectangle[] getHelpers(double zf)
+	{
 		Rectangle[] helpers = new Rectangle[2];
 		helpers[0] = new Rectangle((int)(cX/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
 		helpers[1] = new Rectangle();

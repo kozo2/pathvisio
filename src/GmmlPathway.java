@@ -259,21 +259,23 @@ public class GmmlPathway {
 	  */
 	public void echoAtt() {
 		System.out.println("Checking for stored attributes - number: "+attributes.length);
-		for(int i=0; i<attributes.length; i++) {
+		for(int i=0; i<attributes.length; i++)
+		{
 			System.out.println("Attribute name: "+attributes[i][0]+ "value : "+attributes[i][1]);
-      }
-   }
+		}
+	}
 
-    private static Object resizeArray (Object oldArray, int newSize) {
-      int oldSize = java.lang.reflect.Array.getLength(oldArray);
-      Class elementType = oldArray.getClass().getComponentType();
-      Object newArray = java.lang.reflect.Array.newInstance(elementType,newSize);
-      int preserveLength = Math.min(oldSize,newSize);
-      if (preserveLength > 0)
-          System.arraycopy (oldArray,0,newArray,0,preserveLength);
-    	return newArray; 
-	 }
-	 
+	private static Object resizeArray (Object oldArray, int newSize)
+	{
+		int oldSize = java.lang.reflect.Array.getLength(oldArray);
+		Class elementType = oldArray.getClass().getComponentType();
+		Object newArray = java.lang.reflect.Array.newInstance(elementType,newSize);
+		int preserveLength = Math.min(oldSize,newSize);
+		if (preserveLength > 0)
+			System.arraycopy (oldArray,0,newArray,0,preserveLength);
+		return newArray; 
+	}
+	
 
 	
 } //end of GmmlPathway

@@ -92,4 +92,3 @@ public class GmmlLine {
 		return helpers;
 	}
 }
-	

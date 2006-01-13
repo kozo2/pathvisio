@@ -18,10 +18,10 @@ limitations under the License.
 import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+
 /**
   *This class contains the shapes. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
-
 public class GmmlShape {
 
 double x,y,width,height,rotation;
@@ -46,8 +46,8 @@ Color color;
 	  *to determine whether a shape contains this point. 
 	  *To do this, a polygon is created, on which the normal contains method is used.
 	  */
-	public boolean contains(double pointx, double pointy) {
-	
+	public boolean contains(double pointx, double pointy)
+	{
 		if (type==0) {				
 			double theta = Math.toRadians(rotation);
 			double[] rot = new double[2];
