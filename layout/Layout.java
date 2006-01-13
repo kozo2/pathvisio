@@ -6,7 +6,7 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import javax.swing.Timer;
 
-class Layout5 {
+class Layout {
 
 /* This program optimises the 2D layout of a certain pathway (collection of blocks and linking lines), 
 based on the coordinates of the blocks as stored in int[n][2] matrix "coord" 
