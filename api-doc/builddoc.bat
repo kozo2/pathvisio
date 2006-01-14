@@ -1,1 +1,1 @@
-javadoc ..\gmml-classes\Gmml*.java
+javadoc ..\src\Gmml*.java
