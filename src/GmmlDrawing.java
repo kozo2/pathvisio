@@ -545,7 +545,8 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 				int h = dim.height;
 				area = new Rectangle(dim);
 				bi = (BufferedImage)createImage(w, h);
-				big = bi.createGraphics();				
+				big = bi.createGraphics();
+				big.setBackground(Color.white);
 				big.setStroke(new BasicStroke(8.0f));
 				firstTime = false;
 			} 
@@ -664,11 +665,20 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 					break;
 			}
 			
-			if(x1==0 || y1==0 || x2==0 || y2==0) {
+			if(connection.Connection[i][1]==3) {
+				GmmlLineShape lineshape = new GmmlLineShape(x1, y1, x2, y2, pathway.lines[connection.Connection[i][0]].type, Color.red);;
+				drawLineShape(lineshape);
+			}
+			if(connection.Connection[i][1]==4) {
+				GmmlLine line = new GmmlLine(x1, y1, x2, y2, pathway.lines[connection.Connection[i][0]].type, pathway.lines[connection.Connection[i][0]].style, Color.red);
+				drawLine(line);
+			}
+					
+			/*if(x1==0 || y1==0 || x2==0 || y2==0) {
 				System.out.println("x1: "+x1+" y1: "+y1+" x2: "+x2+" y2: "+y2);
 				System.out.println("Type a: "+connection.Connection[i][4]+" Type a: "+connection.Connection[i][5]);
 			}
-			big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf));
+			big.draw(new Line2D.Double(x1/zf,y1/zf,x2/zf,y2/zf)); */
 		}
 		
 		//Draw geneproducts
@@ -883,10 +893,13 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	
 	// Draws the Geneproduct.
 	public void drawGeneProduct (GmmlGeneProduct geneproduct) {
+		Rectangle rect = new Rectangle((int)(geneproduct.x/zf),(int)(geneproduct.y/zf),(int)(geneproduct.width/zf),(int)(geneproduct.height/zf));
+		
 		big.setColor(Color.black);
 		big.setStroke(new BasicStroke(2.0f));
-		Rectangle rect = new Rectangle((int)(geneproduct.x/zf),(int)(geneproduct.y/zf),(int)(geneproduct.width/zf),(int)(geneproduct.height/zf));
 		big.draw(rect);
+		big.setColor(Color.white);
+		big.fill(rect);
 				
 		// Draws text on the newly positioned rectangles.
 		Font gpfont = new Font("Arial", Font.PLAIN, (int)(150/zf));
@@ -909,8 +922,7 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 	}
 	
 	//Draw a label
-	public void drawLabel (GmmlLabel label) {
-		big.setColor(label.color);
+	public void drawLabel (GmmlLabel label) {		
 		Font font = new Font(label.font, Font.PLAIN, (int) (label.fontSize*(15/zf)));
 		if (label.fontWeight.equalsIgnoreCase("bold")) {
 			if (label.fontStyle.equalsIgnoreCase("italic")) {
@@ -926,7 +938,14 @@ public class GmmlDrawing extends JPanel implements MouseListener, MouseMotionLis
 		
 		FontMetrics fm = big.getFontMetrics();
 		int lfHeight = fm.getHeight();
+		int textWidth = fm.stringWidth(label.text);
 		
+		//Make sure the text is written on a white background
+		Rectangle labelback = new Rectangle((int)(label.x/zf) - 2, (int)(label.y/zf)+3, textWidth + 4, lfHeight); //The +3 in the y coord is for the letter as g, j, q and y who are partially written under the normal baseline, the x and with are for a tiny bit of extra whitespace for convience.
+		big.setColor(Color.white);
+		big.fill(labelback);
+		
+		big.setColor(label.color);
 		big.drawString(label.text,(int)(label.x/zf), (int)(label.y/zf+lfHeight));
 	}
 	

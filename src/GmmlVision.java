@@ -86,9 +86,12 @@ public class GmmlVision
 
 		//Create a drawing (this is an extended JPanel class)
 		drawing = new GmmlDrawing(pathway);
+		drawing.setBackground(Color.white);
 		
 		//Try to make a scrolling area
 		JScrollPane scroll = new JScrollPane(drawing);
+		scroll.setBackground(Color.white);
+		
 		scroll.setVerticalScrollBar(scroll.createVerticalScrollBar());
 		scroll.setHorizontalScrollBar(scroll.createHorizontalScrollBar());
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
