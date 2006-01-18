@@ -1,8 +1,0 @@
-From the Sun Web Services developer pack, one needs for this baby to work:
-
-xsdlib.jar
-jaxb-api.jar
-jaxb-impl.jar
-jaxb-libs.jar
-jaxb-xjc.jar
-

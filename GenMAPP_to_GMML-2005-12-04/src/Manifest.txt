@@ -1,2 +1,0 @@
-Main-Class: Converter
-Class-Path: src\lib\jaxb\jaxb-api.jar src\lib\jaxb\jaxb-impl.jar src\lib\jaxb\jaxb-libs.jar src\lib\jaxb\jaxb-libs.jar src\lib\jaxb-xjc.jar src\lib\xsdlib.jar src\relaxngDatatype.jar
