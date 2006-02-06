@@ -18,8 +18,7 @@ limitations under the License.
 import java.util.Vector;
 import org.jdom.Attribute;
 
-/** GmmlPathway creates the objects geneProducts, lines, lineshapes, labels, arcs, braces and shapes.
-  * Also the strings with the attributes, notes and comment are created.
+/** GmmlPathway 
   */
 public class GmmlPathway {
 	
