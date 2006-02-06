@@ -6,6 +6,7 @@ import org.jdom.Element;
 import org.jdom.Attribute;
 import java.io.IOException;
 import java.util.*;
+import java.awt.Color;
 
 /**
 *	This class handles GMML file-input
@@ -59,24 +60,7 @@ public class GmmlReader
 	{
 		return pathway;
 	} // end public GmmlPathway getPathway()
-
 	
-	// Method to resize an array
-	// When appending an element to an array, first resize it.
-	private static Object resizeArray (Object oldArray, int newSize)
-	{
-		int oldSize = java.lang.reflect.Array.getLength(oldArray);
-		Class elementType = oldArray.getClass().getComponentType();
-		Object newArray = java.lang.reflect.Array.newInstance(elementType,newSize);
-		int preserveLength = Math.min(oldSize,newSize);
-		
-		if (preserveLength > 0)
-		{
-			System.arraycopy(oldArray,0,newArray,0,preserveLength);
-		}
-		return newArray; 
-	} // end private static Object resizeArray (Object oldArray, int newSize)
-
 	private void readGMML(Object o, int depth)
 	{
 		// check wether the argument o is an xml Element
@@ -154,7 +138,7 @@ public class GmmlReader
 							// attribute is known
 							aknown = true;
 							// add attribute
-							pathway.addAttribute(aName, aValue);
+							pathway.addAttribute(a);
 						
 						} // end if
 					} // end for
@@ -291,8 +275,7 @@ public class GmmlReader
 	// method to check geneproduct attributes
 	private void checkGeneproductAttributes(Element e)
 	{
-		String ref = "";
-		String geneID = "";
+		GmmlGeneProduct gp = new GmmlGeneProduct();
 		
 		List a = e.getAttributes();
 		Iterator it = a.iterator();
@@ -307,7 +290,7 @@ public class GmmlReader
 				
 				if ("geneid".equalsIgnoreCase(aName))
 				{
-					geneID = aValue;
+					gp.geneID = aValue;
 				}
 				else if ("type".equalsIgnoreCase(aName))
 				{
@@ -319,7 +302,7 @@ public class GmmlReader
 				}
 				else if ("xref".equalsIgnoreCase(aName))
 				{
-					ref = aValue;
+					gp.ref = aValue;
 				}
 				else if ("backpagehead".equalsIgnoreCase(aName))
 				{
@@ -347,7 +330,7 @@ public class GmmlReader
 				
 				if ("graphics".equalsIgnoreCase(eName))
 				{
-					checkGeneProductGraphicsAttributes(ref, geneID, el);
+					checkGeneProductGraphicsAttributes(gp, el);
 				}
 				else if ("comment".equalsIgnoreCase(eName))
 				{
@@ -365,14 +348,11 @@ public class GmmlReader
 	
 	
 	// method...
-	private void checkGeneProductGraphicsAttributes(String ref, String geneID, Element e)
+	private void checkGeneProductGraphicsAttributes(GmmlGeneProduct gp, Element e)
 	{
-			int x = 0;
-			int y = 0;
-			int cx = 0;
-			int cy = 0;
-			int width = 0;
-			int height = 0;
+		int cx = 0;
+		int cy = 0;
+
 			
 			List alist = e.getAttributes();
 			Iterator it = alist.iterator();
@@ -395,28 +375,28 @@ public class GmmlReader
 					}
 					else if ("width".equalsIgnoreCase(aName))
 					{
-						width = Integer.parseInt(aValue);
+						gp.width = Integer.parseInt(aValue);
 					}
 					else if ("height".equalsIgnoreCase(aName))
 					{
-						height = Integer.parseInt(aValue);
+						gp.height = Integer.parseInt(aValue);
 					}
 				} // end if
 			} // end while
 			
 			// graphics wil be defined from left upper corner
-			x = cx - (width/2);
-			y = cy - (height/2);
+			gp.x = cx - (gp.width/2);
+			gp.y = cy - (gp.height/2);
 			
 			// now, a gene product can be added to the pathway
-			pathway.addGeneProduct(x, y, width, height, geneID, ref);
+			pathway.addGeneProduct(gp);
 			
 	} // end private void checkGeneProductSubGraphics(String ref, String geneID)
 
 	private void checkLineAttributes(Element e)
 	{
-		int style = 0;
-		int type  = 0;
+		int ID = pathway.lines.size() + 1;
+		GmmlLine l = new GmmlLine(ID);
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -432,22 +412,22 @@ public class GmmlReader
 				{
 					if ("solid".equalsIgnoreCase(aValue))
 					{
-						style = 0;						
+						l.style = 0;						
 					}
 					else if ("broken".equalsIgnoreCase(aValue))
 					{
-						style = 1;
+						l.style = 1;
 					}
 				} // end if style
 				else if ("type".equalsIgnoreCase(aName))
 				{
 					if ("line".equalsIgnoreCase(aValue))
 					{
-						type = 0;
+						l.type = 0;
 					}
 					else if ("arrow".equalsIgnoreCase(aValue))
 					{
-						type = 1;
+						l.type = 1;
 					}					
 				} // end else if type
 			} // end if o instance of 
@@ -466,7 +446,7 @@ public class GmmlReader
 				
 				if ("graphics".equalsIgnoreCase(subeName))
 				{	
-					checkLineGraphicsAttributes(style, type, sube);
+					checkLineGraphicsAttributes(l, sube);
 				} // end if "graphics..."
 				else if ("comment".equalsIgnoreCase(subeName))
 				{
@@ -481,15 +461,9 @@ public class GmmlReader
 		
 	} // end private void checkLineAttributes(Element e)
 
-	private void checkLineGraphicsAttributes(int style, int type, Element e)
+	private void checkLineGraphicsAttributes(GmmlLine l, Element e)
 	{
-		int sx = 0;
-		int sy = 0;
-		int ex = 0;
-		int ey = 0;
-
-		String color = "";
-		
+	
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
 		
@@ -504,35 +478,35 @@ public class GmmlReader
 										
 				if ("startx".equalsIgnoreCase(aName))
 				{
-					sx = Integer.parseInt(aValue);
+					l.startx = Integer.parseInt(aValue);
 				}
 				else if ("starty".equalsIgnoreCase(aName))
 				{
-					sy = Integer.parseInt(aValue);
+					l.starty = Integer.parseInt(aValue);
 				}
 				else if ("endx".equalsIgnoreCase(aName))
 		 		{
-					ex = Integer.parseInt(aValue);
+					l.endx = Integer.parseInt(aValue);
 				}
 				else if ("endy".equalsIgnoreCase(aName))
 				{
-					ey = Integer.parseInt(aValue);
+					l.endy = Integer.parseInt(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
-					color = aValue;
+					l.color = GmmlColor.convertStringToColor(aValue);
 				}
 			} // end if 
 		}// end while
 		
 		// line attributes complete, add line to pathway
-		pathway.addLine(sx, sy, ex, ey, style, type, color);
+		pathway.addLine(l);
 		
 	} // end private void checkLineGraphicsAttributes()
 
 	private void checkLineShapeAttributes(Element e)
 	{
-		int type  = 0;
+		GmmlLineShape ls = new GmmlLineShape();
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -548,23 +522,23 @@ public class GmmlReader
 				{
 					if ("tbar".equalsIgnoreCase(aValue))
 					{
-						type = 0;						
+						ls.type = 0;						
 					}
 					else if ("receptorbound".equalsIgnoreCase(aValue))
 					{
-						type = 1;
+						ls.type = 1;
 					}
 					else if ("ligandbound".equalsIgnoreCase(aValue))
 					{
-						type = 2;
+						ls.type = 2;
 					}
 					else if ("receptorsquare".equalsIgnoreCase(aValue))
 					{
-						type = 3;
+						ls.type = 3;
 					}
 					else if ("ligandsquare".equalsIgnoreCase(aValue))
 					{
-						type = 4;
+						ls.type = 4;
 					}
 				} // end if style
 			} // end if o instance of 
@@ -583,7 +557,7 @@ public class GmmlReader
 				
 				if ("graphics".equalsIgnoreCase(subeName))
 				{	
-					checkLineShapeGraphicsAttributes(type, sube);
+					checkLineShapeGraphicsAttributes(ls, sube);
 				} // end if "graphics..."
 				else if ("comment".equalsIgnoreCase(subeName))
 				{
@@ -598,15 +572,8 @@ public class GmmlReader
 	
 	} // end private void checkLineShapeAttributes(e)
 	
-	private void checkLineShapeGraphicsAttributes(int type, Element e)
+	private void checkLineShapeGraphicsAttributes(GmmlLineShape ls, Element e)
 	{
-		double sx = 0;
-		double sy = 0;
-		double ex = 0;
-		double ey = 0;
-
-		String color = "";
-		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
 		
@@ -621,29 +588,29 @@ public class GmmlReader
 										
 				if ("startx".equalsIgnoreCase(aName))
 				{
-					sx = Double.parseDouble(aValue);
+					ls.startx = Double.parseDouble(aValue);
 				}
 				else if ("starty".equalsIgnoreCase(aName))
 				{
-					sy = Double.parseDouble(aValue);
+					ls.starty = Double.parseDouble(aValue);
 				}
 				else if ("endx".equalsIgnoreCase(aName))
 		 		{
-					ex = Double.parseDouble(aValue);
+					ls.endx = Double.parseDouble(aValue);
 				}
 				else if ("endy".equalsIgnoreCase(aName))
 				{
-					ey = Double.parseDouble(aValue);
+					ls.endy = Double.parseDouble(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
-					color = aValue;
+				ls.color = GmmlColor.convertStringToColor(aValue);
 				}
 			} // end if 
 		}// end while
 		
 		// line attributes complete, add lineshape to pathway
-		pathway.addLineShape(sx, sy, ex, ey, color, type);
+		pathway.addLineShape(ls);
 
 	} // end private void checkLineShapeGraphicsAttributes(style, sube)
 
@@ -679,14 +646,8 @@ public class GmmlReader
 
 	private void checkArcGraphicsAttributes(Element e)
 	{
-		double sx = 0;
-		double sy = 0;
-		double width = 0;
-		double height = 0;
-		double rotation = 0;
-		
-		String color = "";
-		
+		GmmlArc arc = new GmmlArc();
+
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
 		
@@ -701,39 +662,39 @@ public class GmmlReader
 										
 				if ("startx".equalsIgnoreCase(aName))
 				{
-					sx = Double.parseDouble(aValue);
+					arc.x = Double.parseDouble(aValue);
 				}
 				else if ("starty".equalsIgnoreCase(aName))
 				{
-					sy = Double.parseDouble(aValue);
+					arc.y = Double.parseDouble(aValue);
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					width = Double.parseDouble(aValue);
+					arc.width = Double.parseDouble(aValue);
 				}
 				else if ("height".equalsIgnoreCase(aName))
 				{
-					height = Double.parseDouble(aValue);
+					arc.height = Double.parseDouble(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
-					color = aValue;
+					arc.color = GmmlColor.convertStringToColor(aValue);
 				}
 				else if ("rotation".equalsIgnoreCase(aName))
 				{
-					rotation = Double.parseDouble(aValue);
+					arc.rotation = Double.parseDouble(aValue);
 				}				
 			} // end if 
 		}// end while
 		
 		// arc attributes complete, add arc to pathway
-		pathway.addArc(sx, sy, width, height, color, rotation);
+		pathway.addArc(arc);
 
 	} // end private void checkArcGraphicsAttributes(Element e)
 											
 	private void checkLabelAttributes(Element e)
 	{
-		String text = "";
+		GmmlLabel l = new GmmlLabel();
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -747,7 +708,7 @@ public class GmmlReader
 				String aValue = a.getValue();
 				if ("textlabel".equalsIgnoreCase(aName))
 				{
-					text = aValue;
+					l.text = aValue;
 				} // end if 
 			} // end if o instance of 
 		} // end while it.hasNext
@@ -765,7 +726,7 @@ public class GmmlReader
 				
 				if ("graphics".equalsIgnoreCase(subeName))
 				{	
-					checkLabelGraphicsAttributes(text, sube);
+					checkLabelGraphicsAttributes(l, sube);
 				} // end if "graphics..."
 				else if ("comment".equalsIgnoreCase(subeName))
 				{
@@ -780,20 +741,11 @@ public class GmmlReader
 				
 	} // end private void checkLabelAttributes(Element e)
 	
-	private void checkLabelGraphicsAttributes(String text, Element e)
+	private void checkLabelGraphicsAttributes(GmmlLabel l, Element e)
 	{
-		String fontname = "";
-		String fontstyle = "";
-		String fontweight = "";
-		String color = "";
-		
-		int fontsize = 0;		
 		int cx = 0;
 		int cy = 0;
-		int width = 0;
-		int height = 0;
-		int rotation = 0;
-				
+			
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
 		
@@ -816,45 +768,45 @@ public class GmmlReader
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					width = Integer.parseInt(aValue);
+					l.width = Integer.parseInt(aValue);
 				}
 				else if ("height".equalsIgnoreCase(aName))
 				{
-					height = Integer.parseInt(aValue);
+					l.height = Integer.parseInt(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
-					color = aValue;
+					l.color = GmmlColor.convertStringToColor(aValue);
 				}
 				else if ("fontname".equalsIgnoreCase(aName))
 				{
-					fontname = aValue;
+					l.font = aValue;
 				}
 				else if ("fontstyle".equalsIgnoreCase(aName))
 				{
-					fontstyle = aValue;
+					l.fontStyle = aValue;
 				}
 				else if ("fontweight".equalsIgnoreCase(aName))
 				{
-					fontweight = aValue;
+					l.fontWeight = aValue;
 				}
 				else if ("fontsize".equalsIgnoreCase(aName))
 				{
-					fontsize = Integer.parseInt(aValue);
+					l.fontSize = Integer.parseInt(aValue);
 				}				
 			} // end if 
 		}// end while
 		
-		int x = cx - (width/2);
-		int y = cy - (height/2);
+		l.x = cx - (l.width/2);
+		l.y = cy - (l.height/2);
 		// arc attributes complete, add arc to pathway
-		pathway.addLabel(x, y, width, height, text, color, fontname, fontweight, fontstyle, fontsize);
+		pathway.addLabel(l);
 		
 	}
 	
 	private void checkShapeAttributes(Element e)
 	{
-		int type = 0;
+		GmmlShape s = new GmmlShape();
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -871,11 +823,11 @@ public class GmmlReader
 				{
 					if ("rectangle".equalsIgnoreCase(aValue))
 					{
-						type = 0;
+						s.type = 0;
 					}
 					else if ("oval".equalsIgnoreCase(aValue))
 					{
-						type = 1;
+						s.type = 1;
 					}
 				} // end if 
 			} // end if o instance of 
@@ -894,7 +846,7 @@ public class GmmlReader
 				
 				if ("graphics".equalsIgnoreCase(subeName))
 				{	
-					checkShapeGraphicsAttributes(type, sube);
+					checkShapeGraphicsAttributes(s, sube);
 				} // end if "graphics..."
 				else if ("comment".equalsIgnoreCase(subeName))
 				{
@@ -909,16 +861,11 @@ public class GmmlReader
 		
 	} // end private void checkShapeAttributes(Element e)
 
-	private void checkShapeGraphicsAttributes(int type, Element e)
+	private void checkShapeGraphicsAttributes(GmmlShape s,  Element e)
 	{
 		double cx = 0;
 		double cy = 0;
-		double width = 0;
-		double height = 0;
-		double rotation = 0;
-		
-		String color = "";
-		
+				
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
 		
@@ -941,28 +888,28 @@ public class GmmlReader
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					width = Double.parseDouble(aValue);
+					s.width = Double.parseDouble(aValue);
 				}
 				else if ("height".equalsIgnoreCase(aName))
 				{
-					height = Double.parseDouble(aValue);
+					s.height = Double.parseDouble(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
-					color = aValue;
+					s.color = GmmlColor.convertStringToColor(aValue);
 				}
 				else if ("rotation".equalsIgnoreCase(aName))
 				{
-					rotation = Double.parseDouble(aValue);
+					s.rotation = Double.parseDouble(aValue);
 				}				
 			} // end if 
 		}// end while
 
-		double x = cx - width;
-		double y = cy - height;
+		s.x = cx - s.width;
+		s.y = cy - s.height;
 		
 		// arc attributes complete, add arc to pathway
-		pathway.addShape(x, y, width, height, type, color, rotation);
+		pathway.addShape(s);
 
 	} // end private void checkShapeGraphicsAttributes(int type, Element e)
 
@@ -973,6 +920,7 @@ public class GmmlReader
 	
 	private void checkBraceAttributes(Element e)
 	{
+		GmmlBrace b = new GmmlBrace();
 		// a brace element has sub elements; check them
 		List children = e.getContent();
 		Iterator it = children.iterator();
@@ -986,7 +934,7 @@ public class GmmlReader
 				
 				if ("graphics".equalsIgnoreCase(subeName))
 				{	
-					checkBraceGraphicsAttributes(sube);
+					checkBraceGraphicsAttributes(b, sube);
 				} // end if "graphics..."
 				else if ("comment".equalsIgnoreCase(subeName))
 				{
@@ -1001,7 +949,7 @@ public class GmmlReader
 
 	} // end private void checkBraceAttributes(Element e)
 
-	private void checkBraceGraphicsAttributes(Element e)
+	private void checkBraceGraphicsAttributes(GmmlBrace b, Element e)
 	{
 		double cx = 0;
 		double cy = 0;
@@ -1027,56 +975,48 @@ public class GmmlReader
 										
 				if ("centerx".equalsIgnoreCase(aName))
 				{
-					cx = Double.parseDouble(aValue);
+					b.cX = Double.parseDouble(aValue);
 				}
 				else if ("centery".equalsIgnoreCase(aName))
 				{
-					cy = Double.parseDouble(aValue);
+					b.cY = Double.parseDouble(aValue);
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					width = Double.parseDouble(aValue);
-				}
-				else if ("height".equalsIgnoreCase(aName))
-				{
-					height = Double.parseDouble(aValue);
+					b.w = Double.parseDouble(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
-					color = aValue;
+					b.color = GmmlColor.convertStringToColor(aValue);
 				}
 				else if ("picpointoffset".equalsIgnoreCase(aName))
 				{
-					picpointOffset = Double.parseDouble(aValue);
-				}
-				else if ("color".equalsIgnoreCase(aName))
-				{
-					color = aValue;
+					b.ppo = Double.parseDouble(aValue);
 				}
 				else if ("orientation".equalsIgnoreCase(aName))
 				{
 					if ("top".equalsIgnoreCase(aValue))
 					{
-						orientation = 0;
+						b.or = 0;
 					}
 					else if ("right".equalsIgnoreCase(aValue))
 					{
-						orientation = 1;
+						b.or = 1;
 					}
 					else if ("bottom".equalsIgnoreCase(aValue))
 					{
-						orientation = 2;
+						b.or = 2;
 					}
 					else if ("top".equalsIgnoreCase(aValue))
 					{	
-						orientation = 3;
+						b.or = 3;
 					}
 				}									
 			} // end if 
 		}// end while
 
 		// brace attributes complete, add arc to pathway
-		pathway.addBrace(cx, cy, width, picpointOffset, orientation, color);
+		pathway.addBrace(b);
 
 	} // end private void checkBraceGraphicsAttributes(Element e)
 	

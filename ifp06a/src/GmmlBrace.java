@@ -28,6 +28,13 @@ public class GmmlBrace
 	Color color;
 	
 	/**
+	*Constructor
+	*/
+	public GmmlBrace()
+	{
+	}
+	
+	/**
 	  *Constructor GmmlBrace has 4 doubles for the coordinates, an int for the orientation and a string for the color as input. Width is the longest side of the brace, ppo the shortest side. This input is assigned to the object brace, but no real brace is constructed. Orientation is 0 for top, 1 for right, 2 for bottom or 3 for left.  
 	  */
 	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, String color)

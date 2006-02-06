@@ -21,9 +21,23 @@ import java.awt.Color;
   *This class contains the gene products. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
 
-public class GmmlGeneProduct {
-	int x, y, width, height;
-	String geneID, ref;
+public class GmmlGeneProduct
+{
+	
+	int x;
+	int y;
+	int width;
+	int height;
+
+	String geneID;
+	String ref;
+	
+	/**
+	*Constructor
+	*/
+	public GmmlGeneProduct()
+	{
+	}
 	
 	/**
 	  *Constructor GmmlGeneProduct has 4 ints for the coordinates, a string for the geneID, and a string for the reference as input. This input is assigned to the object geneproduct, but no real rectangle object is constructed.

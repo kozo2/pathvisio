@@ -24,12 +24,24 @@ import java.awt.Rectangle;
   */
 public class GmmlShape {
 
-double x,y,width,height,rotation;
-int type;
-Color color;
+	double x;
+	double y;
+	double width;
+	double height;
+	double rotation;
+	int type;
+	Color color;
+
+	/**
+	*Constructor
+	*/
+	public GmmlShape()
+	{
+	}
 	
 	/**
-	  *Constructor GmmlShape has 4 doubles for the coordinates, an int for the type, a double for the rotation and a color object for the color as input.
+	  *Constructor GmmlShape has 4 doubles for the coordinates, an int for the type, 
+	  *a double for the rotation and a color object for the color as input.
 	  */
 	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation) {
 		this.x = x;

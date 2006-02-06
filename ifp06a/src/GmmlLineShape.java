@@ -22,9 +22,22 @@ import java.awt.geom.Line2D;
   */
 
 public class GmmlLineShape {
-	double startx, starty, endx, endy;
+	
+	double startx;
+	double starty;
+	double endx;
+	double endy;
+	
 	int type;
+	
 	Color color;
+
+	/**
+	*Constructor
+	*/
+	public GmmlLineShape()
+	{
+	}
 	
 	/**
 	  *Constructor GmmlLineShape has 4 doubles for the coordinates, an int for the type and a color object for the color as input.

@@ -56,7 +56,6 @@ class GmmlConnection
 		   * <DD>		8: anchorpoint
 		   * </DL>
 		   */	
-		
 	public GmmlConnection(GmmlPathway inputpathway){
 
 

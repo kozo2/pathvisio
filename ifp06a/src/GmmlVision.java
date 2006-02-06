@@ -96,6 +96,7 @@ public class GmmlVision
 		scroll.setHorizontalScrollBar(scroll.createHorizontalScrollBar());
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		
 		f.getContentPane().add(scroll);
 		
 		drawing.init(); //init is applied on applet: Borderlayout, RectangleCanvas3 and a label are added.

@@ -26,7 +26,13 @@ public class GmmlArc {
 
 double x, y, width, height, rotation;
 Color color;
-
+	/**
+	*Constructor
+	*/
+	public GmmlArc()
+	{
+	}
+	
 	/**
 	  *Constructor GmmlArc has 4 doubles for the coordinates and a string for the color as input. This input is assigned to the object arc, but no real arc is constructed.
 	  */

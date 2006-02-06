@@ -83,30 +83,41 @@ public class GmmlWriter {
 	} 
 
 	/**
-	 * This method builds a document from the pathay, used only internally. Maybe make this private? Or make a public overloaded version that requires a pathway input
+	 * This method builds a document from the pathay, used only internally. 
+	 * Maybe make this private? Or make a public overloaded version that requires a pathway input.
 	 */
-	public void buildDoc() {
+	public void buildDoc() 
+	{
 		System.out.println("Building document...");
-		root = new Element("Pathway"); //Create the root element, this is for GMML Always the pathway
+
+		//Create the root element, this is for GMML Always the pathway
+		root = new Element("Pathway"); 
+
 	   //Add all the attributes to the pathway
 	   for (int i = 0; i < pathway.attributes.length; i++) {
 	   	root.setAttribute(pathway.attributes[i][0], pathway.attributes[i][1]);
 	   }
+	   
 	   //Create the graphics element
 	   Element graphics = new Element("Graphics");
+	   
 	   //Set the attributes for the graphics element
 	   graphics.setAttribute("BoardHeight",Integer.toString(pathway.size[1]));
 	   graphics.setAttribute("BoardWidth",Integer.toString(pathway.size[0]));
+	   
 	   //Add the graphics element to the root element
 	   root.addContent(graphics);
+	   
 	   //Call the method that adds all other elements to the root element
 	   fillRootElement();
+	   
 	   //Create the document out of the root element
 	   doc = new Document(root);
 	}
 	
 	private void fillRootElement () 
 	{
+	
 	//This calls the functions for adding all kinds of elements supported by the writer
 		addGeneProducts();
 		addLines();
@@ -117,7 +128,8 @@ public class GmmlWriter {
 		addBraces();
 	}
 	
-	private void addGeneProducts() {
+	private void addGeneProducts()
+	{
 		for (int i = 0; i < pathway.geneProducts.length; i++) {
 			//Create a new geneproduct element
 			Element geneproduct = new Element("GeneProduct");

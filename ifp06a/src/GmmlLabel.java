@@ -25,6 +25,13 @@ public class GmmlLabel {
 	String text, font, fontWeight, fontStyle;
 	int x, y, width, height, fontSize;
 	Color color;
+
+	/**
+	*Constructor
+	*/
+	public GmmlLabel()
+	{
+	}
 	
 	/**
 	  *Constructor GmmlLabel has 4 doubles for the coordinates, 4 Strings for the text, the font, the font weight and the font style, an int for the font size and a color object for the color as input.
