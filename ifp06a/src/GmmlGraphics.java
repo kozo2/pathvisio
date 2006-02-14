@@ -2,7 +2,7 @@ import java.awt.Point;
 import java.awt.Graphics;
 import javax.swing.JComponent;
 
-abstract class GmmlGraphics extends JComponent
+abstract class GmmlGraphics //extends JComponent
 {
 	abstract void draw(Graphics g);
 

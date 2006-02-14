@@ -120,6 +120,7 @@ class GmmlVision extends JFrame
 	{
 		GmmlDrawing d = new GmmlDrawing();
 		d.addElement(new GmmlLine(100, 100, 200, 200, d));
+		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very logn id", "ref", d));
 		this.setContentPane(d);
 		
 		show();

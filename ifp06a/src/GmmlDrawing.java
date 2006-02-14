@@ -35,8 +35,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 		Iterator it = shapes.iterator();
 		while (it.hasNext())
 		{
-			GmmlGraphics s = (GmmlGraphics) it.next();
-			s.draw(g);
+			GmmlGraphics gmmlg = (GmmlGraphics) it.next();
+			gmmlg.draw(g);
 		}
 	}
 	

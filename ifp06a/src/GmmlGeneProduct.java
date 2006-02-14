@@ -16,12 +16,16 @@ limitations under the License.
 */
 
 import java.awt.*;
+import java.awt.Point;
 import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.geom.Rectangle2D;
+import javax.swing.JPanel;
 /**
   *This class contains the gene products. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
 
-public class GmmlGeneProduct
+public class GmmlGeneProduct extends GmmlGraphics
 {
 	
 	int x;
@@ -29,9 +33,16 @@ public class GmmlGeneProduct
 	int width;
 	int height;
 
+	Color color = Color.black;
+	JPanel canvas;
+	Rectangle2D rect;
+	
 	String geneID;
 	String ref;
 	
+	boolean isSelected;
+	BasicStroke stroke = new BasicStroke(10);
+
 	/**
 	*Constructor
 	*/
@@ -40,50 +51,86 @@ public class GmmlGeneProduct
 	}
 	
 	/**
-	  *Constructor GmmlGeneProduct has 4 ints for the coordinates, a string for the geneID, and a string for the reference as input. This input is assigned to the object geneproduct, but no real rectangle object is constructed.
+	  *Constructor GmmlGeneProduct has 4 ints for the coordinates, 
+	  *a string for the geneID, and a string for the reference as input. 
+	  *This input is assigned to the object geneproduct, but no real rectangle object is constructed.
 	  */
-	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref) {
+	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref, JPanel canvas){
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.geneID = geneID;
 		this.ref = ref;
-	} //end of constructor
+		this.canvas = canvas;
+		
+		constructRectangle();
+	}
 	
-	/**
-	  *Method contains uses the coordinates of a specific point (pointx, pointy) 
-	  *to determine whether a geneproduct contains this point. 
-	  *To do this, there is checked whether the point is in the area of the geneproduct.
-	  */	
-	public boolean contains(double pointx, double pointy) {
-		if (x<=pointx && pointx<=x+width && y<=pointy && pointy<=y+height) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	} //end of contains
+	protected void draw(Graphics g)
+	{
+		if (rect != null)
+		{
+			System.out.println("draw");
+			Graphics2D g2D = (Graphics2D)g;
+			g2D.setColor(color);
+			g2D.setStroke(new BasicStroke(2.0f));
+			
+			g2D.draw(rect);
+			
+			Font f = new Font("Arial", Font.PLAIN, 10);
+			g2D.setFont(f);
+			g2D.setStroke(new BasicStroke(1.0f));
+			
+			FontMetrics fm = g2D.getFontMetrics();
+			int textwidth 	= fm.stringWidth(geneID);
+			int textheight = fm.getHeight();
+			
+			int strx = (int) (x + ((width - textwidth)/2));
+			int stry = (int) (y  + ((height + textheight)/2));
 
-	/**
-	  *Method setLocation changes the int x and int y coordinate to the x and y that are arguments for this method
-	  */
-	public void setLocation(int x, int y) {
-		this.x = x;
-		this.y = y;
+			g2D.drawString(geneID, strx, stry);
+		}
+		else
+		{
+			System.out.println("GeneProduct rectangle not initialized");
+		}
 	}
 	
-	/**
-	  *Method getHelpers returns an array of rectangles on the geneproduct, which are used to drag and transform the geneproduct. The rectangles are in the middle of the geneproduct, in the middle of the upper line and in the middle of the right line of the geneproduct.
-	  */
-	public Rectangle[] getHelpers(double zf) {
-		Rectangle[] helpers = new Rectangle[3];
+	protected boolean isContain(Point point)
+	{
+		if (rect.contains(point)) 
+		{
+			isSelected = true;
+	  	}
+    	else
+    	{
+	    	isSelected = false;
+		}
 		
-		helpers[0] = new Rectangle( (int)((x/zf) + (0.5*width/zf)) - 2, (int)((y/zf) + (0.5*height/zf)) - 2, 5, 5);
-		helpers[1] = new Rectangle( (int)((x/zf) + (0.5*width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
-		helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)((y/zf) + (0.5*height/zf)) - 2, 5, 5);
-		
-		return helpers;
+    	return isSelected;
+	}	
+
+	protected void moveBy(int dx, int dy)
+	{
+		setRectangle(x + dx, y + dy);
 	}
+	
+	public void constructRectangle()
+	{
+		rect = new Rectangle2D.Double(x, y, width, height);
+	}
+	
+	public void setRectangle(int newx, int newy)
+	{
+		x = newx;
+		y = newy;
+		
+		constructRectangle();
+	}
+	
+	
+	
+
 	
 } //end of GmmlGeneProduct

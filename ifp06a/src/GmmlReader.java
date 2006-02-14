@@ -355,8 +355,7 @@ public class GmmlReader
 	{
 		int cx = 0;
 		int cy = 0;
-
-			
+	
 			List alist = e.getAttributes();
 			Iterator it = alist.iterator();
 			while (it.hasNext())
@@ -370,19 +369,19 @@ public class GmmlReader
 					
 					if ("centerx".equalsIgnoreCase(aName))
 					{
-						cx = Integer.parseInt(aValue);
+						cx = Integer.parseInt(aValue)/15;
 					}
 					else if ("centery".equalsIgnoreCase(aName))
 					{
-						cy = Integer.parseInt(aValue);
+						cy = Integer.parseInt(aValue)/15;
 					}
 					else if ("width".equalsIgnoreCase(aName))
 					{
-						gp.width = Integer.parseInt(aValue);
+						gp.width = Integer.parseInt(aValue)/15;
 					}
 					else if ("height".equalsIgnoreCase(aName))
 					{
-						gp.height = Integer.parseInt(aValue);
+						gp.height = Integer.parseInt(aValue)/15;
 					}
 				} // end if
 			} // end while
@@ -391,8 +390,10 @@ public class GmmlReader
 			gp.x = cx - (gp.width/2);
 			gp.y = cy - (gp.height/2);
 			
+			gp.constructRectangle();
+			gp.canvas = drawing;
 			// now, a gene product component can be added to the drawing
-//2DO			drawing.add();
+			drawing.addElement(gp);
 			
 	} // end private void checkGeneProductSubGraphics(String ref, String geneID)
 
@@ -693,11 +694,11 @@ public class GmmlReader
 			} // end if 
 		}// end while
 		
-		arc.constructArc();
-		arc.canvas = drawing;
+//		arc.constructArc();
+//		arc.canvas = drawing;
 		// arc attributes complete, add arc to pathway
-		drawing.addElement(arc);
-		System.out.println("arc added");
+//		drawing.addElement(arc);
+//		System.out.println("arc added");
 
 	} // end private void checkArcGraphicsAttributes(Element e)
 											

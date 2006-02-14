@@ -45,9 +45,6 @@ public class GmmlLine extends GmmlGraphics
 	{
 		super();
 		this.canvas = canvas;
-		this.setOpaque(false);
-		this.setRequestFocusEnabled(true);
-		canvas.add(this);
 	}
 
 	public GmmlLine(int x1, int y1, int x2, int y2, JPanel canvas)
@@ -62,10 +59,6 @@ public class GmmlLine extends GmmlGraphics
 		line = new Line2D.Double(startx, starty, endx, endy);
 		
 		this.canvas = canvas;
-		this.setOpaque(false);
-		this.setRequestFocusEnabled(true);
-		canvas.add(this);
-		updateUI();
 	}
 
 	public GmmlLine(int id)
@@ -151,6 +144,7 @@ public class GmmlLine extends GmmlGraphics
     	return isSelected;
 	}
 	
+	/* Checks whether an area cuts the Line */
 	public boolean intersects(Rectangle r)
 	{
 		Shape outline = stroke.createStrokedShape(line);
@@ -166,6 +160,7 @@ public class GmmlLine extends GmmlGraphics
     	return isSelected;
 	}
 	
+	/* Methods for resizing Lines */
 	public void setLine(int x1, int y1, int x2, int y2)
  	{
  		startx = x1;
@@ -176,6 +171,7 @@ public class GmmlLine extends GmmlGraphics
 		constructLine();
 	}
  	
+ 	/* Methods for resizing Lines */
  	public void setLine(Point start, Point end)
  	{
  		startx = (int)start.getX();
