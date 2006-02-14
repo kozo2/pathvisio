@@ -121,6 +121,7 @@ class GmmlVision extends JFrame
 		GmmlDrawing d = new GmmlDrawing();
 		d.addElement(new GmmlLine(100, 100, 200, 200, d));
 		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very logn id", "ref", d));
+		d.addElement(new GmmlLabel(200, 50, 100, 80, "testlabel", "Arial", "bold", "italic", 10, Color.black, d));
 		this.setContentPane(d);
 		
 		show();

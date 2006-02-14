@@ -809,8 +809,10 @@ public class GmmlReader
 		
 		l.x = cx - (l.width/2);
 		l.y = cy - (l.height/2);
-		// arc attributes complete, add arc to pathway
-//		drawing.add()
+		l.canvas = drawing;
+
+		// label attributes complete, add label to pathway
+		drawing.addElement(l);
 		
 	}
 	
