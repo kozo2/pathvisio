@@ -14,8 +14,9 @@ import java.awt.Color;
 
 public class GmmlReader
 {
-	private GmmlPathway pathway;
-	
+	GmmlDrawing drawing;
+
+
 	/**
 	*	Constructor for this class
 	*	<BR>
@@ -25,8 +26,8 @@ public class GmmlReader
 	*/
 	public GmmlReader(String file)
 	{
-		// Create the pathway
-		pathway = new GmmlPathway();
+		// Create the drawing
+		drawing = new GmmlDrawing();
 		
 		System.out.println("Start reading the XML file: " + file);
 		SAXBuilder builder  = new SAXBuilder(false);
@@ -56,10 +57,10 @@ public class GmmlReader
 	}// end public GmmlReader(String file)
 	
 	// method to question private property pathway
-	public GmmlPathway getPathway()
+	public GmmlDrawing getDrawing()
 	{
-		return pathway;
-	} // end public GmmlPathway getPathway()
+		return drawing;
+	}
 	
 	private void readGMML(Object o, int depth)
 	{
@@ -138,7 +139,7 @@ public class GmmlReader
 							// attribute is known
 							aknown = true;
 							// add attribute
-							pathway.addAttribute(a);
+//							drawing.addAttribute(a);
 						
 						} // end if
 					} // end for
@@ -187,9 +188,11 @@ public class GmmlReader
 			
 			if("graphics".equalsIgnoreCase(eName))
 			{
-				int[] pathwaydims = checkGraphicsAttributes(e);
-				pathway.setSize(pathwaydims[0], pathwaydims[1]);
-				System.out.println("Pathway dimensions set to " + pathwaydims[0] + ", " + pathwaydims[1]);
+				int[] dims = checkGraphicsAttributes(e);
+	//			drawing.setSize(dims[0], dims[1]);
+	//			drawing.width = dims[0];
+	//			drawing.heigth = dims[1];
+				System.out.println("Dimensions set to " + dims[0] + ", " + dims[1]);
 			}
 			else if ("geneproduct".equalsIgnoreCase(eName))
 			{
@@ -388,14 +391,14 @@ public class GmmlReader
 			gp.x = cx - (gp.width/2);
 			gp.y = cy - (gp.height/2);
 			
-			// now, a gene product can be added to the pathway
-			pathway.addGeneProduct(gp);
+			// now, a gene product component can be added to the drawing
+//2DO			drawing.add();
 			
 	} // end private void checkGeneProductSubGraphics(String ref, String geneID)
 
 	private void checkLineAttributes(Element e)
 	{
-		int ID = pathway.lines.size() + 1;
+		int ID = 0;
 		GmmlLine l = new GmmlLine(ID);
 		
 		List alist = e.getAttributes();
@@ -478,19 +481,19 @@ public class GmmlReader
 										
 				if ("startx".equalsIgnoreCase(aName))
 				{
-					l.startx = Integer.parseInt(aValue);
+					l.startx = (int) Integer.parseInt(aValue)/15;
 				}
 				else if ("starty".equalsIgnoreCase(aName))
 				{
-					l.starty = Integer.parseInt(aValue);
+					l.starty = (int) Integer.parseInt(aValue)/15;
 				}
 				else if ("endx".equalsIgnoreCase(aName))
 		 		{
-					l.endx = Integer.parseInt(aValue);
+					l.endx = (int) Integer.parseInt(aValue)/15;
 				}
 				else if ("endy".equalsIgnoreCase(aName))
 				{
-					l.endy = Integer.parseInt(aValue);
+					l.endy = (int) Integer.parseInt(aValue)/15;
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
@@ -499,9 +502,12 @@ public class GmmlReader
 			} // end if 
 		}// end while
 		
-		// line attributes complete, add line to pathway
-		pathway.addLine(l);
-		
+		// create a line in class GmmlLine
+		l.constructLine();
+		l.canvas = drawing;
+		// line attributes complete, add line to drawing
+		drawing.addElement(l);
+//		v.updateUI();
 	} // end private void checkLineGraphicsAttributes()
 
 	private void checkLineShapeAttributes(Element e)
@@ -610,7 +616,7 @@ public class GmmlReader
 		}// end while
 		
 		// line attributes complete, add lineshape to pathway
-		pathway.addLineShape(ls);
+//		drawing.add()
 
 	} // end private void checkLineShapeGraphicsAttributes(style, sube)
 
@@ -687,8 +693,11 @@ public class GmmlReader
 			} // end if 
 		}// end while
 		
+		arc.constructArc();
+		arc.canvas = drawing;
 		// arc attributes complete, add arc to pathway
-		pathway.addArc(arc);
+		drawing.addElement(arc);
+		System.out.println("arc added");
 
 	} // end private void checkArcGraphicsAttributes(Element e)
 											
@@ -800,7 +809,7 @@ public class GmmlReader
 		l.x = cx - (l.width/2);
 		l.y = cy - (l.height/2);
 		// arc attributes complete, add arc to pathway
-		pathway.addLabel(l);
+//		drawing.add()
 		
 	}
 	
@@ -908,8 +917,8 @@ public class GmmlReader
 		s.x = cx - s.width;
 		s.y = cy - s.height;
 		
-		// arc attributes complete, add arc to pathway
-		pathway.addShape(s);
+		// arc attributes complete, add arc component to drawing
+//		drawing.add();
 
 	} // end private void checkShapeGraphicsAttributes(int type, Element e)
 
@@ -1015,8 +1024,8 @@ public class GmmlReader
 			} // end if 
 		}// end while
 
-		// brace attributes complete, add arc to pathway
-		pathway.addBrace(b);
+		// brace attributes complete, add arc component to drawing
+//2DO	drawing.add()
 
 	} // end private void checkBraceGraphicsAttributes(Element e)
 	

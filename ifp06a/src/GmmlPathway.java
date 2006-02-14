@@ -62,7 +62,7 @@ public class GmmlPathway {
 	  */
 	public void addAttribute(Attribute a)
 	{
-		attributes.add(a);
+		attributes.addElement(a);
 	}
 
 	/** addGeneProduct adds a geneproduct to the array of geneproducts.
@@ -73,7 +73,7 @@ public class GmmlPathway {
 	  */	
 	public void addGeneProduct(GmmlGeneProduct gp)
 	{
-		geneProducts.add(gp);
+		geneProducts.addElement(gp);
 	}
 
 	/** addLine adds a line to the array of lines.
@@ -84,7 +84,7 @@ public class GmmlPathway {
 	  */		
 	public void addLine(GmmlLine l)
 	{
-		lines.add(l);
+		lines.addElement(l);
 	}
 
 	/** addLabel adds a label to the array of labels.
@@ -95,7 +95,7 @@ public class GmmlPathway {
 	  */		
 	public void addLabel(GmmlLabel l)
 	{
-		labels.add(l);
+		labels.addElement(l);
 	}
 	
 	/** addArc adds an arc to the array of arcs.
@@ -105,7 +105,7 @@ public class GmmlPathway {
 	  */		
 	public void addArc(GmmlArc a)
 	{
-		arcs.add(a);
+		arcs.addElement(a);
 	}
 	
 	/** addLineShape adds a lineshape to the array of lineshapes.
@@ -115,7 +115,7 @@ public class GmmlPathway {
 	  */	
 	public void addLineShape(GmmlLineShape ls)
 	{
-		lineshapes.add(ls);
+		lineshapes.addElement(ls);
 	}
 	
 	/** addBrace adds a brace to the array of braces.
@@ -126,7 +126,7 @@ public class GmmlPathway {
 	  */		
 	public void addBrace(GmmlBrace b)
 	{
-		braces.add(b);
+		braces.addElement(b);
 	}
 
 	public void addCellShape(double x, double y, double width, double height, double rotation) {
