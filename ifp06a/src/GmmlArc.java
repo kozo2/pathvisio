@@ -23,12 +23,9 @@ import java.awt.Graphics2D;
 import javax.swing.JPanel;
 import java.awt.Point;
 import java.awt.BasicStroke;
-/**
-  *This class contains the arcs. It contains a constructor, and the methods contains, setLocation and getHelpers
-  */
+
 public class GmmlArc extends GmmlGraphics
 {
-
 	double x;
 	double y;
 	double width;
@@ -59,6 +56,8 @@ public class GmmlArc extends GmmlGraphics
 		this.color = GmmlColor.convertStringToColor(color);
 		this.rotation = Math.toDegrees(rotation);
 		this.canvas = canvas;
+		
+		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
 	} //end of constructor GmmlArc
 	
 	/**
@@ -68,6 +67,8 @@ public class GmmlArc extends GmmlGraphics
 	{
 		this.x = x;
 		this.y = y;
+		
+		constructArc();
 	}
 
 	protected void draw(Graphics g)
@@ -86,6 +87,7 @@ public class GmmlArc extends GmmlGraphics
 	
 	protected boolean isContain(Point p)
 	{
+		System.out.println("contain");
 		if (arc.contains(p))
 		{
 			return true;
