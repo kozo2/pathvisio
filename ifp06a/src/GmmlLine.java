@@ -132,16 +132,7 @@ public class GmmlLine extends GmmlGraphics
 	protected boolean isContain(Point point)
 	{
 		Shape outline = stroke.createStrokedShape(line);
-		if (outline.contains(point)) 
-		{
-			isSelected = true;
-	  	}
-    	else
-    	{
-	    	isSelected = false;
-		}
-		
-    	return isSelected;
+		return outline.contains(point); 
 	}
 	
 	/* Checks whether an area cuts the Line */

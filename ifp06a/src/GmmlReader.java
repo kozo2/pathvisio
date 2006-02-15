@@ -616,8 +616,9 @@ public class GmmlReader
 			} // end if 
 		}// end while
 		
+		ls.canvas = drawing;
 		// line attributes complete, add lineshape to pathway
-//		drawing.add()
+		drawing.addElement(ls);
 
 	} // end private void checkLineShapeGraphicsAttributes(style, sube)
 
@@ -694,12 +695,10 @@ public class GmmlReader
 			} // end if 
 		}// end while
 		
-//		arc.constructArc();
-//		arc.canvas = drawing;
+		arc.constructArc();
+		arc.canvas = drawing;
 		// arc attributes complete, add arc to pathway
-//		drawing.addElement(arc);
-//		System.out.println("arc added");
-
+		drawing.addElement(arc);
 	} // end private void checkArcGraphicsAttributes(Element e)
 											
 	private void checkLabelAttributes(Element e)
@@ -770,11 +769,11 @@ public class GmmlReader
 										
 				if ("centerx".equalsIgnoreCase(aName))
 				{
-					cx = (int)Integer.parseInt(aValue)/15;
+					l.centerx = (int)Integer.parseInt(aValue)/15;
 				}
 				else if ("centery".equalsIgnoreCase(aName))
 				{
-					cy = (int)Integer.parseInt(aValue)/15;
+					l.centery = (int)Integer.parseInt(aValue)/15;
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
@@ -799,7 +798,6 @@ public class GmmlReader
 				else if ("fontweight".equalsIgnoreCase(aName))
 				{
 					l.fontWeight = aValue;
-					System.out.println(aValue);
 				}
 				else if ("fontsize".equalsIgnoreCase(aName))
 				{
@@ -808,8 +806,6 @@ public class GmmlReader
 			} // end if 
 		}// end while
 		
-		l.x = cx - (l.width/2);
-		l.y = cy - (l.height/2);
 		l.canvas = drawing;
 
 		// label attributes complete, add label to pathway
@@ -876,9 +872,7 @@ public class GmmlReader
 
 	private void checkShapeGraphicsAttributes(GmmlShape s,  Element e)
 	{
-		double cx = 0;
-		double cy = 0;
-				
+			
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
 		
@@ -893,19 +887,19 @@ public class GmmlReader
 										
 				if ("centerx".equalsIgnoreCase(aName))
 				{
-					cx = Double.parseDouble(aValue);
+					s.centerx = Double.parseDouble(aValue)/15;
 				}
 				else if ("centery".equalsIgnoreCase(aName))
 				{
-					cy = Double.parseDouble(aValue);
+					s.centery = Double.parseDouble(aValue)/15;
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					s.width = Double.parseDouble(aValue);
+					s.width = Double.parseDouble(aValue)/15;
 				}
 				else if ("height".equalsIgnoreCase(aName))
 				{
-					s.height = Double.parseDouble(aValue);
+					s.height = Double.parseDouble(aValue)/15;
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
@@ -918,11 +912,10 @@ public class GmmlReader
 			} // end if 
 		}// end while
 
-		s.x = cx - s.width;
-		s.y = cy - s.height;
+		s.canvas = drawing;
 		
-		// arc attributes complete, add arc component to drawing
-//		drawing.add();
+		// shape attributes complete, add shape component to drawing
+		drawing.addElement(s);
 
 	} // end private void checkShapeGraphicsAttributes(int type, Element e)
 
@@ -996,7 +989,7 @@ public class GmmlReader
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					b.w = Double.parseDouble(aValue);
+					b.width = Double.parseDouble(aValue);
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
@@ -1010,19 +1003,19 @@ public class GmmlReader
 				{
 					if ("top".equalsIgnoreCase(aValue))
 					{
-						b.or = 0;
+						b.orientation = 0;
 					}
 					else if ("right".equalsIgnoreCase(aValue))
 					{
-						b.or = 1;
+						b.orientation = 1;
 					}
 					else if ("bottom".equalsIgnoreCase(aValue))
 					{
-						b.or = 2;
+						b.orientation = 2;
 					}
 					else if ("top".equalsIgnoreCase(aValue))
 					{	
-						b.or = 3;
+						b.orientation = 3;
 					}
 				}									
 			} // end if 

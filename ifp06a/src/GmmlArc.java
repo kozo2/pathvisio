@@ -49,13 +49,13 @@ public class GmmlArc extends GmmlGraphics
 	  */
 	public GmmlArc(double x, double y, double width, double height, String color, double rotation, JPanel canvas)
 	{
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.color = GmmlColor.convertStringToColor(color);
-		this.rotation = Math.toDegrees(rotation);
-		this.canvas = canvas;
+		this.x 			= x;
+		this.y 			= y;
+		this.width 		= width;
+		this.height		= height;
+		this.color 		= GmmlColor.convertStringToColor(color);
+		this.rotation 	= Math.toDegrees(rotation);
+		this.canvas 	= canvas;
 		
 		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
 	} //end of constructor GmmlArc
@@ -74,6 +74,7 @@ public class GmmlArc extends GmmlGraphics
 	protected void draw(Graphics g)
 	{
 		Graphics2D g2D = (Graphics2D)g;
+	
 		g2D.setColor(color);
 		g2D.setStroke(new BasicStroke(2.0f));
 		
@@ -87,15 +88,7 @@ public class GmmlArc extends GmmlGraphics
 	
 	protected boolean isContain(Point p)
 	{
-		System.out.println("contain");
-		if (arc.contains(p))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return arc.contains(p);
 	}
 	
 	public void constructArc()

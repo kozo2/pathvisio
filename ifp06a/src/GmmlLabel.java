@@ -36,8 +36,8 @@ public class GmmlLabel extends GmmlGraphics
 	String fontWeight		= "";
 	String fontStyle		= "";
 	
-	int x;
-	int y;
+	int centerx;
+	int centery;
 	int width;
 	int height;
 	int fontSize;
@@ -61,8 +61,8 @@ public class GmmlLabel extends GmmlGraphics
 	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, 
 		String fontStyle, int fontSize, Color color, JPanel canvas)
 	{
-		this.x = x;
-		this.y = y;
+		this.centerx  = x;
+		this.centery = y;
 		this.width = width;
 		this.height = height;
 		this.text = text;
@@ -81,7 +81,7 @@ public class GmmlLabel extends GmmlGraphics
 	  */	
 	protected boolean isContain(Point p)
 	{
-		Rectangle rect = new Rectangle(x, y - (int)(height/2), width, height);
+		Rectangle rect = new Rectangle(centerx - (width/2), centery - (height/2), width, height);
 		return rect.contains(p);
 	}
 	
@@ -90,13 +90,13 @@ public class GmmlLabel extends GmmlGraphics
 	  */	
 	public void setLocation(int x, int y)
 	{
-		this.x = x;
-		this.y = y;
+		this.centerx = x;
+		this.centery = y;
 	}
 	
 	protected void moveBy(int dx, int dy)
 	{
-		setLocation(x + dx, y + dy);
+		setLocation(centerx  + dx, centery + dy);
 	}
 	
 	protected void draw(Graphics g)
@@ -127,12 +127,13 @@ public class GmmlLabel extends GmmlGraphics
 		int textWidth  = fm.stringWidth(text);
 		int textHeight = fm.getHeight();
 		
-		Rectangle label = new Rectangle(x - 2, y - textHeight, textWidth + 4, textHeight);
-		g2D.setColor(Color.white);
-		g2D.fill(label);
+		Rectangle rect = new Rectangle(centerx - (width/2), centery - (height/2), width, height);
+
+		g2D.setColor(Color.green);
+		g2D.fill(rect);
 		
 		g2D.setColor(color);
-		g2D.drawString(text, x, y);
+		g2D.drawString(text, centerx - (textWidth/2) , centery + (textHeight/2));
 	
 	}
 

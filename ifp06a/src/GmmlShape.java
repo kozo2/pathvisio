@@ -17,7 +17,7 @@ limitations under the License.
 
 import java.awt.Color;
 import java.awt.Polygon;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -29,8 +29,8 @@ import java.awt.geom.Ellipse2D;
   */
 public class GmmlShape extends GmmlGraphics {
 
-	double x;
-	double y;
+	double centerx;
+	double centery;
 	double width;
 	double height;
 	double rotation;
@@ -56,8 +56,8 @@ public class GmmlShape extends GmmlGraphics {
 	  */
 	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation, JPanel canvas)
 	{
-		this.x 			= x;
-		this.y 			= y;
+		this.centerx	= x;
+		this.centery	= y;
 		this.width 		= width;
 		this.height 	= height;
 		this.color 		= GmmlColor.convertStringToColor(color);
@@ -71,8 +71,8 @@ public class GmmlShape extends GmmlGraphics {
 	 */
 	public void setLocation(double x, double y)
 	{
-		this.x = x;
-		this.y = y;
+		centerx = x;
+		centery = y;
 	}
 
 	protected void draw(Graphics g)
@@ -81,19 +81,19 @@ public class GmmlShape extends GmmlGraphics {
 	
 		g2D.setStroke(new BasicStroke(1.0f));
 		g2D.setColor(color);
-		g2D.rotate(Math.toRadians(rotation), (x + width), (y + height));
+		g2D.rotate(Math.toRadians(rotation), (centerx), (centery ));
 		
 		if (type == 0)
 		{
-			g2D.draw(new Rectangle((int)(x + width/2),(int)(y + height),(int)(width),(int)(height)));
+			g2D.draw(new Rectangle2D.Double((centerx + width/2), (centery - height/2), width, height));
 		}
 		else if (type == 1)
 		{
-			g2D.draw(new Ellipse2D.Double(x, y, 2*width, 2*height));
+			g2D.draw(new Ellipse2D.Double(centerx - width, centery - height, 2*width, 2*height));
 		}
 		
 		// reset rotation
-		g2D.rotate(-Math.toRadians(rotation),(x + width), (y + height));
+		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
 	}		
 
 
@@ -110,15 +110,15 @@ public class GmmlShape extends GmmlGraphics {
 			int[] xs = new int[4];
 			int[] ys = new int[4];
 			
-			xs[0]= (int)(( 0.5*width*rot[0] - 0.5*height*rot[1]) + x + width); //upper right
-			xs[1]= (int)(( 0.5*width*rot[0] + 0.5*height*rot[1]) + x + width); //lower right
-			xs[2]= (int)((-0.5*width*rot[0] + 0.5*height*rot[1]) + x + width); //lower left
-			xs[3]= (int)((-0.5*width*rot[0] - 0.5*height*rot[1]) + x + width); //upper left
+			xs[0]= (int)(( 0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper right
+			xs[1]= (int)(( 0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower right
+			xs[2]= (int)((-0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower left
+			xs[3]= (int)((-0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper left
 			
-			ys[0]= (int)(( 0.5*width*rot[1]+0.5*height*rot[0])+y+height); //upper right
-			ys[1]= (int)(( 0.5*width*rot[1]-0.5*height*rot[0])+y+height); //lower right
-			ys[2]= (int)((-0.5*width*rot[1]-0.5*height*rot[0])+y+height); //lower left
-			ys[3]= (int)((-0.5*width*rot[1]+0.5*height*rot[0])+y+height); //upper left
+			ys[0]= (int)(( 0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper right
+			ys[1]= (int)(( 0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower right
+			ys[2]= (int)((-0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower left
+			ys[3]= (int)((-0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper left
 				
 			Polygon pol= new Polygon(xs, ys, 4);
 			
@@ -141,15 +141,15 @@ public class GmmlShape extends GmmlGraphics {
 			int[] xs = new int[4];
 			int[] ys = new int[4];
 			
-			xs[0]= (int)(( width*rot[0]-height*rot[1])+x+width); //upper right
-			xs[1]= (int)(( width*rot[0]+height*rot[1])+x+width); //lower right
-			xs[2]= (int)((-width*rot[0]+height*rot[1])+x+width); //lower left
-			xs[3]= (int)((-width*rot[0]-height*rot[1])+x+width); //upper left
+			xs[0]= (int)(( width*rot[0] - height*rot[1]) + centerx); //upper right
+			xs[1]= (int)(( width*rot[0] + height*rot[1]) + centerx); //lower right
+			xs[2]= (int)((-width*rot[0] + height*rot[1]) + centerx); //lower left
+			xs[3]= (int)((-width*rot[0] - height*rot[1]) + centerx ); //upper left
 			
-			ys[0]= (int)(( width*rot[1]+height*rot[0])+y+height); //upper right
-			ys[1]= (int)(( width*rot[1]-height*rot[0])+y+height); //lower right
-			ys[2]= (int)((-width*rot[1]-height*rot[0])+y+height); //lower left
-			ys[3]= (int)((-width*rot[1]+height*rot[0])+y+height); //upper left
+			ys[0]= (int)(( width*rot[1] + height*rot[0]) + centery); //upper right
+			ys[1]= (int)(( width*rot[1] - height*rot[0]) + centery); //lower right
+			ys[2]= (int)((-width*rot[1] - height*rot[0]) + centery); //lower left
+			ys[3]= (int)((-width*rot[1] + height*rot[0]) + centery); //upper left
 				
 			Polygon pol = new Polygon(xs, ys, 4);
 			
@@ -167,7 +167,7 @@ public class GmmlShape extends GmmlGraphics {
 
 	protected void moveBy(int dx, int dy)
 	{
-		setLocation(x + dx, y + dy);
+		setLocation(centerx + dx, centery + dy);
 	}
 
 	
