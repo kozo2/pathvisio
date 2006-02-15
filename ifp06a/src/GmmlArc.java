@@ -18,14 +18,27 @@ limitations under the License.
 import java.awt.geom.Arc2D;
 import java.awt.Color;
 import java.awt.Rectangle;
-
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import javax.swing.JPanel;
+import java.awt.Point;
+import java.awt.BasicStroke;
 /**
   *This class contains the arcs. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
-public class GmmlArc {
+public class GmmlArc extends GmmlGraphics
+{
 
-double x, y, width, height, rotation;
-Color color;
+	double x;
+	double y;
+	double width;
+	double height;
+	double rotation;
+	
+	Color color;
+	Arc2D arc;
+	JPanel canvas;
+	
 	/**
 	*Constructor
 	*/
@@ -34,9 +47,10 @@ Color color;
 	}
 	
 	/**
-	  *Constructor GmmlArc has 4 doubles for the coordinates and a string for the color as input. This input is assigned to the object arc, but no real arc is constructed.
+	  *Constructor GmmlArc has 4 doubles for the coordinates and a string for t
+	  *he color as input. This input is assigned to the object arc, but no real arc is constructed.
 	  */
-	public GmmlArc(double x, double y, double width, double height, String color,double rotation)
+	public GmmlArc(double x, double y, double width, double height, String color, double rotation, JPanel canvas)
 	{
 		this.x = x;
 		this.y = y;
@@ -44,25 +58,9 @@ Color color;
 		this.height = height;
 		this.color = GmmlColor.convertStringToColor(color);
 		this.rotation = Math.toDegrees(rotation);
-		
+		this.canvas = canvas;
 	} //end of constructor GmmlArc
 	
-	/**
-	  *Method contains uses the coordinates of a specific point (pointx, pointy) to determine whether an arc contains this point. 
-	  *To do this, a 'real' arc object is formed, on which the normal contains method is used.
-	  */
-	public boolean contains(double pointx, double pointy)
-	{
-		Arc2D.Double arc = new Arc2D.Double(x-width,y-height,2*width,2*height,180-rotation,180,0);
-		
-		if (arc.contains(pointx,pointy))
-		{
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
 	/**
 	  *Method setLocation changes the double x and y coordinate to the x and y that are arguments for this method
 	  */
@@ -71,28 +69,36 @@ Color color;
 		this.x = x;
 		this.y = y;
 	}
-	/**
-	  *Method getHelpers returns an array of rectangles on the arc, which are used to drag and transform the arc.
-	  *TO DO: the rotation should be implemented correctly with a rotation matrix, but to do that, other methods that use the helpers should be changed too. (For example the size of the arc should be calculated correctly)
-	  */
-	public Rectangle[] getHelpers(double zf)
+
+	protected void draw(Graphics g)
 	{
-		Rectangle[] helpers = new Rectangle[3];
+		Graphics2D g2D = (Graphics2D)g;
+		g2D.setColor(color);
+		g2D.setStroke(new BasicStroke(2.0f));
 		
-		if(rotation <90)
+		g2D.draw(arc);
+	}
+	
+	protected void moveBy(int dx, int dy)
+	{
+		setLocation(x + dx, y + dy);
+	}
+	
+	protected boolean isContain(Point p)
+	{
+		if (arc.contains(p))
 		{
-			helpers[0] = new Rectangle( (int)(x/zf) - 2, (int)(y/zf) - 2, 5, 5);
-			helpers[1] = new Rectangle( (int)(x/zf) - 2, (int)((y/zf) + (height/zf)) - 2, 5, 5);
-			helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
-			return helpers;
+			return true;
 		}
 		else
 		{
-			helpers[0] = new Rectangle( (int)(x/zf) - 2, (int)(y/zf) - 2, 5, 5);
-			helpers[1] = new Rectangle( (int)(x/zf) - 2, (int)((y/zf) - (height/zf)) - 2, 5, 5);
-			helpers[2] = new Rectangle( (int)((x/zf) + (width/zf)) - 2, (int)(y/zf) - 2, 5, 5);
-			
-			return helpers;
+			return false;
 		}
 	}
+	
+	public void constructArc()
+	{
+		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
+	}
+		
 } //end of GmmlArc

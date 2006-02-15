@@ -770,19 +770,19 @@ public class GmmlReader
 										
 				if ("centerx".equalsIgnoreCase(aName))
 				{
-					cx = Integer.parseInt(aValue);
+					cx = (int)Integer.parseInt(aValue)/15;
 				}
 				else if ("centery".equalsIgnoreCase(aName))
 				{
-					cy = Integer.parseInt(aValue);
+					cy = (int)Integer.parseInt(aValue)/15;
 				}
 				else if ("width".equalsIgnoreCase(aName))
 		 		{
-					l.width = Integer.parseInt(aValue);
+					l.width = (int)Integer.parseInt(aValue)/15;
 				}
 				else if ("height".equalsIgnoreCase(aName))
 				{
-					l.height = Integer.parseInt(aValue);
+					l.height = (int)Integer.parseInt(aValue)/15;
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
@@ -799,6 +799,7 @@ public class GmmlReader
 				else if ("fontweight".equalsIgnoreCase(aName))
 				{
 					l.fontWeight = aValue;
+					System.out.println(aValue);
 				}
 				else if ("fontsize".equalsIgnoreCase(aName))
 				{

@@ -16,20 +16,26 @@ limitations under the License.
 */
 
 import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Arc2D;
+import java.awt.geom.Ellipse2D;
+import javax.swing.JPanel;
+
 /**
   *This class contains the lineshapes. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
-
-public class GmmlLineShape {
+public class GmmlLineShape extends GmmlGraphics{
 	
 	double startx;
 	double starty;
 	double endx;
 	double endy;
 	
-	int type;
-	
+	int type; 
+
+	JPanel canvas;
 	Color color;
 
 	/**
@@ -42,23 +48,144 @@ public class GmmlLineShape {
 	/**
 	  *Constructor GmmlLineShape has 4 doubles for the coordinates, an int for the type and a color object for the color as input.
 	  */
-	public GmmlLineShape (double startx, double starty, double endx, double endy, int type, Color color) {
+	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, Color color, JPanel canvas)
+	{
 		this.startx = startx;
 		this.starty = starty;
-		this.endx = endx;
-		this.endy = endy;
-		this.type = type;
-		this.color = color;
+		this.endx 	= endx;
+		this.endy 	= endy;
+		this.type 	= type;
+		this.color 	= color;
+		this.canvas = canvas;
 	}
 	
 	/**
-	  *Method contains uses the coordinates of a specific point (pointx, pointy) 
-	  *to determine whether a lineshape contains this point. 
-	  *To do this, a polygon is created, on which the normal contains method is used. 
-	  *This polygon is created to enlarge the line, because it is rather difficult to click a line.
-	  */
-	public boolean contains (double pointx, double pointy) {
+	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
+	  */	
+	public void setLocation(double x1, double y1, double x2, double y2)
+	{
+		startx = x1;
+		starty = y1;
+		endx	 = x2;
+		endy	 = y2;
+	}
+	
+	protected void draw(Graphics g)
+	{
+		//Types:
+		// 0 - Tbar
+		// 1 - Receptor round
+		// 2 - Ligand round
+		// 3 - Receptor square
+		// 4 - Ligand square
+
+		Graphics2D g2D = (Graphics2D)g;
+		g2D.setColor(color);
+		g2D.setStroke(new BasicStroke(1.0f));		
+
+		double s = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy - starty)*(endy - starty)));
+		
+		if (type == 0)
+		{
+			s /= 8;
+			
+			double capx1 = ((-endy + starty)/s) + endx;
+			double capy1 = (( endx - startx)/s) + endy;
+			double capx2 = (( endy - starty)/s) + endx;
+			double capy2 = ((-endx + startx)/s) + endy;
+
+			Line2D.Double l1 = new Line2D.Double(startx, starty, endx, endy);
+			Line2D.Double l2 = new Line2D.Double(capx1, capy1, capx2, capy2);
+
+			g2D.draw(l1);
+			g2D.draw(l2);
+		}
+		
+		else if (type == 1)
+		{
+			double dx = (endx - startx)/s;
+			double dy = (endy - starty)/s;
+			
+			Line2D.Double l 					= new Line2D.Double(startx, starty, endx - (6*dx), endy - (6*dy));
+			Ellipse2D.Double ligandround 	= new Ellipse2D.Double(endx - 5, endy - 5, 10, 10);
+			
+			g2D.draw(l);
+			g2D.draw(ligandround);
+			g2D.fill(ligandround);			
+		}
+		
+		else if (type == 2)
+		{
+			double theta 	= Math.toDegrees(Math.atan((endx - startx)/(endy - starty)));
+			double dx 		= (endx - startx)/s;
+			double dy 		= (endy - starty)/s;	
+			
+			Line2D.Double l = new Line2D.Double(startx, starty, endx - (8*dx), endy - (8*dy));
+			Arc2D.Double  a = new Arc2D.Double(startx - 8, endy - 8, 16, 16, theta + 180, -180, Arc2D.OPEN);
+			
+			g2D.draw(l);
+			g2D.draw(a);
+		}
+		
+		else if (type == 3)
+		{
+			s /= 8;
+			
+			double x3 		= endx - ((endx - startx)/s);
+			double y3 		= endy - ((endy - starty)/s);
+			double capx1 	= ((-endy + starty)/s) + x3;
+			double capy1 	= (( endx - startx)/s) + y3;
+			double capx2 	= (( endy - starty)/s) + x3;
+			double capy2 	= ((-endx + startx)/s) + y3;			
+			double rx1		= capx1 + 1.5*(endx - startx)/s;
+			double ry1 		= capy1 + 1.5*(endy - starty)/s;
+			double rx2 		= capx2 + 1.5*(endx - startx)/s;
+			double ry2 		= capy2 + 1.5*(endy - starty)/s;
+			
+			
+			Line2D.Double l 	= new Line2D.Double(startx, starty, x3, y3);		
+			Line2D.Double cap = new Line2D.Double(capx1, capy1, capx2, capy2);
+			Line2D.Double r1	= new Line2D.Double(capx1, capy1, rx1, ry1);
+			Line2D.Double r2	= new Line2D.Double(capx2, capy2, rx2, ry2);
+
+			g2D.draw(l);
+			g2D.draw(cap);
+			g2D.draw(r1);
+			g2D.draw(r2);
+		}
+		else if (type == 4)
+		{
+			s /= 6;
+			double x3 		= endx - ((endx - startx)/s);
+			double y3 		= endy - ((endy - starty)/s);
+
+			int[] polyx = new int[4];
+			int[] polyy = new int[4];
+			
+			polyx[0] = (int) (((-endy + starty)/s) + x3);
+			polyy[0] = (int) ((( endx - startx)/s) + y3);
+			polyx[1] = (int) ((( endy - starty)/s) + x3);
+			polyy[1] = (int) (((-endx + startx)/s) + y3);
+
+			polyx[2] = (int) (polyx[1] + 1.5*(endx - startx)/s);
+			polyy[2] = (int) (polyy[1] + 1.5*(endy - starty)/s);
+			polyx[3] = (int) (polyx[0] + 1.5*(endx - startx)/s);
+			polyy[3] = (int) (polyy[0] + 1.5*(endy - starty)/s);
+
+			Line2D.Double l 	= new Line2D.Double(startx, starty, x3, y3);
+			Polygon p 			= new Polygon(polyx, polyy, 4);
+			
+			g2D.draw(l);
+			g2D.draw(p);
+			g2D.fill(p);
+		}
+	}
+	
+
+	protected boolean isContain(Point point)
+	{
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
+		
 		int[] x = new int[4];
 		int[] y = new int[4];
 			
@@ -71,36 +198,20 @@ public class GmmlLineShape {
 		x[3] = (int) (((-endy + starty)/s) + startx);
 		y[3] = (int) ((( endx - startx)/s) + starty);
 			
-		Polygon temp = new Polygon(x,y,4);
+		Polygon p = new Polygon(x, y, 4);
 				
-		if (temp.contains(pointx, pointy)) {
+		if (p.contains(point)) {
 			return true;
 		}
-		else {
+		else
+		{
 			return false;
 		}
 	}
 	
-	/**
-	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
-	  */	
-	public void setLocation(double startx, double starty){
-		double diffx = startx - this.startx;
-		double diffy = starty - this.starty;
-		this.startx = startx;
-		this.starty = starty;
-		endx = endx + diffx;
-		endy = endy + diffy;
+	protected void moveBy(int dx, int dy)
+	{
+		setLocation(startx + dx, starty + dy, endx + dx, endy + dy);
 	}
-	
-	/**
-	  *Method getHelpers returns an array of rectangles on the lineshape, which are used to drag and transform the lineshape.
-	  */
-	public Rectangle[] getHelpers(double zf) {
-		Rectangle helpers[] = new Rectangle[2];
-		helpers[0] = new Rectangle((int)(startx/zf) - 2 ,(int)(starty/zf) - 2, 5, 5);
-		helpers[1] = new Rectangle((int)(endx/zf) - 2 ,(int)(endy/zf) - 2, 5, 5);
-		
-		return helpers;
-	}
+
 }

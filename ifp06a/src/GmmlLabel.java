@@ -31,10 +31,10 @@ import javax.swing.JPanel;
 public class GmmlLabel extends GmmlGraphics
 {
 
-	String text;
-	String font;
-	String fontWeight;
-	String fontStyle;
+	String text				= "";
+	String font				= "";
+	String fontWeight		= "";
+	String fontStyle		= "";
 	
 	int x;
 	int y;
@@ -81,8 +81,8 @@ public class GmmlLabel extends GmmlGraphics
 	  */	
 	protected boolean isContain(Point p)
 	{
-		Rectangle rect = new Rectangle(x, y, width, height);
-				return rect.contains(p);
+		Rectangle rect = new Rectangle(x, y - (int)(height/2), width, height);
+		return rect.contains(p);
 	}
 	
 	/**
@@ -107,13 +107,13 @@ public class GmmlLabel extends GmmlGraphics
 		
 		if (fontWeight.equalsIgnoreCase("bold"))
 		{
-			if (fontStyle.equalsIgnoreCase("italic"))
+			if (this.fontStyle.equalsIgnoreCase("italic"))
 			{
-				f = f.deriveFont(Font.BOLD+Font.ITALIC);
+				f = f.deriveFont(f.BOLD + f.ITALIC);
 			}
 			else
 			{
-				f = f.deriveFont(Font.BOLD);
+				f = f.deriveFont(f.BOLD);
 			}
 		}
 		else if (fontStyle.equalsIgnoreCase("italic"))
@@ -128,7 +128,7 @@ public class GmmlLabel extends GmmlGraphics
 		int textHeight = fm.getHeight();
 		
 		Rectangle label = new Rectangle(x - 2, y - textHeight, textWidth + 4, textHeight);
-		g2D.setColor(Color.red);
+		g2D.setColor(Color.white);
 		g2D.fill(label);
 		
 		g2D.setColor(color);

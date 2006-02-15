@@ -15,18 +15,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import javax.swing.JPanel;
 import java.awt.Color;
+import java.awt.Point;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 /**
   *This class contains the braces. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
 
-public class GmmlBrace
+public class GmmlBrace extends GmmlGraphics
 {
-	double cX, cY, w, ppo;
-	int or; //or is the orientation: 0=top, 1=right, 2=bottom, 3=left
+	double cX;
+	double cY;
+	double width;
+	double ppo;
+	
+	int orientation; //orientation: 0=top, 1=right, 2=bottom, 3=left
 	Color color;
 	
+	JPanel canvas;
 	/**
 	*Constructor
 	*/
@@ -37,46 +46,18 @@ public class GmmlBrace
 	/**
 	  *Constructor GmmlBrace has 4 doubles for the coordinates, an int for the orientation and a string for the color as input. Width is the longest side of the brace, ppo the shortest side. This input is assigned to the object brace, but no real brace is constructed. Orientation is 0 for top, 1 for right, 2 for bottom or 3 for left.  
 	  */
-	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, String color)
+	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, Color color, JPanel canvas)
 	{
-		cX=centerX;
-		cY=centerY;
-		w=width;
-		this.ppo=ppo;
-		or=orientation;
-		this.color=GmmlColor.convertStringToColor(color);
+		cX = centerX;
+		cY = centerY;
+		this.width = width;
+		this.ppo = ppo;
+		this.orientation = orientation;
+		this.color = color;
+		this.canvas = canvas;
 		
 	} //end constructor GmmlBrace
 
-	/**
-	  *Method contains uses the coordinates of a specific point (pointx, pointy) to determine whether a brace contains this point. 
-	  *To do this, there is checked whether this point is in a certain rectangle.
-	  */	 
-	public boolean contains(double pointx, double pointy)
-	{
-		if (or==0 || or==2)
-		{
-			if (cX-0.5*w<=pointx&& pointx<=cX+0.5*w && cY-0.5*ppo<=pointy && pointy<=cY+0.5*ppo)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		} //end if orientation
-		else
-		{
-			if (cY-0.5*w<=pointy && pointy<=cY+0.5*w && cX-0.5*ppo<=pointx && pointx<=cX+0.5*ppo)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		} // end else orientation
-	} //end of contains
 	
 	/**
 	  *Method setLocation changes the double centerX and centerY coordinate to the centerX and centerY that are arguments for this method
@@ -87,29 +68,21 @@ public class GmmlBrace
 		cY = centerY;
 	}
 	
-	/**
-	  *Method getHelpers returns an array of rectangles on the brace, which are used to drag and transform the brace.
-	  */
-	public Rectangle[] getHelpers(double zf)
+	
+	protected void draw(Graphics g)
 	{
-		Rectangle[] helpers = new Rectangle[2];
-		helpers[0] = new Rectangle((int)(cX/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
-		helpers[1] = new Rectangle();
-		switch (or) {
-			case 0:
-				helpers[1].setBounds((int)((cX + (0.5*w))/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
-				break;
-			case 1: 
-				helpers[1].setBounds((int)(cX/zf) - 2 ,(int)((cY + (0.5*w))/zf) - 2, 5, 5);
-				break;
-			case 2:
-				helpers[1].setBounds((int)((cX - (0.5*w))/zf) - 2 ,(int)(cY/zf) - 2, 5, 5);
-				break;
-			case 3:
-				helpers[1].setBounds((int)(cX/zf) - 2 ,(int)((cY - (0.5*w))/zf) - 2, 5, 5);
-				break;
-		}
-		return helpers;
+		Graphics2D g2D = (Graphics2D)g;
+		
 	}
-
+	
+	protected boolean isContain(Point p)
+	{
+		return true;
+	}
+	
+	protected void moveBy(int dx, int dy)
+	{
+		setLocation(cX + dx, cY + dy);
+	}
+	
 } //end of GmmlBrace
