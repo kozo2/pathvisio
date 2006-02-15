@@ -85,7 +85,7 @@ public class GmmlShape extends GmmlGraphics {
 		
 		if (type == 0)
 		{
-			g2D.draw(new Rectangle2D.Double((centerx + width/2), (centery - height/2), width, height));
+			g2D.draw(new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height));
 		}
 		else if (type == 1)
 		{
@@ -94,35 +94,35 @@ public class GmmlShape extends GmmlGraphics {
 		
 		// reset rotation
 		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
-	}		
-
+	}
 
 	protected boolean isContain(Point p)
 	{
-		if (type== 0)
+		double theta = Math.toRadians(rotation);
+		double[] rot = new double[2];
+
+		rot[0] = Math.cos(theta);
+		rot[1] = Math.sin(theta);
+	
+		int[] x = new int[4];
+		int[] y = new int[4];
+			
+		if (type == 0)
 		{
-			double theta = Math.toRadians(rotation);
-			double[] rot = new double[2];
-				
-			rot[0] = Math.cos(theta);
-			rot[1] = Math.sin(theta);
-		
-			int[] xs = new int[4];
-			int[] ys = new int[4];
+			x[0]= (int)((0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper right
+			x[1]= (int)((0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower right
+			x[2]= (int)((-0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower left
+			x[3]= (int)((-0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper left
 			
-			xs[0]= (int)(( 0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper right
-			xs[1]= (int)(( 0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower right
-			xs[2]= (int)((-0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower left
-			xs[3]= (int)((-0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper left
-			
-			ys[0]= (int)(( 0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper right
-			ys[1]= (int)(( 0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower right
-			ys[2]= (int)((-0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower left
-			ys[3]= (int)((-0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper left
+			y[0]= (int)((0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper right
+			y[1]= (int)((0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower right
+			y[2]= (int)((-0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower left
+			y[3]= (int)((-0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper left
 				
-			Polygon pol= new Polygon(xs, ys, 4);
+			Polygon pol= new Polygon(x, y, 4);
 			
 			if (pol.contains(p)) {
+				System.out.println("contain");
 				return true;
 			}
 			else
@@ -131,27 +131,19 @@ public class GmmlShape extends GmmlGraphics {
 			}
 				
 		}
-		else {
-			double theta = Math.toRadians(rotation);
-			double[] rot = new double[2];
+		else
+		{
+			x[0]= (int)(( width*rot[0] - height*rot[1]) + centerx); //upper right
+			x[1]= (int)(( width*rot[0] + height*rot[1]) + centerx); //lower right
+			x[2]= (int)((-width*rot[0] + height*rot[1]) + centerx); //lower left
+			x[3]= (int)((-width*rot[0] - height*rot[1]) + centerx ); //upper left
+
+			y[0]= (int)(( width*rot[1] + height*rot[0]) + centery); //upper right
+			y[1]= (int)(( width*rot[1] - height*rot[0]) + centery); //lower right
+			y[2]= (int)((-width*rot[1] - height*rot[0]) + centery); //lower left
+			y[3]= (int)((-width*rot[1] + height*rot[0]) + centery); //upper left
 				
-			rot[0] = Math.cos(theta);
-			rot[1] = Math.sin(theta);
-		
-			int[] xs = new int[4];
-			int[] ys = new int[4];
-			
-			xs[0]= (int)(( width*rot[0] - height*rot[1]) + centerx); //upper right
-			xs[1]= (int)(( width*rot[0] + height*rot[1]) + centerx); //lower right
-			xs[2]= (int)((-width*rot[0] + height*rot[1]) + centerx); //lower left
-			xs[3]= (int)((-width*rot[0] - height*rot[1]) + centerx ); //upper left
-			
-			ys[0]= (int)(( width*rot[1] + height*rot[0]) + centery); //upper right
-			ys[1]= (int)(( width*rot[1] - height*rot[0]) + centery); //lower right
-			ys[2]= (int)((-width*rot[1] - height*rot[0]) + centery); //lower left
-			ys[3]= (int)((-width*rot[1] + height*rot[0]) + centery); //upper left
-				
-			Polygon pol = new Polygon(xs, ys, 4);
+			Polygon pol = new Polygon(x, y, 4);
 			
 			if (pol.contains(p))
 			{
@@ -162,7 +154,6 @@ public class GmmlShape extends GmmlGraphics {
 				return false;
 			}
 		}
-
 	}
 
 	protected void moveBy(int dx, int dy)

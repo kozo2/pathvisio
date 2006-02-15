@@ -119,11 +119,11 @@ class GmmlVision extends JFrame
 	private void createNewDrawing()
 	{
 		GmmlDrawing d = new GmmlDrawing();
+		d.addElement(new GmmlShape(600, 200, 100, 40, 0, "green", 10, d));
 		d.addElement(new GmmlLine(100, 100, 200, 200, d));
-		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very logn id", "ref", d));
+		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very long id", "ref", d));
 		d.addElement(new GmmlLabel(200, 50, 100, 80, "testlabel", "Arial", "bold", "italic", 10, Color.black, d));
 		d.addElement(new GmmlLineShape(300, 50, 200, 500, 0, Color.blue, d));
-		d.addElement(new GmmlShape(600, 200, 100, 40, 0, "green", 60, d));
 		d.addElement(new GmmlArc(50, 50, 200, 200, "red", 0, d));
 
 
