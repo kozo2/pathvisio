@@ -5,7 +5,6 @@ import javax.swing.*;
 
 class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 {	
-	
 	Vector shapes;
 	
 	GmmlGraphics pressedGraphics = null;	

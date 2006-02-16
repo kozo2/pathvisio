@@ -40,9 +40,12 @@ public class GmmlShape extends GmmlGraphics {
 	// 0 - rectangle
 	// 1 - ellipse
 	
-	JPanel canvas;
+	GmmlDrawing canvas;
 	Color color;
 	
+	GmmlHandle handlecenter = new GmmlHandle(0, this);
+	GmmlHandle handlex 		= new GmmlHandle(1, this);
+	GmmlHandle handley 		= new GmmlHandle(2, this);
 	/**
 	 *Constructor
 	 */
@@ -54,7 +57,7 @@ public class GmmlShape extends GmmlGraphics {
 	  *Constructor GmmlShape has 4 doubles for the coordinates, an int for the type, 
 	  *a double for the rotation and a color object for the color as input.
 	  */
-	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation, JPanel canvas)
+	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation, GmmlDrawing canvas)
 	{
 		this.centerx	= x;
 		this.centery	= y;
@@ -91,7 +94,14 @@ public class GmmlShape extends GmmlGraphics {
 		{
 			g2D.draw(new Ellipse2D.Double(centerx - width, centery - height, 2*width, 2*height));
 		}
-		
+		handlecenter.setLocation(centerx, centery);
+		handlex.setLocation(centerx + width/2, centery);
+		handley.setLocation(centerx, centery - height/2);
+
+		handlecenter.draw(g);
+		handlex.draw(g);
+		handley.draw(g);
+	
 		// reset rotation
 		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
 	}
@@ -121,15 +131,13 @@ public class GmmlShape extends GmmlGraphics {
 				
 			Polygon pol= new Polygon(x, y, 4);
 			
-			if (pol.contains(p)) {
-				System.out.println("contain");
+			if (pol.contains(p)){
 				return true;
 			}
 			else
 			{
 				return false;
 			}
-				
 		}
 		else
 		{

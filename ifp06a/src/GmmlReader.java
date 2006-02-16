@@ -7,6 +7,7 @@ import org.jdom.Attribute;
 import java.io.IOException;
 import java.util.*;
 import java.awt.Color;
+import java.awt.Dimension;
 
 /**
 *	This class handles GMML file-input
@@ -189,7 +190,8 @@ public class GmmlReader
 			if("graphics".equalsIgnoreCase(eName))
 			{
 				int[] dims = checkGraphicsAttributes(e);
-	//			drawing.setSize(dims[0], dims[1]);
+				drawing.setSize(dims[0]/15, dims[1]/15);
+				drawing.setPreferredSize(new Dimension(dims[0]/15, dims[1]/15));
 	//			drawing.width = dims[0];
 	//			drawing.heigth = dims[1];
 				System.out.println("Dimensions set to " + dims[0] + ", " + dims[1]);

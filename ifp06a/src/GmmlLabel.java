@@ -129,12 +129,11 @@ public class GmmlLabel extends GmmlGraphics
 		
 		Rectangle rect = new Rectangle(centerx - (width/2), centery - (height/2), width, height);
 
-		g2D.setColor(Color.green);
+		g2D.setColor(Color.white);
 		g2D.fill(rect);
 		
 		g2D.setColor(color);
 		g2D.drawString(text, centerx - (textWidth/2) , centery + (textHeight/2));
-	
 	}
 
-}
+} // end of class
