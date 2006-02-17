@@ -3,7 +3,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
-class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
+class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, EventListener
 {	
 	Vector shapes;
 	
@@ -11,8 +11,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 	GmmlGraphics clickedGraphics = null;
 	GmmlGraphics draggedGraphics = null;
 	
-	int previousX;
-	int previousY;
+	double previousX;
+	double previousY;
 	
 	/**
 	 *Constructor for this class
@@ -31,7 +31,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		Iterator it = shapes.iterator();
+		Iterator it = shapes.iterator();	
 		while (it.hasNext())
 		{
 			GmmlGraphics gmmlg = (GmmlGraphics) it.next();
@@ -43,8 +43,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 	{
 		shapes.addElement(o);
 	}
-	
-	
+
 	public void mousePressed(MouseEvent e)
 	{
 		if (draggedGraphics != null)
@@ -91,8 +90,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 			return;
 		}
 		
-		int x = e.getX();
-		int y = e.getY();
+		double x = e.getX();
+		double y = e.getY();
 		
 		draggedGraphics.moveBy(x - previousX, y - previousY);
 		draggedGraphics = null;
@@ -100,6 +99,27 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 	
 	public void mouseClicked(MouseEvent e)
 	{
+		if (draggedGraphics != null)
+		{	
+			// dragging in progress...
+			return;
+		}
+
+		int x = e.getX();
+		int y = e.getY();
+		
+		Point p = new Point(x, y);
+		
+		Iterator it = shapes.iterator();
+		
+		boolean graphicsFound = false;
+		while (it.hasNext() && !graphicsFound)
+		{
+			GmmlGraphics g = (GmmlGraphics) it.next();
+			g.isContain(p);
+		}
+		
+		repaint();
 	}
 	
 	public void mouseEntered(MouseEvent e)
@@ -117,8 +137,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 			return;
 		}
 		
-		int x = e.getX();
-		int y = e.getY();
+		double x = e.getX();
+		double y = e.getY();
 		
 		draggedGraphics.moveBy(x - previousX, y - previousY);
 		
@@ -131,5 +151,17 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener
 	public void mouseMoved(MouseEvent e)
 	{
 	}	
+	
+	public void actionPerformed(ActionEvent e)
+	{
+		System.out.println("perf");
+		int command = e.ACTION_PERFORMED;
+		if (command == Event.DELETE)
+		{
+			System.out.println("delete");
+		}
+	}
+
+	
 	
 } // end of class

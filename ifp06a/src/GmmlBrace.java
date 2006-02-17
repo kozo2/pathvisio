@@ -80,9 +80,12 @@ public class GmmlBrace extends GmmlGraphics
 		return true;
 	}
 	
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
 		setLocation(cX + dx, cY + dy);
 	}
+	
+	protected void resizeX(double dx){}
+	protected void resizeY(double dy){}
 	
 } //end of GmmlBrace

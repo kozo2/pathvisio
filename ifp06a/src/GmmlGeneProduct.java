@@ -24,30 +24,37 @@ import javax.swing.JPanel;
 /**
   *This class contains the gene products. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
-
 public class GmmlGeneProduct extends GmmlGraphics
 {
 	
-	int x;
-	int y;
-	int width;
-	int height;
+	double centerx;
+	double centery;
+	double width;
+	double height;
 
-	Color color = Color.black;
-	JPanel canvas;
+	Color color;
+	GmmlDrawing canvas;
 	Rectangle2D rect;
 	
 	String geneID;
 	String ref;
 	
-	boolean isSelected;
 	BasicStroke stroke = new BasicStroke(10);
+
+	GmmlHandle handlecenter = new GmmlHandle(0, this);
+	GmmlHandle handlex 		= new GmmlHandle(1, this);
+	GmmlHandle handley 		= new GmmlHandle(2, this);
 
 	/**
 	*Constructor
 	*/
-	public GmmlGeneProduct()
+	public GmmlGeneProduct(GmmlDrawing canvas)
 	{
+		this.canvas = canvas;
+
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);		
 	}
 	
 	/**
@@ -55,16 +62,23 @@ public class GmmlGeneProduct extends GmmlGraphics
 	  *a string for the geneID, and a string for the reference as input. 
 	  *This input is assigned to the object geneproduct, but no real rectangle object is constructed.
 	  */
-	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref, JPanel canvas){
-		this.x = x;
-		this.y = y;
+	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref, Color color, GmmlDrawing canvas){
+		this.centerx = x;
+		this.centery = y;
 		this.width = width;
 		this.height = height;
 		this.geneID = geneID;
 		this.ref = ref;
+		this.color = color;
 		this.canvas = canvas;
 		
 		constructRectangle();
+
+		setHandleLocation();
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);		
 	}
 	
 	protected void draw(Graphics g)
@@ -85,50 +99,57 @@ public class GmmlGeneProduct extends GmmlGraphics
 			int textwidth 	= fm.stringWidth(geneID);
 			int textheight = fm.getHeight();
 			
-			int strx = (int) (x + ((width - textwidth)/2));
-			int stry = (int) (y  + ((height + textheight)/2));
+			int strx = (int) (centerx - textwidth/2);
+			int stry = (int) (centery);
 
 			g2D.drawString(geneID, strx, stry);
-		}
-		else
-		{
-			System.out.println("GeneProduct rectangle not initialized");
+			
+			setHandleLocation();
 		}
 	}
 	
 	protected boolean isContain(Point point)
 	{
-		if (rect.contains(point)) 
-		{
-			isSelected = true;
-	  	}
-    	else
-    	{
-	    	isSelected = false;
-		}
-		
-    	return isSelected;
+		isSelected = rect.contains(point);
+		return isSelected;
 	}	
 
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
-		setRectangle(x + dx, y + dy);
+		setLocation(centerx + dx, centery + dy);
+	}
+	
+	protected void resizeX(double dx)
+	{
+		width += dx;
+		constructRectangle();
+	}
+	
+	protected void resizeY(double dy)
+	{
+		height 	-= dy;
+		constructRectangle();
 	}
 	
 	public void constructRectangle()
 	{
-		rect = new Rectangle2D.Double(x, y, width, height);
+		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
 	}
 	
-	public void setRectangle(int newx, int newy)
+	public void setLocation(double newx, double newy)
 	{
-		x = newx;
-		y = newy;
+		centerx = newx;
+		centery = newy;
 		
 		constructRectangle();
 	}
 	
-	
+	private void setHandleLocation()
+	{
+		handlecenter.setLocation(centerx, centery);
+		handlex.setLocation(centerx + width/2, centery);
+		handley.setLocation(centerx, centery - height/2);
+	}	
 	
 
 	

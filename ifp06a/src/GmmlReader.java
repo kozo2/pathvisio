@@ -280,7 +280,7 @@ public class GmmlReader
 	// method to check geneproduct attributes
 	private void checkGeneproductAttributes(Element e)
 	{
-		GmmlGeneProduct gp = new GmmlGeneProduct();
+		GmmlGeneProduct gp = new GmmlGeneProduct(drawing);
 		
 		List a = e.getAttributes();
 		Iterator it = a.iterator();
@@ -371,26 +371,24 @@ public class GmmlReader
 					
 					if ("centerx".equalsIgnoreCase(aName))
 					{
-						cx = Integer.parseInt(aValue)/15;
+						gp.centerx = Integer.parseInt(aValue)/15;
 					}
 					else if ("centery".equalsIgnoreCase(aName))
 					{
-						cy = Integer.parseInt(aValue)/15;
+						gp.centery = Integer.parseInt(aValue)/15;
 					}
 					else if ("width".equalsIgnoreCase(aName))
 					{
-						gp.width = Integer.parseInt(aValue)/15;
+						gp.width = Double.parseDouble(aValue)/15;
 					}
 					else if ("height".equalsIgnoreCase(aName))
 					{
-						gp.height = Integer.parseInt(aValue)/15;
+						gp.height = Double.parseDouble(aValue)/15;
 					}
 				} // end if
 			} // end while
 			
 			// graphics wil be defined from left upper corner
-			gp.x = cx - (gp.width/2);
-			gp.y = cy - (gp.height/2);
 			
 			gp.constructRectangle();
 			gp.canvas = drawing;
@@ -401,8 +399,7 @@ public class GmmlReader
 
 	private void checkLineAttributes(Element e)
 	{
-		int ID = 0;
-		GmmlLine l = new GmmlLine(ID);
+		GmmlLine l = new GmmlLine(drawing);
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -484,19 +481,19 @@ public class GmmlReader
 										
 				if ("startx".equalsIgnoreCase(aName))
 				{
-					l.startx = (int) Integer.parseInt(aValue)/15;
+					l.startx = Double.parseDouble(aValue)/15;
 				}
 				else if ("starty".equalsIgnoreCase(aName))
 				{
-					l.starty = (int) Integer.parseInt(aValue)/15;
+					l.starty = Double.parseDouble(aValue)/15;
 				}
 				else if ("endx".equalsIgnoreCase(aName))
 		 		{
-					l.endx = (int) Integer.parseInt(aValue)/15;
+					l.endx = Double.parseDouble(aValue)/15;
 				}
 				else if ("endy".equalsIgnoreCase(aName))
 				{
-					l.endy = (int) Integer.parseInt(aValue)/15;
+					l.endy = Double.parseDouble(aValue)/15;
 				}
 				else if ("color".equalsIgnoreCase(aName))
 				{
@@ -656,7 +653,7 @@ public class GmmlReader
 
 	private void checkArcGraphicsAttributes(Element e)
 	{
-		GmmlArc arc = new GmmlArc();
+		GmmlArc arc = new GmmlArc(drawing);
 
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -705,7 +702,7 @@ public class GmmlReader
 											
 	private void checkLabelAttributes(Element e)
 	{
-		GmmlLabel l = new GmmlLabel();
+		GmmlLabel l = new GmmlLabel(drawing);
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();
@@ -817,7 +814,7 @@ public class GmmlReader
 	
 	private void checkShapeAttributes(Element e)
 	{
-		GmmlShape s = new GmmlShape();
+		GmmlShape s = new GmmlShape(drawing);
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();

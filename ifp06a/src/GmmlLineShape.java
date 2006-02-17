@@ -35,20 +35,30 @@ public class GmmlLineShape extends GmmlGraphics{
 	
 	int type; 
 
-	JPanel canvas;
+	GmmlDrawing canvas;
 	Color color;
 
+	GmmlHandle handlecenter = new GmmlHandle(0, this);
+	GmmlHandle handleStart	= new GmmlHandle(3, this);
+	GmmlHandle handleEnd		= new GmmlHandle(4, this);
+
+	
 	/**
 	*Constructor
 	*/
-	public GmmlLineShape()
+	public GmmlLineShape(GmmlDrawing canvas)
 	{
+		this.canvas = canvas;
+
+		canvas.addElement(handlecenter);
+		canvas.addElement(handleStart);
+		canvas.addElement(handleEnd);
 	}
 	
 	/**
 	  *Constructor GmmlLineShape has 4 doubles for the coordinates, an int for the type and a color object for the color as input.
 	  */
-	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, Color color, JPanel canvas)
+	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, Color color, GmmlDrawing canvas)
 	{
 		this.startx = startx;
 		this.starty = starty;
@@ -57,6 +67,10 @@ public class GmmlLineShape extends GmmlGraphics{
 		this.type 	= type;
 		this.color 	= color;
 		this.canvas = canvas;
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handleStart);
+		canvas.addElement(handleEnd);		
 	}
 	
 	/**
@@ -179,9 +193,9 @@ public class GmmlLineShape extends GmmlGraphics{
 			g2D.draw(p);
 			g2D.fill(p);
 		}
+		setHandleLocation();
 	}
 	
-
 	protected boolean isContain(Point point)
 	{
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
@@ -189,29 +203,48 @@ public class GmmlLineShape extends GmmlGraphics{
 		int[] x = new int[4];
 		int[] y = new int[4];
 			
-		x[0] = (int) (((-endy + starty)/s) + endx);
-		y[0] = (int) ((( endx - startx)/s) + endy);
-		x[1] = (int) ((( endy - starty)/s) + endx);
-		y[1] = (int) (((-endx + startx)/s) + endy);
-		x[2] = (int) ((( endy - starty)/s) + startx);
-		y[2] = (int) (((-endx + startx)/s) + starty);
-		x[3] = (int) (((-endy + starty)/s) + startx);
-		y[3] = (int) ((( endx - startx)/s) + starty);
+		x[0] = (int)(((-endy + starty)/s) + endx);
+		y[0] = (int)((( endx - startx)/s) + endy);
+		x[1] = (int)((( endy - starty)/s) + endx);
+		y[1] = (int)(((-endx + startx)/s) + endy);
+		x[2] = (int)((( endy - starty)/s) + startx);
+		y[2] = (int)(((-endx + startx)/s) + starty);
+		x[3] = (int)(((-endy + starty)/s) + startx);
+		y[3] = (int)((( endx - startx)/s) + starty);
 			
 		Polygon p = new Polygon(x, y, 4);
 				
-		if (p.contains(point)) {
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		isSelected = p.contains(point);
+		return isSelected;
 	}
 	
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
 		setLocation(startx + dx, starty + dy, endx + dx, endy + dy);
+	}
+	
+	protected void resizeX(double dx){}
+	protected void resizeY(double dy){}
+
+	protected void moveLineStart(double dx, double dy)
+	{
+		startx += dx;
+		starty += dy;
+//		constructLine();
+	}
+	
+	protected void moveLineEnd(double dx, double dy)
+	{
+		endx += dx;
+		endy += dy;
+//		constructLine();
+	}
+
+	private void setHandleLocation()
+	{
+		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
+		handleStart.setLocation(startx, starty);
+		handleEnd.setLocation(endx, endy);
 	}
 
 }

@@ -16,6 +16,7 @@ class GmmlHandle extends GmmlGraphics
 	// 0: center
 	// 1: x
 	// 2: y
+	// 3: line handle 
 	
 	GmmlDrawing canvas;
 	
@@ -28,16 +29,20 @@ class GmmlHandle extends GmmlGraphics
 	public GmmlHandle(int t, GmmlGraphics par)
 	{
 		type = t;
-		parent = par;	
+		parent = par;
+
+		constructRectangle();
 	}
 	
 	protected void draw(Graphics g)
 	{
-//		System.out.println("draw");
-		Graphics2D g2D = (Graphics2D)g;
-		constructRectangle();
-		g2D.setColor(Color.red);
-		g2D.fill(rect);
+		if (parent.isSelected)
+		{
+			Graphics2D g2D = (Graphics2D)g;
+			constructRectangle();
+			g2D.setColor(Color.red);
+			g2D.fill(rect);
+		}
 	}
 
 	protected boolean isContain(Point p)
@@ -45,8 +50,28 @@ class GmmlHandle extends GmmlGraphics
 		return rect.contains(p);
 	}
 	
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
+		if (type == 0)
+		{
+			parent.moveBy(dx, dy);
+		}
+		if (type == 1)
+		{
+			parent.resizeX(dx);
+		}
+		if (type == 2)
+		{
+			parent.resizeY(dy);
+		}
+		if (type == 3)
+		{
+			parent.moveLineStart(dx, dy);
+		}
+		if (type == 4)
+		{
+			parent.moveLineEnd(dx, dy);
+		}
 	}
 	
 	public void setLocation(double x, double y)
@@ -59,4 +84,11 @@ class GmmlHandle extends GmmlGraphics
 	{
 		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
 	}
+	
+	
+	
+	protected void resizeX(double dx){}
+	protected void resizeY(double dy){}
 } // end of class
+
+

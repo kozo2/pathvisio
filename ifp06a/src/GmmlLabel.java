@@ -18,7 +18,7 @@ limitations under the License.
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -30,27 +30,30 @@ import javax.swing.JPanel;
 
 public class GmmlLabel extends GmmlGraphics
 {
-
 	String text				= "";
 	String font				= "";
 	String fontWeight		= "";
 	String fontStyle		= "";
 	
-	int centerx;
-	int centery;
-	int width;
-	int height;
+	double centerx;
+	double centery;
+	double width;
+	double height;
 	int fontSize;
 	
 	Color color;
 	
-	JPanel canvas;
+	GmmlDrawing canvas;
+	
+	GmmlHandle handlecenter = new GmmlHandle(0, this);
 
 	/**
 	*Constructor
 	*/
-	public GmmlLabel()
+	public GmmlLabel(GmmlDrawing canvas)
 	{
+		this.canvas = canvas;
+		canvas.addElement(handlecenter);
 	}
 	
 	/**
@@ -59,7 +62,7 @@ public class GmmlLabel extends GmmlGraphics
 	  *size and a color object for the color as input.
 	  */
 	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, 
-		String fontStyle, int fontSize, Color color, JPanel canvas)
+		String fontStyle, int fontSize, Color color, GmmlDrawing canvas)
 	{
 		this.centerx  = x;
 		this.centery = y;
@@ -72,6 +75,9 @@ public class GmmlLabel extends GmmlGraphics
 		this.fontSize = fontSize;
 		this.color = color;
 		this.canvas = canvas;
+		
+		setHandleLocation();
+		canvas.addElement(handlecenter);
 	}
 	
 	/**
@@ -81,20 +87,21 @@ public class GmmlLabel extends GmmlGraphics
 	  */	
 	protected boolean isContain(Point p)
 	{
-		Rectangle rect = new Rectangle(centerx - (width/2), centery - (height/2), width, height);
-		return rect.contains(p);
+		Rectangle2D rect = new Rectangle2D.Double(centerx - (width/2), centery - (height/2), width, height);
+		isSelected = rect.contains(p);
+		return isSelected;
 	}
 	
 	/**
 	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
 	  */	
-	public void setLocation(int x, int y)
+	public void setLocation(double x, double y)
 	{
 		this.centerx = x;
 		this.centery = y;
 	}
 	
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
 		setLocation(centerx  + dx, centery + dy);
 	}
@@ -127,13 +134,22 @@ public class GmmlLabel extends GmmlGraphics
 		int textWidth  = fm.stringWidth(text);
 		int textHeight = fm.getHeight();
 		
-		Rectangle rect = new Rectangle(centerx - (width/2), centery - (height/2), width, height);
+		Rectangle2D rect = new Rectangle2D.Double(centerx - (width/2), centery - (height/2), width, height);
 
-		g2D.setColor(Color.white);
-		g2D.fill(rect);
+		g2D.setColor(Color.blue);
+		g2D.draw(rect);
 		
 		g2D.setColor(color);
-		g2D.drawString(text, centerx - (textWidth/2) , centery + (textHeight/2));
+		g2D.drawString(text, (int) centerx - (textWidth/2) , (int)centery + (textHeight/2));
+		
+		setHandleLocation();
 	}
-
+	
+	protected void resizeX(double dx){}
+	protected void resizeY(double dy){}
+	
+	private void setHandleLocation()
+	{
+		handlecenter.setLocation(centerx, centery - height/2 - handlecenter.height/2);
+	}
 } // end of class

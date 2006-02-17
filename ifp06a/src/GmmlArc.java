@@ -34,20 +34,26 @@ public class GmmlArc extends GmmlGraphics
 	
 	Color color;
 	Arc2D arc;
-	JPanel canvas;
+	GmmlDrawing canvas;
+	
+	GmmlHandle handlecenter	= new GmmlHandle(0, this);
+	GmmlHandle handlex		= new GmmlHandle(1, this);
+	GmmlHandle handley		= new GmmlHandle(2, this);
 	
 	/**
 	*Constructor
 	*/
-	public GmmlArc()
+	public GmmlArc(GmmlDrawing canvas)
 	{
+		this.canvas = canvas;
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);
 	}
-	
-	/**
-	  *Constructor GmmlArc has 4 doubles for the coordinates and a string for t
-	  *he color as input. This input is assigned to the object arc, but no real arc is constructed.
-	  */
-	public GmmlArc(double x, double y, double width, double height, String color, double rotation, JPanel canvas)
+
+
+	public GmmlArc(double x, double y, double width, double height, String color, double rotation, GmmlDrawing canvas)
 	{
 		this.x 			= x;
 		this.y 			= y;
@@ -58,6 +64,12 @@ public class GmmlArc extends GmmlGraphics
 		this.canvas 	= canvas;
 		
 		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
+		
+		setHandleLocation();
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);
 	} //end of constructor GmmlArc
 	
 	/**
@@ -79,21 +91,44 @@ public class GmmlArc extends GmmlGraphics
 		g2D.setStroke(new BasicStroke(2.0f));
 		
 		g2D.draw(arc);
+		
+		setHandleLocation();
 	}
 	
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
 		setLocation(x + dx, y + dy);
 	}
 	
 	protected boolean isContain(Point p)
 	{
-		return arc.contains(p);
+		isSelected =  arc.contains(p);
+		return isSelected;
+	}
+	
+	protected void resizeX(double dx)
+	{
+		width += dx;
+		constructArc();
+	}
+	
+	protected void resizeY(double dy)
+	{
+		height += dy;
+		constructArc();
 	}
 	
 	public void constructArc()
 	{
 		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
 	}
-		
+	
+	public void setHandleLocation()
+	{
+			handlecenter.setLocation(x - width, y + height);
+			handlex.setLocation(x + width, y - height/2);
+			handley.setLocation(x + width/2, y + height);
+	}
+
+
 } //end of GmmlArc

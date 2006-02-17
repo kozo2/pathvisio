@@ -27,8 +27,8 @@ import java.awt.geom.Ellipse2D;
 /**
   *This class contains the shapes. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
-public class GmmlShape extends GmmlGraphics {
-
+public class GmmlShape extends GmmlGraphics
+{
 	double centerx;
 	double centery;
 	double width;
@@ -46,11 +46,18 @@ public class GmmlShape extends GmmlGraphics {
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handlex 		= new GmmlHandle(1, this);
 	GmmlHandle handley 		= new GmmlHandle(2, this);
+
+
 	/**
 	 *Constructor
 	 */
-	public GmmlShape()
+	public GmmlShape(GmmlDrawing canvas)
 	{
+		this.canvas = canvas;
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);
 	}
 	
 	/**
@@ -67,6 +74,13 @@ public class GmmlShape extends GmmlGraphics {
 		this.type 		= type;
 		this.rotation 	= rotation;
 		this.canvas		= canvas;
+
+		setHandleLocation();
+				
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);
+		
 	} //end of GmmlShape constructor
 	
 	/**
@@ -94,14 +108,8 @@ public class GmmlShape extends GmmlGraphics {
 		{
 			g2D.draw(new Ellipse2D.Double(centerx - width, centery - height, 2*width, 2*height));
 		}
-		handlecenter.setLocation(centerx, centery);
-		handlex.setLocation(centerx + width/2, centery);
-		handley.setLocation(centerx, centery - height/2);
-
-		handlecenter.draw(g);
-		handlex.draw(g);
-		handley.draw(g);
-	
+				
+		setHandleLocation();
 		// reset rotation
 		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
 	}
@@ -128,16 +136,6 @@ public class GmmlShape extends GmmlGraphics {
 			y[1]= (int)((0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower right
 			y[2]= (int)((-0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower left
 			y[3]= (int)((-0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper left
-				
-			Polygon pol= new Polygon(x, y, 4);
-			
-			if (pol.contains(p)){
-				return true;
-			}
-			else
-			{
-				return false;
-			}
 		}
 		else
 		{
@@ -150,25 +148,42 @@ public class GmmlShape extends GmmlGraphics {
 			y[1]= (int)(( width*rot[1] - height*rot[0]) + centery); //lower right
 			y[2]= (int)((-width*rot[1] - height*rot[0]) + centery); //lower left
 			y[3]= (int)((-width*rot[1] + height*rot[0]) + centery); //upper left
-				
-			Polygon pol = new Polygon(x, y, 4);
-			
-			if (pol.contains(p))
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
 		}
+			Polygon pol = new Polygon(x, y, 4);
+			isSelected = pol.contains(p);
+			
+			return isSelected;
 	}
 
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
 		setLocation(centerx + dx, centery + dy);
 	}
-
+	
+	protected void resizeX(double dx)
+	{
+		width += dx;
+	}
+	
+	protected void resizeY(double dy)
+	{
+		height -= dy;
+	}
+	
+	private void setHandleLocation()
+	{
+			handlecenter.setLocation(centerx, centery);
+			if (type == 0)
+			{
+				handlex.setLocation(centerx + width/2, centery);
+				handley.setLocation(centerx, centery - height/2);
+			}
+			else if (type == 1)
+			{
+				handlex.setLocation(centerx + width, centery);
+				handley.setLocation(centerx, centery - height);
+			}
+	}
 	
 
 } //end of GmmlShape

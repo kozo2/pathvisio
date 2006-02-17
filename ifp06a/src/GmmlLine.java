@@ -21,49 +21,52 @@ public class GmmlLine extends GmmlGraphics
 {
 	int ID;
 	
-	int startx;
-	int starty;
-	int endx;
-	int endy;
-	int mx;
-	int my;
+	double startx;
+	double starty;
+	double endx;
+	double endy;
+	double mx;
+	double my;
 	
 	int style;
 	int type;
 	
 	Color color;
 	
-	JPanel canvas;
+	GmmlDrawing canvas;
 	BasicStroke stroke = new BasicStroke(10);
 	Line2D line;
 	
-	boolean isSelected = false;
-	boolean isContainWhilePress = false;
- 
-
-	public GmmlLine(JPanel canvas)
+	GmmlHandle handlecenter = new GmmlHandle(0, this);
+	GmmlHandle handleStart	= new GmmlHandle(3, this);
+	GmmlHandle handleEnd		= new GmmlHandle(4, this);
+	
+	public GmmlLine(GmmlDrawing canvas)
 	{
-		super();
 		this.canvas = canvas;
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handleStart);
+		canvas.addElement(handleEnd);
 	}
 
-	public GmmlLine(int x1, int y1, int x2, int y2, JPanel canvas)
+	public GmmlLine(int x1, int y1, int x2, int y2, Color color, GmmlDrawing canvas)
 	{
-		super();
-		
 		startx 	= x1;
 		starty 	= y1;
 		endx 		= x2;
 		endy 		= y2;
 		
+		this. color = color;
+		
 		line = new Line2D.Double(startx, starty, endx, endy);
 		
 		this.canvas = canvas;
-	}
 
-	public GmmlLine(int id)
-	{
-		ID = id;
+		setHandleLocation();
+		canvas.addElement(handlecenter);
+		canvas.addElement(handleStart);
+		canvas.addElement(handleEnd);	
 	}
 
 	public void constructLine()
@@ -92,10 +95,7 @@ public class GmmlLine extends GmmlGraphics
 			{
 				drawArrowhead(g2D);
 			}
-		}
-		else
-		{
-			System.out.println("Line not drawn");
+			setHandleLocation();
 		}
 	}
 	
@@ -132,7 +132,8 @@ public class GmmlLine extends GmmlGraphics
 	protected boolean isContain(Point point)
 	{
 		Shape outline = stroke.createStrokedShape(line);
-		return outline.contains(point); 
+		isSelected = outline.contains(point);
+		return isSelected;
 	}
 	
 	/* Checks whether an area cuts the Line */
@@ -152,7 +153,7 @@ public class GmmlLine extends GmmlGraphics
 	}
 	
 	/* Methods for resizing Lines */
-	public void setLine(int x1, int y1, int x2, int y2)
+	public void setLine(double x1, double y1, double x2, double y2)
  	{
  		startx = x1;
 		starty = y1;
@@ -165,16 +166,41 @@ public class GmmlLine extends GmmlGraphics
  	/* Methods for resizing Lines */
  	public void setLine(Point start, Point end)
  	{
- 		startx = (int)start.getX();
-		starty = (int)start.getY();
-		endx   = (int)end.getX();
-		endy   = (int)end.getY();
+ 		startx = start.getX();
+		starty = start.getY();
+		endx   = end.getX();
+		endy   = end.getY();
 		
 		constructLine();
  	}
 	
-	protected void moveBy(int dx, int dy)
+	protected void moveBy(double dx, double dy)
 	{
 		setLine(startx + dx, starty + dy, endx + dx, endy + dy);
 	}
-}
+	
+	protected void resizeX(double dx){}
+	protected void resizeY(double dy){}
+
+	private void setHandleLocation()
+	{
+		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
+		handleStart.setLocation(startx, starty);
+		handleEnd.setLocation(endx, endy);
+	}
+	
+	protected void moveLineStart(double dx, double dy)
+	{
+		startx += dx;
+		starty += dy;
+		constructLine();
+	}
+	
+	protected void moveLineEnd(double dx, double dy)
+	{
+		endx += dx;
+		endy += dy;
+		constructLine();
+	}
+
+} // end of classdsw
