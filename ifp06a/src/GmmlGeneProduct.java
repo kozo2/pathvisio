@@ -15,8 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import java.util.*;
 import java.awt.*;
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.geom.Rectangle2D;
@@ -38,13 +39,11 @@ public class GmmlGeneProduct extends GmmlGraphics
 	
 	String geneID;
 	String ref;
-	
-	BasicStroke stroke = new BasicStroke(10);
 
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
-	GmmlHandle handlex 		= new GmmlHandle(1, this);
-	GmmlHandle handley 		= new GmmlHandle(2, this);
-
+	GmmlHandle handlex 	= new GmmlHandle(1, this);
+	GmmlHandle handley 	= new GmmlHandle(2, this);
+	
 	/**
 	*Constructor
 	*/
@@ -54,7 +53,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 
 		canvas.addElement(handlecenter);
 		canvas.addElement(handlex);
-		canvas.addElement(handley);		
+		canvas.addElement(handley);
 	}
 	
 	/**
@@ -75,10 +74,11 @@ public class GmmlGeneProduct extends GmmlGraphics
 		constructRectangle();
 
 		setHandleLocation();
-		
-		canvas.addElement(handlecenter);
-		canvas.addElement(handlex);
-		canvas.addElement(handley);		
+
+		canvas.addElement(nodeUp);
+		canvas.addElement(nodeDown);
+		canvas.addElement(nodeRight);
+		canvas.addElement(nodeLeft);*/
 	}
 	
 	protected void draw(Graphics g)
@@ -108,7 +108,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 		}
 	}
 	
-	protected boolean isContain(Point point)
+	protected boolean isContain(Point2D point)
 	{
 		isSelected = rect.contains(point);
 		return isSelected;
@@ -117,6 +117,21 @@ public class GmmlGeneProduct extends GmmlGraphics
 	protected void moveBy(double dx, double dy)
 	{
 		setLocation(centerx + dx, centery + dy);
+
+		BasicStroke stroke = new BasicStroke(20);
+		Shape s = stroke.createStrokedShape(rect);
+
+		Iterator it = canvas.lineHandles.iterator();
+
+		while (it.hasNext())
+		{
+			GmmlHandle h = (GmmlHandle) it.next();
+			Point2D p = h.getCenterPoint();
+			if (s.contains(p))
+			{
+				h.moveBy(dx, dy);
+			}
+		}
 	}
 	
 	protected void resizeX(double dx)
@@ -150,7 +165,5 @@ public class GmmlGeneProduct extends GmmlGraphics
 		handlex.setLocation(centerx + width/2, centery);
 		handley.setLocation(centerx, centery - height/2);
 	}	
-	
-
 	
 } //end of GmmlGeneProduct

@@ -3,7 +3,7 @@ import java.awt.Stroke;
 import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.Rectangle;
 import java.awt.Color;
 import java.awt.Component;
@@ -34,7 +34,6 @@ public class GmmlLine extends GmmlGraphics
 	Color color;
 	
 	GmmlDrawing canvas;
-	BasicStroke stroke = new BasicStroke(10);
 	Line2D line;
 	
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
@@ -129,8 +128,9 @@ public class GmmlLine extends GmmlGraphics
 	}
   
 	/* Checks whether a Point cuts the Line */
-	protected boolean isContain(Point point)
+	protected boolean isContain(Point2D point)
 	{
+		BasicStroke stroke = new BasicStroke(10);
 		Shape outline = stroke.createStrokedShape(line);
 		isSelected = outline.contains(point);
 		return isSelected;
@@ -139,6 +139,7 @@ public class GmmlLine extends GmmlGraphics
 	/* Checks whether an area cuts the Line */
 	public boolean intersects(Rectangle r)
 	{
+		BasicStroke stroke = new BasicStroke(10);
 		Shape outline = stroke.createStrokedShape(line);
 		if (outline.contains(r)) 
 		{
@@ -164,7 +165,7 @@ public class GmmlLine extends GmmlGraphics
 	}
  	
  	/* Methods for resizing Lines */
- 	public void setLine(Point start, Point end)
+ 	public void setLine(Point2D start, Point2D end)
  	{
  		startx = start.getX();
 		starty = start.getY();

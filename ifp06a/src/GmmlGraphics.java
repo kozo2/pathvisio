@@ -1,22 +1,19 @@
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.event.*;
 import java.awt.Graphics;
 import javax.swing.JComponent;
 
-abstract class GmmlGraphics extends JComponent //implements MouseListener, MouseMotionListener
+abstract class GmmlGraphics extends JComponent
 {
 	boolean isSelected;
 		
-	abstract void draw(Graphics g);
-
-	abstract void moveBy(double dx, double dy);
-
-	abstract void resizeX(double dx);
-	abstract void resizeY(double dy);
-
-	abstract boolean isContain(Point point);
-	
+	void draw(Graphics g){}
+	void moveBy(double dx, double dy){}
+	void resizeX(double dx){}
+	void resizeY(double dy){}
 	void moveLineStart(double dx, double dy){}
 	void moveLineEnd(double dx, double dy){}
+
+	abstract boolean isContain(Point2D point);
 	
 }

@@ -17,16 +17,19 @@ limitations under the License.
 
 import java.awt.Color;
 import java.awt.Polygon;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
+import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.awt.BasicStroke;
 import javax.swing.JPanel;
-import java.awt.geom.Ellipse2D;
+import java.util.*;
+
 /**
-  *This class contains the shapes. It contains a constructor, and the methods contains, setLocation and getHelpers
-  */
+ *This class contains the shapes. It contains a constructor, and the methods contains, setLocation and getHelpers
+ */
 public class GmmlShape extends GmmlGraphics
 {
 	double centerx;
@@ -80,8 +83,7 @@ public class GmmlShape extends GmmlGraphics
 		canvas.addElement(handlecenter);
 		canvas.addElement(handlex);
 		canvas.addElement(handley);
-		
-	} //end of GmmlShape constructor
+	}
 	
 	/**
 	 *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
@@ -114,50 +116,30 @@ public class GmmlShape extends GmmlGraphics
 		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
 	}
 
-	protected boolean isContain(Point p)
+	protected boolean isContain(Point2D p)
 	{
-		double theta = Math.toRadians(rotation);
-		double[] rot = new double[2];
-
-		rot[0] = Math.cos(theta);
-		rot[1] = Math.sin(theta);
-	
-		int[] x = new int[4];
-		int[] y = new int[4];
-			
-		if (type == 0)
-		{
-			x[0]= (int)((0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper right
-			x[1]= (int)((0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower right
-			x[2]= (int)((-0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower left
-			x[3]= (int)((-0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper left
-			
-			y[0]= (int)((0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper right
-			y[1]= (int)((0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower right
-			y[2]= (int)((-0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower left
-			y[3]= (int)((-0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper left
-		}
-		else
-		{
-			x[0]= (int)(( width*rot[0] - height*rot[1]) + centerx); //upper right
-			x[1]= (int)(( width*rot[0] + height*rot[1]) + centerx); //lower right
-			x[2]= (int)((-width*rot[0] + height*rot[1]) + centerx); //lower left
-			x[3]= (int)((-width*rot[0] - height*rot[1]) + centerx ); //upper left
-
-			y[0]= (int)(( width*rot[1] + height*rot[0]) + centery); //upper right
-			y[1]= (int)(( width*rot[1] - height*rot[0]) + centery); //lower right
-			y[2]= (int)((-width*rot[1] - height*rot[0]) + centery); //lower left
-			y[3]= (int)((-width*rot[1] + height*rot[0]) + centery); //upper left
-		}
-			Polygon pol = new Polygon(x, y, 4);
+			Polygon pol = createContainingPolygon();
 			isSelected = pol.contains(p);
-			
 			return isSelected;
+			
 	}
 
 	protected void moveBy(double dx, double dy)
 	{
 		setLocation(centerx + dx, centery + dy);
+		
+		Polygon pol = createContainingPolygon();
+		Iterator it = canvas.lineHandles.iterator();
+
+		while (it.hasNext())
+		{
+			GmmlHandle h = (GmmlHandle) it.next();
+			Point2D p = h.getCenterPoint();
+			if (pol.contains(p))
+			{
+				h.moveBy(dx, dy);
+			}
+		}		
 	}
 	
 	protected void resizeX(double dx)
@@ -183,6 +165,46 @@ public class GmmlShape extends GmmlGraphics
 				handlex.setLocation(centerx + width, centery);
 				handley.setLocation(centerx, centery - height);
 			}
+	}
+	
+	private Polygon createContainingPolygon()
+	{
+		double theta = Math.toRadians(rotation);
+		double[] rot = new double[2];
+
+		rot[0] = Math.cos(theta);
+		rot[1] = Math.sin(theta);
+	
+		int[] x = new int[4];
+		int[] y = new int[4];
+			
+		if (type == 0)
+		{
+			x[0]= (int)(( 0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper right
+			x[1]= (int)(( 0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower right
+			x[2]= (int)((-0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower left
+			x[3]= (int)((-0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper left
+			
+			y[0]= (int)(( 0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper right
+			y[1]= (int)(( 0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower right
+			y[2]= (int)((-0.5*width*rot[1] - 0.5*height*rot[0]) + centery); //lower left
+			y[3]= (int)((-0.5*width*rot[1] + 0.5*height*rot[0]) + centery); //upper left
+		}
+		else
+		{
+			x[0]= (int)(( width*rot[0] - height*rot[1]) + centerx); //upper right
+			x[1]= (int)(( width*rot[0] + height*rot[1]) + centerx); //lower right
+			x[2]= (int)((-width*rot[0] + height*rot[1]) + centerx); //lower left
+			x[3]= (int)((-width*rot[0] - height*rot[1]) + centerx); //upper left
+
+			y[0]= (int)(( width*rot[1] + height*rot[0]) + centery); //upper right
+			y[1]= (int)(( width*rot[1] - height*rot[0]) + centery); //lower right
+			y[2]= (int)((-width*rot[1] - height*rot[0]) + centery); //lower left
+			y[3]= (int)((-width*rot[1] + height*rot[0]) + centery); //upper left
+		}
+		
+		Polygon pol = new Polygon(x, y, 4);
+		return pol;
 	}
 	
 

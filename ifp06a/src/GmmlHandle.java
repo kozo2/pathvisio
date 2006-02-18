@@ -1,4 +1,4 @@
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Color;
@@ -45,7 +45,7 @@ class GmmlHandle extends GmmlGraphics
 		}
 	}
 
-	protected boolean isContain(Point p)
+	protected boolean isContain(Point2D p)
 	{
 		return rect.contains(p);
 	}
@@ -85,7 +85,11 @@ class GmmlHandle extends GmmlGraphics
 		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
 	}
 	
-	
+	public Point2D getCenterPoint()
+	{
+		Point2D p = new Point2D.Double(centerx, centery);
+		return p;
+	}
 	
 	protected void resizeX(double dx){}
 	protected void resizeY(double dy){}

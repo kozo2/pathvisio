@@ -22,8 +22,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-
+import java.awt.geom.Point2D;
 import javax.swing.JPanel;
+
 /**
   *This class contains the labels. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
@@ -85,7 +86,7 @@ public class GmmlLabel extends GmmlGraphics
 	  *to determine whether a label contains this point. 
 	  *To do this, a 'real' rectangle object is formed, on which the normal contains method is used.
 	  */	
-	protected boolean isContain(Point p)
+	protected boolean isContain(Point2D p)
 	{
 		Rectangle2D rect = new Rectangle2D.Double(centerx - (width/2), centery - (height/2), width, height);
 		isSelected = rect.contains(p);
@@ -133,11 +134,6 @@ public class GmmlLabel extends GmmlGraphics
 		FontMetrics fm = g2D.getFontMetrics();
 		int textWidth  = fm.stringWidth(text);
 		int textHeight = fm.getHeight();
-		
-		Rectangle2D rect = new Rectangle2D.Double(centerx - (width/2), centery - (height/2), width, height);
-
-		g2D.setColor(Color.blue);
-		g2D.draw(rect);
 		
 		g2D.setColor(color);
 		g2D.drawString(text, (int) centerx - (textWidth/2) , (int)centery + (textHeight/2));

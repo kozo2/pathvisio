@@ -1,11 +1,15 @@
-import java.awt.*;
+//import java.awt.;
+import java.awt.geom.Point2D;
+import java.awt.Graphics;
+import java.awt.Color;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
 class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, EventListener
 {	
-	Vector shapes;
+	Vector graphics;
+	Vector lineHandles;
 	
 	GmmlGraphics pressedGraphics = null;	
 	GmmlGraphics clickedGraphics = null;
@@ -14,13 +18,16 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	double previousX;
 	double previousY;
 	
+	boolean selecting = false;
+	
 	/**
 	 *Constructor for this class
 	 */	
 	public GmmlDrawing()
 	{
-		shapes = new Vector();
-		
+		graphics		= new Vector();
+		lineHandles	= new Vector();
+
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		
@@ -31,7 +38,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		Iterator it = shapes.iterator();	
+		Iterator it = graphics.iterator();	
 		while (it.hasNext())
 		{
 			GmmlGraphics gmmlg = (GmmlGraphics) it.next();
@@ -41,8 +48,22 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	
 	public void addElement(Object o)
 	{
-		shapes.addElement(o);
+		graphics.addElement(o);
+		if(o instanceof GmmlHandle)
+		{
+			GmmlHandle h = (GmmlHandle)o;
+			if(h.type == 3 || h.type == 4)
+			{
+				lineHandles.addElement(h);
+			}
+		}
 	}
+	
+	private void addLineHandle(GmmlHandle h)
+	{
+		lineHandles.addElement(h);
+	}
+	
 
 	public void mousePressed(MouseEvent e)
 	{
@@ -52,12 +73,12 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			return;
 		}
 
-		int x = e.getX();
-		int y = e.getY();
+		double x = e.getX();
+		double y = e.getY();
 		
-		Point p = new Point(x, y);
+		Point2D p = new Point2D.Double(x, y);
 		
-		Iterator it = shapes.iterator();
+		Iterator it = graphics.iterator();
 		while (it.hasNext())
 		{
 			GmmlGraphics g = (GmmlGraphics) it.next();
@@ -105,12 +126,12 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			return;
 		}
 
-		int x = e.getX();
-		int y = e.getY();
+		double x = e.getX();
+		double y = e.getY();
 		
-		Point p = new Point(x, y);
+		Point2D p = new Point2D.Double(x, y);
 		
-		Iterator it = shapes.iterator();
+		Iterator it = graphics.iterator();
 		
 		boolean graphicsFound = false;
 		while (it.hasNext() && !graphicsFound)
@@ -132,20 +153,18 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	
 	public void mouseDragged(MouseEvent e)
 	{
-		if (draggedGraphics == null)
+		if (draggedGraphics != null)
 		{
-			return;
+			double x = e.getX();
+			double y = e.getY();
+			
+			draggedGraphics.moveBy(x - previousX, y - previousY);
+			
+			previousX = x;
+			previousY = y;
+	
+			repaint();
 		}
-		
-		double x = e.getX();
-		double y = e.getY();
-		
-		draggedGraphics.moveBy(x - previousX, y - previousY);
-		
-		previousX = x;
-		previousY = y;
-
-		repaint();
 	}
 
 	public void mouseMoved(MouseEvent e)
@@ -154,14 +173,10 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	
 	public void actionPerformed(ActionEvent e)
 	{
-		System.out.println("perf");
-		int command = e.ACTION_PERFORMED;
-		if (command == Event.DELETE)
-		{
-			System.out.println("delete");
-		}
 	}
-
 	
-	
+	private void startSelect(Point2D p)
+	{
+	}
+		
 } // end of class

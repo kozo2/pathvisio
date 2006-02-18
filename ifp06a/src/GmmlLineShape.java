@@ -15,12 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import java.awt.*;
+//import java.awt.*;
+import java.awt.Polygon;
+import java.awt.geom.Point2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.Color;
+import java.awt.BasicStroke;
 import javax.swing.JPanel;
 
 /**
@@ -196,7 +200,7 @@ public class GmmlLineShape extends GmmlGraphics{
 		setHandleLocation();
 	}
 	
-	protected boolean isContain(Point point)
+	protected boolean isContain(Point2D point)
 	{
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
 		

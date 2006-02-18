@@ -21,7 +21,7 @@ import java.awt.Rectangle;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.JPanel;
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.awt.BasicStroke;
 
 public class GmmlArc extends GmmlGraphics
@@ -70,7 +70,7 @@ public class GmmlArc extends GmmlGraphics
 		canvas.addElement(handlecenter);
 		canvas.addElement(handlex);
 		canvas.addElement(handley);
-	} //end of constructor GmmlArc
+	}
 	
 	/**
 	  *Method setLocation changes the double x and y coordinate to the x and y that are arguments for this method
@@ -100,7 +100,7 @@ public class GmmlArc extends GmmlGraphics
 		setLocation(x + dx, y + dy);
 	}
 	
-	protected boolean isContain(Point p)
+	protected boolean isContain(Point2D p)
 	{
 		isSelected =  arc.contains(p);
 		return isSelected;
@@ -125,9 +125,9 @@ public class GmmlArc extends GmmlGraphics
 	
 	public void setHandleLocation()
 	{
-			handlecenter.setLocation(x - width, y + height);
-			handlex.setLocation(x + width, y - height/2);
-			handley.setLocation(x + width/2, y + height);
+		handlecenter.setLocation(x - width, y + height);
+		handlex.setLocation(x + width, y - height/2);
+		handley.setLocation(x + width/2, y + height);
 	}
 
 
