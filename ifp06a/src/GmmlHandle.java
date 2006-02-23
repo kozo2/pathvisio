@@ -93,6 +93,12 @@ class GmmlHandle extends GmmlGraphics
 	
 	protected void resizeX(double dx){}
 	protected void resizeY(double dy){}
+
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		return false;
+	}
+
 } // end of class
 
 

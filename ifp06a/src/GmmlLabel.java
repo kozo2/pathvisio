@@ -148,4 +148,11 @@ public class GmmlLabel extends GmmlGraphics
 	{
 		handlecenter.setLocation(centerx, centery - height/2 - handlecenter.height/2);
 	}
+	
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		isSelected = r.intersects(centerx - width/2, centery - height/2, width, height);
+		return isSelected;
+	}
+
 } // end of class

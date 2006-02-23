@@ -74,11 +74,6 @@ public class GmmlGeneProduct extends GmmlGraphics
 		constructRectangle();
 
 		setHandleLocation();
-
-		canvas.addElement(nodeUp);
-		canvas.addElement(nodeDown);
-		canvas.addElement(nodeRight);
-		canvas.addElement(nodeLeft);*/
 	}
 	
 	protected void draw(Graphics g)
@@ -166,4 +161,9 @@ public class GmmlGeneProduct extends GmmlGraphics
 		handley.setLocation(centerx, centery - height/2);
 	}	
 	
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		isSelected = r.intersects(centerx - width/2, centery - height/2, width, height);
+		return isSelected;
+	}
 } //end of GmmlGeneProduct

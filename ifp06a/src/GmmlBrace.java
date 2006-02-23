@@ -19,7 +19,7 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 /**
   *This class contains the braces. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
@@ -76,7 +76,7 @@ public class GmmlBrace extends GmmlGraphics
 	
 	protected boolean isContain(Point2D p)
 	{
-		return true;
+		return false;
 	}
 	
 	protected void moveBy(double dx, double dy)
@@ -86,5 +86,11 @@ public class GmmlBrace extends GmmlGraphics
 	
 	protected void resizeX(double dx){}
 	protected void resizeY(double dy){}
+	
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		return false;
+	}
+	
 	
 } //end of GmmlBrace

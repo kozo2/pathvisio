@@ -4,7 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Polygon;
@@ -136,23 +136,6 @@ public class GmmlLine extends GmmlGraphics
 		return isSelected;
 	}
 	
-	/* Checks whether an area cuts the Line */
-	public boolean intersects(Rectangle r)
-	{
-		BasicStroke stroke = new BasicStroke(10);
-		Shape outline = stroke.createStrokedShape(line);
-		if (outline.contains(r)) 
-		{
-			isSelected = true;
-		}
-    	else
-    	{
-	   	isSelected = false;
-		}
-		
-    	return isSelected;
-	}
-	
 	/* Methods for resizing Lines */
 	public void setLine(double x1, double y1, double x2, double y2)
  	{
@@ -202,6 +185,15 @@ public class GmmlLine extends GmmlGraphics
 		endx += dx;
 		endy += dy;
 		constructLine();
+	}
+	
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		BasicStroke stroke = new BasicStroke(10);
+		Shape outline = stroke.createStrokedShape(line);
+		
+		isSelected = outline.intersects(r.x, r.y, r.width, r.height);
+		return isSelected;
 	}
 
 } // end of classdsw

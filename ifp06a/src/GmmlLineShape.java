@@ -23,6 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.Color;
 import java.awt.BasicStroke;
 import javax.swing.JPanel;
@@ -251,4 +252,25 @@ public class GmmlLineShape extends GmmlGraphics{
 		handleEnd.setLocation(endx, endy);
 	}
 
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
+		
+		int[] x = new int[4];
+		int[] y = new int[4];
+			
+		x[0] = (int)(((-endy + starty)/s) + endx);
+		y[0] = (int)((( endx - startx)/s) + endy);
+		x[1] = (int)((( endy - starty)/s) + endx);
+		y[1] = (int)(((-endx + startx)/s) + endy);
+		x[2] = (int)((( endy - starty)/s) + startx);
+		y[2] = (int)(((-endx + startx)/s) + starty);
+		x[3] = (int)(((-endy + starty)/s) + startx);
+		y[3] = (int)((( endx - startx)/s) + starty);
+			
+		Polygon p = new Polygon(x, y, 4);
+				
+		isSelected = p.intersects(r.x, r.y, r.width, r.height);
+		return isSelected;
+	}
 }

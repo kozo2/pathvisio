@@ -120,8 +120,7 @@ public class GmmlShape extends GmmlGraphics
 	{
 			Polygon pol = createContainingPolygon();
 			isSelected = pol.contains(p);
-			return isSelected;
-			
+			return isSelected;			
 	}
 
 	protected void moveBy(double dx, double dy)
@@ -207,5 +206,11 @@ public class GmmlShape extends GmmlGraphics
 		return pol;
 	}
 	
-
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+			Polygon pol = createContainingPolygon();
+			isSelected = pol.intersects(r.x, r.y, r.width, r.height);
+			System.out.println("intersect");
+			return isSelected;
+	}
 } //end of GmmlShape

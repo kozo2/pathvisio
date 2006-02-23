@@ -17,7 +17,7 @@ limitations under the License.
 
 import java.awt.geom.Arc2D;
 import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.JPanel;
@@ -128,6 +128,13 @@ public class GmmlArc extends GmmlGraphics
 		handlecenter.setLocation(x - width, y + height);
 		handlex.setLocation(x + width, y - height/2);
 		handley.setLocation(x + width/2, y + height);
+	}
+	
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		isSelected = arc.intersects(r.x, r.y, r.width, r.height);
+		return isSelected;
+
 	}
 
 
