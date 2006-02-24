@@ -90,5 +90,10 @@ class GmmlSelectionBox extends GmmlGraphics
    {
    	return false;
    } 
+   
+   public void resetRectangle()
+   {
+   	r = new Rectangle2D.Double(0, 0, 0, 0);
+   }
     
 } // end of class
