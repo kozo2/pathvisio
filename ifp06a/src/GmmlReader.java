@@ -512,7 +512,7 @@ public class GmmlReader
 
 	private void checkLineShapeAttributes(Element e)
 	{
-		GmmlLineShape ls = new GmmlLineShape();
+		GmmlLineShape ls = new GmmlLineShape(drawing);
 		
 		List alist = e.getAttributes();
 		Iterator it = alist.iterator();

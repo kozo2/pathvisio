@@ -20,8 +20,8 @@ class GmmlHandle extends GmmlGraphics
 	
 	GmmlDrawing canvas;
 	
-	int width 	= 10;
-	int height	= 10;
+	int width 	= 8;
+	int height	= 8;
 	
 	Rectangle2D rect;
 	boolean visible;
@@ -39,9 +39,14 @@ class GmmlHandle extends GmmlGraphics
 		if (parent.isSelected)
 		{
 			Graphics2D g2D = (Graphics2D)g;
+			
 			constructRectangle();
-			g2D.setColor(Color.red);
+			
+			g2D.setColor(Color.yellow);
 			g2D.fill(rect);
+			
+			g2D.setColor(Color.blue);
+			g2D.draw(rect);
 		}
 	}
 

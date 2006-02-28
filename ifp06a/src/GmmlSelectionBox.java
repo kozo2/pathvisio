@@ -30,12 +30,15 @@ class GmmlSelectionBox extends GmmlGraphics
 
 		if(r != null && canvas.isSelecting)
 		{
-			Graphics2D g2D = (Graphics2D) g;
-			g2D.setColor(Color.black);
-			g2D.setStroke(new BasicStroke(1.0f));
+			Graphics2D g2D = (Graphics2D) g;			
 				
 			setDrawableRectangle();
 
+			g2D.setColor(new Color(0f, 0f, 0.8f, 0.5f));
+			g2D.fill(r);
+			
+			g2D.setStroke(new BasicStroke(1.0f));
+			g2D.setColor(new Color(0f, 0f, 0.5f));
 			g2D.draw(r);
 
 		}
