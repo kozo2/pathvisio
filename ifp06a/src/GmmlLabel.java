@@ -23,7 +23,17 @@ import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
 import javax.swing.JPanel;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
 
 /**
   *This class contains the labels. It contains a constructor, and the methods contains, setLocation and getHelpers
@@ -31,6 +41,8 @@ import javax.swing.JPanel;
 
 public class GmmlLabel extends GmmlGraphics
 {
+	private List attributes;
+	
 	String text				= "";
 	String font				= "";
 	String fontWeight		= "";
@@ -45,6 +57,8 @@ public class GmmlLabel extends GmmlGraphics
 	Color color;
 	
 	GmmlDrawing canvas;
+	
+	Element jdomElement;
 	
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 
@@ -79,6 +93,67 @@ public class GmmlLabel extends GmmlGraphics
 		
 		setHandleLocation();
 		canvas.addElement(handlecenter);
+	}
+	
+	/**
+	 * Constructor for mapping a JDOM Element
+	 */
+	public GmmlLabel (Element e, GmmlDrawing canvas) {
+		this.jdomElement = e;
+		// List the attributes
+		attributes = Arrays.asList(new String[] {
+				"TextLabel", "CenterX", "CenterY", "Width","Height",
+				"FontName","FontWeight","FontStyle","FontSize","Color" 
+		});
+		mapAttributes(e);
+		
+		this.canvas = canvas;
+		
+		setHandleLocation();
+		canvas.addElement(handlecenter);
+	}
+
+	/**
+	 * Maps attributes to internal variables
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // TextLabel
+						this.text = value; break;
+					case 1: // CenterX
+						this.centerx = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
+					case 2: // CenterY
+						this.centery = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 3: // Width
+						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 4:	// Height
+						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 5: // FontName
+						this.font = value; break;
+					case 6: // FontWeight
+						this.fontWeight = value; break;
+					case 7: // FontStyle
+						this.fontStyle = value; break;
+					case 8: // FontSize
+						this.fontSize = Integer.parseInt(value); break;
+					case 9: // Color
+						this.color = GmmlColor.convertStringToColor(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
 	}
 	
 	/**

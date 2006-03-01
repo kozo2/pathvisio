@@ -25,6 +25,10 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.BasicStroke;
 import javax.swing.JPanel;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
+
 import java.util.*;
 
 /**
@@ -32,6 +36,7 @@ import java.util.*;
  */
 public class GmmlShape extends GmmlGraphics
 {
+	private List attributes;
 	double centerx;
 	double centery;
 	double width;
@@ -45,6 +50,8 @@ public class GmmlShape extends GmmlGraphics
 	
 	GmmlDrawing canvas;
 	Color color;
+	
+	Element jdomElement;
 	
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handlex 		= new GmmlHandle(1, this);
@@ -83,6 +90,69 @@ public class GmmlShape extends GmmlGraphics
 		canvas.addElement(handlecenter);
 		canvas.addElement(handlex);
 		canvas.addElement(handley);
+	}
+	
+	/**
+	 * Constructor for mapping a JDOM Element
+	 */
+	public GmmlShape(Element e, GmmlDrawing canvas) {
+		this.jdomElement = e;
+		// List the attributes
+		attributes = Arrays.asList(new String[] {
+				"CenterX", "CenterY", "Width", "Height", 
+				"Type","Color","Rotation"
+		});
+		mapAttributes(e);
+				
+		this.canvas = canvas;
+		
+		setHandleLocation();
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);
+	}
+
+	/**
+	 * Maps attributes to internal variables
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // CenterX
+						this.centerx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 1: // CenterY
+						this.centery = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 2: // Width
+						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 3: // Height
+						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 4: // Type
+						List typeMappings = Arrays.asList(new String[] {
+								"Rectangle","Oval"
+						});
+						if(typeMappings.indexOf(value) > -1)
+							this.type = typeMappings.indexOf(value);
+						break;
+					case 5: // Color
+						this.color = GmmlColor.convertStringToColor(value); break;
+					case 6: // Rotation
+						this.rotation = Double.parseDouble(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
 	}
 	
 	/**

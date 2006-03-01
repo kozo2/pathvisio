@@ -10,15 +10,22 @@ import java.awt.Component;
 import java.awt.Polygon;
 import javax.swing.JPanel;
 import javax.swing.JComponent;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Double;
- 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
  
 public class GmmlLine extends GmmlGraphics
 {
+	private List attributes;
 	int ID;
 	
 	double startx;
@@ -35,6 +42,8 @@ public class GmmlLine extends GmmlGraphics
 	
 	GmmlDrawing canvas;
 	Line2D line;
+	
+	Element jdomElement;
 	
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handleStart	= new GmmlHandle(3, this);
@@ -68,11 +77,81 @@ public class GmmlLine extends GmmlGraphics
 		canvas.addElement(handleEnd);	
 	}
 
+	/**
+	 * Constructor for mapping a JDOM Element
+	 */
+	public GmmlLine (Element e, GmmlDrawing canvas) {
+		this.jdomElement = e;
+		// List the attributes
+		attributes = Arrays.asList(new String[] {
+				"StartX", "StartY", "EndX", "EndY", 
+				"Color", "Style", "Type"
+		});
+		mapAttributes(e);
+		
+		line = new Line2D.Double(startx, starty, endx, endy);
+		
+		this.canvas = canvas;
+		
+		setHandleLocation();
+		canvas.addElement(handlecenter);
+		canvas.addElement(handleStart);
+		canvas.addElement(handleEnd);
+	}
+
+	/**
+	 * Maps attributes to internal variables
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // StartX
+						this.startx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 1: // StartY
+						this.starty = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 2: // EndX
+						this.endx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 3: // EndY
+						this.endy = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 4: // Color
+						this.color = GmmlColor.convertStringToColor(value); break;
+					case 5: // Style
+						List styleMappings = Arrays.asList(new String[] {
+								"Solid", "Broken"
+						});
+						if(styleMappings.indexOf(value) > -1)
+							this.type = styleMappings.indexOf(value);
+						break;
+					case 6: // Type
+						List typeMappings = Arrays.asList(new String[] {
+								"Line", "Arrow"
+						});
+						if(typeMappings.indexOf(value) > -1)
+							this.type = typeMappings.indexOf(value);
+						break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
+	}
+	
 	public void constructLine()
 	{
 		line = new Line2D.Double(startx, starty, endx, endy);
 	}
-		
+	
+	
 	protected void draw(Graphics g)
 	{
 		if(line!=null)

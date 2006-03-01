@@ -6,16 +6,23 @@ import java.awt.geom.Line2D.Double;
 import java.util.Vector;
 import javax.swing.*;
 import java.io.*;
+
 import javax.swing.ImageIcon;
 import java.awt.BorderLayout;
 import java.awt.Color;
+
+import javax.swing.JFileChooser;
 import javax.swing.JLayeredPane;
 import javax.swing.JFrame;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+
+import org.jdom.Document;
 
 class GmmlVision extends JFrame
 {
 	GmmlDrawing drawing;
+	GmmlData document;
 
 	public static void main(String[] args)
 	{
@@ -91,7 +98,54 @@ class GmmlVision extends JFrame
 				}
 			}
 		);
-			
+		
+		// define actionListener for saveItem
+		saveItem.addActionListener(new ActionListener() 
+				{
+			public void actionPerformed(ActionEvent e) 
+			{
+				if (drawing!=null)
+				{
+					JFileChooser chooser = new JFileChooser();
+					chooser.setFileFilter(new GmmlFilter());
+					int returnVal = chooser.showSaveDialog(null);
+					if(returnVal == JFileChooser.APPROVE_OPTION) 
+					{
+						String file = chooser.getSelectedFile().getPath();
+						if(!file.endsWith(".xml")) 
+						{
+							file = file+".xml";
+						}
+						
+						int confirmed = 1;
+						File tempfile = new File(file);
+						
+						if(tempfile.exists()) {
+							String[] options = { "OK", "CANCEL" };
+							confirmed = JOptionPane.showOptionDialog(null, 
+									"The selected file already exists, overwrite?", 
+									"Warning", 
+									JOptionPane.DEFAULT_OPTION, 
+									JOptionPane.WARNING_MESSAGE, null, 
+									options, options[0]);
+						} else {
+							confirmed = 0;
+						}
+						
+						if (confirmed == 0) 
+						{
+							document.writeToXML(file);
+							System.out.println("Saved");
+						} else {
+							System.out.println("Canceled");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No GMML file loaded!", "error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+				} );
+		
 		// add items to fileMenu
 		fileMenu.add(newItem);
 		fileMenu.add(openItem);
@@ -132,13 +186,13 @@ class GmmlVision extends JFrame
 	
 	private void openPathway(String file)
 	{
-		// initialize new reader which will read the file
-		GmmlReader r = new GmmlReader(file);
+		// initialize new JDOM gmml representation and read the file
+		document = new GmmlData(file);
 		// get drawing from reader
-		GmmlDrawing d = r.getDrawing();
+		drawing = document.getDrawing();
 		
 		// create scrollpane
-		JScrollPane scroll = new JScrollPane(d);
+		JScrollPane scroll = new JScrollPane(drawing);
 		scroll.setBackground(Color.gray);
 		// set scrollpane
 		scroll.setVerticalScrollBar(scroll.createVerticalScrollBar());
@@ -150,7 +204,6 @@ class GmmlVision extends JFrame
 		setContentPane(scroll);
 		
 		show();
-		drawing = d;
 	}
 	
 } // end of class

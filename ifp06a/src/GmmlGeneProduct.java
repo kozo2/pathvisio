@@ -16,17 +16,22 @@ limitations under the License.
 */
 
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JPanel;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
 /**
   *This class contains the gene products. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
 public class GmmlGeneProduct extends GmmlGraphics
 {
+	private List attributes;
 	
 	double centerx;
 	double centery;
@@ -37,8 +42,10 @@ public class GmmlGeneProduct extends GmmlGraphics
 	GmmlDrawing canvas;
 	Rectangle2D rect;
 	
+	Element jdomElement;
+	
 	String geneID;
-	String ref;
+	String xref;
 
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handlex 	= new GmmlHandle(1, this);
@@ -61,19 +68,75 @@ public class GmmlGeneProduct extends GmmlGraphics
 	  *a string for the geneID, and a string for the reference as input. 
 	  *This input is assigned to the object geneproduct, but no real rectangle object is constructed.
 	  */
-	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String ref, Color color, GmmlDrawing canvas){
+	public GmmlGeneProduct(int x, int y, int width, int height, String geneID, String xref, Color color, GmmlDrawing canvas){
 		this.centerx = x;
 		this.centery = y;
 		this.width = width;
 		this.height = height;
 		this.geneID = geneID;
-		this.ref = ref;
+		this.xref = xref;
 		this.color = color;
 		this.canvas = canvas;
 		
 		constructRectangle();
 
 		setHandleLocation();
+	}
+	
+	/**
+	 * Constructor for mapping a JDOM Element
+	 */
+	public GmmlGeneProduct(Element e, GmmlDrawing canvas) {
+		this.jdomElement = e;
+		// List the attributes
+		attributes = Arrays.asList(new String[] {
+				"CenterX", "CenterY", "Width","Height",
+				"GeneID","Xref","Color"
+		});
+		mapAttributes(e);
+		
+		this.canvas = canvas;
+		
+		constructRectangle();
+
+		setHandleLocation();
+	}
+
+	/**
+	 * Maps attributes to internal variables
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // CenterX
+						this.centerx = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
+					case 1: // CenterY
+						this.centery = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 2: // Width
+						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 3:	// Height
+						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 4: // GeneID
+						this.geneID = value; break;
+					case 5: // Xref
+						this.xref = value; break;
+					case 6: // Color
+						this.color = GmmlColor.convertStringToColor(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
 	}
 	
 	protected void draw(Graphics g)

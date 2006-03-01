@@ -26,12 +26,21 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Color;
 import java.awt.BasicStroke;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.JPanel;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
 
 /**
   *This class contains the lineshapes. It contains a constructor, and the methods contains, setLocation and getHelpers
   */
 public class GmmlLineShape extends GmmlGraphics{
+	private List attributes;
 	
 	double startx;
 	double starty;
@@ -42,6 +51,8 @@ public class GmmlLineShape extends GmmlGraphics{
 
 	GmmlDrawing canvas;
 	Color color;
+	
+	Element jdomElement;
 
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handleStart	= new GmmlHandle(3, this);
@@ -76,6 +87,66 @@ public class GmmlLineShape extends GmmlGraphics{
 		canvas.addElement(handlecenter);
 		canvas.addElement(handleStart);
 		canvas.addElement(handleEnd);		
+	}
+	
+	/**
+	 * Constructor for mapping a JDOM Element
+	 */
+	public GmmlLineShape(Element e, GmmlDrawing canvas) {
+		this.jdomElement = e;
+		// List the attributes
+		attributes = Arrays.asList(new String[] {
+				"StartX", "StartY", "EndX", "EndY", 
+				"Type","Color"
+		});
+		mapAttributes(e);
+				
+		this.canvas = canvas;
+		
+		canvas.addElement(handlecenter);
+		canvas.addElement(handleStart);
+		canvas.addElement(handleEnd);
+	}
+
+	/**
+	 * Maps attributes to internal variables
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // StartX
+						this.startx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 1: // StartY
+						this.starty = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 2: // EndX
+						this.endx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 3: // EndY
+						this.endy = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+					case 4: // Type
+						List typeMappings = Arrays.asList(new String[] {
+								"Tbar", "ReceptorRound", "LigandRound", 
+								"ReceptorSquare", "LigandSquare"
+						});
+						if(typeMappings.indexOf(value) > -1)
+							this.type = typeMappings.indexOf(value);
+						break;
+					case 5: // Color
+						this.color = GmmlColor.convertStringToColor(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
 	}
 	
 	/**

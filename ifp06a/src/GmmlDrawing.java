@@ -206,7 +206,6 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			GmmlGraphics g = (GmmlGraphics) it.next();
 			g.isContain(p);
 		}
-		
 		repaint();*/
 	}
 	
