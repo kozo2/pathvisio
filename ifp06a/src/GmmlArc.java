@@ -118,13 +118,13 @@ public class GmmlArc extends GmmlGraphics
 			String value = at.getValue();
 			switch(index) {
 					case 0: // StartX
-						this.x = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.x = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 1: // StartY
-						this.y = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
-					case 2: // EndX
-						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
-					case 3: // EndY
-						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.y = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 2: // Width
+						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 3: // Height
+						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 4: // Color
 						this.color = GmmlColor.convertStringToColor(value); break;
 					case 5: // Rotation
@@ -189,6 +189,22 @@ public class GmmlArc extends GmmlGraphics
 	public void constructArc()
 	{
 		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
+		
+		// Update JDOM Graphics element
+		updateJdomGraphics();
+	}
+	
+	public void updateJdomGraphics() {
+		if(jdomElement != null) {
+			Element jdomGraphics = jdomElement.getChild("Graphics");
+			if(jdomGraphics !=null) {
+				jdomGraphics.setAttribute("StartX", Integer.toString((int)x * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("StartY", Integer.toString((int)y * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Rotation", Double.toString(rotation));
+			}
+		}
 	}
 	
 	public void setHandleLocation()

@@ -65,8 +65,8 @@ class GmmlVision extends JFrame
 		// define menu items for file menu
 		JMenuItem newItem 	= new JMenuItem("New");
 		JMenuItem openItem 	= new JMenuItem("Open");
-		JMenuItem saveItem 	= new JMenuItem("Save...");
-		JMenuItem saveAsItem = new JMenuItem("Save as");
+		JMenuItem saveItem 	= new JMenuItem("Save");
+		JMenuItem saveAsItem = new JMenuItem("Save as...");
 		JMenuItem exitItem 	= new JMenuItem("Exit");
 		
 		// define actionListener for newItem
@@ -100,7 +100,19 @@ class GmmlVision extends JFrame
 		);
 		
 		// define actionListener for saveItem
-		saveItem.addActionListener(new ActionListener() 
+		saveItem.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					// Overwrite the existing xml file
+					document.writeToXML(document.xmlFile);
+				}
+			}
+		);
+		
+		// define actionListener for saveAsItem
+		saveAsItem.addActionListener(new ActionListener() 
 				{
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -134,7 +146,7 @@ class GmmlVision extends JFrame
 						
 						if (confirmed == 0) 
 						{
-							document.writeToXML(file);
+							document.writeToXML(tempfile);
 							System.out.println("Saved");
 						} else {
 							System.out.println("Canceled");

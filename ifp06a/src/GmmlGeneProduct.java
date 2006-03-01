@@ -115,13 +115,13 @@ public class GmmlGeneProduct extends GmmlGraphics
 			String value = at.getValue();
 			switch(index) {
 					case 0: // CenterX
-						this.centerx = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
+						this.centerx = Integer.parseInt(value) / GmmlData.GMMLZOOM ; break;
 					case 1: // CenterY
-						this.centery = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.centery = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 2: // Width
-						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 3:	// Height
-						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 4: // GeneID
 						this.geneID = value; break;
 					case 5: // Xref
@@ -207,6 +207,21 @@ public class GmmlGeneProduct extends GmmlGraphics
 	public void constructRectangle()
 	{
 		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
+		
+		// Update JDOM Graphics element
+		updateJdomGraphics();
+	}
+	
+	public void updateJdomGraphics() {
+		if(jdomElement != null) {
+			Element jdomGraphics = jdomElement.getChild("Graphics");
+			if(jdomGraphics !=null) {
+				jdomGraphics.setAttribute("CenterX", Integer.toString((int)centerx * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("CenterY", Integer.toString((int)centery * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
+			}
+		}
 	}
 	
 	public void setLocation(double newx, double newy)

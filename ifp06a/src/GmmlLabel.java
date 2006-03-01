@@ -128,13 +128,13 @@ public class GmmlLabel extends GmmlGraphics
 					case 0: // TextLabel
 						this.text = value; break;
 					case 1: // CenterX
-						this.centerx = Double.parseDouble(value) / GmmlData.GMMLZOOM ; break;
+						this.centerx = Integer.parseInt(value) / GmmlData.GMMLZOOM ; break;
 					case 2: // CenterY
-						this.centery = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.centery = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 3: // Width
-						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 4:	// Height
-						this.height = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 5: // FontName
 						this.font = value; break;
 					case 6: // FontWeight
@@ -175,7 +175,21 @@ public class GmmlLabel extends GmmlGraphics
 	{
 		this.centerx = x;
 		this.centery = y;
+		
+		// Update JDOM Graphics element
+		updateJdomGraphics();
 	}
+	
+	public void updateJdomGraphics() {
+		if(jdomElement != null) {
+			Element jdomGraphics = jdomElement.getChild("Graphics");
+			if(jdomGraphics !=null) {
+				jdomGraphics.setAttribute("CenterX", Integer.toString((int)centerx * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("CenterY", Integer.toString((int)centery * GmmlData.GMMLZOOM));
+			}
+		}
+	}
+	
 	
 	protected void moveBy(double dx, double dy)
 	{

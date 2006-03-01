@@ -28,6 +28,7 @@ public class GmmlData
 	final static int GMMLZOOM = 15;
 	final static File xsdFile = new File("GMML_compat.xsd");
 	
+	File xmlFile;
 	GmmlDrawing drawing;
 	Document doc;
 	
@@ -48,10 +49,11 @@ public class GmmlData
 		// try to read the file; if an error occurs, catch the exception and print feedback
 		try
 		{
+			xmlFile = new File(file);
 			// build JDOM tree
-			doc = builder.build(file);
+			doc = builder.build(xmlFile);
 			// Validate the JDOM document
-//			validateDocument(doc);	// Don't validate for now	
+			validateDocument(doc);
 			// Copy the pathway information to a GmmlDrawing
 			toGmmlGraphics();
 		}
@@ -88,12 +90,12 @@ public class GmmlData
 				SAXOutputter so = new SAXOutputter(vh);
 				so.output(doc);
 				// If no errors occur, the file is valid according to the gmml xml schema definition
-				System.out.println("Document is validated against the xml schema definition '" + 
+				System.out.println("Document is valid according to the xml schema definition '" + 
 						xsdFile.toString() + "'");
 			} catch (SAXException se) {
 				System.out.println("Could not parse the xml-schema definition: " + se.getMessage());
 			} catch (JDOMException je) {
-				System.out.println("Document is invalid according to the xml-schema definition");
+				System.out.println("Document is invalid according to the xml-schema definition!");
 				System.out.println(je.getMessage());
 			}
 		} else {
@@ -178,7 +180,7 @@ public class GmmlData
 		}
 	}
 	
-	public void writeToXML(String filename) {
+	public void writeToXML(File file) {
 		try 
 		{
 			//Validate the JDOM document
@@ -186,10 +188,10 @@ public class GmmlData
 			//Get the XML code
 			XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
 			//Open a filewriter
-			File file = new File(filename);
 			FileWriter writer = new FileWriter(file);
 			//Send XML code to the filewriter
 			xmlcode.output(doc, writer);
+			System.out.println("File '" + file.toString() + "' is saved");
 		}
 		catch (IOException e) 
 		{

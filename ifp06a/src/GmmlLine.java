@@ -112,13 +112,13 @@ public class GmmlLine extends GmmlGraphics
 			String value = at.getValue();
 			switch(index) {
 					case 0: // StartX
-						this.startx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 1: // StartY
-						this.starty = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 2: // EndX
-						this.endx = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 3: // EndY
-						this.endy = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 4: // Color
 						this.color = GmmlColor.convertStringToColor(value); break;
 					case 5: // Style
@@ -149,8 +149,21 @@ public class GmmlLine extends GmmlGraphics
 	public void constructLine()
 	{
 		line = new Line2D.Double(startx, starty, endx, endy);
+		// Update JDOM Graphics element
+		updateJdomGraphics();
 	}
 	
+	public void updateJdomGraphics() {
+		if(jdomElement != null) {
+			Element jdomGraphics = jdomElement.getChild("Graphics");
+			if(jdomGraphics !=null) {
+				jdomGraphics.setAttribute("StartX", Integer.toString((int)startx * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("StartY", Integer.toString((int)starty * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("EndX", Integer.toString((int)endx * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("EndY", Integer.toString((int)endy * GmmlData.GMMLZOOM));
+			}
+		}
+	}
 	
 	protected void draw(Graphics g)
 	{
@@ -234,7 +247,7 @@ public class GmmlLine extends GmmlGraphics
 		endx   = end.getX();
 		endy   = end.getY();
 		
-		constructLine();
+		constructLine();		
  	}
 	
 	protected void moveBy(double dx, double dy)

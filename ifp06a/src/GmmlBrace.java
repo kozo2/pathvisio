@@ -34,6 +34,7 @@ import org.jdom.Element;
 public class GmmlBrace extends GmmlGraphics
 {
 	private List attributes;
+
 	double cX;
 	double cY;
 	double width;
@@ -44,6 +45,12 @@ public class GmmlBrace extends GmmlGraphics
 	
 	GmmlDrawing canvas;
 	Element jdomElement;
+	
+	// Some mappings to Gmml
+	private final List orientationMapping = Arrays.asList(new String[] {
+			"top", "right", "bottom", "left"
+	});
+	
 	/**
 	*Constructor
 	*/
@@ -94,17 +101,14 @@ public class GmmlBrace extends GmmlGraphics
 			String value = at.getValue();
 			switch(index) {
 					case 0: // CenterX
-						this.cX = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.cX = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 1: // CenterY
-						this.cY = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.cY = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 2: // Width
-						this.width = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
+						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 3: // PicPointOffset
 						this.ppo = Double.parseDouble(value) / GmmlData.GMMLZOOM; break;
 					case 4: // Orientation
-						List orientationMapping = Arrays.asList(new String[] {
-								"top", "right", "bottom", "left"
-						});
 						if(orientationMapping.indexOf(value) > -1)
 							this.orientation = orientationMapping.indexOf(value);
 						break;
@@ -128,8 +132,22 @@ public class GmmlBrace extends GmmlGraphics
 	{
 		cX = centerX;
 		cY = centerY;
+		
+		updateJdomGraphics(); // TODO: implement visualization of brace (constructBrace()) and update the element from there
 	}
 	
+	public void updateJdomGraphics() {
+		if(jdomElement != null) {
+			Element jdomGraphics = jdomElement.getChild("Graphics");
+			if(jdomGraphics !=null) {
+				jdomGraphics.setAttribute("CenterX", Integer.toString((int)cX * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("CenterY", Integer.toString((int)cY * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("PicPointOffset", Double.toString(ppo));
+				jdomGraphics.setAttribute("Orientation", (String)orientationMapping.get(orientation));
+			}
+		}
+	}
 	
 	protected void draw(Graphics g)
 	{
