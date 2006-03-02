@@ -29,7 +29,8 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 /**
- *
+ * This class implements a brace and provides 
+ * methods to resize and draw it
  */
 public class GmmlBrace extends GmmlGraphics
 {
