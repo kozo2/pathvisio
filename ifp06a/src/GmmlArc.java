@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import javax.swing.JPanel;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -31,6 +30,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * This class implements an arc and provides 
+ * methods to resize and draw it
+ */
 public class GmmlArc extends GmmlGraphics
 {
 	private List attributes;
@@ -51,8 +54,12 @@ public class GmmlArc extends GmmlGraphics
 	GmmlHandle handley		= new GmmlHandle(2, this);
 	
 	/**
-	*Constructor
-	*/
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>GmmlDrawing canvas	- this GmmlDrawing this arc will be part of
+	 * <DL>
+	 */
 	public GmmlArc(GmmlDrawing canvas)
 	{
 		this.canvas = canvas;
@@ -62,14 +69,26 @@ public class GmmlArc extends GmmlGraphics
 		canvas.addElement(handley);
 	}
 
-
-	public GmmlArc(double x, double y, double width, double height, String color, double rotation, GmmlDrawing canvas)
+	/**
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>	Double x			- the arcs upper left x coordinate 
+	 * <DD>	Double y			- the arcs upper left y coordinate
+	 * <DD>	Double width		- the arcs widht
+	 * <DD>	Double height		- the arcs height
+	 * <DD>	Color color			- the color the arc will be painted
+	 * <DD> Double rotation		- the angle at which the arc has to be rotated when drawing it 
+	 * <DD> GmmlDrawig canvas	- the GmmlDrawing this arc will be part of
+	 * <DL> 
+	 */
+	public GmmlArc(double x, double y, double width, double height, Color color, double rotation, GmmlDrawing canvas)
 	{
 		this.x 			= x;
 		this.y 			= y;
 		this.width 		= width;
 		this.height		= height;
-		this.color 		= GmmlColor.convertStringToColor(color);
+		this.color 		= color;
 		this.rotation 	= Math.toDegrees(rotation);
 		this.canvas 	= canvas;
 		
@@ -83,7 +102,12 @@ public class GmmlArc extends GmmlGraphics
 	}
 	
 	/**
-	 * Constructor for mapping a JDOM Element
+	 * Constructor for mapping a JDOM Element.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e			- the GMML element which will be loaded as a GmmlShape
+	 * <DD> GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
+	 * <DL>
 	 */
 	public GmmlArc(Element e, GmmlDrawing canvas) {
 		// List the attributes
@@ -105,7 +129,11 @@ public class GmmlArc extends GmmlGraphics
 	}
 
 	/**
-	 * Maps attributes to internal variables
+	 * Maps attributes to internal variables.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e	- the element that will be loaded as a GmmlShape
+	 * <DL>
 	 */
 	private void mapAttributes (Element e) {
 		this.jdomElement = e;
@@ -141,8 +169,13 @@ public class GmmlArc extends GmmlGraphics
 	}
 	
 	/**
-	  *Method setLocation changes the double x and y coordinate to the x and y that are arguments for this method
-	  */
+	 * Sets the location of this arc to the coordinate specified
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>Double x		- the new y coordinate
+	 * <DD>Double y		- the new x coordinate
+	 * <DL>
+	 */
 	public void setLocation(double x, double y)
 	{
 		this.x = x;
@@ -151,6 +184,10 @@ public class GmmlArc extends GmmlGraphics
 		constructArc();
 	}
 
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#draw(java.awt.Graphics)
+	 */
 	protected void draw(Graphics g)
 	{
 		Graphics2D g2D = (Graphics2D)g;
@@ -163,29 +200,48 @@ public class GmmlArc extends GmmlGraphics
 		setHandleLocation();
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#moveBy(double, double)
+	 */
 	protected void moveBy(double dx, double dy)
 	{
 		setLocation(x + dx, y + dy);
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
+	 */
 	protected boolean isContain(Point2D p)
 	{
 		isSelected =  arc.contains(p);
 		return isSelected;
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#resizeX(double)
+	 */
 	protected void resizeX(double dx)
 	{
 		width += dx;
 		constructArc();
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#resizeY(double)
+	 */
 	protected void resizeY(double dy)
 	{
 		height += dy;
 		constructArc();
 	}
 	
+	/**
+	 * Constructs the internal arc of this class 
+	 */
 	public void constructArc()
 	{
 		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
@@ -193,7 +249,10 @@ public class GmmlArc extends GmmlGraphics
 		// Update JDOM Graphics element
 		updateJdomGraphics();
 	}
-	
+
+	/**
+	 * Updates the JDom representation of this arc
+	 */
 	public void updateJdomGraphics() {
 		if(jdomElement != null) {
 			Element jdomGraphics = jdomElement.getChild("Graphics");
@@ -207,6 +266,9 @@ public class GmmlArc extends GmmlGraphics
 		}
 	}
 	
+	/**
+	 * Sets this class's handles at the correct location
+	 */
 	public void setHandleLocation()
 	{
 		handlecenter.setLocation(x - width, y + height);
@@ -214,6 +276,10 @@ public class GmmlArc extends GmmlGraphics
 		handley.setLocation(x + width/2, y + height);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
 	protected boolean intersects(Rectangle2D.Double r)
 	{
 		isSelected = arc.intersects(r.x, r.y, r.width, r.height);

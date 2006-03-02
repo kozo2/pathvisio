@@ -58,12 +58,24 @@ public class GmmlLine extends GmmlGraphics
 		canvas.addElement(handleEnd);
 	}
 
+	/**
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>Double startx		- the lineshapes start x coordinate
+	 * <DD>Double starty		- the lineshapes start y coordinate
+	 * <DD>Double endx			- the lineshapes end x coordinate
+	 * <DD>Double endy			- the lineshapes end y coordinate
+	 * <DD>Color color			- the color this lineshape will be painted
+	 * <DD>GmmlDrawing canvas	- the GmmlDrawing this lineshape will be part of
+	 * <DL>
+	 */		
 	public GmmlLine(int x1, int y1, int x2, int y2, Color color, GmmlDrawing canvas)
 	{
-		startx 	= x1;
-		starty 	= y1;
-		endx 		= x2;
-		endy 		= y2;
+		this.startx 	= startx;
+		this.starty 	= starty;
+		this.endx 	= endx;
+		this.endy 	= endy;
 		
 		this. color = color;
 		
@@ -78,7 +90,12 @@ public class GmmlLine extends GmmlGraphics
 	}
 
 	/**
-	 * Constructor for mapping a JDOM Element
+	 * Constructor for mapping a JDOM Element.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e			- the GMML element which will be loaded as a GmmlShape
+	 * <DD> GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
+	 * <DL>
 	 */
 	public GmmlLine (Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -100,7 +117,11 @@ public class GmmlLine extends GmmlGraphics
 	}
 
 	/**
-	 * Maps attributes to internal variables
+	 * Maps attributes to internal variables.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e	- the element that will be loaded as a GmmlShape
+	 * <DL>
 	 */
 	private void mapAttributes (Element e) {
 		// Map attributes

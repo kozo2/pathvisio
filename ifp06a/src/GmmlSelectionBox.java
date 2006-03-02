@@ -5,7 +5,9 @@ import java.awt.geom.Point2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-
+/**
+ * This class implements a selectionbox 
+ */ 
 class GmmlSelectionBox extends GmmlGraphics
 {
 	double x;
@@ -14,17 +16,36 @@ class GmmlSelectionBox extends GmmlGraphics
 	Rectangle2D.Double r;
 	GmmlDrawing canvas;
 	
+	/**
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD> GmmlDrawing d	- the GmmlDrawing this selectionbox will be part of
+	 * <DL> 
+	 */
 	public GmmlSelectionBox(GmmlDrawing d)
 	{
 		canvas = d;
 		canvas.addElement(this);
 	}	
 	
-	public void resize(double dx, double dy)
+	/**
+	 * Resizes the selectionbox rectangle
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD> Double width	- the new selectionbox width 
+	 * <DD> Double height	- the new selectionbox height
+	 * <DL>
+	 */
+	public void resize(double width, double height)
 	{
-		r = new Rectangle2D.Double(x, y, dx, dy);
+		r = new Rectangle2D.Double(x, y, width, height);
 	}
 	
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#draw(java.awt.Graphics)
+	 */
 	protected void draw(Graphics g)
 	{
 
@@ -43,12 +64,19 @@ class GmmlSelectionBox extends GmmlGraphics
 
 		}
 	}
-		
+	
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
+	 */
 	protected boolean isContain(Point2D p)
 	{
 		return false;
 	}
 	
+	/**
+	 * Sets the selectionbox rectangle so that it can be drawn
+	 */
 	private void setDrawableRectangle()
 	{
 		double width  = r.width;
@@ -89,14 +117,22 @@ class GmmlSelectionBox extends GmmlGraphics
 	   }
 	}
    
-   protected boolean intersects(Rectangle2D.Double r)
-   {
-   	return false;
-   } 
+   /**
+    * (non-Javadoc)
+    * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+    */
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		return false;
+	} 
    
-   public void resetRectangle()
-   {
-   	r = new Rectangle2D.Double(0, 0, 0, 0);
-   }
+	/**
+	 * sets the selectionbox rectangle position to the upper 
+	 * left corner of the screen
+	 */
+	public void resetRectangle()
+	{
+		r = new Rectangle2D.Double(0, 0, 0, 0);
+	}
     
 } // end of class

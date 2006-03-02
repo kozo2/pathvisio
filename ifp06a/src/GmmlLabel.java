@@ -19,25 +19,16 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
-import java.awt.Point;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
-
-import javax.swing.JPanel;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
 
-/**
-  *This class contains the labels. It contains a constructor, and the methods contains, setLocation and getHelpers
-  */
 
 public class GmmlLabel extends GmmlGraphics
 {
@@ -63,8 +54,12 @@ public class GmmlLabel extends GmmlGraphics
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 
 	/**
-	*Constructor
-	*/
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>GmmlDrawing canvas	- this GmmlDrawing this label will be part of
+	 * <DL>
+	 */
 	public GmmlLabel(GmmlDrawing canvas)
 	{
 		this.canvas = canvas;
@@ -96,7 +91,12 @@ public class GmmlLabel extends GmmlGraphics
 	}
 	
 	/**
-	 * Constructor for mapping a JDOM Element
+	 * Constructor for mapping a JDOM Element.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e			- the GMML element which will be loaded as a GmmlShape
+	 * <DD> GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
+	 * <DL>
 	 */
 	public GmmlLabel (Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -114,7 +114,11 @@ public class GmmlLabel extends GmmlGraphics
 	}
 
 	/**
-	 * Maps attributes to internal variables
+	 * Maps attributes to internal variables.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e	- the element that will be loaded as a GmmlShape
+	 * <DL>
 	 */
 	private void mapAttributes (Element e) {
 		// Map attributes
@@ -169,7 +173,12 @@ public class GmmlLabel extends GmmlGraphics
 	}
 	
 	/**
-	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
+	  * Sets label upper corner to the specified coordinate
+	  * <BR>
+	  * <DL><B>Parameters<B>
+	  * <DD>Double x	- the new x coordinate
+	  * <DD>Double y	- the new y coordinates
+	  * <DL> 
 	  */	
 	public void setLocation(double x, double y)
 	{
@@ -180,6 +189,9 @@ public class GmmlLabel extends GmmlGraphics
 		updateJdomGraphics();
 	}
 	
+	/**
+	 * Updates the JDom representation of this label
+	 */
 	public void updateJdomGraphics() {
 		if(jdomElement != null) {
 			Element jdomGraphics = jdomElement.getChild("Graphics");
@@ -195,7 +207,11 @@ public class GmmlLabel extends GmmlGraphics
 	{
 		setLocation(centerx  + dx, centery + dy);
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#draw(java.awt.Graphics)
+	 */
 	protected void draw(Graphics g)
 	{
 		Graphics2D g2D = (Graphics2D)g;
@@ -230,14 +246,15 @@ public class GmmlLabel extends GmmlGraphics
 		setHandleLocation();
 	}
 	
-	protected void resizeX(double dx){}
-	protected void resizeY(double dy){}
-	
 	private void setHandleLocation()
 	{
 		handlecenter.setLocation(centerx, centery - height/2 - handlecenter.height/2);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
 	protected boolean intersects(Rectangle2D.Double r)
 	{
 		isSelected = r.intersects(centerx - width/2, centery - height/2, width, height);

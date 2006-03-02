@@ -1,21 +1,3 @@
-/*
-Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
-M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software 
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and 
-limitations under the License.
-*/
-
-//import java.awt.*;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
 import java.awt.Graphics;
@@ -27,19 +9,18 @@ import java.awt.geom.Rectangle2D;
 import java.awt.Color;
 import java.awt.BasicStroke;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.swing.JPanel;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
 
 /**
-  *This class contains the lineshapes. It contains a constructor, and the methods contains, setLocation and getHelpers
-  */
-public class GmmlLineShape extends GmmlGraphics{
+ * This class implements a Gmml lineshape and provides 
+ * methods to resize and draw it.
+ */
+public class GmmlLineShape extends GmmlGraphics
+{
 	private List attributes;
 	
 	double startx;
@@ -57,11 +38,14 @@ public class GmmlLineShape extends GmmlGraphics{
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handleStart	= new GmmlHandle(3, this);
 	GmmlHandle handleEnd		= new GmmlHandle(4, this);
-
 	
 	/**
-	*Constructor
-	*/
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>GmmlDrawing canvas	- this GmmlDrawing this GmmlLineShape will be part of
+	 * <DL>
+	 */
 	public GmmlLineShape(GmmlDrawing canvas)
 	{
 		this.canvas = canvas;
@@ -72,8 +56,19 @@ public class GmmlLineShape extends GmmlGraphics{
 	}
 	
 	/**
-	  *Constructor GmmlLineShape has 4 doubles for the coordinates, an int for the type and a color object for the color as input.
-	  */
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>Double startx		- the lineshapes start x coordinate
+	 * <DD>Double starty		- the lineshapes start y coordinate
+	 * <DD>Double endx			- the lineshapes end x coordinate
+	 * <DD>Double endy			- the lineshapes end y coordinate
+	 * <DD>Int type				- the type of lineshape this GmmlLineshape represents; 0 for TBar, 1 for Recepor round,
+	 *  2 for Ligand round, 3 for Receptor Square, 4 for Ligand Square.
+	 *  <DD>Color color			- the color this lineshape will be painted
+	 *  <DD>GmmlDrawing canvas	- the GmmlDrawing this lineshape will be part of
+	 *  <DL>
+	 */		
 	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, Color color, GmmlDrawing canvas)
 	{
 		this.startx = startx;
@@ -91,6 +86,11 @@ public class GmmlLineShape extends GmmlGraphics{
 	
 	/**
 	 * Constructor for mapping a JDOM Element
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>Element e			- the Element to map to a GmmlLineShape
+	 * <DD>GmmlDrawing canvas	- the GmmlDrawing this lineshape will be part of
+	 * <DL>
 	 */
 	public GmmlLineShape(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -109,7 +109,11 @@ public class GmmlLineShape extends GmmlGraphics{
 	}
 
 	/**
-	 * Maps attributes to internal variables
+	 * Maps attributes to internal variables.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e	- the element that will be loaded as a GmmlShape
+	 * <DL>
 	 */
 	private void mapAttributes (Element e) {
 		// Map attributes
@@ -150,8 +154,15 @@ public class GmmlLineShape extends GmmlGraphics{
 	}
 	
 	/**
-	  *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
-	  */	
+	 * Sets lineshape at the location specified
+	 * <BR>
+	 * <DL><B>Parameters<B>
+	 * <DD>Double x1	- the new start x position
+	 * <DD>Double y1	- the new start y position
+	 * <DD>Double x2	- the new end x position
+	 * <DD>Double y2	- the new end y position
+	 * <DL>
+	 */	
 	public void setLocation(double x1, double y1, double x2, double y2)
 	{
 		startx = x1;
@@ -163,6 +174,9 @@ public class GmmlLineShape extends GmmlGraphics{
 		updateJdomGraphics();
 	}
 	
+	/**
+	 * Updates the JDom representation of this lineshape
+	 */
 	public void updateJdomGraphics() {
 		if(jdomElement != null) {
 			Element jdomGraphics = jdomElement.getChild("Graphics");
@@ -175,6 +189,10 @@ public class GmmlLineShape extends GmmlGraphics{
 		}
 	}
 	
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#draw(java.awt.Graphics)
+	 */
 	protected void draw(Graphics g)
 	{
 		//Types:
@@ -287,6 +305,10 @@ public class GmmlLineShape extends GmmlGraphics{
 		setHandleLocation();
 	}
 	
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
+	 */
 	protected boolean isContain(Point2D point)
 	{
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
@@ -309,14 +331,19 @@ public class GmmlLineShape extends GmmlGraphics{
 		return isSelected;
 	}
 	
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#moveBy(double, double)
+	 */
 	protected void moveBy(double dx, double dy)
 	{
 		setLocation(startx + dx, starty + dy, endx + dx, endy + dy);
 	}
 	
-	protected void resizeX(double dx){}
-	protected void resizeY(double dy){}
-
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#moveLineStart(double, double)
+	 */
 	protected void moveLineStart(double dx, double dy)
 	{
 		startx += dx;
@@ -328,6 +355,10 @@ public class GmmlLineShape extends GmmlGraphics{
 //		constructLine();
 	}
 	
+	/**
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#moveLineEnd(double, double)
+	 */
 	protected void moveLineEnd(double dx, double dy)
 	{
 		endx += dx;
@@ -339,6 +370,10 @@ public class GmmlLineShape extends GmmlGraphics{
 //		constructLine();
 	}
 
+	/**
+	 * Sets this class handles at the correct position;
+	 * one handle at the lineshapes start, one in the center, one at the end 
+	 */
 	private void setHandleLocation()
 	{
 		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
@@ -346,6 +381,10 @@ public class GmmlLineShape extends GmmlGraphics{
 		handleEnd.setLocation(endx, endy);
 	}
 
+	/**
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
 	protected boolean intersects(Rectangle2D.Double r)
 	{
 		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;

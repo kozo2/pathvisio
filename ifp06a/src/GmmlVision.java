@@ -1,36 +1,32 @@
-import java.awt.*;
+import java.awt.Color;
 import java.awt.event.*;
-import java.awt.Container;
-import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Double;
-import java.util.Vector;
 import javax.swing.*;
 import java.io.*;
 
-import javax.swing.ImageIcon;
-import java.awt.BorderLayout;
-import java.awt.Color;
-
 import javax.swing.JFileChooser;
-import javax.swing.JLayeredPane;
 import javax.swing.JFrame;
-import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-import org.jdom.Document;
-
+/**
+ * This class is the main class in the GMML project. 
+ * It acts as a container for pathwaydrawings and facilitates
+ * loading, creating and saving drawings to and from GMML.
+ */
 class GmmlVision extends JFrame
 {
 	GmmlDrawing drawing;
 	GmmlData document;
 
+	/**
+	 * Main method which will be carried out when running the program
+	 */
 	public static void main(String[] args)
 	{
 		new GmmlVision();
 	}
 	
 	/**
-	 *Constructor for this class
+	 *Constructor for thGmmlVision class
 	 *Initializes new GmmlVision and sets properties for frame
 	 */
 	public GmmlVision()
@@ -51,7 +47,7 @@ class GmmlVision extends JFrame
 	
 	
 	/**
-	 *Builds and ads the a menu in the GmmlVision class
+	 *Builds and ads a menu to the GmmlVision frame
 	 */
 	private void buildMenu()
 	{
@@ -180,15 +176,19 @@ class GmmlVision extends JFrame
 
 	} // end buildMenu()
 	
+	
+	/**
+	 * Creates a new empty drawing and loads it in the frame 
+	 */
 	private void createNewDrawing()
 	{
 		GmmlDrawing d = new GmmlDrawing();
-		d.addElement(new GmmlShape(600, 200, 100, 40, 0, "blue", 10, d));
+		d.addElement(new GmmlShape(600, 200, 100, 40, 0, Color.blue, 10, d));
 		d.addElement(new GmmlLine(100, 100, 200, 200, Color.green, d));
 		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very long id", "ref", Color.green, d));
 		d.addElement(new GmmlLabel(200, 50, 100, 80, "testlabel", "Arial", "bold", "italic", 10, Color.black, d));
 		d.addElement(new GmmlLineShape(300, 50, 200, 500, 0, Color.blue, d));
-		d.addElement(new GmmlArc(50, 50, 200, 200, "red", 0, d));
+		d.addElement(new GmmlArc(50, 50, 200, 200, Color.red, 0, d));
 
 		this.setContentPane(d);
 		
@@ -196,6 +196,10 @@ class GmmlVision extends JFrame
 		drawing = d;
 	}
 	
+	/**
+	 * Opens a GMML representation of a pathway or reaction and creates 
+	 * a scrollpane of the drawing, which is loaded in the frame.
+	 */
 	private void openPathway(String file)
 	{
 		// initialize new JDOM gmml representation and read the file

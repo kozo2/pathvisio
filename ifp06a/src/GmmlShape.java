@@ -21,10 +21,8 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.BasicStroke;
-import javax.swing.JPanel;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -32,7 +30,8 @@ import org.jdom.Element;
 import java.util.*;
 
 /**
- *This class contains the shapes. It contains a constructor, and the methods contains, setLocation and getHelpers
+ * This class represents a GMMLShape, which can be a 
+ * rectangle or ellips, depending of its type.
  */
 public class GmmlShape extends GmmlGraphics
 {
@@ -59,7 +58,11 @@ public class GmmlShape extends GmmlGraphics
 
 
 	/**
-	 *Constructor
+	 * Constructor for this class
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD>GmmlDrawing canvas - the GmmlDrawing this GmmlShape will be part of
+	 * </DL>	
 	 */
 	public GmmlShape(GmmlDrawing canvas)
 	{
@@ -71,16 +74,26 @@ public class GmmlShape extends GmmlGraphics
 	}
 	
 	/**
-	  *Constructor GmmlShape has 4 doubles for the coordinates, an int for the type, 
-	  *a double for the rotation and a color object for the color as input.
-	  */
-	public GmmlShape(double x, double y, double width, double height, int type, String color, double rotation, GmmlDrawing canvas)
+	 * Constructor for this class.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD>Double x				- the x coordinate of the shapes upper left corner
+	 * <DD>Double y				- the y coordinate of the shapes upper left corner 
+	 * <DD>Double width			- the shapes width
+	 * <DD>Double height		- the shapes height
+	 * <DD>int type				- the type of shape this GmmlShape represents; 0 for a rectangle, 1 for an ellipse
+	 * <DD>Color color			- the color the shape border is painted 
+	 * <DD>Double rotation		- the angle at which the shape has to be rotated when drawing
+	 * <DD>GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
+	 * </DL>	
+	 */
+	public GmmlShape(double x, double y, double width, double height, int type, Color color, double rotation, GmmlDrawing canvas)
 	{
 		this.centerx	= x;
 		this.centery	= y;
 		this.width 		= width;
 		this.height 	= height;
-		this.color 		= GmmlColor.convertStringToColor(color);
+		this.color 		= color;
 		this.type 		= type;
 		this.rotation 	= rotation;
 		this.canvas		= canvas;
@@ -93,7 +106,12 @@ public class GmmlShape extends GmmlGraphics
 	}
 	
 	/**
-	 * Constructor for mapping a JDOM Element
+	 * Constructor for mapping a JDOM Element.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e			- the GMML element which will be loaded as a GmmlShape
+	 * <DD> GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
+	 * <DL>
 	 */
 	public GmmlShape(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -114,7 +132,11 @@ public class GmmlShape extends GmmlGraphics
 	}
 
 	/**
-	 * Maps attributes to internal variables
+	 * Maps attributes to internal variables.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD> Element e	- the element that will be loaded as a GmmlShape
+	 * <DL>
 	 */
 	private void mapAttributes (Element e) {
 		// Map attributes
@@ -156,7 +178,12 @@ public class GmmlShape extends GmmlGraphics
 	}
 	
 	/**
-	 *Method setLocation changes the int x and y coordinate to the x and y that are arguments for this method
+	 * Changes the x and y coordinate to the x and y coordinate specified.
+	 * <BR>
+	 * <DL><B>Parameters</B>
+	 * <DD>Doubl  x		- the x coordinate at which the shape has to be located
+	 * <DD>Double y		- the y coordinate at which the shape has to be located
+	 * <DL>
 	 */
 	public void setLocation(double x, double y)
 	{
@@ -166,7 +193,12 @@ public class GmmlShape extends GmmlGraphics
 		// Update JDOM Graphics element
 		updateJdomGraphics();
 	}
-
+	
+	/**
+	 * Updates the JDom representation of the GMML file. 
+	 * When creating a new object, the JDom element doesn't exist yet 
+	 * and is created.
+	 */
 	public void updateJdomGraphics() {
 		if(jdomElement != null) {
 			Element jdomGraphics = jdomElement.getChild("Graphics");
@@ -179,6 +211,10 @@ public class GmmlShape extends GmmlGraphics
 		}
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#draw(java.awt.Graphics)
+	 */
 	protected void draw(Graphics g)
 	{
 		Graphics2D g2D = (Graphics2D)g;
@@ -200,7 +236,11 @@ public class GmmlShape extends GmmlGraphics
 		// reset rotation
 		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
 	}
-
+	
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
+	 */
 	protected boolean isContain(Point2D p)
 	{
 			Polygon pol = createContainingPolygon();
@@ -208,6 +248,10 @@ public class GmmlShape extends GmmlGraphics
 			return isSelected;			
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#moveBy(double, double)
+	 */
 	protected void moveBy(double dx, double dy)
 	{
 		setLocation(centerx + dx, centery + dy);
@@ -225,7 +269,11 @@ public class GmmlShape extends GmmlGraphics
 			}
 		}		
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#resizeX(double)
+	 */
 	protected void resizeX(double dx)
 	{
 		width += dx;
@@ -234,6 +282,10 @@ public class GmmlShape extends GmmlGraphics
 		updateJdomGraphics();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#resizeY(double)
+	 */
 	protected void resizeY(double dy)
 	{
 		height -= dy;
@@ -242,6 +294,11 @@ public class GmmlShape extends GmmlGraphics
 		updateJdomGraphics();
 	}
 	
+	/**
+	 * Sets the handles at the correct location;
+	 * one in the center, the other two on top, respectivily
+	 * left border.
+	 */
 	private void setHandleLocation()
 	{
 			handlecenter.setLocation(centerx, centery);
@@ -257,6 +314,9 @@ public class GmmlShape extends GmmlGraphics
 			}
 	}
 	
+	/**
+	 * Creates a polygon containing the GmmlShape
+	 */
 	private Polygon createContainingPolygon()
 	{
 		double theta = Math.toRadians(rotation);
@@ -297,6 +357,10 @@ public class GmmlShape extends GmmlGraphics
 		return pol;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
 	protected boolean intersects(Rectangle2D.Double r)
 	{
 			Polygon pol = createContainingPolygon();
