@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
  
+/**
+ * This class implements and handles a line
+ */
 public class GmmlLine extends GmmlGraphics
 {
 	private List attributes;
@@ -61,7 +64,7 @@ public class GmmlLine extends GmmlGraphics
 	/**
 	 * Constructor for this class
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD>Double startx		- the lineshapes start x coordinate
 	 * <DD>Double starty		- the lineshapes start y coordinate
 	 * <DD>Double endx			- the lineshapes end x coordinate
@@ -167,6 +170,9 @@ public class GmmlLine extends GmmlGraphics
 		}
 	}
 	
+	/**
+	 * Constructs the internal line in this class
+	 */
 	public void constructLine()
 	{
 		line = new Line2D.Double(startx, starty, endx, endy);
@@ -174,6 +180,9 @@ public class GmmlLine extends GmmlGraphics
 		updateJdomGraphics();
 	}
 	
+	/**
+	 * Updates the JDom representation of this label
+	 */	
 	public void updateJdomGraphics() {
 		if(jdomElement != null) {
 			Element jdomGraphics = jdomElement.getChild("Graphics");
@@ -185,7 +194,11 @@ public class GmmlLine extends GmmlGraphics
 			}
 		}
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#draw(java.awt.Graphics)
+	 */
 	protected void draw(Graphics g)
 	{
 		if(line!=null)
@@ -211,6 +224,9 @@ public class GmmlLine extends GmmlGraphics
 		}
 	}
 	
+	/**
+	 * If the line type is arrow, this method draws the arrowhead
+	 */
 	private void drawArrowhead(Graphics2D g2D) //2Do! clean up this mess.....
 	{
 		g2D.setColor(color);
@@ -240,7 +256,10 @@ public class GmmlLine extends GmmlGraphics
 		g2D.fill(arrowhead);
 	}
   
-	/* Checks whether a Point cuts the Line */
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
+	 */
 	protected boolean isContain(Point2D point)
 	{
 		BasicStroke stroke = new BasicStroke(10);
@@ -249,7 +268,14 @@ public class GmmlLine extends GmmlGraphics
 		return isSelected;
 	}
 	
-	/* Methods for resizing Lines */
+	/**
+	 * Sets the line start and end to the coordinates specified
+	 * <DL><B>Parameters</B>
+	 * <DD>Double x1	- new startx 
+	 * <DD>Double y1	- new starty
+	 * <DD>Double x2	- new endx
+	 * <DD>Double y2	- new endy
+	 */
 	public void setLine(double x1, double y1, double x2, double y2)
  	{
  		startx = x1;
@@ -260,7 +286,13 @@ public class GmmlLine extends GmmlGraphics
 		constructLine();
 	}
  	
- 	/* Methods for resizing Lines */
+ 	/**
+ 	 * Sets the line start and en to the points specified
+ 	 * <DL><B>Parameters</B>
+	 * <DD>Point2D start	- new start point 
+	 * <DD>Point2D end		- new end point
+	 * <DL>
+ 	 */
  	public void setLine(Point2D start, Point2D end)
  	{
  		startx = start.getX();
@@ -271,14 +303,18 @@ public class GmmlLine extends GmmlGraphics
 		constructLine();		
  	}
 	
+ 	/*
+ 	 *  (non-Javadoc)
+ 	 * @see GmmlGraphics#moveBy(double, double)
+ 	 */
 	protected void moveBy(double dx, double dy)
 	{
 		setLine(startx + dx, starty + dy, endx + dx, endy + dy);
 	}
 	
-	protected void resizeX(double dx){}
-	protected void resizeY(double dy){}
-
+	/**
+	 * Sets the handles in this class at the correct location
+	 */
 	private void setHandleLocation()
 	{
 		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
@@ -286,6 +322,10 @@ public class GmmlLine extends GmmlGraphics
 		handleEnd.setLocation(endx, endy);
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#moveLineStart(double, double)
+	 */
 	protected void moveLineStart(double dx, double dy)
 	{
 		startx += dx;
@@ -293,6 +333,10 @@ public class GmmlLine extends GmmlGraphics
 		constructLine();
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#moveLineEnd(double, double)
+	 */
 	protected void moveLineEnd(double dx, double dy)
 	{
 		endx += dx;
@@ -300,6 +344,10 @@ public class GmmlLine extends GmmlGraphics
 		constructLine();
 	}
 	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
 	protected boolean intersects(Rectangle2D.Double r)
 	{
 		BasicStroke stroke = new BasicStroke(10);

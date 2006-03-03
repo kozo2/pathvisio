@@ -56,7 +56,7 @@ public class GmmlArc extends GmmlGraphics
 	/**
 	 * Constructor for this class
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD>GmmlDrawing canvas	- this GmmlDrawing this arc will be part of
 	 * <DL>
 	 */
@@ -72,7 +72,7 @@ public class GmmlArc extends GmmlGraphics
 	/**
 	 * Constructor for this class
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD>	Double x			- the arcs upper left x coordinate 
 	 * <DD>	Double y			- the arcs upper left y coordinate
 	 * <DD>	Double width		- the arcs widht
@@ -171,7 +171,7 @@ public class GmmlArc extends GmmlGraphics
 	/**
 	 * Sets the location of this arc to the coordinate specified
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD>Double x		- the new y coordinate
 	 * <DD>Double y		- the new x coordinate
 	 * <DL>

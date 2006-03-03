@@ -56,7 +56,7 @@ public class GmmlLabel extends GmmlGraphics
 	/**
 	 * Constructor for this class
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD>GmmlDrawing canvas	- this GmmlDrawing this label will be part of
 	 * <DL>
 	 */
@@ -175,7 +175,7 @@ public class GmmlLabel extends GmmlGraphics
 	/**
 	  * Sets label upper corner to the specified coordinate
 	  * <BR>
-	  * <DL><B>Parameters<B>
+	  * <DL><B>Parameters</B>
 	  * <DD>Double x	- the new x coordinate
 	  * <DD>Double y	- the new y coordinates
 	  * <DL> 
@@ -246,6 +246,9 @@ public class GmmlLabel extends GmmlGraphics
 		setHandleLocation();
 	}
 	
+	/**
+	 * Sets the handles in this class at the correct location.
+	 */
 	private void setHandleLocation()
 	{
 		handlecenter.setLocation(centerx, centery - height/2 - handlecenter.height/2);

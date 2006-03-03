@@ -55,7 +55,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 	/**
 	 * Constructor for this class
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD> GmmlDrawing canvas	- this GmmlDrawing this geneproduct will be part of
 	 * <DL>
 	 */
@@ -275,7 +275,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 	/**
 	 * Sets the location of this arc to the coordinate specified
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD>Double x		- the new y coordinate
 	 * <DD>Double y		- the new x coordinate
 	 * <DL>

@@ -19,7 +19,7 @@ class GmmlSelectionBox extends GmmlGraphics
 	/**
 	 * Constructor for this class
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD> GmmlDrawing d	- the GmmlDrawing this selectionbox will be part of
 	 * <DL> 
 	 */
@@ -32,7 +32,7 @@ class GmmlSelectionBox extends GmmlGraphics
 	/**
 	 * Resizes the selectionbox rectangle
 	 * <BR>
-	 * <DL><B>Parameters<B>
+	 * <DL><B>Parameters</B>
 	 * <DD> Double width	- the new selectionbox width 
 	 * <DD> Double height	- the new selectionbox height
 	 * <DL>
@@ -42,7 +42,7 @@ class GmmlSelectionBox extends GmmlGraphics
 		r = new Rectangle2D.Double(x, y, width, height);
 	}
 	
-	/**
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
@@ -65,7 +65,7 @@ class GmmlSelectionBox extends GmmlGraphics
 		}
 	}
 	
-	/**
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
 	 */
@@ -117,7 +117,7 @@ class GmmlSelectionBox extends GmmlGraphics
 	   }
 	}
    
-   /**
+   /*
     * (non-Javadoc)
     * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
     */
