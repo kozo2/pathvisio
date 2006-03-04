@@ -4,8 +4,15 @@ import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * This class implements and handles handles for 
+ * other GmmlGraphics objects, which are used to 
+ * resize them or change their location.
+ */
 class GmmlHandle extends GmmlGraphics
 {
+	private static final long serialVersionUID = 1L;
+
 	GmmlGraphics parent;
 	
 	double centerx;

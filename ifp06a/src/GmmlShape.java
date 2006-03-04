@@ -35,6 +35,8 @@ import java.util.*;
  */
 public class GmmlShape extends GmmlGraphics
 {
+	private static final long serialVersionUID = 1L;
+
 	private List attributes;
 	double centerx;
 	double centery;
@@ -46,6 +48,10 @@ public class GmmlShape extends GmmlGraphics
 	// types:
 	// 0 - rectangle
 	// 1 - ellipse
+
+	private final List typeMappings = Arrays.asList(new String[] {
+			"Rectangle","Oval"
+	});
 	
 	GmmlDrawing canvas;
 	Color color;
@@ -56,13 +62,9 @@ public class GmmlShape extends GmmlGraphics
 	GmmlHandle handlex 		= new GmmlHandle(1, this);
 	GmmlHandle handley 		= new GmmlHandle(2, this);
 
-
 	/**
 	 * Constructor for this class
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>GmmlDrawing canvas - the GmmlDrawing this GmmlShape will be part of
-	 * </DL>	
+	 * @param canvas - the GmmlDrawing this GmmlShape will be part of
 	 */
 	public GmmlShape(GmmlDrawing canvas)
 	{
@@ -72,20 +74,15 @@ public class GmmlShape extends GmmlGraphics
 		canvas.addElement(handlex);
 		canvas.addElement(handley);
 	}
-	
 	/**
-	 * Constructor for this class.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>Double x				- the x coordinate of the shapes upper left corner
-	 * <DD>Double y				- the y coordinate of the shapes upper left corner 
-	 * <DD>Double width			- the shapes width
-	 * <DD>Double height		- the shapes height
-	 * <DD>int type				- the type of shape this GmmlShape represents; 0 for a rectangle, 1 for an ellipse
-	 * <DD>Color color			- the color the shape border is painted 
-	 * <DD>Double rotation		- the angle at which the shape has to be rotated when drawing
-	 * <DD>GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
-	 * </DL>	
+	 * Constructor for this class
+	 * @param x - the upper left corner x coordinate
+	 * @param y - the upper left corner y coordinate
+	 * @param width - the width
+	 * @param height - the height
+	 * @param type - this shapes type (0 for rectangle, 1 for ellipse)
+	 * @param color - the color this geneproduct will be painted
+	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
 	public GmmlShape(double x, double y, double width, double height, int type, Color color, double rotation, GmmlDrawing canvas)
 	{
@@ -107,11 +104,8 @@ public class GmmlShape extends GmmlGraphics
 	
 	/**
 	 * Constructor for mapping a JDOM Element.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> Element e			- the GMML element which will be loaded as a GmmlShape
-	 * <DD> GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
-	 * <DL>
+	 * @param e	- the GMML element which will be loaded as a GmmlShape
+	 * @param canvas - the GmmlDrawing this GmmlShape will be part of
 	 */
 	public GmmlShape(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -132,58 +126,9 @@ public class GmmlShape extends GmmlGraphics
 	}
 
 	/**
-	 * Maps attributes to internal variables.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> Element e	- the element that will be loaded as a GmmlShape
-	 * <DL>
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		System.out.println("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // CenterX
-						this.centerx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 1: // CenterY
-						this.centery = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 2: // Width
-						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 3: // Height
-						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 4: // Type
-						List typeMappings = Arrays.asList(new String[] {
-								"Rectangle","Oval"
-						});
-						if(typeMappings.indexOf(value) > -1)
-							this.type = typeMappings.indexOf(value);
-						break;
-					case 5: // Color
-						this.color = GmmlColor.convertStringToColor(value); break;
-					case 6: // Rotation
-						this.rotation = Double.parseDouble(value); break;
-					case -1:
-						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
-	}
-	
-	/**
-	 * Changes the x and y coordinate to the x and y coordinate specified.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>Doubl  x		- the x coordinate at which the shape has to be located
-	 * <DD>Double y		- the y coordinate at which the shape has to be located
-	 * <DL>
+	 * Set shape at the location specified
+	 * @param x - new x coordinate
+	 * @param y - new y coordinate
 	 */
 	public void setLocation(double x, double y)
 	{
@@ -250,6 +195,16 @@ public class GmmlShape extends GmmlGraphics
 
 	/*
 	 * (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+			Polygon pol = createContainingPolygon();
+			isSelected = pol.intersects(r.x, r.y, r.width, r.height);
+			return isSelected;
+	}
+	/*
+	 * (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
 	 */
 	protected void moveBy(double dx, double dy)
@@ -294,6 +249,45 @@ public class GmmlShape extends GmmlGraphics
 		updateJdomGraphics();
 	}
 	
+	/**
+	 * Maps attributes to internal variables.
+	 * @param e - the element to map to a GmmlArc
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // CenterX
+						this.centerx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 1: // CenterY
+						this.centery = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 2: // Width
+						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 3: // Height
+						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 4: // Type
+						if(typeMappings.indexOf(value) > -1)
+							this.type = typeMappings.indexOf(value);
+						break;
+					case 5: // Color
+						this.color = GmmlColorConvertor.string2Color(value); break;
+					case 6: // Rotation
+						this.rotation = Double.parseDouble(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
+	}
 	/**
 	 * Sets the handles at the correct location;
 	 * one in the center, the other two on top, respectivily
@@ -355,17 +349,6 @@ public class GmmlShape extends GmmlGraphics
 		
 		Polygon pol = new Polygon(x, y, 4);
 		return pol;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
-	 */
-	protected boolean intersects(Rectangle2D.Double r)
-	{
-			Polygon pol = createContainingPolygon();
-			isSelected = pol.intersects(r.x, r.y, r.width, r.height);
-			return isSelected;
 	}
 	
 } //end of GmmlShape

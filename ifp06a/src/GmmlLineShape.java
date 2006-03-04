@@ -21,6 +21,9 @@ import org.jdom.Element;
  */
 public class GmmlLineShape extends GmmlGraphics
 {
+
+	private static final long serialVersionUID = 1L;
+
 	private List attributes;
 	
 	double startx;
@@ -33,18 +36,19 @@ public class GmmlLineShape extends GmmlGraphics
 	GmmlDrawing canvas;
 	Color color;
 	
+	private final List typeMappings = Arrays.asList(new String[] {
+			"Tbar", "ReceptorRound", "LigandRound", 
+			"ReceptorSquare", "LigandSquare"
+	});	
 	Element jdomElement;
 
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
 	GmmlHandle handleStart	= new GmmlHandle(3, this);
-	GmmlHandle handleEnd		= new GmmlHandle(4, this);
+	GmmlHandle handleEnd	= new GmmlHandle(4, this);
 	
 	/**
 	 * Constructor for this class
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>GmmlDrawing canvas	- this GmmlDrawing this GmmlLineShape will be part of
-	 * <DL>
+	 * @param canvas - the GmmlDrawing this lineshape will be part of
 	 */
 	public GmmlLineShape(GmmlDrawing canvas)
 	{
@@ -57,18 +61,15 @@ public class GmmlLineShape extends GmmlGraphics
 	
 	/**
 	 * Constructor for this class
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>Double startx		- the lineshapes start x coordinate
-	 * <DD>Double starty		- the lineshapes start y coordinate
-	 * <DD>Double endx			- the lineshapes end x coordinate
-	 * <DD>Double endy			- the lineshapes end y coordinate
-	 * <DD>Int type				- the type of lineshape this GmmlLineshape represents; 0 for TBar, 1 for Recepor round,
-	 *  2 for Ligand round, 3 for Receptor Square, 4 for Ligand Square.
-	 *  <DD>Color color			- the color this lineshape will be painted
-	 *  <DD>GmmlDrawing canvas	- the GmmlDrawing this lineshape will be part of
-	 *  <DL>
-	 */		
+	 * @param startx - x coordinate of the starting point
+	 * @param starty - x coordinate of the starting point
+	 * @param end x - x coordinate of the end point 
+	 * @param end y - y coordinate of the end point
+	 * @param type - this lineshapes type (0 for tbar, 1 for receptor round, 
+	 * 2 for ligand round, 3 for receptro square, 4 for ligandsquare)
+	 * @param color - the color this lineshape will be painted
+	 * @param canvas - the GmmlDrawing this geneproduct will be part of
+	 */	
 	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, Color color, GmmlDrawing canvas)
 	{
 		this.startx = startx;
@@ -85,12 +86,9 @@ public class GmmlLineShape extends GmmlGraphics
 	}
 	
 	/**
-	 * Constructor for mapping a JDOM Element
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>Element e			- the Element to map to a GmmlLineShape
-	 * <DD>GmmlDrawing canvas	- the GmmlDrawing this lineshape will be part of
-	 * <DL>
+	 * Constructor for mapping a JDOM Element.
+	 * @param e	- the GMML element which will be loaded as a GmmLineShape
+	 * @param canvas - the GmmlDrawing this GmmlLineShape will be part of
 	 */
 	public GmmlLineShape(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -108,51 +106,6 @@ public class GmmlLineShape extends GmmlGraphics
 		canvas.addElement(handleEnd);
 	}
 
-	/**
-	 * Maps attributes to internal variables.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> Element e	- the element that will be loaded as a GmmlShape
-	 * <DL>
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		System.out.println("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // StartX
-						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 1: // StartY
-						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 2: // EndX
-						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 3: // EndY
-						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 4: // Type
-						List typeMappings = Arrays.asList(new String[] {
-								"Tbar", "ReceptorRound", "LigandRound", 
-								"ReceptorSquare", "LigandSquare"
-						});
-						if(typeMappings.indexOf(value) > -1)
-							this.type = typeMappings.indexOf(value);
-						break;
-					case 5: // Color
-						this.color = GmmlColor.convertStringToColor(value); break;
-					case -1:
-						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
-	}
-	
 	/**
 	 * Sets lineshape at the location specified
 	 * <BR>
@@ -189,6 +142,54 @@ public class GmmlLineShape extends GmmlGraphics
 		}
 	}
 	
+	/**
+	 * Maps attributes to internal variables.
+	 * @param e - the element to map to a GmmlArc
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // StartX
+						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 1: // StartY
+						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 2: // EndX
+						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 3: // EndY
+						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 4: // Type
+						if(typeMappings.indexOf(value) > -1)
+							this.type = typeMappings.indexOf(value);
+						break;
+					case 5: // Color
+						this.color = GmmlColorConvertor.string2Color(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
+	}
+
+	/**
+	 * Sets this class handles at the correct position 
+	 */
+	private void setHandleLocation()
+	{
+		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
+		handleStart.setLocation(startx, starty);
+		handleEnd.setLocation(endx, endy);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
@@ -230,7 +231,7 @@ public class GmmlLineShape extends GmmlGraphics
 			double dy = (endy - starty)/s;
 			
 			Line2D.Double l 					= new Line2D.Double(startx, starty, endx - (6*dx), endy - (6*dy));
-			Ellipse2D.Double ligandround 	= new Ellipse2D.Double(endx - 5, endy - 5, 10, 10);
+			Ellipse2D.Double ligandround 		= new Ellipse2D.Double(endx - 5, endy - 5, 10, 10);
 			
 			g2D.draw(l);
 			g2D.draw(ligandround);
@@ -332,6 +333,32 @@ public class GmmlLineShape extends GmmlGraphics
 	}
 	
 	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
+		
+		int[] x = new int[4];
+		int[] y = new int[4];
+			
+		x[0] = (int)(((-endy + starty)/s) + endx);
+		y[0] = (int)((( endx - startx)/s) + endy);
+		x[1] = (int)((( endy - starty)/s) + endx);
+		y[1] = (int)(((-endx + startx)/s) + endy);
+		x[2] = (int)((( endy - starty)/s) + startx);
+		y[2] = (int)(((-endx + startx)/s) + starty);
+		x[3] = (int)(((-endy + starty)/s) + startx);
+		y[3] = (int)((( endx - startx)/s) + starty);
+			
+		Polygon p = new Polygon(x, y, 4);
+				
+		isSelected = p.intersects(r.x, r.y, r.width, r.height);
+		return isSelected;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
 	 */
@@ -368,41 +395,5 @@ public class GmmlLineShape extends GmmlGraphics
 		updateJdomGraphics();
 		
 //		constructLine();
-	}
-
-	/**
-	 * Sets this class handles at the correct position 
-	 */
-	private void setHandleLocation()
-	{
-		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
-		handleStart.setLocation(startx, starty);
-		handleEnd.setLocation(endx, endy);
-	}
-
-	/*
-	 *  (non-Javadoc)
-	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
-	 */
-	protected boolean intersects(Rectangle2D.Double r)
-	{
-		double s  = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy-starty)*(endy-starty))) / 60;
-		
-		int[] x = new int[4];
-		int[] y = new int[4];
-			
-		x[0] = (int)(((-endy + starty)/s) + endx);
-		y[0] = (int)((( endx - startx)/s) + endy);
-		x[1] = (int)((( endy - starty)/s) + endx);
-		y[1] = (int)(((-endx + startx)/s) + endy);
-		x[2] = (int)((( endy - starty)/s) + startx);
-		y[2] = (int)(((-endx + startx)/s) + starty);
-		x[3] = (int)(((-endy + starty)/s) + startx);
-		y[3] = (int)((( endx - startx)/s) + starty);
-			
-		Polygon p = new Polygon(x, y, 4);
-				
-		isSelected = p.intersects(r.x, r.y, r.width, r.height);
-		return isSelected;
 	}
 }

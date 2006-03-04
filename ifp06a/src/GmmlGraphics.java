@@ -1,21 +1,69 @@
 import java.awt.geom.Point2D;
-import java.awt.event.*;
 import java.awt.Graphics;
 import javax.swing.JComponent;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * This class is a parent class for all graphics
+ * that can be added to a GmmlDrawing.
+ */
 abstract class GmmlGraphics extends JComponent
 {
 	boolean isSelected;
-		
+	
+	/**
+	 * Draws GmmlGraphics
+	 * @param g - the graphics object to use for drawing
+	 */
 	void draw(Graphics g){}
+	
+	/**
+	 * Moves GmmlGraphics object by specified increments
+	 * @param dx - the value of x-increment
+	 * @param dy - the value of y-increment
+	 */
 	void moveBy(double dx, double dy){}
+	
+	/**
+	 * Resizes GmmlGraphics in x-direction
+	 * @param dx - the value with wich to resize the object
+	 */
 	void resizeX(double dx){}
+	
+	/**
+	 * Resizes GmmlGraphics in y-direction
+	 * @param dx - the value with wich to resize the object
+	 */
 	void resizeY(double dy){}
+	
+	/**
+	 * Moves the start of a line by numbers specified
+	 * @param dx - the value of x-increment
+	 * @param dy - the value of y-increment
+	 */
 	void moveLineStart(double dx, double dy){}
+	
+	/**
+	 * Moves the start of a line by numbers specified
+	 * @param dx - the value of x-increment
+	 * @param dy - the value of y-increment
+	 */	
 	void moveLineEnd(double dx, double dy){}
 	
+	/**
+	 * Determines whether a GmmlGraphics object intersects 
+	 * the rectangle specified
+	 * @param r - the rectangle to check
+	 * @return True if the object intersects the rectangle, false otherwise
+	 */
 	abstract boolean intersects(Rectangle2D.Double r);
+	
+	/**
+	 * Determines wheter a GmmlGraphics object contains
+	 * the point specified
+	 * @param point - the point to check
+	 * @return True if the object contains the point, false otherwise
+	 */
 	abstract boolean isContain(Point2D point);
 	
 }

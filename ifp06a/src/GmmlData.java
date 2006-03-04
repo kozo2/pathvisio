@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
-import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.xml.XMLConstants;
@@ -32,13 +31,13 @@ public class GmmlData
 	GmmlDrawing drawing;
 	Document doc;
 	
+	private List pathwayAttributes;
+	private int[] drawingDims = {800,800};
+	
 	/**
-	*	Constructor for this class
-	*	<BR>
-	*	<DL><B>Parameters</B>
-	*	<DD>String File - File that has to be read
-	*	</DL>	
-	*/
+	 * Constructor for this class
+	 * @param file - the file to read
+	 */
 	public GmmlData(String file)
 	{
 		// Create the drawing
@@ -73,14 +72,80 @@ public class GmmlData
 		}	
 	}
 	
+
+	/**
+	 * Method to question the private property drawing
+	 * @return drawing
+	 */
+	public GmmlDrawing getDrawing()
+	{
+		return drawing;
+	}
+	
+	/**
+	 * Maps the element specified to a GmmlGraphcis object
+	 * @param e - the element to map
+	 */
+	public void mapElement(Element e) {
+		// Check if a GmmlGraphics exists for this element
+		// Assumes that classname = 'Gmml' + Elementname
+		try {
+			Class cl = Class.forName("Gmml"+e.getName());
+			Constructor con = cl.getConstructor(new Class[] { Element.class, GmmlDrawing.class });
+			System.out.println(e.getName());
+			Object obj = con.newInstance(new Object[] { e, drawing });
+			drawing.addElement(obj);
+		}
+		catch (ClassNotFoundException cnfe)
+		{
+//			System.out.println(e.getName() + " could not be mapped");
+		}
+		catch (NoSuchMethodException nsme)
+		{
+			System.out.println("The GmmlGraphics class representing '" + e.getName() + 
+					"' has no constructor for a JDOM element");
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+//		// map all child elements
+//		Iterator it = e.getChildren().iterator();
+//		while (it.hasNext()) {
+//			mapElement((Element)it.next());
+//		}	
+	}
+
+	/**
+	 * Maps the contents of the JDom tree to a GmmlDrawing
+	 */
+	public void toGmmlGraphics() {
+		// Get the pathway element
+		Element root = doc.getRootElement();
+		// Set the attributes of the pathway element to the drawing
+		// List the needed pathway attributes
+		pathwayAttributes = Arrays.asList(new String[] {
+				"BoardWidth", "BoardHeight"
+		});
+		mapPathwayAttributes(root);
+		drawing.setSize(drawingDims[0], drawingDims[1]);
+		drawing.setPreferredSize(new Dimension(drawingDims[0], drawingDims[1]));
+		
+		// Iterate over direct children of the root element
+		Iterator it = root.getChildren().iterator();
+		while (it.hasNext()) {
+			mapElement((Element)it.next());
+		}
+	}
+	
 	/**
 	 * validates a JDOM document against the xml-schema definition specified by 'xsdFile'
-	 * @param doc
+	 * @param doc the document to validate
 	 */
 	public static void validateDocument(Document doc) {
 		// validate JDOM tree if xsd file exists
 		if(xsdFile.canRead()) {
-
+	
 			Schema schema;
 			try {
 				SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -104,59 +169,32 @@ public class GmmlData
 		}
 	}
 	
-	// method to question private property pathway
-	public GmmlDrawing getDrawing()
-	{
-		return drawing;
-	}
-	
-	// Method to map the contents of the JDOM tree to a GmmlDrawing
-	private List pathwayAttributes;
-	private int[] drawingDims = {800,800};
-	public void toGmmlGraphics() {
-		// Get the pathway element
-		Element root = doc.getRootElement();
-		// Set the attributes of the pathway element to the drawing
-		// List the needed pathway attributes
-		pathwayAttributes = Arrays.asList(new String[] {
-				"BoardWidth", "BoardHeight"
-		});
-		mapPathwayAttributes(root);
-		drawing.setSize(drawingDims[0], drawingDims[1]);
-		drawing.setPreferredSize(new Dimension(drawingDims[0], drawingDims[1]));
-		// Iterate over direct children of the root element
-		Iterator it = root.getChildren().iterator();
-		while (it.hasNext()) {
-			mapElement((Element)it.next());
+	/**
+	 * Writes the JDom tree to the file specified
+	 * @param file - the file as which the JDom tree should be saved
+	 */
+	public void writeToXML(File file) {
+		try 
+		{
+			//Validate the JDOM document
+			validateDocument(doc);
+			//Get the XML code
+			XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
+			//Open a filewriter
+			FileWriter writer = new FileWriter(file);
+			//Send XML code to the filewriter
+			xmlcode.output(doc, writer);
+			System.out.println("File '" + file.toString() + "' is saved");
+		}
+		catch (IOException e) 
+		{
+			System.err.println(e);
 		}
 	}
-	
-	//	 Method to map the element to a GmmlGraphics class
-	public void mapElement(Element e) {
-		// Check if a GmmlGraphics exists for this element
-		// Assumes that classname = 'Gmml' + Elementname
-		try {
-			Class cl = Class.forName("Gmml"+e.getName());
-			Constructor con = cl.getConstructor(new Class[] { Element.class, GmmlDrawing.class });
-			System.out.println(e.getName());
-			Object obj = con.newInstance(new Object[] { e, drawing });
-			drawing.addElement(obj);
-		} catch (ClassNotFoundException cnfe) {
-//			System.out.println(e.getName() + " could not be mapped");
-		} catch (NoSuchMethodException nsme) {
-			System.out.println("The GmmlGraphics class representing '" + e.getName() + 
-					"' has no constructor for a JDOM element");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-//		// map all child elements
-//		Iterator it = e.getChildren().iterator();
-//		while (it.hasNext()) {
-//			mapElement((Element)it.next());
-//		}	
-	}
-	
-	// Method to map attributes of pathway to the GmmlDrawing
+
+	/**
+	 * Maps the pathway attributes to the GmmlDrawing
+	 */
 	private void mapPathwayAttributes (Element e) {
 		// Map direct attributes
 		Iterator it = e.getAttributes().iterator();
@@ -177,25 +215,6 @@ public class GmmlData
 		Element graphics = e.getChild("Graphics");
 		if(graphics != null) {
 			mapPathwayAttributes(graphics);
-		}
-	}
-	
-	public void writeToXML(File file) {
-		try 
-		{
-			//Validate the JDOM document
-			validateDocument(doc);
-			//Get the XML code
-			XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
-			//Open a filewriter
-			FileWriter writer = new FileWriter(file);
-			//Send XML code to the filewriter
-			xmlcode.output(doc, writer);
-			System.out.println("File '" + file.toString() + "' is saved");
-		}
-		catch (IOException e) 
-		{
-			System.err.println(e);
 		}
 	} 
 }

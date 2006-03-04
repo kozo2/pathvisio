@@ -1,20 +1,3 @@
-/*
-Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
-M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software 
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and 
-limitations under the License.
-*/
-
 import java.util.*;
 import java.util.List;
 import java.awt.*;
@@ -22,16 +5,18 @@ import java.awt.geom.Point2D;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.geom.Rectangle2D;
-import javax.swing.JPanel;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
+
 /**
  * This class implements a geneproduct and 
  * provides methods to resize and draw it.
  */
 public class GmmlGeneProduct extends GmmlGraphics
 {
+	private static final long serialVersionUID = 1L;
+
 	private List attributes;
 	
 	double centerx;
@@ -49,15 +34,12 @@ public class GmmlGeneProduct extends GmmlGraphics
 	String xref;
 
 	GmmlHandle handlecenter = new GmmlHandle(0, this);
-	GmmlHandle handlex 	= new GmmlHandle(1, this);
-	GmmlHandle handley 	= new GmmlHandle(2, this);
+	GmmlHandle handlex 		= new GmmlHandle(1, this);
+	GmmlHandle handley 		= new GmmlHandle(2, this);
 	
 	/**
 	 * Constructor for this class
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> GmmlDrawing canvas	- this GmmlDrawing this geneproduct will be part of
-	 * <DL>
+	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
 	public GmmlGeneProduct(GmmlDrawing canvas)
 	{
@@ -70,17 +52,14 @@ public class GmmlGeneProduct extends GmmlGraphics
 	
 	/**
 	 * Constructor for this class
-	 * <BR>
-	 * <DL><B>Parameters<B>
-	 * <DD>	Double x			- the geneproducts upper left x coordinate 
-	 * <DD>	Double y			- the geneproducts upper left y coordinate
-	 * <DD>	Double width		- the geneproducts widht
-	 * <DD>	Double height		- the geneproducts height
-	 * <DD> String geneID		- the geneID as it will be printed on screen
-	 * <DD> String xref			- 
-	 * <DD>	Color color			- the color the geneproduct will be painted
-	 * <DD> GmmlDrawig canvas	- the GmmlDrawing this arc will be part of
-	 * <DL> 
+	 * @param x - the upper left corner x coordinate
+	 * @param y - the upper left corner y coordinate
+	 * @param width - the width
+	 * @param height - the height
+	 * @param geneID - the geneID as it will be shown as a label
+	 * @param xref - 
+	 * @param color - the color this geneproduct will be painted
+	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
 	public GmmlGeneProduct(double x, double y, double width, double height, String geneID, String xref, Color color, GmmlDrawing canvas){
 		this.centerx = x;
@@ -93,17 +72,16 @@ public class GmmlGeneProduct extends GmmlGraphics
 		this.canvas = canvas;
 		
 		constructRectangle();
-
+		canvas.addElement(handlecenter);
+		canvas.addElement(handlex);
+		canvas.addElement(handley);
 		setHandleLocation();
 	}
 	
 	/**
 	 * Constructor for mapping a JDOM Element.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> Element e			- the GMML element which will be loaded as a GmmlShape
-	 * <DD> GmmlDrawing canvas	- the GmmlDrawing this GmmlShape will be part of
-	 * <DL>
+	 * @param e	- the GMML element which will be loaded as a GmmlGeneProduct
+	 * @param canvas - the GmmlDrawing this GmmlAGmmlGeneProductrc will be part of
 	 */
 	public GmmlGeneProduct(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
@@ -122,46 +100,44 @@ public class GmmlGeneProduct extends GmmlGraphics
 	}
 
 	/**
-	 * Maps attributes to internal variables.
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> Element e	- the element that will be loaded as a GmmlShape
-	 * <DL>
+	 * Constructs the internal rectangle of this class
 	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		System.out.println("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // CenterX
-						this.centerx = Integer.parseInt(value) / GmmlData.GMMLZOOM ; break;
-					case 1: // CenterY
-						this.centery = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 2: // Width
-						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 3:	// Height
-						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 4: // GeneID
-						this.geneID = value; break;
-					case 5: // Xref
-						this.xref = value; break;
-					case 6: // Color
-						this.color = GmmlColor.convertStringToColor(value); break;
-					case -1:
-						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+	public void constructRectangle()
+	{
+		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
+		
+		// Update JDOM Graphics element
+		updateJdomGraphics();
+	}
+
+	/**
+	 * Set the geneproduct at the location specified
+	 * @param x - new x coordinate
+	 * @param y - new y coordinate
+	 */
+	public void setLocation(double x, double y)
+	{
+		centerx = x;
+		centery = y;
+		
+		constructRectangle();
+	}
+
+	/**
+	 * Updates the JDom representation of this arc
+	 */
+	public void updateJdomGraphics() {
+		if(jdomElement != null) {
+			Element jdomGraphics = jdomElement.getChild("Graphics");
+			if(jdomGraphics !=null) {
+				jdomGraphics.setAttribute("CenterX", Integer.toString((int)centerx * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("CenterY", Integer.toString((int)centery * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
 			}
 		}
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
 	}
-	
+
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
@@ -201,6 +177,16 @@ public class GmmlGeneProduct extends GmmlGraphics
 		isSelected = rect.contains(point);
 		return isSelected;
 	}	
+
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	 */
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		isSelected = r.intersects(centerx - width/2, centery - height/2, width, height);
+		return isSelected;
+	}
 
 	/*
 	 *  (non-Javadoc)
@@ -247,47 +233,43 @@ public class GmmlGeneProduct extends GmmlGraphics
 	}
 	
 	/**
-	 * Constructs the internal rectangle of this class
+	 * Maps attributes to internal variables.
+	 * @param e - the element to map to a GmmlArc
 	 */
-	public void constructRectangle()
-	{
-		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
-		
-		// Update JDOM Graphics element
-		updateJdomGraphics();
-	}
-	
-	/**
-	 * Updates the JDom representation of this arc
-	 */
-	public void updateJdomGraphics() {
-		if(jdomElement != null) {
-			Element jdomGraphics = jdomElement.getChild("Graphics");
-			if(jdomGraphics !=null) {
-				jdomGraphics.setAttribute("CenterX", Integer.toString((int)centerx * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("CenterY", Integer.toString((int)centery * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // CenterX
+						this.centerx = Integer.parseInt(value) / GmmlData.GMMLZOOM ; break;
+					case 1: // CenterY
+						this.centery = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 2: // Width
+						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 3:	// Height
+						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 4: // GeneID
+						this.geneID = value; break;
+					case 5: // Xref
+						this.xref = value; break;
+					case 6: // Color
+						this.color = GmmlColorConvertor.string2Color(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
 			}
 		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
 	}
-	
-	/**
-	 * Sets the location of this arc to the coordinate specified
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD>Double x		- the new y coordinate
-	 * <DD>Double y		- the new x coordinate
-	 * <DL>
-	 */
-	public void setLocation(double x, double y)
-	{
-		centerx = x;
-		centery = y;
-		
-		constructRectangle();
-	}
-	
+
 	/**
 	 * Sets this class's handles at the correct location
 	 */
@@ -296,15 +278,5 @@ public class GmmlGeneProduct extends GmmlGraphics
 		handlecenter.setLocation(centerx, centery);
 		handlex.setLocation(centerx + width/2, centery);
 		handley.setLocation(centerx, centery - height/2);
-	}	
-	
-	/*
-	 * (non-Javadoc)
-	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
-	 */
-	protected boolean intersects(Rectangle2D.Double r)
-	{
-		isSelected = r.intersects(centerx - width/2, centery - height/2, width, height);
-		return isSelected;
 	}
 } //end of GmmlGeneProduct

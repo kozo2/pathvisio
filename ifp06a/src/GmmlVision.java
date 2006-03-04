@@ -14,17 +14,10 @@ import javax.swing.JOptionPane;
  */
 class GmmlVision extends JFrame
 {
+	private static final long serialVersionUID = 1L;
 	GmmlDrawing drawing;
 	GmmlData document;
 
-	/**
-	 * Main method which will be carried out when running the program
-	 */
-	public static void main(String[] args)
-	{
-		new GmmlVision();
-	}
-	
 	/**
 	 *Constructor for thGmmlVision class
 	 *Initializes new GmmlVision and sets properties for frame
@@ -44,7 +37,14 @@ class GmmlVision extends JFrame
 		
 		show();
 	}
-	
+
+	/**
+	 * Main method which will be carried out when running the program
+	 */
+	public static void main(String[] args)
+	{
+		new GmmlVision();
+	}
 	
 	/**
 	 *Builds and ads a menu to the GmmlVision frame
@@ -109,7 +109,7 @@ class GmmlVision extends JFrame
 		
 		// define actionListener for saveAsItem
 		saveAsItem.addActionListener(new ActionListener() 
-				{
+			{
 			public void actionPerformed(ActionEvent e) 
 			{
 				if (drawing!=null)
@@ -128,7 +128,8 @@ class GmmlVision extends JFrame
 						int confirmed = 1;
 						File tempfile = new File(file);
 						
-						if(tempfile.exists()) {
+						if(tempfile.exists())
+						{
 							String[] options = { "OK", "CANCEL" };
 							confirmed = JOptionPane.showOptionDialog(null, 
 									"The selected file already exists, overwrite?", 
@@ -136,7 +137,9 @@ class GmmlVision extends JFrame
 									JOptionPane.DEFAULT_OPTION, 
 									JOptionPane.WARNING_MESSAGE, null, 
 									options, options[0]);
-						} else {
+						} 
+						else
+						{
 							confirmed = 0;
 						}
 						
@@ -148,11 +151,13 @@ class GmmlVision extends JFrame
 							System.out.println("Canceled");
 						}
 					}
-				} else {
+				} 
+				else
+				{
 					JOptionPane.showMessageDialog(null, "No GMML file loaded!", "error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-				} );
+		});
 		
 		// add items to fileMenu
 		fileMenu.add(newItem);

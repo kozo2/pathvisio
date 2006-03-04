@@ -7,8 +7,16 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
+/**
+ * This class implements and handles a drawing.
+ * GmmlGraphics objects are stored in the drawing and can be 
+ * visualized. The class also provides methods for mouse 
+ * event handling.
+ */
 class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, EventListener
 {	
+	private static final long serialVersionUID = 1L;
+	
 	Vector drawingObjects;
 	Vector graphics;
 	Vector handles;
@@ -27,15 +35,13 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	double previousX;
 	double previousY;
 	
-	boolean selecting = false;
-	
 	/**
 	 *Constructor for this class
 	 */	
 	public GmmlDrawing()
 	{
 		drawingObjects		= new Vector();
-		graphics				= new Vector();
+		graphics			= new Vector();
 		handles				= new Vector();
 		lineHandles			= new Vector();
 		selectedGraphics	= new Vector();
@@ -48,36 +54,25 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		this.setBackground(Color.white);
 		setSize(800, 600);
 	}
-	
-	public void paintComponent(Graphics g)
+
+	public void actionPerformed(ActionEvent e)
 	{
-		super.paintComponent(g);
-		Iterator it = graphics.iterator();	
-		while (it.hasNext())
-		{
-			GmmlGraphics gmmlg = (GmmlGraphics) it.next();
-			gmmlg.draw(g);
-		}
-
-		it = handles.iterator();
-		while (it.hasNext())
-		{
-			GmmlHandle h = (GmmlHandle) it.next();
-			h.draw(g);
-		}
-
-		it = lineHandles.iterator();
-		while (it.hasNext())
-		{
-			GmmlHandle h = (GmmlHandle) it.next();
-			h.draw(g);
-		}		
 	}
-	
+
+	/**
+	 * Adds an element to the drawing. Checks if 
+	 * the object to add is an instance of GmmlHandle
+	 * and in case it is, adds the object to the correct
+	 * vector of gmmlgraphics objects.
+	 * <DL><B>Parameters</B>
+	 * <BR>
+	 * <DD>Object o	- the object to add</DD>
+	 * </DL> 
+	 */
 	public void addElement(Object o)
 	{
 		drawingObjects.addElement(o);
-
+	
 		if(o instanceof GmmlHandle)
 		{
 			GmmlHandle h = (GmmlHandle)o;
@@ -97,12 +92,80 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			
 		}
 	}
+
+	public void mouseClicked(MouseEvent e)
+		{
+	/*		if (draggedGraphics != null)
+			{	
+				// dragging in progress...
+				return;
+			}
 	
-/*	private void addLineHandle(GmmlHandle h)
+			double x = e.getX();
+			double y = e.getY();
+			
+			Point2D p = new Point2D.Double(x, y);
+			
+			Iterator it = graphics.iterator();
+			
+			boolean graphicsFound = false;
+			while (it.hasNext() && !graphicsFound)
+			{
+				GmmlGraphics g = (GmmlGraphics) it.next();
+				g.isContain(p);
+			}
+			repaint();*/
+		}
+
+	public void mouseDragged(MouseEvent e)
 	{
-		lineHandles.addElement(h);
-	}*/
+		if (!selectedGraphics.isEmpty())
+		{
+			double x = e.getX();
+			double y = e.getY();
+			
+			Iterator it = selectedGraphics.iterator();
+			while (it.hasNext())
+			{
+				GmmlGraphics g = (GmmlGraphics) it.next();
+				g.isSelected = true;
+				g.moveBy(x - previousX, y - previousY);
+			}
+			previousX = x;
+			previousY = y;			
+		}
+		
+		if (draggedGraphics != null)
+		{
+			double x = e.getX();
+			double y = e.getY();
+			
+			draggedGraphics.moveBy(x - previousX, y - previousY);
+			
+			previousX = x;
+			previousY = y;
 	
+			repaint();
+		}
+						
+		if (isSelecting)
+		{
+			s.resize(e.getX() - s.x, e.getY() - s.y);
+			repaint();
+		}
+	}
+
+	public void mouseEntered(MouseEvent e)
+	{
+	}
+
+	public void mouseExited(MouseEvent e)
+	{
+	}
+
+	public void mouseMoved(MouseEvent e)
+	{
+	}
 
 	public void mousePressed(MouseEvent e)
 	{
@@ -185,84 +248,43 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		}
 	}
 	
-	public void mouseClicked(MouseEvent e)
+	/**
+	 * Paints all components in the drawing.
+	 * This method is called automatically in the 
+	 * painting process
+	 */
+	public void paintComponent(Graphics g)
 	{
-/*		if (draggedGraphics != null)
-		{	
-			// dragging in progress...
-			return;
-		}
-
-		double x = e.getX();
-		double y = e.getY();
+		// paint parrent
+		super.paintComponent(g);
 		
-		Point2D p = new Point2D.Double(x, y);
-		
-		Iterator it = graphics.iterator();
-		
-		boolean graphicsFound = false;
-		while (it.hasNext() && !graphicsFound)
+		// iterate through all graphics to paint them
+		Iterator it = graphics.iterator();	
+		while (it.hasNext())
 		{
-			GmmlGraphics g = (GmmlGraphics) it.next();
-			g.isContain(p);
+			GmmlGraphics gmmlg = (GmmlGraphics) it.next();
+			gmmlg.draw(g);
 		}
-		repaint();*/
-	}
 	
-	public void mouseEntered(MouseEvent e)
-	{
-	}
-	
-	public void mouseExited(MouseEvent e)
-	{
-	}
-	
-	public void mouseDragged(MouseEvent e)
-	{
-		if (!selectedGraphics.isEmpty())
+		// iterate through all handles to paint them, after 
+		// painting the graphics, to ensure handles are painted
+		// on top of graphics
+		it = handles.iterator();
+		while (it.hasNext())
 		{
-			double x = e.getX();
-			double y = e.getY();
-			
-			Iterator it = selectedGraphics.iterator();
-			while (it.hasNext())
-			{
-				GmmlGraphics g = (GmmlGraphics) it.next();
-				g.isSelected = true;
-				g.moveBy(x - previousX, y - previousY);
-			}
-			previousX = x;
-			previousY = y;			
+			GmmlHandle h = (GmmlHandle) it.next();
+			h.draw(g);
 		}
 		
-		if (draggedGraphics != null)
+		// iterate through all line handles to paint them
+		it = lineHandles.iterator();
+		while (it.hasNext())
 		{
-			double x = e.getX();
-			double y = e.getY();
-			
-			draggedGraphics.moveBy(x - previousX, y - previousY);
-			
-			previousX = x;
-			previousY = y;
-	
-			repaint();
-		}
-						
-		if (isSelecting)
-		{
-			s.resize(e.getX() - s.x, e.getY() - s.y);
-			repaint();
-		}
+			GmmlHandle h = (GmmlHandle) it.next();
+			h.draw(g);
+		}		
 	}
 
-	public void mouseMoved(MouseEvent e)
-	{
-	}	
-	
-	public void actionPerformed(ActionEvent e)
-	{
-	}
-	
 	private void initSelection(Point2D p)
 	{
 		selectedGraphics.clear();

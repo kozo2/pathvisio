@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
  */ 
 class GmmlSelectionBox extends GmmlGraphics
 {
+	private static final long serialVersionUID = 1L;
 	double x;
 	double y;
 
@@ -18,24 +19,27 @@ class GmmlSelectionBox extends GmmlGraphics
 	
 	/**
 	 * Constructor for this class
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> GmmlDrawing d	- the GmmlDrawing this selectionbox will be part of
-	 * <DL> 
+	 * @param canvas - the GmmlDrawing this selectionbox will be part of
 	 */
-	public GmmlSelectionBox(GmmlDrawing d)
+	public GmmlSelectionBox(GmmlDrawing canvas)
 	{
-		canvas = d;
+		this.canvas = canvas;
 		canvas.addElement(this);
 	}	
 	
 	/**
-	 * Resizes the selectionbox rectangle
-	 * <BR>
-	 * <DL><B>Parameters</B>
-	 * <DD> Double width	- the new selectionbox width 
-	 * <DD> Double height	- the new selectionbox height
-	 * <DL>
+	 * resets the selectionbox rectangle position to the upper 
+	 * left corner of the screen
+	 */
+	public void resetRectangle()
+	{
+		r = new Rectangle2D.Double(0, 0, 0, 0);
+	}
+
+	/**
+	 * Resize the selectionbox to the specified widht and height
+	 * @param width
+	 * @param height
 	 */
 	public void resize(double width, double height)
 	{
@@ -74,6 +78,15 @@ class GmmlSelectionBox extends GmmlGraphics
 		return false;
 	}
 	
+	/*
+	* (non-Javadoc)
+	* @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
+	*/
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		return false;
+	}
+
 	/**
 	 * Sets the selectionbox rectangle so that it can be drawn
 	 */
@@ -115,24 +128,6 @@ class GmmlSelectionBox extends GmmlGraphics
       {
       	r = new Rectangle2D.Double(x, y, width, height);
 	   }
-	}
-   
-   /*
-    * (non-Javadoc)
-    * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
-    */
-	protected boolean intersects(Rectangle2D.Double r)
-	{
-		return false;
-	} 
-   
-	/**
-	 * sets the selectionbox rectangle position to the upper 
-	 * left corner of the screen
-	 */
-	public void resetRectangle()
-	{
-		r = new Rectangle2D.Double(0, 0, 0, 0);
 	}
     
 } // end of class
