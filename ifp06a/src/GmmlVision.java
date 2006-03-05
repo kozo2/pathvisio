@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.event.*;
+
 import javax.swing.*;
 import java.io.*;
 
@@ -180,6 +181,16 @@ class GmmlVision extends JFrame
 		fileMenu.add(exitItem);
 
 		// TODO define menu items for edit menu.....
+		JMenuItem propertyItem = new JMenuItem("Properties");
+		propertyItem.addActionListener(
+			new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					new GmmlPropertyInspector();
+				}
+			}
+		);
 		
 		
 		// define menu items for view menu
