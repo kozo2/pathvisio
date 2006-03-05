@@ -12,8 +12,16 @@ abstract class GmmlGraphics extends JComponent
 	boolean isSelected;
 	
 	/**
+	 * Adjusts the GmmlGraphics object to the zoom
+	 * specified in the drawing it is part of
+	 * @param factor - the factor to scale the objects coordinates and measures with
+	 */
+	void adjustToZoom(double factor){}
+	
+	/**
 	 * Draws GmmlGraphics
 	 * @param g - the graphics object to use for drawing
+	 * @param magnification - magnify the object to draw by this number
 	 */
 	void draw(Graphics g){}
 	

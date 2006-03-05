@@ -130,6 +130,7 @@ public class GmmlData
 		mapPathwayAttributes(root);
 		drawing.setSize(drawingDims[0], drawingDims[1]);
 		drawing.setPreferredSize(new Dimension(drawingDims[0], drawingDims[1]));
+		drawing.dims = new Dimension(drawingDims[0], drawingDims[1]);
 		
 		// Iterate over direct children of the root element
 		Iterator it = root.getChildren().iterator();

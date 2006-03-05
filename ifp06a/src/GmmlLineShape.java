@@ -191,6 +191,18 @@ public class GmmlLineShape extends GmmlGraphics
 	}
 
 	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom()
+	 */
+	protected void adjustToZoom(double factor)
+	{
+		startx	*= factor;
+		starty	*= factor;
+		endx	*= factor;
+		endy	*= factor;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */

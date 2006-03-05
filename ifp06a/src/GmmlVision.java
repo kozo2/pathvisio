@@ -5,7 +5,6 @@ import java.io.*;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 /**
  * This class is the main class in the GMML project. 
@@ -28,7 +27,7 @@ class GmmlVision extends JFrame
 		setBackground(Color.gray);
 		
 		buildMenu();
-		
+			
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		setSize(800, 600);
@@ -56,14 +55,17 @@ class GmmlVision extends JFrame
 				
 		// define menus in menubar
 		JMenu fileMenu = new JMenu("File");
+		JMenu editMenu = new JMenu("Edit");
+		JMenu viewMenu = new JMenu("View");
 		JMenu helpMenu = new JMenu("Help");
 		
 		// define menu items for file menu
-		JMenuItem newItem 	= new JMenuItem("New");
-		JMenuItem openItem 	= new JMenuItem("Open");
-		JMenuItem saveItem 	= new JMenuItem("Save");
-		JMenuItem saveAsItem = new JMenuItem("Save as...");
-		JMenuItem exitItem 	= new JMenuItem("Exit");
+		JMenuItem newItem		= new JMenuItem("New");
+		JMenuItem openItem 		= new JMenuItem("Open");
+		JMenuItem saveItem 		= new JMenuItem("Save");
+		JMenuItem saveAsItem	= new JMenuItem("Save as...");
+		JMenuItem closeItem		= new JMenuItem("Close");
+		JMenuItem exitItem	 	= new JMenuItem("Exit");
 		
 		// define actionListener for newItem
 		newItem.addActionListener(
@@ -159,13 +161,162 @@ class GmmlVision extends JFrame
 			}
 		});
 		
+		exitItem.addActionListener(
+			new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					System.exit(0);	
+				}				
+			}
+		);
+		
 		// add items to fileMenu
 		fileMenu.add(newItem);
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
 		fileMenu.add(saveAsItem);
+		fileMenu.add(closeItem);
 		fileMenu.add(exitItem);
 
+		// TODO define menu items for edit menu.....
+		
+		
+		// define menu items for view menu
+		JMenu zoomSubMenu = new JMenu("Zoom");
+		
+		JMenuItem zoom50  = new JMenuItem(" 50 %");
+		JMenuItem zoom75  = new JMenuItem(" 75 %");
+		JMenuItem zoom100 = new JMenuItem("100 %");
+		JMenuItem zoom125 = new JMenuItem("125 %");
+		JMenuItem zoom150 = new JMenuItem("150 %");
+		JMenuItem zoom200 = new JMenuItem("200 %");
+		
+		// define actionListener for zoomitem
+		zoom50.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					if (drawing != null)
+					{
+						drawing.setZoom(50);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}					
+				}
+			}
+		);
+		
+		// define actionListener for zoomitem
+		zoom75.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					if (drawing != null)
+					{
+						drawing.setZoom(75);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		);
+		
+		// define actionListener for zoomitem
+		zoom100.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					if (drawing != null)
+					{
+						drawing.setZoom(100);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}					
+				}
+			}
+		);
+		
+		// define actionListener for zoomitem
+		zoom125.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					if (drawing != null)
+					{
+						drawing.setZoom(125);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}				
+				}
+			}
+		);
+		
+		// define actionListener for zoomitem
+		zoom150.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					if (drawing != null)
+					{
+						drawing.setZoom(150);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}				
+				}
+			}
+		);
+		
+		// define actionListener for zoomitem
+		zoom200.addActionListener(
+			new ActionListener() 
+			{
+				public void actionPerformed(ActionEvent e) 
+				{
+					if (drawing != null)
+					{
+						drawing.setZoom(200);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}				
+				}
+			}
+		);
+		
+		
+		
+		zoomSubMenu.add(zoom50);
+		zoomSubMenu.add(zoom75);
+		zoomSubMenu.add(zoom100);
+		zoomSubMenu.add(zoom125);
+		zoomSubMenu.add(zoom150);
+		zoomSubMenu.add(zoom200);
+		
+		viewMenu.add(zoomSubMenu);
+		
 		// define menu items for help menu
 		JMenuItem aboutItem	= new JMenuItem("About");
 		
@@ -174,6 +325,7 @@ class GmmlVision extends JFrame
 
 		// add menus to menubar
 		menubar.add(fileMenu);
+		menubar.add(viewMenu);
 		menubar.add(helpMenu);
 
 		// add menubar to frame
@@ -181,7 +333,7 @@ class GmmlVision extends JFrame
 
 	} // end buildMenu()
 	
-	
+
 	/**
 	 * Creates a new empty drawing and loads it in the frame 
 	 */

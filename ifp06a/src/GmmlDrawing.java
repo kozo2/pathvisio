@@ -1,6 +1,6 @@
-//import java.awt.;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.event.*;
@@ -35,6 +35,9 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	double previousX;
 	double previousY;
 	
+	Dimension dims = new Dimension(1000, 1000);
+	double zoomPercentage = 100;
+	
 	/**
 	 *Constructor for this class
 	 */	
@@ -60,14 +63,11 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	}
 
 	/**
-	 * Adds an element to the drawing. Checks if 
+ 	 * Adds an element to the drawing. Checks if 
 	 * the object to add is an instance of GmmlHandle
 	 * and in case it is, adds the object to the correct
 	 * vector of gmmlgraphics objects.
-	 * <DL><B>Parameters</B>
-	 * <BR>
-	 * <DD>Object o	- the object to add</DD>
-	 * </DL> 
+	 * @param o - the object to add
 	 */
 	public void addElement(Object o)
 	{
@@ -93,6 +93,9 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		}
 	}
 
+	/**
+	 * Handles mouse click input
+	 */
 	public void mouseClicked(MouseEvent e)
 		{
 	/*		if (draggedGraphics != null)
@@ -117,6 +120,9 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			repaint();*/
 		}
 
+	/**
+	 * handles mouse dragg input
+	 */
 	public void mouseDragged(MouseEvent e)
 	{
 		if (!selectedGraphics.isEmpty())
@@ -155,18 +161,30 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		}
 	}
 
+	/**
+	 * Handles mouse entered input
+	 */
 	public void mouseEntered(MouseEvent e)
 	{
 	}
 
+	/**
+	 * Handles mouse Exited input
+	 */
 	public void mouseExited(MouseEvent e)
 	{
 	}
 
+	/**
+	 * Handles mouse Moved input
+	 */
 	public void mouseMoved(MouseEvent e)
 	{
 	}
 
+	/**
+	 * Handles mouse Pressed input
+	 */
 	public void mousePressed(MouseEvent e)
 	{
 		if (draggedGraphics != null)
@@ -212,6 +230,9 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		}
 	}
 	
+	/**
+	 * Handles mouse Released input
+	 */
 	public void mouseReleased(MouseEvent e)
 	{
 		if (isSelecting)
@@ -285,6 +306,32 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		}		
 	}
 
+	/**
+	 * Sets the drawings zoom
+	 * @param zoom
+	 */
+	public void setZoom(double zoom)
+	{
+		this.setSize(new Dimension((int)(dims.width*zoom/100), (int)(dims.height*zoom/100)));
+		double factor = zoom/zoomPercentage;
+		
+		// iterate over all graphics to adjust them
+		Iterator it = graphics.iterator();	
+		while (it.hasNext())
+		{
+			GmmlGraphics g = (GmmlGraphics) it.next();
+			g.adjustToZoom(factor);
+		}
+		
+		zoomPercentage = zoom;
+		repaint();
+	}
+	
+	/**
+	 * Initializes selection, resetting the selectionbox
+	 * and then setting it to the position specified
+	 * @param p - the point to start with the selection
+	 */
 	private void initSelection(Point2D p)
 	{
 		selectedGraphics.clear();
@@ -292,5 +339,5 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		s.x = p.getX();
 		s.y = p.getY();		
 	}
-		
+	
 } // end of class

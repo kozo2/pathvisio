@@ -22,8 +22,8 @@ public class GmmlArc extends GmmlGraphics
 	private static final long serialVersionUID = 1L;
 
 	private List attributes;
-	double x;
-	double y;
+	double startx;
+	double starty;
 	double width;
 	double height;
 	double rotation;
@@ -37,7 +37,7 @@ public class GmmlArc extends GmmlGraphics
 	GmmlHandle handlecenter	= new GmmlHandle(0, this);
 	GmmlHandle handlex		= new GmmlHandle(1, this);
 	GmmlHandle handley		= new GmmlHandle(2, this);
-	
+		
 	/**
 	 * Constructor for this class
 	 * @param canvas - the GmmlDrawing this arc will be part of
@@ -61,17 +61,17 @@ public class GmmlArc extends GmmlGraphics
 	 * @param rotation - the angle at which the arc has to be rotated when drawing it
 	 * @param canvas - the GmmlDrawing this arc will be part of
 	 */
-	public GmmlArc(double x, double y, double width, double height, Color color, double rotation, GmmlDrawing canvas)
+	public GmmlArc(double startx, double starty, double width, double height, Color color, double rotation, GmmlDrawing canvas)
 	{
-		this.x 			= x;
-		this.y 			= y;
+		this.startx 	= startx;
+		this.starty 	= starty;
 		this.width 		= width;
 		this.height		= height;
 		this.color 		= color;
 		this.rotation 	= Math.toDegrees(rotation);
 		this.canvas 	= canvas;
 		
-		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
+		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
 		
 		setHandleLocation();
 		
@@ -95,7 +95,7 @@ public class GmmlArc extends GmmlGraphics
 				
 		this.canvas = canvas;
 		
-		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
+		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
 		
 		setHandleLocation();
 		
@@ -109,7 +109,7 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	public void constructArc()
 	{
-		arc = new Arc2D.Double(x-width, y-height, 2*width, 2*height, 180-rotation, 180, 0);
+		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
 		
 		// Update JDOM Graphics element
 		updateJdomGraphics();
@@ -120,9 +120,9 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	public void setHandleLocation()
 	{
-		handlecenter.setLocation(x - width, y + height);
-		handlex.setLocation(x + width, y - height/2);
-		handley.setLocation(x + width/2, y + height);
+		handlecenter.setLocation(startx - width, starty + height);
+		handlex.setLocation(startx + width, starty - height/2);
+		handley.setLocation(startx + width/2, starty + height);
 	}
 
 	/**
@@ -132,8 +132,8 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	public void setLocation(double x, double y)
 	{
-		this.x = x;
-		this.y = y;
+		this.startx = x;
+		this.starty = y;
 		
 		constructArc();
 	}
@@ -145,8 +145,8 @@ public class GmmlArc extends GmmlGraphics
 		if(jdomElement != null) {
 			Element jdomGraphics = jdomElement.getChild("Graphics");
 			if(jdomGraphics !=null) {
-				jdomGraphics.setAttribute("StartX", Integer.toString((int)x * GmmlData.GMMLZOOM));
-				jdomGraphics.setAttribute("StartY", Integer.toString((int)y * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("StartX", Integer.toString((int)startx * GmmlData.GMMLZOOM));
+				jdomGraphics.setAttribute("StartY", Integer.toString((int)starty * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("Width", Integer.toString((int)width * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("Height", Integer.toString((int)height * GmmlData.GMMLZOOM));
 				jdomGraphics.setAttribute("Rotation", Double.toString(rotation));
@@ -154,6 +154,20 @@ public class GmmlArc extends GmmlGraphics
 		}
 	}
 
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom()
+	 */
+	protected void adjustToZoom(double factor)
+	{
+		startx	*= factor;
+		starty	*= factor;
+		width	*= factor;
+		height	*= factor;
+		
+		constructArc();
+	}
+	
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
@@ -197,7 +211,7 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	protected void moveBy(double dx, double dy)
 	{
-		setLocation(x + dx, y + dy);
+		setLocation(startx + dx, starty + dy);
 	}
 	
 	/*
@@ -235,9 +249,9 @@ public class GmmlArc extends GmmlGraphics
 			String value = at.getValue();
 			switch(index) {
 					case 0: // StartX
-						this.x = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 1: // StartY
-						this.y = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 2: // Width
 						this.width = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 3: // Height

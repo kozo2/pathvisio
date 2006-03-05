@@ -140,6 +140,20 @@ public class GmmlGeneProduct extends GmmlGraphics
 
 	/*
 	 *  (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom()
+	 */
+	protected void adjustToZoom(double factor)
+	{
+		centerx	*= factor;
+		centery	*= factor;
+		width	*= factor;
+		height	*= factor;
+		
+		constructRectangle();
+	}
+
+	/*
+	 *  (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
 	protected void draw(Graphics g)

@@ -122,6 +122,18 @@ public class GmmlBrace extends GmmlGraphics
 	}
 	
 	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom()
+	 */
+	protected void adjustToZoom(double factor)
+	{
+		centerx	*= factor;
+		centery	*= factor;
+		width	*= factor;
+		ppo		*= factor;
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */

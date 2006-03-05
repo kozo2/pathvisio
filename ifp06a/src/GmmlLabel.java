@@ -147,23 +147,18 @@ public class GmmlLabel extends GmmlGraphics
 			}
 		}
 	}
-	
-	
-	protected void moveBy(double dx, double dy)
+		
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom()
+	 */
+	protected void adjustToZoom(double factor)
 	{
-		setLocation(centerx  + dx, centery + dy);
-	}
-
-	/**
-	  *Method isContain uses the coordinates of a specific point (pointx, pointy) 
-	  *to determine whether a label contains this point. 
-	  *To do this, a 'real' rectangle object is formed, on which the normal contains method is used.
-	  */	
-	protected boolean isContain(Point2D p)
-	{
-		Rectangle2D rect = new Rectangle2D.Double(centerx - (width/2), centery - (height/2), width, height);
-		isSelected = rect.contains(p);
-		return isSelected;
+		centerx		*= factor;
+		centery		*= factor;
+		width		*= factor;
+		height		*= factor;
+		fontSize	*= factor;
 	}
 
 	/*
@@ -203,7 +198,24 @@ public class GmmlLabel extends GmmlGraphics
 		
 		setHandleLocation();
 	}
-	
+
+	protected void moveBy(double dx, double dy)
+	{
+		setLocation(centerx  + dx, centery + dy);
+	}
+
+	/**
+	  *Method isContain uses the coordinates of a specific point (pointx, pointy) 
+	  *to determine whether a label contains this point. 
+	  *To do this, a 'real' rectangle object is formed, on which the normal contains method is used.
+	  */	
+	protected boolean isContain(Point2D p)
+	{
+		Rectangle2D rect = new Rectangle2D.Double(centerx - (width/2), centery - (height/2), width, height);
+		isSelected = rect.contains(p);
+		return isSelected;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)

@@ -171,6 +171,21 @@ public class GmmlLine extends GmmlGraphics
 	}
 
 	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom()
+	 */
+	protected void adjustToZoom(double factor)
+	{
+		//factor = 2;
+		startx	*= factor;
+		starty	*= factor;
+		endx 	*= factor;
+		endy	*= factor;
+		
+		constructLine();
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */

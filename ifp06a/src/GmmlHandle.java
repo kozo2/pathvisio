@@ -41,6 +41,18 @@ class GmmlHandle extends GmmlGraphics
 		constructRectangle();
 	}
 	
+	public Point2D getCenterPoint()
+	{
+		Point2D p = new Point2D.Double(centerx, centery);
+		return p;
+	}
+
+	public void setLocation(double x, double y)
+	{
+		centerx = x;
+		centery = y;
+	}
+
 	protected void draw(Graphics g)
 	{
 		if (parent.isSelected)
@@ -62,6 +74,11 @@ class GmmlHandle extends GmmlGraphics
 		return rect.contains(p);
 	}
 	
+	protected boolean intersects(Rectangle2D.Double r)
+	{
+		return false;
+	}
+
 	protected void moveBy(double dx, double dy)
 	{
 		if (type == 0)
@@ -86,29 +103,12 @@ class GmmlHandle extends GmmlGraphics
 		}
 	}
 	
-	public void setLocation(double x, double y)
-	{
-		centerx = x;
-		centery = y;
-	}
-	
-	private void constructRectangle()
-	{
-		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
-	}
-	
-	public Point2D getCenterPoint()
-	{
-		Point2D p = new Point2D.Double(centerx, centery);
-		return p;
-	}
-	
 	protected void resizeX(double dx){}
 	protected void resizeY(double dy){}
 
-	protected boolean intersects(Rectangle2D.Double r)
+	private void constructRectangle()
 	{
-		return false;
+		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
 	}
 
 } // end of class

@@ -141,8 +141,6 @@ public class GmmlShape extends GmmlGraphics
 	
 	/**
 	 * Updates the JDom representation of the GMML file. 
-	 * When creating a new object, the JDom element doesn't exist yet 
-	 * and is created.
 	 */
 	public void updateJdomGraphics() {
 		if(jdomElement != null) {
@@ -155,7 +153,18 @@ public class GmmlShape extends GmmlGraphics
 			}
 		}
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * @see GmmlGraphics#adjustToZoom(double)
+	 */
+	protected void adjustToZoom(double factor)
+	{
+		centerx *= factor;
+		centery *= factor;
+		width 	*= factor;
+		height	*= factor;
+	}
 	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
