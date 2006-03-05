@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JTable;
+
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -24,7 +26,9 @@ public class GmmlLineShape extends GmmlGraphics
 
 	private static final long serialVersionUID = 1L;
 
-	private List attributes;
+	public final List attributes = Arrays.asList(new String[] {
+			"StartX", "StartY", "EndX", "EndY",	"Type", "Color"
+	});
 	
 	double startx;
 	double starty;
@@ -93,10 +97,6 @@ public class GmmlLineShape extends GmmlGraphics
 	public GmmlLineShape(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
 		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"StartX", "StartY", "EndX", "EndY", 
-				"Type","Color"
-		});
 		mapAttributes(e);
 				
 		this.canvas = canvas;
@@ -142,54 +142,6 @@ public class GmmlLineShape extends GmmlGraphics
 		}
 	}
 	
-	/**
-	 * Maps attributes to internal variables.
-	 * @param e - the element to map to a GmmlArc
-	 */
-	private void mapAttributes (Element e) {
-		// Map attributes
-		System.out.println("> Mapping element '" + e.getName()+ "'");
-		Iterator it = e.getAttributes().iterator();
-		while(it.hasNext()) {
-			Attribute at = (Attribute)it.next();
-			int index = attributes.indexOf(at.getName());
-			String value = at.getValue();
-			switch(index) {
-					case 0: // StartX
-						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 1: // StartY
-						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 2: // EndX
-						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 3: // EndY
-						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
-					case 4: // Type
-						if(typeMappings.indexOf(value) > -1)
-							this.type = typeMappings.indexOf(value);
-						break;
-					case 5: // Color
-						this.color = GmmlColorConvertor.string2Color(value); break;
-					case -1:
-						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
-			}
-		}
-		// Map child's attributes
-		it = e.getChildren().iterator();
-		while(it.hasNext()) {
-			mapAttributes((Element)it.next());
-		}
-	}
-
-	/**
-	 * Sets this class handles at the correct position 
-	 */
-	private void setHandleLocation()
-	{
-		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
-		handleStart.setLocation(startx, starty);
-		handleEnd.setLocation(endx, endy);
-	}
-
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#adjustToZoom()
@@ -371,6 +323,21 @@ public class GmmlLineShape extends GmmlGraphics
 	}
 
 	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{new Double(startx), new Double(starty), 
+			 new Double(endx), new Double(endy), new Integer(type), color}};
+		
+		Object[] cols = new Object[] {"Start X", "Start Y",
+				"EndX", "EndY",	"Type", "Color"};
+		
+		return new JTable(data, cols);
+	}
+	
+	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
 	 */
@@ -407,5 +374,68 @@ public class GmmlLineShape extends GmmlGraphics
 		updateJdomGraphics();
 		
 //		constructLine();
+	}
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{
+		startx		= Double.parseDouble(t.getValueAt(0, 0).toString());
+		starty		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		endx		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		endy		= Double.parseDouble(t.getValueAt(0, 3).toString());
+		type		= (int)Double.parseDouble(t.getValueAt(0, 4).toString());
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 5).toString());
+		
+	}
+
+	/**
+	 * Maps attributes to internal variables.
+	 * @param e - the element to map to a GmmlArc
+	 */
+	private void mapAttributes (Element e) {
+		// Map attributes
+		System.out.println("> Mapping element '" + e.getName()+ "'");
+		Iterator it = e.getAttributes().iterator();
+		while(it.hasNext()) {
+			Attribute at = (Attribute)it.next();
+			int index = attributes.indexOf(at.getName());
+			String value = at.getValue();
+			switch(index) {
+					case 0: // StartX
+						this.startx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 1: // StartY
+						this.starty = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 2: // EndX
+						this.endx = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 3: // EndY
+						this.endy = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
+					case 4: // Type
+						if(typeMappings.indexOf(value) > -1)
+							this.type = typeMappings.indexOf(value);
+						break;
+					case 5: // Color
+						this.color = GmmlColorConvertor.string2Color(value); break;
+					case -1:
+						System.out.println("\t> Attribute '" + at.getName() + "' is not recognized");
+			}
+		}
+		// Map child's attributes
+		it = e.getChildren().iterator();
+		while(it.hasNext()) {
+			mapAttributes((Element)it.next());
+		}
+	}
+
+	/**
+	 * Sets this class handles at the correct position 
+	 */
+	private void setHandleLocation()
+	{
+		handlecenter.setLocation((startx + endx)/2, (starty + endy)/2);
+		handleStart.setLocation(startx, starty);
+		handleEnd.setLocation(endx, endy);
 	}
 }

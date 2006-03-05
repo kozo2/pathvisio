@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JTable;
+
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -34,7 +36,10 @@ public class GmmlLabel extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 
-	private List attributes;
+	public final List attributes = Arrays.asList(new String[] {
+			"TextLabel", "CenterX", "CenterY", "Width","Height",
+			"FontName","FontWeight","FontStyle","FontSize","Color" 
+	});
 	
 	String text				= "";
 	String font				= "times new roman";
@@ -106,10 +111,7 @@ public class GmmlLabel extends GmmlGraphics
 	public GmmlLabel (Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
 		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"TextLabel", "CenterX", "CenterY", "Width","Height",
-				"FontName","FontWeight","FontStyle","FontSize","Color" 
-		});
+
 		mapAttributes(e);
 		
 		this.canvas = canvas;
@@ -199,6 +201,27 @@ public class GmmlLabel extends GmmlGraphics
 		setHandleLocation();
 	}
 
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{text, new Double(centerx), 
+			new Double(centery), new Double(width), new Double(height), 
+			font, fontWeight, fontStyle, new Integer(fontSize), color}};
+		
+		Object[] cols = new Object[] {"TextLabel", "CenterX", "CenterY", 
+				"Width", "Height", "FontName", "FontWeight", "FontStyle", 
+				"FontSize", "Color" };
+		
+		return new JTable(data, cols);
+	}
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#moveBy(double, double)
+	 */
 	protected void moveBy(double dx, double dy)
 	{
 		setLocation(centerx  + dx, centery + dy);
@@ -226,7 +249,28 @@ public class GmmlLabel extends GmmlGraphics
 		return isSelected;
 	}
 
-
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{
+		text		= t.getValueAt(0, 0).toString();
+		centerx		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		centery		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		width		= Double.parseDouble(t.getValueAt(0, 3).toString());
+		height		= Double.parseDouble(t.getValueAt(0, 4).toString());
+		font		= t.getValueAt(0, 5).toString();
+		fontWeight	= t.getValueAt(0, 6).toString();
+		fontStyle	= t.getValueAt(0, 7).toString();
+		fontSize	= (int)Double.parseDouble(t.getValueAt(0, 8).toString());
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 9).toString());;
+	}
+	
+	/**
+	 * Maps attributes to internal variables.
+	 * @param e - the element to map to a GmmlArc
+	 */
 	private void mapAttributes (Element e) {
 		// Map attributes
 		System.out.println("> Mapping element '" + e.getName()+ "'");

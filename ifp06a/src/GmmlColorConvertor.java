@@ -38,31 +38,7 @@ class GmmlColorConvertor
 	{
 	}	
 	
-	 /**
-	  * A convenience method to convert in the other direction, from a string
-	   * of hexadecimal digits to an array of bytes.
-	   **/
-/*	 public static byte[] hexDecode(String s) throws IllegalArgumentException {
-	    try {
-	      int len = s.length();
-	      byte[] r = new byte[len/2];
-	      for(int i = 0; i < r.length; i++) {
-	        int digit1 = s.charAt(i*2), digit2 = s.charAt(i*2 + 1);
-	        if ((digit1 >= '0') && (digit1 <= '9')) digit1 -= '0';
-	        else if ((digit1 >= 'a') && (digit1 <= 'f')) digit1 -= 'a' - 10;
-	        if ((digit2 >= '0') && (digit2 <= '9')) digit2 -= '0';
-	        else if ((digit2 >= 'a') && (digit2 <= 'f')) digit2 -= 'a' - 10;
-	        r[i] = (byte)((digit1 << 4) + digit2);
-	      }
-	      return r;
-	    }
-	    catch (Exception e) {
-	      throw new IllegalArgumentException("hexDecode(): invalid input");
-	    }
-	 }
-	}*/
-	
-/**
+	/**
 	 * Check the format of String specified and then calls the 
 	 * correct method to decode it
 	 * @param strColor	- the String to convert to a color
@@ -101,6 +77,27 @@ class GmmlColorConvertor
 				color = new Color((float)r/255, (float)g/255, (float)b/255);
 			}
 		}
+		
+		if(strColor.startsWith("java.awt.Color[r="))
+		{
+			int first 	= strColor.indexOf("=") + 1;
+			int second	= strColor.indexOf(",");
+			
+			float r = (float)Double.parseDouble(strColor.substring(first, second))/255;
+			
+			first	= second + 3; 
+			second 	= strColor.lastIndexOf(",");
+			
+			float g = (float)Double.parseDouble(strColor.substring(first, second))/255;
+			
+			first 	= strColor.lastIndexOf("=") + 1;
+			second	= strColor.lastIndexOf("]");
+			
+			float b = (float)Double.parseDouble(strColor.substring(first, second))/255;
+			
+			color = new Color(r, g, b);
+		}
+		
 		else {
 			int index = colorMappings.indexOf(strColor);
 			if (index > -1)

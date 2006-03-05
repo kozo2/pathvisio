@@ -4,6 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
+import javax.swing.JTable;
+
 /**
  * This class implements and handles handles for 
  * other GmmlGraphics objects, which are used to 
@@ -79,6 +81,10 @@ class GmmlHandle extends GmmlGraphics
 		return false;
 	}
 
+	protected JTable getPropertyTable()
+	{
+		return new JTable();
+	}
 	protected void moveBy(double dx, double dy)
 	{
 		if (type == 0)
@@ -103,9 +109,6 @@ class GmmlHandle extends GmmlGraphics
 		}
 	}
 	
-	protected void resizeX(double dx){}
-	protected void resizeY(double dy){}
-
 	private void constructRectangle()
 	{
 		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);

@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JTable;
+
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -19,7 +21,9 @@ public class GmmlBrace extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 	
-	private List attributes;
+	public final List attributes = Arrays.asList(new String[] {
+			"CenterX", "CenterY", "Width", "PicPointOffset","Orientation","Color"
+	});
 
 	double centerx;
 	double centery;
@@ -83,12 +87,7 @@ public class GmmlBrace extends GmmlGraphics
 	public GmmlBrace(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
 		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"CenterX", "CenterY", "Width",
-				"PicPointOffset","Orientation","Color"
-		});
 		mapAttributes(e);
-		
 		this.canvas = canvas;
 	}
 
@@ -163,6 +162,21 @@ public class GmmlBrace extends GmmlGraphics
 
 	/*
 	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{new Double(centerx), new Double(centery),
+			new Double(ppo), new Integer(orientation), color}};
+		
+		Object[] cols = new Object[]{"CenterX", "CenterY", 
+				"Width", "PicPointOffset", "Orientation", "Color"}; 
+		
+		return new JTable(data, cols);
+	}
+	
+	/*
+	 *  (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
 	 */
 	protected void moveBy(double dx, double dy)
@@ -182,6 +196,20 @@ public class GmmlBrace extends GmmlGraphics
 	 */
 	protected void resizeY(double dy){}
 
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{
+		centerx		= Double.parseDouble(t.getValueAt(0, 0).toString());
+		centery		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		width		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		ppo			= Double.parseDouble(t.getValueAt(0, 3).toString());
+		orientation	= (int)Double.parseDouble(t.getValueAt(0, 4).toString());
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 5).toString());
+	}
+	
 	/**
 	 * Maps attributes to internal variables.
 	 * @param e - the element to map to a GmmlArc

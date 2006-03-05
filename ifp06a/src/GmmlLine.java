@@ -14,6 +14,8 @@ import java.awt.geom.Line2D;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.JTable;
  
 /**
  * This class implements and handles a line
@@ -21,9 +23,11 @@ import java.util.List;
 public class GmmlLine extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
-	private List attributes;
-	int ID;
 	
+	public final List attributes = Arrays.asList(new String[] {
+			"StartX", "StartY", "EndX", "EndY", "Color", "Style", "Type"
+	});
+		
 	double startx;
 	double starty;
 	double endx;
@@ -94,10 +98,6 @@ public class GmmlLine extends GmmlGraphics
 	public GmmlLine (Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
 		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"StartX", "StartY", "EndX", "EndY", 
-				"Color", "Style", "Type"
-		});
 		mapAttributes(e);
 		
 		line = new Line2D.Double(startx, starty, endx, endy);
@@ -240,6 +240,22 @@ public class GmmlLine extends GmmlGraphics
 	}
 
 	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{new Double(startx), new Double(starty),
+			new Double(endx), new Double(endy), color, new Integer(style), 
+			new Integer(type)}};
+		
+		Object[] cols = new Object[] {" StartX", "StartY", "EndX",
+				"EndY", "Color", "Style", "Type"};
+		
+		return new JTable(data, cols);
+	}
+	
+	/*
  	 *  (non-Javadoc)
  	 * @see GmmlGraphics#moveBy(double, double)
  	 */
@@ -267,6 +283,23 @@ public class GmmlLine extends GmmlGraphics
 	{
 		endx += dx;
 		endy += dy;
+		constructLine();
+	}
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{
+		startx		= Double.parseDouble(t.getValueAt(0, 0).toString());
+		starty		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		endx		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		endy		= Double.parseDouble(t.getValueAt(0, 3).toString());
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 4).toString());
+		style		= (int)Double.parseDouble(t.getValueAt(0, 5).toString());
+		type		= (int)Double.parseDouble(t.getValueAt(0, 6).toString());
+		
 		constructLine();
 	}
 	

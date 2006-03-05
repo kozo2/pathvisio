@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JTable;
+
 /**
  * This class implements an arc and provides 
  * methods to resize and draw it
@@ -21,7 +23,11 @@ public class GmmlArc extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 
-	private List attributes;
+	public final List attributes = Arrays.asList(new String[] {
+			"StartX", "StartY", "Width",
+			"Height","Color","Rotation"
+	});
+	
 	double startx;
 	double starty;
 	double width;
@@ -87,10 +93,7 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	public GmmlArc(Element e, GmmlDrawing canvas) {
 		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"StartX", "StartY", "Width",
-				"Height","Color","Rotation"
-		});
+
 		mapAttributes(e);
 				
 		this.canvas = canvas;
@@ -110,7 +113,7 @@ public class GmmlArc extends GmmlGraphics
 	public void constructArc()
 	{
 		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
-		
+		System.out.println("update");
 		// Update JDOM Graphics element
 		updateJdomGraphics();
 	}
@@ -204,7 +207,21 @@ public class GmmlArc extends GmmlGraphics
 		return isSelected;
 	
 	}
-
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{new Double(startx), new Double(starty),
+				new Double(width), new Double(height), color, new Double(rotation)}};
+		
+		Object[] cols = new Object[] {"Start X", "Start Y", "Width", "Height", 
+				"Color", "Rotation"};
+		
+		return new JTable(data, cols);
+	}
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
@@ -231,6 +248,22 @@ public class GmmlArc extends GmmlGraphics
 	protected void resizeY(double dy)
 	{
 		height += dy;
+		constructArc();
+	}
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{
+		startx		= Double.parseDouble(t.getValueAt(0, 0).toString());
+		starty		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		width		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		height		= Double.parseDouble(t.getValueAt(0, 3).toString());
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 4).toString());
+		rotation	= Double.parseDouble(t.getValueAt(0, 5).toString());
+		
 		constructArc();
 	}
 
@@ -270,6 +303,5 @@ public class GmmlArc extends GmmlGraphics
 			mapAttributes((Element)it.next());
 		}
 	}
-
 
 } //end of GmmlArc

@@ -28,14 +28,15 @@ class GmmlVision extends JFrame
 		setBackground(Color.gray);
 		
 		buildMenu();
-			
+		
+		//This line will fix the menu hiding behind the canvas.
+		javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); 
+		setJavaLookAndFeel();
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		setSize(800, 600);
 		setLocation(100, 100);
 		setVisible(true);
-		
-		show();
 	}
 
 	/**
@@ -187,11 +188,29 @@ class GmmlVision extends JFrame
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					new GmmlPropertyInspector();
+					if(drawing != null)
+					{
+						if(drawing.selectedGraphics != null)
+						{
+							new GmmlPropertyInspector(drawing.selectedGraphics);
+						}
+						else
+						{
+							JOptionPane.showMessageDialog(null, "No GMMLGraphics selected!", 
+									"error", JOptionPane.ERROR_MESSAGE);
+						}
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
+								"error", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		);
 		
+		// add items to editMenu
+		editMenu.add(propertyItem);
 		
 		// define menu items for view menu
 		JMenu zoomSubMenu = new JMenu("Zoom");
@@ -331,11 +350,22 @@ class GmmlVision extends JFrame
 		// define menu items for help menu
 		JMenuItem aboutItem	= new JMenuItem("About");
 		
+		aboutItem.addActionListener(
+			new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					new GmmlAboutBox();
+				}
+			}
+		);
+		
 		// add items to helpMenu
 		helpMenu.add(aboutItem);
-
+		
 		// add menus to menubar
 		menubar.add(fileMenu);
+		menubar.add(editMenu);
 		menubar.add(viewMenu);
 		menubar.add(helpMenu);
 
@@ -360,7 +390,6 @@ class GmmlVision extends JFrame
 
 		this.setContentPane(d);
 		
-		show();
 		drawing = d;
 	}
 	
@@ -386,8 +415,19 @@ class GmmlVision extends JFrame
 
 		// add drawing to frame
 		setContentPane(scroll);
-		
-		show();
+	}
+	
+	/**
+	 * Sets Java Look and Feel to this frame.
+	 */
+	private static void setJavaLookAndFeel()
+	{
+		try
+		{
+			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+		} catch(Exception e) {
+			System.out.println("Error setting Java LAF: " + e);
+		}
 	}
 	
 } // end of class

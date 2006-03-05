@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.geom.Rectangle2D;
 
+import javax.swing.JTable;
+
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -17,7 +19,10 @@ public class GmmlGeneProduct extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 
-	private List attributes;
+	public final List attributes = Arrays.asList(new String[] {
+			"CenterX", "CenterY", "Width", "Height",
+			"GeneID", "Xref", "Color"
+	});
 	
 	double centerx;
 	double centery;
@@ -86,16 +91,10 @@ public class GmmlGeneProduct extends GmmlGraphics
 	public GmmlGeneProduct(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
 		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"CenterX", "CenterY", "Width","Height",
-				"GeneID","Xref","Color"
-		});
 		mapAttributes(e);
-		
 		this.canvas = canvas;
 		
 		constructRectangle();
-
 		setHandleLocation();
 	}
 
@@ -204,6 +203,21 @@ public class GmmlGeneProduct extends GmmlGraphics
 
 	/*
 	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{new Double(centerx), new Double(centery), 
+			new Double(width), new Double(height), geneID, xref, color}};
+		
+		Object[] cols = new Object[] {"CenterX", "CenterY", "Width",
+				"Height", "GeneID", "Xref", "Color"};
+		
+		return new JTable(data, cols);
+	}
+	
+	/*
+	 *  (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
 	 */
 	protected void moveBy(double dx, double dy)
@@ -243,6 +257,23 @@ public class GmmlGeneProduct extends GmmlGraphics
 	protected void resizeY(double dy)
 	{
 		height 	-= dy;
+		constructRectangle();
+	}
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{			
+		centerx		= Double.parseDouble(t.getValueAt(0, 0).toString());
+		centery		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		width		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		height		= Double.parseDouble(t.getValueAt(0, 3).toString());
+		geneID		= t.getValueAt(0, 4).toString();
+		xref		= t.getValueAt(0, 5).toString();
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 6).toString());
+		
 		constructRectangle();
 	}
 	

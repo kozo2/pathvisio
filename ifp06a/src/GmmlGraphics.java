@@ -1,7 +1,10 @@
-import java.awt.geom.Point2D;
 import java.awt.Graphics;
-import javax.swing.JComponent;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+
+import javax.swing.JComponent;
+import javax.swing.JTable;
+
 
 /**
  * This class is a parent class for all graphics
@@ -59,6 +62,13 @@ abstract class GmmlGraphics extends JComponent
 	void moveLineEnd(double dx, double dy){}
 	
 	/**
+	 * Updates GmmlGraphics object properties from the 
+	 * table specified.
+	 * @param t - the table to get the properties from
+	 */
+	void updateFromPropertyTable(JTable t){}	
+	
+	/**
 	 * Determines whether a GmmlGraphics object intersects 
 	 * the rectangle specified
 	 * @param r - the rectangle to check
@@ -74,4 +84,10 @@ abstract class GmmlGraphics extends JComponent
 	 */
 	abstract boolean isContain(Point2D point);
 	
+	/**
+	 * Gets the GmmlGraphics object properties and returns them
+	 * in a table
+	 * @return a table containing the objects properties
+	 */
+	abstract JTable getPropertyTable();
 }

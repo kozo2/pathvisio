@@ -22,11 +22,12 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	Vector handles;
 	Vector lineHandles;
 
-	Vector selectedGraphics;
+	Vector selection;
 	
-	GmmlGraphics pressedGraphics = null;	
-	GmmlGraphics clickedGraphics = null;
-	GmmlGraphics draggedGraphics = null;
+	GmmlGraphics clickedGraphics	= null;
+	GmmlGraphics draggedGraphics	= null;
+	GmmlGraphics pressedGraphics	= null;	
+	GmmlGraphics selectedGraphics	= null;
 	
 	GmmlSelectionBox s; 
 	
@@ -43,11 +44,11 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	 */	
 	public GmmlDrawing()
 	{
-		drawingObjects		= new Vector();
-		graphics			= new Vector();
-		handles				= new Vector();
-		lineHandles			= new Vector();
-		selectedGraphics	= new Vector();
+		drawingObjects	= new Vector();
+		graphics		= new Vector();
+		handles			= new Vector();
+		lineHandles		= new Vector();
+		selection		= new Vector();
 		
 		s = new GmmlSelectionBox(this);
 		
@@ -125,12 +126,12 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	 */
 	public void mouseDragged(MouseEvent e)
 	{
-		if (!selectedGraphics.isEmpty())
+		if (!selection.isEmpty())
 		{
 			double x = e.getX();
 			double y = e.getY();
 			
-			Iterator it = selectedGraphics.iterator();
+			Iterator it = selection.iterator();
 			while (it.hasNext())
 			{
 				GmmlGraphics g = (GmmlGraphics) it.next();
@@ -205,6 +206,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			if (g.isContain(p))
 			{
 				pressedGraphics = g;
+				selectedGraphics = g;
 				break;
 			}
 		}
@@ -246,7 +248,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 				GmmlGraphics g = (GmmlGraphics) it.next();
 				if (g.intersects(r))
 				{
-					selectedGraphics.addElement(g);
+					selection.addElement(g);
 				}
 				
 			}			
@@ -334,7 +336,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	 */
 	private void initSelection(Point2D p)
 	{
-		selectedGraphics.clear();
+		selection.clear();
 		s.resetRectangle();
 		s.x = p.getX();
 		s.y = p.getY();		

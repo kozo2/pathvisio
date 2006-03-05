@@ -5,6 +5,8 @@ import java.awt.geom.Point2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import javax.swing.JTable;
+
 /**
  * This class implements a selectionbox 
  */ 
@@ -85,6 +87,11 @@ class GmmlSelectionBox extends GmmlGraphics
 	protected boolean intersects(Rectangle2D.Double r)
 	{
 		return false;
+	}
+	
+	protected JTable getPropertyTable()
+	{
+		return new JTable();
 	}
 
 	/**

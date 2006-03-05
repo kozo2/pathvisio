@@ -1,20 +1,3 @@
-/*
-Copyright 2005 H.C. Achterberg, R.M.H. Besseling, I.Kaashoek, 
-M.M.Palm, E.D Pelgrim, BiGCaT (http://www.BiGCaT.unimaas.nl/)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software 
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and 
-limitations under the License.
-*/
-
 import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Ellipse2D;
@@ -29,6 +12,8 @@ import org.jdom.Element;
 
 import java.util.*;
 
+import javax.swing.JTable;
+
 /**
  * This class represents a GMMLShape, which can be a 
  * rectangle or ellips, depending of its type.
@@ -37,7 +22,15 @@ public class GmmlShape extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 
-	private List attributes;
+	public final List attributes = Arrays.asList(new String[] {
+			"CenterX", "CenterY", "Width", "Height", 
+			"Type","Color","Rotation"
+	});
+	
+	public static final List typeMappings = Arrays.asList(new String[] {
+			"Rectangle","Oval"
+	});
+	
 	double centerx;
 	double centery;
 	double width;
@@ -49,9 +42,7 @@ public class GmmlShape extends GmmlGraphics
 	// 0 - rectangle
 	// 1 - ellipse
 
-	private final List typeMappings = Arrays.asList(new String[] {
-			"Rectangle","Oval"
-	});
+
 	
 	GmmlDrawing canvas;
 	Color color;
@@ -109,11 +100,7 @@ public class GmmlShape extends GmmlGraphics
 	 */
 	public GmmlShape(Element e, GmmlDrawing canvas) {
 		this.jdomElement = e;
-		// List the attributes
-		attributes = Arrays.asList(new String[] {
-				"CenterX", "CenterY", "Width", "Height", 
-				"Type","Color","Rotation"
-		});
+				
 		mapAttributes(e);
 				
 		this.canvas = canvas;
@@ -212,6 +199,23 @@ public class GmmlShape extends GmmlGraphics
 			isSelected = pol.intersects(r.x, r.y, r.width, r.height);
 			return isSelected;
 	}
+
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#getPropertyTable()
+	 */
+	protected JTable getPropertyTable()
+	{
+		Object[][] data = new Object[][] {{new Double(centerx), new Double(centery),
+			new Double(width), new Double(height), new Integer(type), 
+			color, new Double(rotation)}};
+
+		Object[] cols = new Object[] {"Center X", "Center Y", "Width", "Height", 
+    			"Type", "Color", "Rotation"};
+		
+		return new JTable(data, cols);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#moveBy(double, double)
@@ -256,6 +260,21 @@ public class GmmlShape extends GmmlGraphics
 		
 		// Update JDOM Graphics element
 		updateJdomGraphics();
+	}
+	
+	/*
+	 *  (non-Javadoc)
+	 * @see GmmlGraphics#updateFromPropertyTable(javax.swing.JTable)
+	 */
+	protected void updateFromPropertyTable(JTable t)
+	{
+		centerx		= Double.parseDouble(t.getValueAt(0, 0).toString());
+		centery		= Double.parseDouble(t.getValueAt(0, 1).toString());
+		width		= Double.parseDouble(t.getValueAt(0, 2).toString());
+		height		= Double.parseDouble(t.getValueAt(0, 3).toString());
+		type		= (int)Double.parseDouble(t.getValueAt(0, 4).toString());
+		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 5).toString());
+		rotation	= Double.parseDouble(t.getValueAt(0, 6).toString());
 	}
 	
 	/**
