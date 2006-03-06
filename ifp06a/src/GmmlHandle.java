@@ -4,8 +4,6 @@ import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
-import javax.swing.JTable;
-
 /**
  * This class implements and handles handles for 
  * other GmmlGraphics objects, which are used to 

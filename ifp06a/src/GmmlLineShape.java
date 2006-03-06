@@ -174,7 +174,16 @@ public class GmmlLineShape extends GmmlGraphics
 		// 4 - Ligand square
 
 		Graphics2D g2D = (Graphics2D)g;
-		g2D.setColor(color);
+		Color c;
+		if (isSelected)
+		{
+			c = Color.red;
+		}
+		else 
+		{
+			c = this.color;
+		}
+		g2D.setColor(c);
 		g2D.setStroke(new BasicStroke(1.0f));		
 
 		double s = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy - starty)*(endy - starty)));

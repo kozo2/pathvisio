@@ -32,7 +32,7 @@ public class GmmlBrace extends GmmlGraphics
 	public static final int ORIENTATION_LEFT	= 3;
 	
 	public final List attributes = Arrays.asList(new String[] {
-			"CenterX", "CenterY", "Width", "PicPointOffset","Orientation","Color"
+			"CenterX", "CenterY", "Width", "PicPointOffset", "Orientation", "Color"
 	});
 
 	double centerx;
@@ -214,7 +214,16 @@ public class GmmlBrace extends GmmlGraphics
 
 		} 
 		
-		g2D.setColor(color);
+		Color c;
+		if (isSelected)
+		{
+			c = Color.red;
+		}
+		else 
+		{
+			c = this.color;
+		}
+		g2D.setColor(c);
 		g2D.setStroke(new BasicStroke(2.0f));
 		
 		g2D.draw(linesOfBrace[0]);
@@ -237,7 +246,6 @@ public class GmmlBrace extends GmmlGraphics
 		if (orientation == ORIENTATION_TOP)
 		{
 			l = new Line2D.Double(centerx - width/2, centery, centerx + width/2, centery);
-			
 		}
 		else if (orientation == ORIENTATION_RIGHT)
 		{
@@ -268,7 +276,6 @@ public class GmmlBrace extends GmmlGraphics
 		if (orientation == ORIENTATION_TOP)
 		{
 			l = new Line2D.Double(centerx - width/2, centery, centerx + width/2, centery);
-			
 		}
 		else if (orientation == ORIENTATION_RIGHT)
 		{

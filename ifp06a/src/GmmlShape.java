@@ -164,7 +164,16 @@ public class GmmlShape extends GmmlGraphics
 		Graphics2D g2D = (Graphics2D)g;
 	
 		g2D.setStroke(new BasicStroke(1.0f));
-		g2D.setColor(color);
+		Color c;
+		if (isSelected)
+		{
+			c = Color.red;
+		}
+		else 
+		{
+			c = this.color;
+		}
+		g2D.setColor(c);
 		g2D.rotate(Math.toRadians(rotation), (centerx), (centery ));
 		
 		if (type == TYPE_RECTANGLE)

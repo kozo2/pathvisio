@@ -179,7 +179,16 @@ public class GmmlArc extends GmmlGraphics
 	{
 		Graphics2D g2D = (Graphics2D)g;
 	
-		g2D.setColor(color);
+		Color c;
+		if (isSelected)
+		{
+			c = Color.red;
+		}
+		else 
+		{
+			c = this.color;
+		}
+		g2D.setColor(c);
 		g2D.setStroke(new BasicStroke(2.0f));
 		
 		g2D.draw(arc);

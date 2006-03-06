@@ -5,14 +5,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import javax.swing.JTable;
-
 /**
  * This class implements a selectionbox 
  */ 
 class GmmlSelectionBox extends GmmlGraphicsUtils
 {
 	private static final long serialVersionUID = 1L;
+
 	double x;
 	double y;
 
@@ -64,7 +63,7 @@ class GmmlSelectionBox extends GmmlGraphicsUtils
 			g2D.setColor(new Color(0f, 0f, 0.8f, 0.5f));
 			g2D.fill(r);
 			
-			g2D.setStroke(new BasicStroke(1.0f));
+			g2D.setStroke(new BasicStroke(2.0f));
 			g2D.setColor(new Color(0f, 0f, 0.5f));
 			g2D.draw(r);
 

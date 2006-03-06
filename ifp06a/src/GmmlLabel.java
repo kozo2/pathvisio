@@ -195,7 +195,17 @@ public class GmmlLabel extends GmmlGraphics
 		int textWidth  = fm.stringWidth(text);
 		int textHeight = fm.getHeight();
 		
-		g2D.setColor(color);
+		Color c;
+		if (isSelected)
+		{
+			c = Color.red;
+		}
+		else 
+		{
+			c = this.color;
+		}
+		g2D.setColor(c);
+		
 		g2D.drawString(text, (int) centerx - (textWidth/2) , (int)centery + (textHeight/2));
 		
 		setHandleLocation();

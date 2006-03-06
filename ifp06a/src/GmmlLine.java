@@ -24,6 +24,12 @@ public class GmmlLine extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 	
+	public static final int STYLE_SOLID		= 0;
+	public static final int STYLE_DASHED	= 1;
+	
+	public static final int TYPE_LINE	= 0;
+	public static final int TYPE_ARROW	= 1;
+	
 	public final List attributes = Arrays.asList(new String[] {
 			"StartX", "StartY", "EndX", "EndY", "Color", "Style", "Type"
 	});
@@ -176,7 +182,6 @@ public class GmmlLine extends GmmlGraphics
 	 */
 	protected void adjustToZoom(double factor)
 	{
-		//factor = 2;
 		startx	*= factor;
 		starty	*= factor;
 		endx 	*= factor;
@@ -194,19 +199,28 @@ public class GmmlLine extends GmmlGraphics
 		if(line!=null)
 		{	
 			Graphics2D g2D = (Graphics2D)g;
-			g2D.setColor(color);
+			Color c;
+			if (isSelected)
+			{
+				c = Color.red;
+			}
+			else 
+			{
+				c = this.color;
+			}
+			g2D.setColor(c);
+			
 			float[] dash = {3.0f};	
-			if (style == 0)
+			if (style == STYLE_SOLID)
 			{
 				g2D.setStroke(new BasicStroke(1.0f));
 			}
-			else if (style == 1)
+			else if (style == STYLE_DASHED)
 			{ 
 				g2D.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
 			}			
 	 		g2D.draw(this.line);
-			
-			if (type == 1)
+			if (type == TYPE_ARROW)
 			{
 				drawArrowhead(g2D);
 			}
