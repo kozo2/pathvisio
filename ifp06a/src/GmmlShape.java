@@ -22,6 +22,9 @@ public class GmmlShape extends GmmlGraphics
 {
 	private static final long serialVersionUID = 1L;
 
+	public static final int TYPE_RECTANGLE	= 0;
+	public static final int TYPE_OVAL 		= 1;
+	
 	public final List attributes = Arrays.asList(new String[] {
 			"CenterX", "CenterY", "Width", "Height", 
 			"Type","Color","Rotation"
@@ -49,9 +52,9 @@ public class GmmlShape extends GmmlGraphics
 	
 	Element jdomElement;
 	
-	GmmlHandle handlecenter = new GmmlHandle(0, this);
-	GmmlHandle handlex 		= new GmmlHandle(1, this);
-	GmmlHandle handley 		= new GmmlHandle(2, this);
+	GmmlHandle handlecenter	= new GmmlHandle(GmmlHandle.HANDLETYPE_CENTER, this);
+	GmmlHandle handlex		= new GmmlHandle(GmmlHandle.HANDLETYPE_WIDTH, this);
+	GmmlHandle handley		= new GmmlHandle(GmmlHandle.HANDLETYPE_HEIGHT, this);
 
 	/**
 	 * Constructor for this class
@@ -164,11 +167,11 @@ public class GmmlShape extends GmmlGraphics
 		g2D.setColor(color);
 		g2D.rotate(Math.toRadians(rotation), (centerx), (centery ));
 		
-		if (type == 0)
+		if (type == TYPE_RECTANGLE)
 		{
 			g2D.draw(new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height));
 		}
-		else if (type == 1)
+		else if (type == TYPE_OVAL)
 		{
 			g2D.draw(new Ellipse2D.Double(centerx - width, centery - height, 2*width, 2*height));
 		}
@@ -324,12 +327,12 @@ public class GmmlShape extends GmmlGraphics
 	private void setHandleLocation()
 	{
 			handlecenter.setLocation(centerx, centery);
-			if (type == 0)
+			if (type == TYPE_RECTANGLE)
 			{
 				handlex.setLocation(centerx + width/2, centery);
 				handley.setLocation(centerx, centery - height/2);
 			}
-			else if (type == 1)
+			else if (type == TYPE_OVAL)
 			{
 				handlex.setLocation(centerx + width, centery);
 				handley.setLocation(centerx, centery - height);
@@ -350,7 +353,7 @@ public class GmmlShape extends GmmlGraphics
 		int[] x = new int[4];
 		int[] y = new int[4];
 			
-		if (type == 0)
+		if (type == TYPE_RECTANGLE)
 		{
 			x[0]= (int)(( 0.5*width*rot[0] - 0.5*height*rot[1]) + centerx); //upper right
 			x[1]= (int)(( 0.5*width*rot[0] + 0.5*height*rot[1]) + centerx); //lower right

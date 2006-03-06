@@ -30,8 +30,7 @@ class GmmlVision extends JFrame
 		buildMenu();
 		
 		//This line will fix the menu hiding behind the canvas.
-		javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); 
-		setJavaLookAndFeel();
+//		javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		setSize(800, 600);
@@ -105,6 +104,8 @@ class GmmlVision extends JFrame
 			{
 				public void actionPerformed(ActionEvent e) 
 				{
+					// reset zoom to 100%
+					
 					// Overwrite the existing xml file
 					document.writeToXML(document.xmlFile);
 				}
@@ -381,13 +382,14 @@ class GmmlVision extends JFrame
 	private void createNewDrawing()
 	{
 		GmmlDrawing d = new GmmlDrawing();
-		d.addElement(new GmmlShape(600, 200, 100, 40, 0, Color.blue, 10, d));
+		d.addElement(new GmmlShape(600, 200, 100, 40, GmmlShape.TYPE_RECTANGLE, Color.blue, 10, d));
 		d.addElement(new GmmlLine(100, 100, 200, 200, Color.green, d));
 		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very long id", "ref", Color.green, d));
 		d.addElement(new GmmlLabel(200, 50, 100, 80, "testlabel", "Arial", "bold", "italic", 10, Color.black, d));
-		d.addElement(new GmmlLineShape(300, 50, 200, 500, 0, Color.blue, d));
+		d.addElement(new GmmlLineShape(300, 50, 200, 500, GmmlLineShape.TYPE_LIGAND_SQUARE, Color.blue, d));
 		d.addElement(new GmmlArc(50, 50, 200, 200, Color.red, 0, d));
-
+		d.addElement(new GmmlBrace(500, 500, 200, 60, GmmlBrace.ORIENTATION_TOP, Color.cyan, d));
+		
 		this.setContentPane(d);
 		
 		drawing = d;
@@ -416,18 +418,5 @@ class GmmlVision extends JFrame
 		// add drawing to frame
 		setContentPane(scroll);
 	}
-	
-	/**
-	 * Sets Java Look and Feel to this frame.
-	 */
-	private static void setJavaLookAndFeel()
-	{
-		try
-		{
-			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-		} catch(Exception e) {
-			System.out.println("Error setting Java LAF: " + e);
-		}
-	}
-	
+
 } // end of class

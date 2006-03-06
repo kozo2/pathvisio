@@ -24,9 +24,10 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 
 	Vector selection;
 	
-	GmmlGraphics clickedGraphics	= null;
-	GmmlGraphics draggedGraphics	= null;
-	GmmlGraphics pressedGraphics	= null;	
+	GmmlDrawingObject clickedObject	= null;
+	GmmlDrawingObject draggedObject	= null;
+	GmmlDrawingObject pressedObject	= null;	
+	
 	GmmlGraphics selectedGraphics	= null;
 	
 	GmmlSelectionBox s; 
@@ -88,8 +89,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		}
 		else
 		{
-			GmmlGraphics g = (GmmlGraphics) o;
-			graphics.addElement(g);
+			GmmlDrawingObject object = (GmmlDrawingObject) o;
+			graphics.addElement(object);
 			
 		}
 	}
@@ -142,12 +143,12 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			previousY = y;			
 		}
 		
-		if (draggedGraphics != null)
+		if (draggedObject != null)
 		{
 			double x = e.getX();
 			double y = e.getY();
 			
-			draggedGraphics.moveBy(x - previousX, y - previousY);
+			draggedObject.moveBy(x - previousX, y - previousY);
 			
 			previousX = x;
 			previousY = y;
@@ -188,7 +189,7 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 	 */
 	public void mousePressed(MouseEvent e)
 	{
-		if (draggedGraphics != null)
+		if (draggedObject != null)
 		{	
 			// dragging in progress...
 			return;
@@ -202,17 +203,21 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		Iterator it = drawingObjects.iterator();
 		while (it.hasNext())
 		{
-			GmmlGraphics g = (GmmlGraphics) it.next();
-			if (g.isContain(p))
+			GmmlDrawingObject o = (GmmlDrawingObject) it.next();
+			if (o.isContain(p))
 			{
-				pressedGraphics = g;
-				selectedGraphics = g;
+				pressedObject = o;
+				if (o instanceof GmmlGraphics)
+				{
+					GmmlGraphics g = (GmmlGraphics) o;
+					selectedGraphics = g;
+				}
 				break;
 			}
 		}
 		repaint();
 		
-		if (pressedGraphics != null)
+		if (pressedObject != null)
 		{
 			// start dragging
 			isSelecting = false;
@@ -220,11 +225,11 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			previousX = x;
 			previousY = y;
 			
-			draggedGraphics = pressedGraphics;
-			pressedGraphics = null;
+			draggedObject = pressedObject;
+			pressedObject = null;
 		}
 		
-		else if (pressedGraphics == null)
+		else if (pressedObject == null)
 		{
 			// start selecting
 			isSelecting = true;
@@ -245,18 +250,21 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 
 			while (it.hasNext())
 			{
-				GmmlGraphics g = (GmmlGraphics) it.next();
-				if (g.intersects(r))
+				GmmlDrawingObject o = (GmmlDrawingObject) it.next();
+				if (o instanceof GmmlGraphics)
 				{
-					selection.addElement(g);
-				}
-				
+					GmmlGraphics g = (GmmlGraphics) o;
+					if (g.intersects(r))
+					{
+						selection.addElement(g);
+					}
+				}				
 			}			
 			isSelecting = false;
 			repaint();
 		}
 		
-		else if (draggedGraphics == null)
+		else if (draggedObject == null)
 		{
 			return;
 		}
@@ -266,8 +274,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 			double x = e.getX();
 			double y = e.getY();
 			
-			draggedGraphics.moveBy(x - previousX, y - previousY);
-			draggedGraphics = null;
+			draggedObject.moveBy(x - previousX, y - previousY);
+			draggedObject = null;
 		}
 	}
 	
@@ -285,8 +293,8 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		Iterator it = graphics.iterator();	
 		while (it.hasNext())
 		{
-			GmmlGraphics gmmlg = (GmmlGraphics) it.next();
-			gmmlg.draw(g);
+			GmmlDrawingObject o = (GmmlDrawingObject) it.next();
+			o.draw(g);
 		}
 	
 		// iterate through all handles to paint them, after 
@@ -321,8 +329,12 @@ class GmmlDrawing extends JPanel implements MouseListener, MouseMotionListener, 
 		Iterator it = graphics.iterator();	
 		while (it.hasNext())
 		{
-			GmmlGraphics g = (GmmlGraphics) it.next();
-			g.adjustToZoom(factor);
+			GmmlDrawingObject o = (GmmlDrawingObject) it.next();
+			if (o instanceof GmmlGraphics)
+			{
+				GmmlGraphics g = (GmmlGraphics) o;
+				g.adjustToZoom(factor);		
+			}
 		}
 		
 		zoomPercentage = zoom;

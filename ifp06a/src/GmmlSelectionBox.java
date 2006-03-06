@@ -1,7 +1,7 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
@@ -10,7 +10,7 @@ import javax.swing.JTable;
 /**
  * This class implements a selectionbox 
  */ 
-class GmmlSelectionBox extends GmmlGraphics
+class GmmlSelectionBox extends GmmlGraphicsUtils
 {
 	private static final long serialVersionUID = 1L;
 	double x;
@@ -72,28 +72,14 @@ class GmmlSelectionBox extends GmmlGraphics
 	}
 	
 	/*
-	 * (non-Javadoc)
-	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
+	 *  (non-Javadoc)
+	 * @see GmmlDrawingObject#isContain(java.awt.geom.Point2D)
 	 */
-	protected boolean isContain(Point2D p)
+	protected boolean isContain(Point2D point)
 	{
 		return false;
 	}
 	
-	/*
-	* (non-Javadoc)
-	* @see GmmlGraphics#intersects(java.awt.geom.Rectangle2D.Double)
-	*/
-	protected boolean intersects(Rectangle2D.Double r)
-	{
-		return false;
-	}
-	
-	protected JTable getPropertyTable()
-	{
-		return new JTable();
-	}
-
 	/**
 	 * Sets the selectionbox rectangle so that it can be drawn
 	 */

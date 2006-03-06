@@ -40,9 +40,9 @@ public class GmmlArc extends GmmlGraphics
 	
 	Element jdomElement;
 	
-	GmmlHandle handlecenter	= new GmmlHandle(0, this);
-	GmmlHandle handlex		= new GmmlHandle(1, this);
-	GmmlHandle handley		= new GmmlHandle(2, this);
+	GmmlHandle handlecenter	= new GmmlHandle(GmmlHandle.HANDLETYPE_CENTER, this);
+	GmmlHandle handlex		= new GmmlHandle(GmmlHandle.HANDLETYPE_WIDTH, this);
+	GmmlHandle handley		= new GmmlHandle(GmmlHandle.HANDLETYPE_HEIGHT, this);
 		
 	/**
 	 * Constructor for this class
@@ -113,7 +113,7 @@ public class GmmlArc extends GmmlGraphics
 	public void constructArc()
 	{
 		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
-		System.out.println("update");
+		
 		// Update JDOM Graphics element
 		updateJdomGraphics();
 	}

@@ -38,9 +38,9 @@ public class GmmlGeneProduct extends GmmlGraphics
 	String geneID;
 	String xref;
 
-	GmmlHandle handlecenter = new GmmlHandle(0, this);
-	GmmlHandle handlex 		= new GmmlHandle(1, this);
-	GmmlHandle handley 		= new GmmlHandle(2, this);
+	GmmlHandle handlecenter	= new GmmlHandle(GmmlHandle.HANDLETYPE_CENTER, this);
+	GmmlHandle handlex		= new GmmlHandle(GmmlHandle.HANDLETYPE_WIDTH, this);
+	GmmlHandle handley		= new GmmlHandle(GmmlHandle.HANDLETYPE_HEIGHT, this);
 	
 	/**
 	 * Constructor for this class

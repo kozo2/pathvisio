@@ -30,6 +30,12 @@ public class GmmlLineShape extends GmmlGraphics
 			"StartX", "StartY", "EndX", "EndY",	"Type", "Color"
 	});
 	
+	public static final int TYPE_TBAR 				= 0;
+	public static final int TYPE_RECEPTOR_ROUND		= 1;
+	public static final int TYPE_LIGAND_ROUND		= 2;
+	public static final int TYPE_RECEPTOR_SQUARE	= 3;
+	public static final int TYPE_LIGAND_SQUARE		= 4;
+	
 	double startx;
 	double starty;
 	double endx;
@@ -46,9 +52,9 @@ public class GmmlLineShape extends GmmlGraphics
 	});	
 	Element jdomElement;
 
-	GmmlHandle handlecenter = new GmmlHandle(0, this);
-	GmmlHandle handleStart	= new GmmlHandle(3, this);
-	GmmlHandle handleEnd	= new GmmlHandle(4, this);
+	GmmlHandle handlecenter	= new GmmlHandle(GmmlHandle.HANDLETYPE_CENTER, this);
+	GmmlHandle handleStart	= new GmmlHandle(GmmlHandle.HANDLETYPE_LINE_START, this);
+	GmmlHandle handleEnd	= new GmmlHandle(GmmlHandle.HANDLETYPE_LINE_END, this);
 	
 	/**
 	 * Constructor for this class
@@ -173,7 +179,7 @@ public class GmmlLineShape extends GmmlGraphics
 
 		double s = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy - starty)*(endy - starty)));
 		
-		if (type == 0)
+		if (type == TYPE_TBAR)
 		{
 			s /= 8;
 			
@@ -189,7 +195,7 @@ public class GmmlLineShape extends GmmlGraphics
 			g2D.draw(l2);
 		}
 		
-		else if (type == 1)
+		else if (type == TYPE_RECEPTOR_ROUND)
 		{
 			double dx = (endx - startx)/s;
 			double dy = (endy - starty)/s;
@@ -202,7 +208,7 @@ public class GmmlLineShape extends GmmlGraphics
 			g2D.fill(ligandround);			
 		}
 		
-		else if (type == 2)
+		else if (type == TYPE_LIGAND_ROUND)
 		{
 			double theta 	= Math.toDegrees(Math.atan((endx - startx)/(endy - starty)));
 			double dx 		= (endx - startx)/s;
@@ -215,7 +221,7 @@ public class GmmlLineShape extends GmmlGraphics
 			g2D.draw(a);
 		}
 		
-		else if (type == 3)
+		else if (type == TYPE_RECEPTOR_SQUARE)
 		{
 			s /= 8;
 			
@@ -241,7 +247,7 @@ public class GmmlLineShape extends GmmlGraphics
 			g2D.draw(r1);
 			g2D.draw(r2);
 		}
-		else if (type == 4)
+		else if (type == TYPE_LIGAND_SQUARE)
 		{
 			s /= 6;
 			double x3 		= endx - ((endx - startx)/s);

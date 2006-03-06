@@ -58,7 +58,7 @@ public class GmmlLabel extends GmmlGraphics
 	
 	Element jdomElement;
 	
-	GmmlHandle handlecenter = new GmmlHandle(0, this);
+	GmmlHandle handlecenter	= new GmmlHandle(GmmlHandle.HANDLETYPE_CENTER, this);
 
 	/**
 	 * Constructor for this class

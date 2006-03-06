@@ -45,9 +45,9 @@ public class GmmlLine extends GmmlGraphics
 	
 	Element jdomElement;
 	
-	GmmlHandle handlecenter = new GmmlHandle(0, this);
-	GmmlHandle handleStart	= new GmmlHandle(3, this);
-	GmmlHandle handleEnd		= new GmmlHandle(4, this);
+	GmmlHandle handlecenter	= new GmmlHandle(GmmlHandle.HANDLETYPE_CENTER, this);
+	GmmlHandle handleStart	= new GmmlHandle(GmmlHandle.HANDLETYPE_LINE_START, this);
+	GmmlHandle handleEnd	= new GmmlHandle(GmmlHandle.HANDLETYPE_LINE_END, this);
 	
 	/**
 	 * Constructor for this class
@@ -218,11 +218,11 @@ public class GmmlLine extends GmmlGraphics
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#isContain(java.awt.geom.Point2D)
 	 */
-	protected boolean isContain(Point2D point)
+	protected boolean isContain(Point2D p)
 	{
 		BasicStroke stroke = new BasicStroke(10);
 		Shape outline = stroke.createStrokedShape(line);
-		isSelected = outline.contains(point);
+		isSelected = outline.contains(p);
 		return isSelected;
 	}
 	

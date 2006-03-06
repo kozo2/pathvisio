@@ -11,10 +11,16 @@ import javax.swing.JTable;
  * other GmmlGraphics objects, which are used to 
  * resize them or change their location.
  */
-class GmmlHandle extends GmmlGraphics
+class GmmlHandle extends GmmlDrawingObject
 {
 	private static final long serialVersionUID = 1L;
 
+	public static final int HANDLETYPE_CENTER		= 0;
+	public static final int HANDLETYPE_WIDTH		= 1;
+	public static final int HANDLETYPE_HEIGHT		= 2;
+	public static final int HANDLETYPE_LINE_START	= 3;
+	public static final int HANDLETYPE_LINE_END		= 4;
+	
 	GmmlGraphics parent;
 	
 	double centerx;
@@ -23,9 +29,9 @@ class GmmlHandle extends GmmlGraphics
 	int type = 0;
 	// types:
 	// 0: center
-	// 1: x
-	// 2: y
-	// 3: line handle 
+	// 1: width
+	// 2: height
+	// 3: line start 
 	
 	GmmlDrawing canvas;
 	
@@ -35,10 +41,10 @@ class GmmlHandle extends GmmlGraphics
 	Rectangle2D rect;
 	boolean visible;
 	
-	public GmmlHandle(int t, GmmlGraphics par)
+	public GmmlHandle(int type, GmmlGraphics parent)
 	{
-		type = t;
-		parent = par;
+		this.type = type;
+		this.parent = parent;
 
 		constructRectangle();
 	}
@@ -76,34 +82,25 @@ class GmmlHandle extends GmmlGraphics
 		return rect.contains(p);
 	}
 	
-	protected boolean intersects(Rectangle2D.Double r)
-	{
-		return false;
-	}
-
-	protected JTable getPropertyTable()
-	{
-		return new JTable();
-	}
 	protected void moveBy(double dx, double dy)
 	{
-		if (type == 0)
+		if (type == HANDLETYPE_CENTER)
 		{
 			parent.moveBy(dx, dy);
 		}
-		if (type == 1)
+		if (type == HANDLETYPE_WIDTH)
 		{
 			parent.resizeX(dx);
 		}
-		if (type == 2)
+		if (type == HANDLETYPE_HEIGHT)
 		{
 			parent.resizeY(dy);
 		}
-		if (type == 3)
+		if (type == HANDLETYPE_LINE_START)
 		{
 			parent.moveLineStart(dx, dy);
 		}
-		if (type == 4)
+		if (type == HANDLETYPE_LINE_END)
 		{
 			parent.moveLineEnd(dx, dy);
 		}
