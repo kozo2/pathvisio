@@ -1,10 +1,13 @@
-import java.awt.Graphics;
+//~ import java.awt.Graphics;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
 import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
 
 
-abstract class GmmlDrawingObject extends JComponent 
+//~ abstract class GmmlDrawingObject extends JComponent 
+abstract class GmmlDrawingObject
 {
 	boolean isSelected;
 	
@@ -13,7 +16,7 @@ abstract class GmmlDrawingObject extends JComponent
 	 * it is part of
 	 * @param g - the Graphics object to use for drawing
 	 */
-	abstract void draw(Graphics g);
+	abstract void draw(PaintEvent e);
 	
 	/**
 	 * Determines wheter a GmmlGraphics object contains

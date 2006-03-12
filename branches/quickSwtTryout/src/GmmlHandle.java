@@ -1,8 +1,11 @@
 import java.awt.geom.Point2D;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Color;
+//~ import java.awt.Graphics;
+//~ import java.awt.Graphics2D;
+//~ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 /**
  * This class implements and handles handles for 
@@ -59,19 +62,24 @@ class GmmlHandle extends GmmlDrawingObject
 		centery = y;
 	}
 
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
 		if (parent.isSelected)
 		{
-			Graphics2D g2D = (Graphics2D)g;
-			
 			constructRectangle();
 			
-			g2D.setColor(Color.yellow);
-			g2D.fill(rect);
-			
-			g2D.setColor(Color.blue);
-			g2D.draw(rect);
+			e.gc.setBackground (e.display.getSystemColor (SWT.COLOR_YELLOW));
+			e.gc.setForeground (e.display.getSystemColor (SWT.COLOR_BLUE));
+			e.gc.drawRectangle (
+				(int)(centerx - width/2), 
+				(int)(centery - height/2), 
+				(int)width, 
+				(int)height);
+			e.gc.fillRectangle (
+				(int)(centerx - width/2), 
+				(int)(centery - height/2), 
+				(int)width, 
+				(int)height);			
 		}
 	}
 

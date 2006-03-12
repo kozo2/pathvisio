@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
@@ -6,6 +5,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.BasicStroke;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -48,7 +50,7 @@ public class GmmlShape extends GmmlGraphics
 
 	
 	GmmlDrawing canvas;
-	Color color;
+	RGB color;
 	
 	Element jdomElement;
 	
@@ -78,7 +80,7 @@ public class GmmlShape extends GmmlGraphics
 	 * @param color - the color this geneproduct will be painted
 	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
-	public GmmlShape(double x, double y, double width, double height, int type, Color color, double rotation, GmmlDrawing canvas)
+	public GmmlShape(double x, double y, double width, double height, int type, RGB color, double rotation, GmmlDrawing canvas)
 	{
 		this.centerx	= x;
 		this.centery	= y;
@@ -159,35 +161,48 @@ public class GmmlShape extends GmmlGraphics
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
-	{
-		Graphics2D g2D = (Graphics2D)g;
-	
-		g2D.setStroke(new BasicStroke(1.0f));
+	protected void draw(PaintEvent e)
+	{	
 		Color c;
 		if (isSelected)
 		{
-			c = Color.red;
+			c = new Color (e.display, 255, 0, 0);
 		}
 		else 
 		{
-			c = this.color;
+			c = new Color (e.display, this.color);
 		}
-		g2D.setColor(c);
-		g2D.rotate(Math.toRadians(rotation), (centerx), (centery ));
+		e.gc.setForeground (c);
+		e.gc.setLineStyle (SWT.LINE_SOLID);
+
+		// NOTE: removed rotation
+		// I don't think GenMAPP supports that anyway
+		//~ g2D.rotate(Math.toRadians(rotation), (centerx), (centery ));
 		
 		if (type == TYPE_RECTANGLE)
 		{
-			g2D.draw(new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height));
+			e.gc.drawRectangle (
+				(int)(centerx - width/2), 
+				(int)(centery - height/2), 
+				(int)width, 
+				(int)height
+			);
 		}
 		else if (type == TYPE_OVAL)
 		{
-			g2D.draw(new Ellipse2D.Double(centerx - width, centery - height, 2*width, 2*height));
+			e.gc.drawOval (
+				(int)(centerx - width), 
+				(int)(centery - height), 
+				(int)(2*width), 
+				(int)(2*height)
+			);
 		}
 				
 		setHandleLocation();
-		// reset rotation
-		g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
+		
+		// NOTE: removed as well.
+		//~ // reset rotation		
+		//~ g2D.rotate(-Math.toRadians(rotation), (centerx), (centery));
 	}
 	
 	/*

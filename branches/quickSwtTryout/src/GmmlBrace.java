@@ -1,5 +1,5 @@
 import java.awt.BasicStroke;
-import java.awt.Color;
+//~ import java.awt.Color;
 import java.awt.Shape;
 
 import java.awt.geom.Arc2D;
@@ -17,6 +17,9 @@ import javax.swing.JTable;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 /**
  * This class implements a brace and provides 
@@ -41,7 +44,7 @@ public class GmmlBrace extends GmmlGraphics
 	double ppo;
 	
 	int orientation; //orientation: 0=top, 1=right, 2=bottom, 3=left
-	Color color;
+	RGB color;
 	
 	GmmlDrawing canvas;
 	Element jdomElement;
@@ -76,7 +79,7 @@ public class GmmlBrace extends GmmlGraphics
 	 * @param color - the color this brace will be painted
 	 * @param canvas - the GmmlDrawing this brace will be part of
 	 */
-	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, Color color, GmmlDrawing canvas)
+	public GmmlBrace(double centerX, double centerY, double width, double ppo, int orientation, RGB color, GmmlDrawing canvas)
 	{
 		this.centerx = centerX;
 		this.centery = centerY;
@@ -153,86 +156,73 @@ public class GmmlBrace extends GmmlGraphics
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
-		Graphics2D g2D = (Graphics2D)g;
-		
-		Arc2D.Double[]	arcsOfBrace = new Arc2D.Double[4]; //4 Arcs are used to create a brace
-		Line2D.Double[] linesOfBrace = new Line2D.Double[2];; //2 Lines are used to creata a brace
-				
-		linesOfBrace[0] = new Line2D.Double();
-		linesOfBrace[1] = new Line2D.Double();
-	
-		for (int i=0; i<4; i++){
-			arcsOfBrace[i] = new Arc2D.Double();
+		Color c;
+		if (isSelected)
+		{
+			c = new Color (e.display, 255, 0, 0);
 		}
+		else 
+		{
+			c = new Color (e.display, this.color);
+		}
+		e.gc.setForeground (c);
+		e.gc.setLineStyle (SWT.LINE_SOLID);
+		e.gc.setLineWidth (2);
 		
+		int cx = (int)centerx;
+		int cy = (int)centery;
+		int w = (int)width;
+		int d = (int)ppo;
+
 		if (orientation == ORIENTATION_TOP)
 		{
-			linesOfBrace[0].setLine(centerx + ppo/2, centery, centerx + width/2 - ppo/2, centery); //line on the right
-			linesOfBrace[1].setLine(centerx - ppo/2, centery, centerx - width/2 + ppo/2, centery); //line on the left
+			e.gc.drawLine (cx + d/2, cy, cx + w/2 - d/2, cy); //line on the right
+			e.gc.drawLine (cx - d/2, cy, cx - w/2 + d/2, cy); //line on the left
 			
-			arcsOfBrace[0].setArc(centerx - width/2, centery, ppo, ppo, -180, -90, 0); //arc on the left
-			arcsOfBrace[1].setArc(centerx - ppo, centery - ppo,	ppo, ppo, -90, 90, 0); //left arc in the middle
-			arcsOfBrace[2].setArc(centerx, centery - ppo, ppo, ppo, -90, -90, 0); //right arc in the middle
-			arcsOfBrace[3].setArc(centerx + width/2 - ppo, centery, ppo, ppo, 0, 90, 0); //arc on the right
+			e.gc.drawArc (cx - w/2, cy, d, d, -180, -90); //arc on the left
+			e.gc.drawArc (cx - d, cy - d,	d, d, -90, 90); //left arc in the middle
+			e.gc.drawArc (cx, cy - d, d, d, -90, -90); //right arc in the middle
+			e.gc.drawArc (cx + w/2 - d, cy, d, d, 0, 90); //arc on the right
 		}
 		
 		else if (orientation == ORIENTATION_RIGHT)
 		{
-			linesOfBrace[0].setLine(centerx, centery + ppo/2, centerx, centery + width/2 - ppo/2); //line on the bottom
-			linesOfBrace[1].setLine(centerx, centery - ppo/2, centerx, centery - width/2 + ppo/2); //line on the top
+			e.gc.drawLine (cx, cy + d/2, cx, cy + w/2 - d/2); //line on the bottom
+			e.gc.drawLine (cx, cy - d/2, cx, cy - w/2 + d/2); //line on the top
 			
-			arcsOfBrace[0].setArc(centerx - ppo,centery - width/2, ppo, ppo, 0, 90, 0); //arc on the top
-			arcsOfBrace[1].setArc(centerx, centery - ppo, ppo, ppo, -90, -90, 0); //upper arc in the middle
-			arcsOfBrace[2].setArc(centerx, centery, ppo, ppo, 90, 90, 0); //lowidther arc in the middle
-			arcsOfBrace[3].setArc(centerx - ppo, centery + width/2 - ppo, ppo, ppo, 0, -90, 0); //arc on the bottom
+			e.gc.drawArc (cx - d,cy - w/2, d, d, 0, 90); //arc on the top
+			e.gc.drawArc (cx, cy - d, d, d, -90, -90); //upper arc in the middle
+			e.gc.drawArc (cx, cy, d, d, 90, 90); //lower arc in the middle
+			e.gc.drawArc (cx - d, cy + w/2 - d, d, d, 0, -90); //arc on the bottom
 
 		}
 		
 		else if (orientation == ORIENTATION_BOTTOM)
 		{ 
-			linesOfBrace[0].setLine(centerx + ppo/2, centery, centerx + width/2 - ppo/2, centery); //line on the right
-			linesOfBrace[1].setLine(centerx - ppo/2, centery, centerx - width/2 + ppo/2, centery); //line on the left
+			e.gc.drawLine (cx + d/2, cy, cx + w/2 - d/2, cy); //line on the right
+			e.gc.drawLine (cx - d/2, cy, cx - w/2 + d/2, cy); //line on the left
 			
-			arcsOfBrace[0].setArc(centerx - width/2, centery - ppo, ppo, ppo, -180, 90, 0); //arc on the left
-			arcsOfBrace[1].setArc(centerx - ppo, centery, ppo, ppo, 90, -90, 0); //left arc in the middle
-			arcsOfBrace[2].setArc(centerx, centery, ppo, ppo, 90, 90, 0); //right arc in the middle
-			arcsOfBrace[3].setArc(centerx + width/2 - ppo, centery - ppo, ppo, ppo, 0, -90, 0); //arc on the right
+			e.gc.drawArc (cx - w/2, cy - d, d, d, -180, 90); //arc on the left
+			e.gc.drawArc (cx - d, cy, d, d, 90, -90); //left arc in the middle
+			e.gc.drawArc (cx, cy, d, d, 90, 90); //right arc in the middle
+			e.gc.drawArc (cx + w/2 - d, cy - d, d, d, 0, -90); //arc on the right
 
 		}
 		
 		else if (orientation == ORIENTATION_LEFT)
 		{
-			linesOfBrace[0].setLine(centerx, centery + ppo/2, centerx, centery + width/2 - ppo/2); //line on the bottom
-			linesOfBrace[1].setLine(centerx, centery - ppo/2, centerx, centery - width/2 + ppo/2); //line on the top
+			e.gc.drawLine (cx, cy + d/2, cx, cy + w/2 - d/2); //line on the bottom
+			e.gc.drawLine (cx, cy - d/2, cx, cy - w/2 + d/2); //line on the top
 			
-			arcsOfBrace[0].setArc(centerx, centery - width/2, ppo, ppo, -180, -90, 0); //arc on the top
-			arcsOfBrace[1].setArc(centerx - ppo, centery - ppo, ppo, ppo, -90, 90, 0); //upper arc in the middle
-			arcsOfBrace[2].setArc(centerx - ppo, centery, ppo, ppo, 90, -90, 0); //lowidther arc in the middle
-			arcsOfBrace[3].setArc(centerx, centery + width/2 - ppo, ppo, ppo, -90, -90, 0); //arc on the bottom
+			e.gc.drawArc (cx, cy - w/2, d, d, -180, -90); //arc on the top
+			e.gc.drawArc (cx - d, cy - d, d, d, -90, 90); //upper arc in the middle
+			e.gc.drawArc (cx - d, cy, d, d, 90, -90); //lower arc in the middle
+			e.gc.drawArc (cx, cy + w/2 - d, d, d, -90, -90); //arc on the bottom
 
 		} 
-		
-		Color c;
-		if (isSelected)
-		{
-			c = Color.red;
-		}
-		else 
-		{
-			c = this.color;
-		}
-		g2D.setColor(c);
-		g2D.setStroke(new BasicStroke(2.0f));
-		
-		g2D.draw(linesOfBrace[0]);
-		g2D.draw(linesOfBrace[1]);
-		g2D.draw(arcsOfBrace[0]);
-		g2D.draw(arcsOfBrace[1]);
-		g2D.draw(arcsOfBrace[2]);
-		g2D.draw(arcsOfBrace[3]);
-		
+
 		setHandleLocation();
 	}
 			

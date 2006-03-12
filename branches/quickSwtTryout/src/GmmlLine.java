@@ -4,8 +4,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.Color;
 import java.awt.Polygon;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.*;
+import org.eclipse.swt.events.*;
 
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -44,7 +46,7 @@ public class GmmlLine extends GmmlGraphics
 	int style;
 	int type;
 	
-	Color color;
+	RGB color;
 	
 	GmmlDrawing canvas;
 	Line2D line;
@@ -77,14 +79,14 @@ public class GmmlLine extends GmmlGraphics
 	 * @param color - color this line will be painted
 	 * @param canvas - the GmmlDrawing this line will be part of
 	 */
-	public GmmlLine(double startx, double starty, double endx, double endy, Color color, GmmlDrawing canvas)
+	public GmmlLine(double startx, double starty, double endx, double endy, RGB color, GmmlDrawing canvas)
 	{
 		this.startx = startx;
 		this.starty = starty;
 		this.endx 	= endx;
 		this.endy 	= endy;
 		
-		this. color = color;
+		this.color = color;
 		
 		line = new Line2D.Double(startx, starty, endx, endy);
 		
@@ -194,37 +196,39 @@ public class GmmlLine extends GmmlGraphics
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
 		if(line!=null)
-		{	
-			Graphics2D g2D = (Graphics2D)g;
+		{
 			Color c;
 			if (isSelected)
 			{
-				c = Color.red;
+				c = new Color (e.display, 255, 0, 0);
 			}
 			else 
 			{
-				c = this.color;
+				c = new Color (e.display, this.color);
 			}
-			g2D.setColor(c);
+			e.gc.setForeground (c);
+			e.gc.setBackground (c);
 			
-			float[] dash = {3.0f};	
 			if (style == STYLE_SOLID)
 			{
-				g2D.setStroke(new BasicStroke(1.0f));
+				e.gc.setLineStyle (SWT.LINE_SOLID);
 			}
 			else if (style == STYLE_DASHED)
 			{ 
-				g2D.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
-			}			
-	 		g2D.draw(this.line);
+				e.gc.setLineStyle (SWT.LINE_DASH);
+			}
+			
+			e.gc.drawLine ((int)line.getX1(), (int)line.getY1(), (int)line.getX2(), (int)line.getY2());
+			
 			if (type == TYPE_ARROW)
 			{
-				drawArrowhead(g2D);
+				drawArrowhead(e);
 			}
 			setHandleLocation();
+			c.dispose();
 		}
 	}
 	
@@ -320,9 +324,8 @@ public class GmmlLine extends GmmlGraphics
 	/**
 	 * If the line type is arrow, this method draws the arrowhead
 	 */
-	private void drawArrowhead(Graphics2D g2D) //2Do! clean up this mess.....
+	private void drawArrowhead(PaintEvent e) //TODO! clean up this mess.....
 	{
-		g2D.setColor(color);
 		double angle = 25.0;
 		double theta = Math.toRadians(180 - angle);
 		double[] rot = new double[2];
@@ -333,8 +336,8 @@ public class GmmlLine extends GmmlGraphics
 		rot[0] = Math.cos(theta);
 		rot[1] = Math.sin(theta);
 		
-		g2D.setStroke(new BasicStroke(1.0f));
-	
+		e.gc.setLineStyle (SWT.LINE_SOLID);
+		
 		a = endx-startx;
 		b = endy-starty;
 		norm = 8/(Math.sqrt((a*a)+(b*b)));				
@@ -342,11 +345,14 @@ public class GmmlLine extends GmmlGraphics
 		p[1] = (-a*rot[1] + b*rot[0] ) * norm + endy;
 		q[0] = ( a*rot[0] - b*rot[1] ) * norm + endx;
 		q[1] = ( a*rot[1] + b*rot[0] ) * norm + endy;
-		int[] x = {(int) (endx),(int) (p[0]),(int) (q[0])};
-		int[] y = {(int) (endy),(int) (p[1]),(int) (q[1])};
-		Polygon arrowhead = new Polygon(x,y,3);
-		g2D.draw(arrowhead);
-		g2D.fill(arrowhead);
+		int[] points = {
+			(int)endx, (int)endy,
+			(int)(p[0]), (int)(p[1]),
+			(int)(q[0]), (int)(q[1])
+		};
+		
+		e.gc.drawPolygon (points);
+		e.gc.fillPolygon (points);
 	}
 
 	/**

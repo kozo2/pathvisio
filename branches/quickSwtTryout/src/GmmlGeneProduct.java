@@ -1,10 +1,10 @@
 import java.util.*;
 import java.util.List;
-import java.awt.*;
 import java.awt.geom.Point2D;
-import java.awt.Color;
-import java.awt.FontMetrics;
 import java.awt.geom.Rectangle2D;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 import javax.swing.JTable;
 
@@ -29,9 +29,8 @@ public class GmmlGeneProduct extends GmmlGraphics
 	double width;
 	double height;
 
-	Color color;
+	RGB color = new RGB (0,0,0);
 	GmmlDrawing canvas;
-	Rectangle2D rect;
 	
 	Element jdomElement;
 	
@@ -66,7 +65,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 	 * @param color - the color this geneproduct will be painted
 	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */
-	public GmmlGeneProduct(double x, double y, double width, double height, String geneID, String xref, Color color, GmmlDrawing canvas){
+	public GmmlGeneProduct(double x, double y, double width, double height, String geneID, String xref, RGB color, GmmlDrawing canvas){
 		this.centerx = x;
 		this.centery = y;
 		this.width = width;
@@ -76,7 +75,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 		this.color = color;
 		this.canvas = canvas;
 		
-		constructRectangle();
+		updateJdomGraphics();
 		canvas.addElement(handlecenter);
 		canvas.addElement(handlex);
 		canvas.addElement(handley);
@@ -94,19 +93,8 @@ public class GmmlGeneProduct extends GmmlGraphics
 		mapAttributes(e);
 		this.canvas = canvas;
 		
-		constructRectangle();
-		setHandleLocation();
-	}
-
-	/**
-	 * Constructs the internal rectangle of this class
-	 */
-	public void constructRectangle()
-	{
-		rect = new Rectangle2D.Double(centerx - width/2, centery - height/2, width, height);
-		
-		// Update JDOM Graphics element
 		updateJdomGraphics();
+		setHandleLocation();
 	}
 
 	/**
@@ -119,7 +107,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 		centerx = x;
 		centery = y;
 		
-		constructRectangle();
+		updateJdomGraphics();
 	}
 
 	/**
@@ -148,46 +136,48 @@ public class GmmlGeneProduct extends GmmlGraphics
 		width	*= factor;
 		height	*= factor;
 		
-		constructRectangle();
+		updateJdomGraphics();
 	}
 
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
-		if (rect != null)
+		Font f = new Font(e.display, "ARIAL", 10, SWT.NONE);
+		
+		e.gc.setFont (f);
+		
+		Point textSize = e.gc.textExtent (geneID);
+		
+		Color c;
+		if (isSelected)
 		{
-			Graphics2D g2D = (Graphics2D)g;
-			Color c;
-			if (isSelected)
-			{
-				c = Color.red;
-			}
-			else 
-			{
-				c = this.color;
-			}
-			g2D.setColor(c);
-			g2D.setStroke(new BasicStroke(2.0f));
-			
-			g2D.draw(rect);
-			
-			Font f = new Font("Arial", Font.PLAIN, 10);
-			g2D.setFont(f);
-			g2D.setStroke(new BasicStroke(1.0f));
-			
-			FontMetrics fm = g2D.getFontMetrics();
-			int textwidth 	= fm.stringWidth(geneID);
-						
-			int strx = (int) (centerx - textwidth/2);
-			int stry = (int) (centery);
-
-			g2D.drawString(geneID, strx, stry);
-			
-			setHandleLocation();
+			c = new Color (e.display, 255, 0, 0);
 		}
+		else 
+		{
+			c = new Color (e.display, this.color);
+		}
+		
+		e.gc.setForeground (c);
+		e.gc.setLineStyle (SWT.LINE_SOLID);
+		
+		e.gc.drawRectangle (
+			(int)(centerx - width / 2),
+			(int)(centery - height / 2),
+			(int)width,
+			(int)height
+		);
+		
+		e.gc.drawString (geneID, 
+			(int) centerx - (textSize.x / 2) , 
+			(int) centery - (textSize.y / 2));
+		
+		f.dispose();			
+		
+		setHandleLocation();
 	}
 	
 	/*
@@ -196,6 +186,9 @@ public class GmmlGeneProduct extends GmmlGraphics
 	 */
 	protected boolean isContain(Point2D point)
 	{
+		Rectangle2D rect = new Rectangle2D.Double(
+			centerx - width/2, centery - height/2, width, height);
+		
 		isSelected = rect.contains(point);
 		return isSelected;
 	}	
@@ -233,20 +226,21 @@ public class GmmlGeneProduct extends GmmlGraphics
 	{
 		setLocation(centerx + dx, centery + dy);
 
-		BasicStroke stroke = new BasicStroke(20);
-		Shape s = stroke.createStrokedShape(rect);
+		// TODO
+		//~ BasicStroke stroke = new BasicStroke(20);
+		//~ Shape s = stroke.createStrokedShape(rect);
 
-		Iterator it = canvas.lineHandles.iterator();
+		//~ Iterator it = canvas.lineHandles.iterator();
 
-		while (it.hasNext())
-		{
-			GmmlHandle h = (GmmlHandle) it.next();
-			Point2D p = h.getCenterPoint();
-			if (s.contains(p))
-			{
-				h.moveBy(dx, dy);
-			}
-		}
+		//~ while (it.hasNext())
+		//~ {
+			//~ GmmlHandle h = (GmmlHandle) it.next();
+			//~ Point2D p = h.getCenterPoint();
+			//~ if (s.contains(p))
+			//~ {
+				//~ h.moveBy(dx, dy);
+			//~ }
+		//~ }
 	}
 	
 	/*
@@ -256,7 +250,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 	protected void resizeX(double dx)
 	{
 		width += dx;
-		constructRectangle();
+		updateJdomGraphics();
 	}
 	
 	/*
@@ -266,7 +260,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 	protected void resizeY(double dy)
 	{
 		height 	-= dy;
-		constructRectangle();
+		updateJdomGraphics();
 	}
 	
 	/*
@@ -283,7 +277,7 @@ public class GmmlGeneProduct extends GmmlGraphics
 		xref		= t.getValueAt(0, 5).toString();
 		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 6).toString());
 		
-		constructRectangle();
+		updateJdomGraphics();
 	}
 	
 	/**

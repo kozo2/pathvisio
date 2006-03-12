@@ -38,10 +38,10 @@ public class GmmlData
 	 * Constructor for this class
 	 * @param file - the file to read
 	 */
-	public GmmlData(String file)
+	public GmmlData(String file, GmmlDrawing _drawing)
 	{
 		// Create the drawing
-		drawing = new GmmlDrawing();
+		drawing = _drawing;
 		// Start XML processing
 		System.out.println("Start reading the XML file: " + file);
 		SAXBuilder builder  = new SAXBuilder(false); // no validation when reading the xml file
@@ -129,7 +129,7 @@ public class GmmlData
 		});
 		mapPathwayAttributes(root);
 		drawing.setSize(drawingDims[0], drawingDims[1]);
-		drawing.setPreferredSize(new Dimension(drawingDims[0], drawingDims[1]));
+		//~ drawing.setPreferredSize(new Dimension(drawingDims[0], drawingDims[1]));
 		drawing.dims = new Dimension(drawingDims[0], drawingDims[1]);
 		
 		// Iterate over direct children of the root element

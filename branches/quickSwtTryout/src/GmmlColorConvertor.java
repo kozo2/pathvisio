@@ -1,4 +1,5 @@
-import java.awt.Color;
+import org.eclipse.swt.graphics.*;
+//~ import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,9 +45,9 @@ class GmmlColorConvertor
 	 * @param strColor	- the String to convert to a color
 	 * @return	a Color object
 	 */
-	public static Color string2Color(String strColor)
+	public static RGB string2Color(String strColor)
 	{
-		Color color = new Color(0);
+		RGB color = new RGB(0, 0, 0);
 		if(strColor.length() == 6)
 		{
 			boolean strColorIsHex = true;
@@ -74,7 +75,7 @@ class GmmlColorConvertor
 				int g = Integer.parseInt(strColor.substring(2, 4), 16);
 				int b = Integer.parseInt(strColor.substring(4, 6), 16);
 								
-				color = new Color((float)r/255, (float)g/255, (float)b/255);
+				color = new RGB(r, g, b);
 			}
 		}
 		
@@ -83,19 +84,19 @@ class GmmlColorConvertor
 			int first 	= strColor.indexOf("=") + 1;
 			int second	= strColor.indexOf(",");
 			
-			float r = (float)Double.parseDouble(strColor.substring(first, second))/255;
+			int r = (int)Double.parseDouble(strColor.substring(first, second));
 			
 			first	= second + 3; 
 			second 	= strColor.lastIndexOf(",");
 			
-			float g = (float)Double.parseDouble(strColor.substring(first, second))/255;
+			int g = (int)Double.parseDouble(strColor.substring(first, second));
 			
 			first 	= strColor.lastIndexOf("=") + 1;
 			second	= strColor.lastIndexOf("]");
 			
-			float b = (float)Double.parseDouble(strColor.substring(first, second))/255;
+			int b = (int)Double.parseDouble(strColor.substring(first, second));
 			
-			color = new Color(r, g, b);
+			color = new RGB(r, g, b);
 		}
 		
 		else {
@@ -103,11 +104,11 @@ class GmmlColorConvertor
 			if (index > -1)
 			{
 				double[] c = (double[]) rgbMappings.get(index);
-				color = new Color((float)c[0], (float)c[1], (float)c[2]);			
+				color = new RGB((int)c[0] * 255, (int)c[1] * 255, (int)c[2] * 255);			
 			}
 			else 
 			{
-				color = Color.black;
+				color = new RGB(0,0,0);
 			}
 		}
 		return color;

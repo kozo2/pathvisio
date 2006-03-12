@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -25,6 +22,9 @@ import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 import javax.swing.JTable;
 
@@ -42,7 +42,7 @@ public class GmmlLabel extends GmmlGraphics
 	});
 	
 	String text				= "";
-	String font				= "times new roman";
+	String fontName			= "Times New Roman";
 	String fontWeight		= "bold";
 	String fontStyle		= "normal";
 	
@@ -52,7 +52,7 @@ public class GmmlLabel extends GmmlGraphics
 	double height;
 	int fontSize	= 10;
 	
-	Color color;
+	RGB color;
 	
 	GmmlDrawing canvas;
 	
@@ -85,14 +85,14 @@ public class GmmlLabel extends GmmlGraphics
 	 * @param canvas - the GmmlDrawing the label will be part of
 	 */
 	public GmmlLabel (int x, int y, int width, int height, String text, String font, String fontWeight, 
-		String fontStyle, int fontSize, Color color, GmmlDrawing canvas)
+		String fontStyle, int fontSize, RGB color, GmmlDrawing canvas)
 	{
 		this.centerx  = x;
 		this.centery = y;
 		this.width = width;
 		this.height = height;
 		this.text = text;
-		this.font = font;
+		this.fontName = font;
 		this.fontWeight = fontWeight;
 		this.fontStyle = fontStyle;
 		this.fontSize = fontSize;
@@ -167,46 +167,42 @@ public class GmmlLabel extends GmmlGraphics
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
-		Graphics2D g2D = (Graphics2D)g;
-		
-		Font f = new Font(font, Font.PLAIN, fontSize);
+		int style = SWT.NONE;
 		
 		if (fontWeight.equalsIgnoreCase("bold"))
 		{
-			if (this.fontStyle.equalsIgnoreCase("italic"))
-			{
-				f = f.deriveFont(f.BOLD + f.ITALIC);
-			}
-			else
-			{
-				f = f.deriveFont(f.BOLD);
-			}
+			style |= SWT.BOLD;
 		}
-		else if (fontStyle.equalsIgnoreCase("italic"))
+		
+		if (fontStyle.equalsIgnoreCase("italic"))
 		{
-			f = f.deriveFont(Font.ITALIC);
+			style |= SWT.ITALIC;
 		}
 		
-		g2D.setFont(f);
+		Font f = new Font(e.display, fontName, fontSize, style);
 		
-		FontMetrics fm = g2D.getFontMetrics();
-		int textWidth  = fm.stringWidth(text);
-		int textHeight = fm.getHeight();
+		e.gc.setFont (f);
+		
+		Point textSize = e.gc.textExtent (text);
 		
 		Color c;
 		if (isSelected)
 		{
-			c = Color.red;
+			c = new Color (e.display, 255, 0, 0);
 		}
 		else 
 		{
-			c = this.color;
+			c = new Color (e.display, this.color);
 		}
-		g2D.setColor(c);
+		e.gc.setForeground (c);
 		
-		g2D.drawString(text, (int) centerx - (textWidth/2) , (int)centery + (textHeight/2));
+		e.gc.drawString (text, 
+			(int) centerx - (textSize.x / 2) , 
+			(int) centery - (textSize.y / 2), true);
+		
+		f.dispose();
 		
 		setHandleLocation();
 	}
@@ -219,7 +215,7 @@ public class GmmlLabel extends GmmlGraphics
 	{
 		Object[][] data = new Object[][] {{text, new Double(centerx), 
 			new Double(centery), new Double(width), new Double(height), 
-			font, fontWeight, fontStyle, new Integer(fontSize), color}};
+			fontName, fontWeight, fontStyle, new Integer(fontSize), color}};
 		
 		Object[] cols = new Object[] {"TextLabel", "CenterX", "CenterY", 
 				"Width", "Height", "FontName", "FontWeight", "FontStyle", 
@@ -270,7 +266,7 @@ public class GmmlLabel extends GmmlGraphics
 		centery		= Double.parseDouble(t.getValueAt(0, 2).toString());
 		width		= Double.parseDouble(t.getValueAt(0, 3).toString());
 		height		= Double.parseDouble(t.getValueAt(0, 4).toString());
-		font		= t.getValueAt(0, 5).toString();
+		fontName	= t.getValueAt(0, 5).toString();
 		fontWeight	= t.getValueAt(0, 6).toString();
 		fontStyle	= t.getValueAt(0, 7).toString();
 		fontSize	= (int)Double.parseDouble(t.getValueAt(0, 8).toString());
@@ -301,7 +297,7 @@ public class GmmlLabel extends GmmlGraphics
 					case 4:	// Height
 						this.height = Integer.parseInt(value) / GmmlData.GMMLZOOM; break;
 					case 5: // FontName
-						this.font = value; break;
+						this.fontName = value; break;
 					case 6: // FontWeight
 						this.fontWeight = value; break;
 					case 7: // FontStyle

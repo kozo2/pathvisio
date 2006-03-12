@@ -6,11 +6,14 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.Color;
+//~ import java.awt.Color;
 import java.awt.BasicStroke;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 import javax.swing.JTable;
 
@@ -23,7 +26,6 @@ import org.jdom.Element;
  */
 public class GmmlLineShape extends GmmlGraphics
 {
-
 	private static final long serialVersionUID = 1L;
 
 	public final List attributes = Arrays.asList(new String[] {
@@ -44,7 +46,7 @@ public class GmmlLineShape extends GmmlGraphics
 	int type; 
 
 	GmmlDrawing canvas;
-	Color color;
+	RGB color;
 	
 	private final List typeMappings = Arrays.asList(new String[] {
 			"Tbar", "ReceptorRound", "LigandRound", 
@@ -80,7 +82,7 @@ public class GmmlLineShape extends GmmlGraphics
 	 * @param color - the color this lineshape will be painted
 	 * @param canvas - the GmmlDrawing this geneproduct will be part of
 	 */	
-	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, Color color, GmmlDrawing canvas)
+	public GmmlLineShape(double startx, double starty, double endx, double endy, int type, RGB color, GmmlDrawing canvas)
 	{
 		this.startx = startx;
 		this.starty = starty;
@@ -164,7 +166,7 @@ public class GmmlLineShape extends GmmlGraphics
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
 		//Types:
 		// 0 - Tbar
@@ -173,19 +175,20 @@ public class GmmlLineShape extends GmmlGraphics
 		// 3 - Receptor square
 		// 4 - Ligand square
 
-		Graphics2D g2D = (Graphics2D)g;
 		Color c;
 		if (isSelected)
 		{
-			c = Color.red;
+			c = new Color (e.display, 255, 0, 0);
 		}
 		else 
 		{
-			c = this.color;
+			c = new Color (e.display, this.color);
 		}
-		g2D.setColor(c);
-		g2D.setStroke(new BasicStroke(1.0f));		
+		e.gc.setForeground (c);
+		e.gc.setBackground (c);
+		e.gc.setLineStyle (SWT.LINE_SOLID);
 
+			
 		double s = Math.sqrt(((endx-startx)*(endx-startx)) + ((endy - starty)*(endy - starty)));
 		
 		if (type == TYPE_TBAR)
@@ -197,39 +200,29 @@ public class GmmlLineShape extends GmmlGraphics
 			double capx2 = (( endy - starty)/s) + endx;
 			double capy2 = ((-endx + startx)/s) + endy;
 
-			Line2D.Double l1 = new Line2D.Double(startx, starty, endx, endy);
-			Line2D.Double l2 = new Line2D.Double(capx1, capy1, capx2, capy2);
-
-			g2D.draw(l1);
-			g2D.draw(l2);
+			e.gc.drawLine ((int)startx, (int)starty, (int)endx, (int)endy);
+			e.gc.drawLine ((int)capx1, (int)capy1, (int)capx2, (int)capy2);
 		}
-		
 		else if (type == TYPE_RECEPTOR_ROUND)
 		{
 			double dx = (endx - startx)/s;
 			double dy = (endy - starty)/s;
-			
-			Line2D.Double l 					= new Line2D.Double(startx, starty, endx - (6*dx), endy - (6*dy));
-			Ellipse2D.Double ligandround 		= new Ellipse2D.Double(endx - 5, endy - 5, 10, 10);
-			
-			g2D.draw(l);
-			g2D.draw(ligandround);
-			g2D.fill(ligandround);			
+						
+			e.gc.drawLine ((int)startx, (int)starty, (int)(endx - 6 * dx), (int)(endy - 6 * dy));
+			e.gc.drawOval ((int)endx - 5, (int)endy - 5, 10, 10);
+			e.gc.fillOval ((int)endx - 5, (int)endy - 5, 10, 10);
 		}
 		
 		else if (type == TYPE_LIGAND_ROUND)
 		{
+			// TODO: this code is not safe for division by zero!
 			double theta 	= Math.toDegrees(Math.atan((endx - startx)/(endy - starty)));
 			double dx 		= (endx - startx)/s;
 			double dy 		= (endy - starty)/s;	
 			
-			Line2D.Double l = new Line2D.Double(startx, starty, endx - (8*dx), endy - (8*dy));
-			Arc2D.Double  a = new Arc2D.Double(startx - 8, endy - 8, 16, 16, theta + 180, -180, Arc2D.OPEN);
-			
-			g2D.draw(l);
-			g2D.draw(a);
+			e.gc.drawLine ((int)startx, (int)starty, (int)(endx - (8*dx)), (int)(endy - (8*dy)));
+			e.gc.drawArc ((int)endx - 8, (int)endy - 8, 16, 16, (int)theta + 180, -180);			
 		}
-		
 		else if (type == TYPE_RECEPTOR_SQUARE)
 		{
 			s /= 8;
@@ -244,17 +237,11 @@ public class GmmlLineShape extends GmmlGraphics
 			double ry1 		= capy1 + 1.5*(endy - starty)/s;
 			double rx2 		= capx2 + 1.5*(endx - startx)/s;
 			double ry2 		= capy2 + 1.5*(endy - starty)/s;
-			
-			
-			Line2D.Double l 	= new Line2D.Double(startx, starty, x3, y3);		
-			Line2D.Double cap = new Line2D.Double(capx1, capy1, capx2, capy2);
-			Line2D.Double r1	= new Line2D.Double(capx1, capy1, rx1, ry1);
-			Line2D.Double r2	= new Line2D.Double(capx2, capy2, rx2, ry2);
-
-			g2D.draw(l);
-			g2D.draw(cap);
-			g2D.draw(r1);
-			g2D.draw(r2);
+		
+			e.gc.drawLine ((int)startx, (int)starty, (int)x3, (int)y3);
+			e.gc.drawLine ((int)capx1, (int)capy1, (int)capx2, (int)capy2);
+			e.gc.drawLine ((int)capx1, (int)capy1, (int)rx1, (int)ry1);
+			e.gc.drawLine ((int)capx2, (int)capy2, (int)rx2, (int)ry2);
 		}
 		else if (type == TYPE_LIGAND_SQUARE)
 		{
@@ -262,26 +249,27 @@ public class GmmlLineShape extends GmmlGraphics
 			double x3 		= endx - ((endx - startx)/s);
 			double y3 		= endy - ((endy - starty)/s);
 
-			int[] polyx = new int[4];
-			int[] polyy = new int[4];
+			int[] points = new int[4 * 2];
 			
-			polyx[0] = (int) (((-endy + starty)/s) + x3);
-			polyy[0] = (int) ((( endx - startx)/s) + y3);
-			polyx[1] = (int) ((( endy - starty)/s) + x3);
-			polyy[1] = (int) (((-endx + startx)/s) + y3);
+			points[0] = (int) (((-endy + starty)/s) + x3);
+			points[1] = (int) ((( endx - startx)/s) + y3);
+			points[2] = (int) ((( endy - starty)/s) + x3);
+			points[3] = (int) (((-endx + startx)/s) + y3);
 
-			polyx[2] = (int) (polyx[1] + 1.5*(endx - startx)/s);
-			polyy[2] = (int) (polyy[1] + 1.5*(endy - starty)/s);
-			polyx[3] = (int) (polyx[0] + 1.5*(endx - startx)/s);
-			polyy[3] = (int) (polyy[0] + 1.5*(endy - starty)/s);
-
-			Line2D.Double l 	= new Line2D.Double(startx, starty, x3, y3);
-			Polygon p 			= new Polygon(polyx, polyy, 4);
+			points[4] = (int) (points[2] + 1.5*(endx - startx)/s);
+			points[5] = (int) (points[3] + 1.5*(endy - starty)/s);
+			points[6] = (int) (points[0] + 1.5*(endx - startx)/s);
+			points[7] = (int) (points[1] + 1.5*(endy - starty)/s);
 			
-			g2D.draw(l);
-			g2D.draw(p);
-			g2D.fill(p);
+			e.gc.drawLine ((int)startx, (int)starty, (int)x3, (int)y3);
+			e.gc.drawPolygon(points);
+			e.gc.fillPolygon(points);
 		}
+		else
+		{
+			e.gc.drawLine ((int)startx, (int)starty, (int)endx, (int)endy);
+		}
+
 		setHandleLocation();
 	}
 	

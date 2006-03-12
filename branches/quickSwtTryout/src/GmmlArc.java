@@ -1,5 +1,4 @@
 import java.awt.geom.Arc2D;
-import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,6 +11,9 @@ import java.awt.BasicStroke;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 import javax.swing.JTable;
 
@@ -34,8 +36,7 @@ public class GmmlArc extends GmmlGraphics
 	double height;
 	double rotation;
 	
-	Color color;
-	Arc2D arc;
+	RGB color;
 	GmmlDrawing canvas;
 	
 	Element jdomElement;
@@ -67,7 +68,7 @@ public class GmmlArc extends GmmlGraphics
 	 * @param rotation - the angle at which the arc has to be rotated when drawing it
 	 * @param canvas - the GmmlDrawing this arc will be part of
 	 */
-	public GmmlArc(double startx, double starty, double width, double height, Color color, double rotation, GmmlDrawing canvas)
+	public GmmlArc(double startx, double starty, double width, double height, RGB color, double rotation, GmmlDrawing canvas)
 	{
 		this.startx 	= startx;
 		this.starty 	= starty;
@@ -76,9 +77,7 @@ public class GmmlArc extends GmmlGraphics
 		this.color 		= color;
 		this.rotation 	= Math.toDegrees(rotation);
 		this.canvas 	= canvas;
-		
-		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
-		
+				
 		setHandleLocation();
 		
 		canvas.addElement(handlecenter);
@@ -98,24 +97,11 @@ public class GmmlArc extends GmmlGraphics
 				
 		this.canvas = canvas;
 		
-		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
-		
 		setHandleLocation();
 		
 		canvas.addElement(handlecenter);
 		canvas.addElement(handlex);
 		canvas.addElement(handley);
-	}
-
-	/**
-	 * Constructs the internal arc of this class 
-	 */
-	public void constructArc()
-	{
-		arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
-		
-		// Update JDOM Graphics element
-		updateJdomGraphics();
 	}
 
 	/**
@@ -138,7 +124,7 @@ public class GmmlArc extends GmmlGraphics
 		this.startx = x;
 		this.starty = y;
 		
-		constructArc();
+		updateJdomGraphics();
 	}
 
 	/**
@@ -168,30 +154,32 @@ public class GmmlArc extends GmmlGraphics
 		width	*= factor;
 		height	*= factor;
 		
-		constructArc();
+		updateJdomGraphics();
 	}
 	
 	/*
 	 *  (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
-		Graphics2D g2D = (Graphics2D)g;
-	
 		Color c;
 		if (isSelected)
 		{
-			c = Color.red;
+			c = new Color (e.display, 255, 0, 0);
 		}
 		else 
 		{
-			c = this.color;
+			c = new Color (e.display, this.color);
 		}
-		g2D.setColor(c);
-		g2D.setStroke(new BasicStroke(2.0f));
+		e.gc.setForeground (c);
+		e.gc.setLineStyle (SWT.LINE_SOLID);
+		e.gc.setLineWidth (2);
 		
-		g2D.draw(arc);
+		e.gc.drawArc((int)(startx-width), (int)(starty-height),
+			(int)(2*width), (int)(2*height),
+			(int)(180-rotation), 180
+		);
 		
 		setHandleLocation();
 	}
@@ -202,6 +190,8 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	protected boolean isContain(Point2D p)
 	{
+		Arc2D arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
+
 		isSelected =  arc.contains(p);
 		return isSelected;
 	}
@@ -212,6 +202,8 @@ public class GmmlArc extends GmmlGraphics
 	 */
 	protected boolean intersects(Rectangle2D.Double r)
 	{
+		Arc2D arc = new Arc2D.Double(startx-width, starty-height, 2*width, 2*height, 180-rotation, 180, 0);
+
 		isSelected = arc.intersects(r.x, r.y, r.width, r.height);
 		return isSelected;
 	
@@ -247,7 +239,7 @@ public class GmmlArc extends GmmlGraphics
 	protected void resizeX(double dx)
 	{
 		width += dx;
-		constructArc();
+		updateJdomGraphics();
 	}
 	
 	/*
@@ -257,7 +249,7 @@ public class GmmlArc extends GmmlGraphics
 	protected void resizeY(double dy)
 	{
 		height += dy;
-		constructArc();
+		updateJdomGraphics();
 	}
 	
 	/*
@@ -273,7 +265,7 @@ public class GmmlArc extends GmmlGraphics
 		color 		= GmmlColorConvertor.string2Color(t.getValueAt(0, 4).toString());
 		rotation	= Double.parseDouble(t.getValueAt(0, 5).toString());
 		
-		constructArc();
+		updateJdomGraphics();
 	}
 
 	/**

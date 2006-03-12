@@ -4,6 +4,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.*;
 
 /**
  * This class implements a selectionbox 
@@ -51,23 +54,23 @@ class GmmlSelectionBox extends GmmlGraphicsUtils
 	 * (non-Javadoc)
 	 * @see GmmlGraphics#draw(java.awt.Graphics)
 	 */
-	protected void draw(Graphics g)
+	protected void draw(PaintEvent e)
 	{
 
-		if(r != null && canvas.isSelecting)
-		{
-			Graphics2D g2D = (Graphics2D) g;			
+		//~ if(r != null && canvas.isSelecting)
+		//~ {
+			//~ Graphics2D g2D = (Graphics2D) g;			
 				
-			setDrawableRectangle();
+			//~ setDrawableRectangle();
 
-			g2D.setColor(new Color(0f, 0f, 0.8f, 0.5f));
-			g2D.fill(r);
+			//~ g2D.setColor(new Color(0f, 0f, 0.8f, 0.5f));
+			//~ g2D.fill(r);
 			
-			g2D.setStroke(new BasicStroke(2.0f));
-			g2D.setColor(new Color(0f, 0f, 0.5f));
-			g2D.draw(r);
+			//~ g2D.setStroke(new BasicStroke(2.0f));
+			//~ g2D.setColor(new Color(0f, 0f, 0.5f));
+			//~ g2D.draw(r);
 
-		}
+		//~ }
 	}
 	
 	/*

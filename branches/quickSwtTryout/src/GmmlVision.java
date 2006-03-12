@@ -1,41 +1,256 @@
-import java.awt.Color;
-import java.awt.event.*;
-
-import javax.swing.*;
-import java.io.*;
-
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.jface.action.*;
+import org.eclipse.jface.window.ApplicationWindow;
+import org.eclipse.jface.dialogs.*;
+import java.util.*;
+//~ import java.awt.Color;
 
 /**
  * This class is the main class in the GMML project. 
  * It acts as a container for pathwaydrawings and facilitates
  * loading, creating and saving drawings to and from GMML.
  */
-class GmmlVision extends JFrame
+class GmmlVision extends ApplicationWindow
 {
 	private static final long serialVersionUID = 1L;
+	
+	private class NewAction extends Action 
+	{
+		GmmlVision window;
+		public NewAction (GmmlVision w)
+		{
+			window = w;
+			setText ("&New@Ctrl+N");
+			setToolTipText ("Create new drawing");
+		}
+		public void run () {
+			createNewDrawing();
+		}
+	}
+	private NewAction newAction = new NewAction (this);
+
+	private class OpenAction extends Action 
+	{
+		GmmlVision window;
+		public OpenAction (GmmlVision w)
+		{
+			window = w;
+			setText ("&Open@Ctrl+O");
+			setToolTipText ("Open Application");
+		}
+		public void run () 
+		{
+			FileDialog fd = new FileDialog(window.getShell(), SWT.OPEN);
+	        // TODO: set proper file filter for xml files
+			fd.setText("Open");
+			// TODO: check if user pressed cancel
+	        String fnMapp = fd.open();			
+			openPathway(fnMapp);
+		}
+	}
+	private OpenAction openAction = new OpenAction (this);
+	
+	private class SaveAction extends Action 
+	{
+		GmmlVision window;
+		public SaveAction (GmmlVision w)
+		{
+			window = w;
+			setText ("&Save@Ctrl+S");
+			setToolTipText ("Save mapp");
+		}
+		public void run () {			
+			// reset zoom to 100%
+			
+			// Overwrite the existing xml file
+			document.writeToXML(document.xmlFile);
+		}
+	}
+	private SaveAction saveAction = new SaveAction(this);
+	
+	private class SaveAsAction extends Action 
+	{
+		GmmlVision window;
+		public SaveAsAction (GmmlVision w)
+		{
+			window = w;
+			setText ("Save &As");
+			setToolTipText ("Save mapp with new file name");
+		}
+		public void run () {
+			if (drawing != null)
+			{
+				//~ JFileChooser chooser = new JFileChooser();
+				//~ chooser.setFileFilter(new GmmlFilter());
+				//~ int returnVal = chooser.showSaveDialog(null);
+				//~ if(returnVal == JFileChooser.APPROVE_OPTION) 
+				//~ {
+					//~ String file = chooser.getSelectedFile().getPath();
+					//~ if(!file.endsWith(".xml")) 
+					//~ {
+						//~ file = file+".xml";
+					//~ }
+					
+					//~ int confirmed = 1;
+					//~ File tempfile = new File(file);
+					
+					//~ if(tempfile.exists())
+					//~ {
+						//~ String[] options = { "OK", "CANCEL" };
+						//~ confirmed = JOptionPane.showOptionDialog(null, 
+								//~ "The selected file already exists, overwrite?", 
+								//~ "Warning", 
+								//~ JOptionPane.DEFAULT_OPTION, 
+								//~ JOptionPane.WARNING_MESSAGE, null, 
+								//~ options, options[0]);
+					//~ } 
+					//~ else
+					//~ {
+						//~ confirmed = 0;
+					//~ }
+					
+					//~ if (confirmed == 0) 
+					//~ {
+						//~ document.writeToXML(tempfile);
+						//~ System.out.println("Saved");
+					//~ } else {
+						//~ System.out.println("Canceled");
+					//~ }
+				//~ }
+			} 
+			else
+			{
+				MessageDialog.openError (window.getShell(), "Error", 
+					"No gmml file loaded! Open or create a new gmml file first");
+			}			
+		}
+	}
+	private SaveAsAction saveAsAction = new SaveAsAction (this);
+		
+	private class CloseAction extends Action 
+	{
+		GmmlVision window;
+		public CloseAction (GmmlVision w)
+		{
+			window = w;
+			setText ("&Close@Ctrl+W");
+			setToolTipText ("Close this map");
+		}
+		public void run () {
+			
+		}
+	}
+	private CloseAction closeAction = new CloseAction(this);
+	
+	private class ExitAction extends Action 
+	{
+		GmmlVision window;
+		public ExitAction (GmmlVision w)
+		{
+			window = w;
+			setText ("E&xit@Ctrl+X");
+			setToolTipText ("Exit Application");
+		}
+		public void run () {
+			window.close();
+		}
+	}
+	private ExitAction exitAction = new ExitAction(this);
+
+	private class PropertyAction extends Action 
+	{
+		GmmlVision window;
+		public PropertyAction (GmmlVision w)
+		{
+			window = w;
+			setText ("&Properties");
+			setToolTipText ("View properties");
+		}
+		public void run () {
+			if(drawing != null)
+			{
+				if(drawing.selectedGraphics != null)
+				{
+					//~ new GmmlPropertyInspector(drawing.selectedGraphics);
+				}
+				else
+				{
+					MessageDialog.openError (window.getShell(), "Error", 
+						"No GMMLGraphics selected!");
+				}
+			}
+			else
+			{
+				MessageDialog.openError (window.getShell(), "Error", 
+					"No gmml file loaded! Open or create a new gmml file first");
+			}
+		}
+	}
+	private PropertyAction propertyAction = new PropertyAction(this);
+
+	private class ZoomAction extends Action 
+	{
+		GmmlVision window;
+		int pctZoomFactor;
+		
+		public ZoomAction (GmmlVision w, int newPctZoomFactor)
+		{
+			window = w;
+			pctZoomFactor = newPctZoomFactor;
+			setText (pctZoomFactor + " %");
+			setToolTipText ("Zoom mapp to " + pctZoomFactor + " %");
+		}
+		public void run () {
+			if (drawing != null)
+			{
+				drawing.setZoom(pctZoomFactor);
+			}
+			else
+			{
+				MessageDialog.openError (window.getShell(), "Error", 
+					"No gmml file loaded! Open or create a new gmml file first");
+			}						
+		}
+	}
+		
+	private class AboutAction extends Action 
+	{
+		GmmlVision window;
+		public AboutAction (GmmlVision w)
+		{
+			window = w;
+			setText ("&About@F1");
+			setToolTipText ("about Cellular Automata");
+		}
+		public void run () {
+			// TODO
+			MessageDialog.openInformation(window.getShell(), "About", "(c) 2006 by Martijn van Iersel");
+			//~ new GmmlAboutBox();
+		}
+	}
+	private AboutAction aboutAction = new AboutAction(this);
+	
 	GmmlDrawing drawing;
 	GmmlData document;
 
+	public GmmlVision()
+	{
+		this(null);
+	}
+	
 	/**
 	 *Constructor for thGmmlVision class
 	 *Initializes new GmmlVision and sets properties for frame
 	 */
-	public GmmlVision()
+	public GmmlVision(Shell shell)
 	{
-		super("GMML-Vision");
-		setBackground(Color.gray);
-		
-		buildMenu();
-		
-		//This line will fix the menu hiding behind the canvas.
-//		javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled(false); 
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
-		setSize(800, 600);
-		setLocation(100, 100);
-		setVisible(true);
+		super(shell);
+		addMenuBar();				
 	}
 
 	/**
@@ -43,354 +258,83 @@ class GmmlVision extends JFrame
 	 */
 	public static void main(String[] args)
 	{
-		new GmmlVision();
+	   GmmlVision window = new GmmlVision();
+	   window.setBlockOnOpen(true);
+	   window.open();
+	   Display.getCurrent().dispose();
 	}
 	
 	/**
 	 *Builds and ads a menu to the GmmlVision frame
 	 */
-	private void buildMenu()
+	protected MenuManager createMenuManager()
 	{
-		// initialize new menubar
-		JMenuBar menubar = new JMenuBar();
-				
-		// define menus in menubar
-		JMenu fileMenu = new JMenu("File");
-		JMenu editMenu = new JMenu("Edit");
-		JMenu viewMenu = new JMenu("View");
-		JMenu helpMenu = new JMenu("Help");
-		
-		// define menu items for file menu
-		JMenuItem newItem		= new JMenuItem("New");
-		JMenuItem openItem 		= new JMenuItem("Open");
-		JMenuItem saveItem 		= new JMenuItem("Save");
-		JMenuItem saveAsItem	= new JMenuItem("Save as...");
-		JMenuItem closeItem		= new JMenuItem("Close");
-		JMenuItem exitItem	 	= new JMenuItem("Exit");
-		
-		// define actionListener for newItem
-		newItem.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					createNewDrawing();
-				}
-			}
-		);
-		
-		// define actionListener for openItem
-		openItem.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					JFileChooser chooser = new JFileChooser();
-					chooser.setFileFilter(new GmmlFilter());
-					int returnVal = chooser.showOpenDialog(null);
-					
-					if(returnVal == JFileChooser.APPROVE_OPTION) 
-					{
-						String file = chooser.getSelectedFile().getPath();
-						openPathway(file);
-					}
-				}
-			}
-		);
-		
-		// define actionListener for saveItem
-		saveItem.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					// reset zoom to 100%
-					
-					// Overwrite the existing xml file
-					document.writeToXML(document.xmlFile);
-				}
-			}
-		);
-		
-		// define actionListener for saveAsItem
-		saveAsItem.addActionListener(new ActionListener() 
-			{
-			public void actionPerformed(ActionEvent e) 
-			{
-				if (drawing!=null)
-				{
-					JFileChooser chooser = new JFileChooser();
-					chooser.setFileFilter(new GmmlFilter());
-					int returnVal = chooser.showSaveDialog(null);
-					if(returnVal == JFileChooser.APPROVE_OPTION) 
-					{
-						String file = chooser.getSelectedFile().getPath();
-						if(!file.endsWith(".xml")) 
-						{
-							file = file+".xml";
-						}
-						
-						int confirmed = 1;
-						File tempfile = new File(file);
-						
-						if(tempfile.exists())
-						{
-							String[] options = { "OK", "CANCEL" };
-							confirmed = JOptionPane.showOptionDialog(null, 
-									"The selected file already exists, overwrite?", 
-									"Warning", 
-									JOptionPane.DEFAULT_OPTION, 
-									JOptionPane.WARNING_MESSAGE, null, 
-									options, options[0]);
-						} 
-						else
-						{
-							confirmed = 0;
-						}
-						
-						if (confirmed == 0) 
-						{
-							document.writeToXML(tempfile);
-							System.out.println("Saved");
-						} else {
-							System.out.println("Canceled");
-						}
-					}
-				} 
-				else
-				{
-					JOptionPane.showMessageDialog(null, "No GMML file loaded!", "error", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		
-		exitItem.addActionListener(
-			new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					System.exit(0);	
-				}				
-			}
-		);
-		
-		// add items to fileMenu
-		fileMenu.add(newItem);
-		fileMenu.add(openItem);
-		fileMenu.add(saveItem);
-		fileMenu.add(saveAsItem);
-		fileMenu.add(closeItem);
-		fileMenu.add(exitItem);
+		MenuManager m = new MenuManager();
+		MenuManager fileMenu = new MenuManager ("&File");
+		fileMenu.add(newAction);
+		fileMenu.add(openAction);
+		fileMenu.add(saveAction);
+		fileMenu.add(saveAsAction);
+		fileMenu.add(closeAction);
+		fileMenu.add(new Separator());
+		fileMenu.add(exitAction);
+		MenuManager editMenu = new MenuManager ("&Edit");
+		editMenu.add(propertyAction);
+		MenuManager viewMenu = new MenuManager ("&View");
+		viewMenu.add(new ZoomAction(this, 50));
+		viewMenu.add(new ZoomAction(this, 75));
+		viewMenu.add(new ZoomAction(this, 100));
+		viewMenu.add(new ZoomAction(this, 125));
+		viewMenu.add(new ZoomAction(this, 150));
+		viewMenu.add(new ZoomAction(this, 200));
+		MenuManager helpMenu = new MenuManager ("&Help");
+		helpMenu.add(aboutAction);
+		m.add(fileMenu);
+		m.add(editMenu);
+		m.add(viewMenu);
+		m.add(helpMenu);
+		return m;
+	}
+			
 
-		// TODO define menu items for edit menu.....
-		JMenuItem propertyItem = new JMenuItem("Properties");
-		propertyItem.addActionListener(
-			new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					if(drawing != null)
-					{
-						if(drawing.selectedGraphics != null)
-						{
-							new GmmlPropertyInspector(drawing.selectedGraphics);
-						}
-						else
-						{
-							JOptionPane.showMessageDialog(null, "No GMMLGraphics selected!", 
-									"error", JOptionPane.ERROR_MESSAGE);
-						}
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}
-				}
-			}
-		);
+	ScrolledComposite sc;
 		
-		// add items to editMenu
-		editMenu.add(propertyItem);
-		
-		// define menu items for view menu
-		JMenu zoomSubMenu = new JMenu("Zoom");
-		
-		JMenuItem zoom50  = new JMenuItem(" 50 %");
-		JMenuItem zoom75  = new JMenuItem(" 75 %");
-		JMenuItem zoom100 = new JMenuItem("100 %");
-		JMenuItem zoom125 = new JMenuItem("125 %");
-		JMenuItem zoom150 = new JMenuItem("150 %");
-		JMenuItem zoom200 = new JMenuItem("200 %");
-		
-		// define actionListener for zoomitem
-		zoom50.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					if (drawing != null)
-					{
-						drawing.setZoom(50);
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}					
-				}
-			}
-		);
-		
-		// define actionListener for zoomitem
-		zoom75.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					if (drawing != null)
-					{
-						drawing.setZoom(75);
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}
-				}
-			}
-		);
-		
-		// define actionListener for zoomitem
-		zoom100.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					if (drawing != null)
-					{
-						drawing.setZoom(100);
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}					
-				}
-			}
-		);
-		
-		// define actionListener for zoomitem
-		zoom125.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					if (drawing != null)
-					{
-						drawing.setZoom(125);
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}				
-				}
-			}
-		);
-		
-		// define actionListener for zoomitem
-		zoom150.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					if (drawing != null)
-					{
-						drawing.setZoom(150);
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}				
-				}
-			}
-		);
-		
-		// define actionListener for zoomitem
-		zoom200.addActionListener(
-			new ActionListener() 
-			{
-				public void actionPerformed(ActionEvent e) 
-				{
-					if (drawing != null)
-					{
-						drawing.setZoom(200);
-					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "No GMML file loaded!", 
-								"error", JOptionPane.ERROR_MESSAGE);
-					}				
-				}
-			}
-		);
-		
-		
-		
-		zoomSubMenu.add(zoom50);
-		zoomSubMenu.add(zoom75);
-		zoomSubMenu.add(zoom100);
-		zoomSubMenu.add(zoom125);
-		zoomSubMenu.add(zoom150);
-		zoomSubMenu.add(zoom200);
-		
-		viewMenu.add(zoomSubMenu);
-		
-		// define menu items for help menu
-		JMenuItem aboutItem	= new JMenuItem("About");
-		
-		aboutItem.addActionListener(
-			new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					new GmmlAboutBox();
-				}
-			}
-		);
-		
-		// add items to helpMenu
-		helpMenu.add(aboutItem);
-		
-		// add menus to menubar
-		menubar.add(fileMenu);
-		menubar.add(editMenu);
-		menubar.add(viewMenu);
-		menubar.add(helpMenu);
+	protected Control createContents(Composite parent)
+	{
+		Shell shell = parent.getShell();
+		shell.setSize(800, 600);
+		shell.setLocation(100, 100);
 
-		// add menubar to frame
-		this.setJMenuBar(menubar);
+		shell.setText("GmmlVision");
 
-	} // end buildMenu()
+		sc = new ScrolledComposite (parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		
+		return parent;
+		
+	};
 	
-
 	/**
 	 * Creates a new empty drawing and loads it in the frame 
 	 */
 	private void createNewDrawing()
 	{
-		GmmlDrawing d = new GmmlDrawing();
-		d.addElement(new GmmlShape(600, 200, 100, 40, GmmlShape.TYPE_RECTANGLE, Color.blue, 10, d));
-		d.addElement(new GmmlLine(100, 100, 200, 200, Color.green, d));
-		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very long id", "ref", Color.green, d));
-		d.addElement(new GmmlLabel(200, 50, 100, 80, "testlabel", "Arial", "bold", "italic", 10, Color.black, d));
-		d.addElement(new GmmlLineShape(300, 50, 200, 500, GmmlLineShape.TYPE_LIGAND_SQUARE, Color.blue, d));
-		d.addElement(new GmmlArc(50, 50, 200, 200, Color.red, 0, d));
-		d.addElement(new GmmlBrace(500, 500, 200, 60, GmmlBrace.ORIENTATION_TOP, Color.cyan, d));
+		GmmlDrawing d = new GmmlDrawing(sc, SWT.NONE);
 		
-		this.setContentPane(d);
+		d.addElement(new GmmlShape(600, 200, 100, 40, GmmlShape.TYPE_RECTANGLE, new RGB (0, 0, 255), 10, d));
+		d.addElement(new GmmlLine(100, 100, 200, 200, new RGB (0, 255, 0), d));
+		d.addElement(new GmmlGeneProduct(200, 200, 200, 80, "this is a very long id", "ref", new RGB (255, 0, 0), d));
+		d.addElement(new GmmlLineShape(300, 50, 200, 500, GmmlLineShape.TYPE_LIGAND_SQUARE, new RGB (0, 128, 0), d));
+		d.addElement(new GmmlLineShape(300, 150, 200, 400, GmmlLineShape.TYPE_RECEPTOR_ROUND, new RGB (0, 128, 0), d));
+		d.addElement(new GmmlLineShape(300, 250, 200, 300, GmmlLineShape.TYPE_LIGAND_ROUND, new RGB (0, 128, 0), d));
+		d.addElement(new GmmlLabel(200, 50, 100, 80, "testlabel", "Arial", "bold", "italic", 10, new RGB (0, 0, 0), d));
+		d.addElement(new GmmlArc(50, 50, 200, 200, new RGB (255, 0, 0), 0, d));
+		d.addElement(new GmmlBrace(400, 400, 200, 60, GmmlBrace.ORIENTATION_TOP, new RGB (255, 0, 255), d));
+		d.addElement(new GmmlBrace(200, 200, 200, 60, GmmlBrace.ORIENTATION_BOTTOM, new RGB (255, 0, 255), d));
+		d.addElement(new GmmlBrace(400, 200, 200, 60, GmmlBrace.ORIENTATION_LEFT, new RGB (255, 0, 255), d));
+		d.addElement(new GmmlBrace(200, 400, 200, 60, GmmlBrace.ORIENTATION_RIGHT, new RGB (255, 0, 255), d));
+		
+		sc.setContent(d);
+		d.setSize(800, 600);
 		
 		drawing = d;
 	}
@@ -399,24 +343,14 @@ class GmmlVision extends JFrame
 	 * Opens a GMML representation of a pathway or reaction and creates 
 	 * a scrollpane of the drawing, which is loaded in the frame.
 	 */
-	private void openPathway(String file)
+	private void openPathway(String fnPwy)
 	{
-		// initialize new JDOM gmml representation and read the file
-		document = new GmmlData(file);
-		// get drawing from reader
-		drawing = document.getDrawing();
-		
-		// create scrollpane
-		JScrollPane scroll = new JScrollPane(drawing);
-		scroll.setBackground(Color.gray);
-		// set scrollpane
-		scroll.setVerticalScrollBar(scroll.createVerticalScrollBar());
-		scroll.setHorizontalScrollBar(scroll.createHorizontalScrollBar());
-		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		drawing = new GmmlDrawing(sc, SWT.NONE);
 
-		// add drawing to frame
-		setContentPane(scroll);
+		// initialize new JDOM gmml representation and read the file
+		document = new GmmlData(fnPwy, drawing);
+		
+		sc.setContent(drawing);
 	}
 
 } // end of class
