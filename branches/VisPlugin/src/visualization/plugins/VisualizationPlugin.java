@@ -29,15 +29,15 @@ public abstract class VisualizationPlugin {
 	private static String XML_ATTR_TOOLTIP = "useToolTip";
 	private static String XML_ATTR_DRAWING = "useDrawingObject";
 	
-	String[] rep_names = new String[] {"Drawing object", "Side panel", "Tooltip"};
+	private String[] rep_names = new String[] {"Drawing object", "Side panel", "Tooltip"};
 	protected static final int SIDEPANEL = 2;
 	protected static final int TOOLTIP = 4;
 	protected static final int DRAWING = 8;
 	
-	protected int CAN_USE; //Which representations possible (SIDEPANEL | TOOLTIP | DRAWING)
-	protected boolean CONFIGURABLE; //Configurable (if true, override createConfigComposite)
-	protected boolean GENERIC; //For generic use, or expression dataset specific
-	protected boolean USE_RESERVED_REGION; //Does this plugin use reserved region in GmmlGraphicsObject
+	private int DISPLAY_OPT; //Which representations possible (SIDEPANEL | TOOLTIP | DRAWING)
+	private boolean CONFIGURABLE; //Configurable (if true, override createConfigComposite)
+	private boolean GENERIC; //For generic use, or expression dataset specific
+	private boolean USE_RESERVED_REGION; //Does this plugin use reserved region in GmmlGraphicsObject
 	
 	private boolean dialogCompleted = true;
 	private boolean isActive;
@@ -123,9 +123,37 @@ public abstract class VisualizationPlugin {
 		if(canDrawingObject()) useDrawingObject = use; 
 	}
 	
-	public final boolean canSidePanel() { return (CAN_USE & SIDEPANEL) != 0; }
-	public final boolean canToolTip() { return (CAN_USE & TOOLTIP) != 0; }
-	public final boolean canDrawingObject() { return (CAN_USE & DRAWING) != 0; }
+	public final boolean canSidePanel() { return (DISPLAY_OPT & SIDEPANEL) != 0; }
+	public final boolean canToolTip() { return (DISPLAY_OPT & TOOLTIP) != 0; }
+	public final boolean canDrawingObject() { return (DISPLAY_OPT & DRAWING) != 0; }
+	
+	/**
+	 * Specify where this plugin can be displayed.
+	 * One of:<BR><UL>
+	 * <LI><CODE>DRAWING</CODE>: this plugin implements visualization on drawing objects
+	 * <LI><CODE>TOOLTIP</CODE>: this plugins implements visualization in the tooltip showed
+	 * when hovering over GeneProducts
+	 * <LI><CODE>SIDEPANEL</CODE>: this plugin implements visualization to be displayed in the side panel
+	 * </UL><BR>
+	 * When multiple visualization options are implemented, 
+	 * use bitwise OR (e.g. <CODE>SIDEPANEL | DRAWING</CODE>)
+	 * @param options
+	 */
+	protected void setDisplayOptions(int options) {
+		DISPLAY_OPT = options;
+	}
+	
+	protected void setUseReservedArea(boolean use) {
+		USE_RESERVED_REGION = use;
+	}
+	
+	protected void setIsConfigurable(boolean configurable) {
+		CONFIGURABLE = configurable;
+	}
+	
+	protected void setIsGeneric(boolean generic) {
+		GENERIC = generic;
+	}
 	
 	public final boolean isGeneric() { return GENERIC; }
 	public final boolean isConfigurable() { return CONFIGURABLE; }

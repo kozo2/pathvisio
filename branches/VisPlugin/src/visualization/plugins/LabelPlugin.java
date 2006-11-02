@@ -23,8 +23,6 @@ import org.jdom.Element;
 
 import util.SwtUtils;
 import visualization.Visualization;
-
-import data.GmmlData;
 import data.GmmlDataObject;
 
 /**
@@ -48,10 +46,10 @@ public class LabelPlugin extends VisualizationPlugin {
 	
 	public LabelPlugin(Visualization v) {
 		super(v);		
-		CONFIGURABLE = true;
-		CAN_USE = DRAWING | SIDEPANEL | TOOLTIP;
-		GENERIC = true;
-		USE_RESERVED_REGION = true;
+	    setIsConfigurable(true);
+		setDisplayOptions(DRAWING | SIDEPANEL | TOOLTIP);
+		setIsGeneric(true);
+		setUseReservedArea(true);
 	}
 
 	public String getName() { return NAME; }
@@ -66,15 +64,17 @@ public class LabelPlugin extends VisualizationPlugin {
 			Font f = null;
 			
 			GmmlDataObject gd = g.getGmmlData();
-			Rectangle area = new Rectangle((int)gd.getLeft(), (int)gd.getTop(), 
-										   (int)gd.getWidth(), (int)gd.getHeight());
+			Rectangle area = getVisualization().getReservedRegion(this, g).getBounds();
+			
+			buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
+			buffer.fillRectangle(area);
 			
 			f = SwtUtils.changeFont(f, new FontData(font, getFontSize(), SWT.NONE), e.display);
 			String label = getLabelText((GmmlGeneProduct) g);
 			Point textSize = buffer.textExtent (label);
 			buffer.drawString (label, 
 					area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
-					area.y + (int)(area.height / 2) - (int)(textSize.y / 2));
+					area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
 			
 			f.dispose();
 		}

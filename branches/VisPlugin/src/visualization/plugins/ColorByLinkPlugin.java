@@ -1,35 +1,17 @@
 package visualization.plugins;
 
+import graphics.GmmlGraphics;
+
 import java.util.HashMap;
 import java.util.Random;
 
-import gmmlVision.GmmlVision;
-import graphics.GmmlGeneProduct;
-import graphics.GmmlGraphics;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Region;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.jdom.Element;
 
-import util.SwtUtils;
 import visualization.Visualization;
-
-import data.GmmlData;
 import data.GmmlDataObject;
 
 /**
@@ -40,14 +22,16 @@ import data.GmmlDataObject;
 public class ColorByLinkPlugin extends VisualizationPlugin {	
 	static final String NAME = "Graphical link color";
 			
+	static final int refMarkRadius = 12;
+	static final int refMarkAlpha = 128;
+	
 	HashMap<Integer, RGB> id2col;
 	Random rnd;
 	
 	public ColorByLinkPlugin(Visualization v) {
 		super(v);
-		CONFIGURABLE = false;
-		CAN_USE = DRAWING;
-		GENERIC = true;
+		setDisplayOptions(DRAWING);
+		setIsGeneric(true);
 		
 		id2col = new HashMap<Integer, RGB>();
 		rnd = new Random();
@@ -73,36 +57,30 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	}
 	
 	void drawLineStart(int id, GmmlGraphics g, PaintEvent e, GC buffer) {
-		Region r = g.createVisualizationRegion();
-		Rectangle bounds = r.getBounds();
-		bounds.width = bounds.width/2;
-		bounds.height = bounds.height/2;
-		buffer.drawRectangle(bounds);
-		r.intersect(bounds);
-		
-		buffer.setClipping(r);
-		drawShape(id, g, e, buffer);
-		Region none = null;
-		buffer.setClipping(none);
-		
-		r.dispose();
+		GmmlDataObject gd = g.getGmmlData();
+		drawRefMark( 
+				id,			
+				(int)gd.getStartX() - refMarkRadius/2, 
+				(int)gd.getStartY() - refMarkRadius/2,
+				e, buffer);
 	}
 	
 	void drawLineEnd(int id, GmmlGraphics g, PaintEvent e, GC buffer) {
-		Region r = g.createVisualizationRegion();
-		Rectangle bounds = r.getBounds();
-		bounds.x = bounds.width/2;
-		bounds.y = bounds.height/2;
-		bounds.width /= 2;
-		bounds.height /=2;
-		r.intersect(bounds);
-		
-		buffer.setClipping(r);
-		drawShape(id, g, e, buffer);
-		Region none = null;
-		buffer.setClipping(none);
-		
-		r.dispose();
+		GmmlDataObject gd = g.getGmmlData();
+		drawRefMark( 
+				id,			
+				(int)gd.getEndX() - refMarkRadius/2, 
+				(int)gd.getEndY() - refMarkRadius/2,
+				e, buffer);
+	}
+	
+	void drawRefMark(int id, int x, int y, PaintEvent e, GC buffer) {
+		int origAlpha = buffer.getAlpha();
+		Color c = new Color(e.display, getRGB(id));
+		buffer.setBackground(c);
+		buffer.setAlpha(refMarkAlpha);
+		buffer.fillOval(x, y, refMarkRadius, refMarkRadius);
+		buffer.setAlpha(origAlpha);
 	}
 	
 	void drawShape(int id, GmmlGraphics g, PaintEvent e, GC buffer) {
@@ -125,7 +103,9 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	}
 	
 	RGB randomRGB() {
-		return new RGB(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255));
+		int rgb = java.awt.Color.HSBtoRGB(rnd.nextFloat(), 1, 1);
+		java.awt.Color c = new java.awt.Color(rgb);
+		return new RGB(c.getRed(), c.getGreen(), c.getBlue());
 	}
 	
 	int[] parseIds(GmmlDataObject gd) {

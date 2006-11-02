@@ -215,8 +215,9 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public Region createVisualizationRegion() {
 		Region region = new Region();
 		java.awt.Rectangle r = getBounds();
-		//Take bound minus 1 (to keep lines visible)
-		region.add(r.x + 1, r.y + 1, r.width - 1, r.height - 1);
+		//Take bound minus b (to keep lines visible)
+		int b = 2;
+		region.add(r.x + b, r.y + b, r.width - b, r.height - b);
 		return region;
 	}
 }
