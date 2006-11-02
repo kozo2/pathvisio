@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Label;
 import org.jdom.Element;
 
 import util.SwtUtils;
+import visualization.Visualization;
 
 import data.GmmlData;
 import data.GmmlDataObject;
@@ -45,11 +46,12 @@ public class LabelPlugin extends VisualizationPlugin {
 	String font = "Arial narrow";
 	int fontSize = 10;
 	
-	public LabelPlugin() {
-		super();		
+	public LabelPlugin(Visualization v) {
+		super(v);		
 		CONFIGURABLE = true;
 		CAN_USE = DRAWING | SIDEPANEL | TOOLTIP;
 		GENERIC = true;
+		USE_RESERVED_REGION = true;
 	}
 
 	public String getName() { return NAME; }

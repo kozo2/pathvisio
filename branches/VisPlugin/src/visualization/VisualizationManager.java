@@ -76,18 +76,18 @@ public class VisualizationManager implements PropertyListener {
 	
 	public static void addVisualization(Visualization v) {
 		visualizations.add(v);
-		visComboItem.updateCombo();
+		visComboItem.update();
 	}
 	
 	public static void removeVisualization(int index) {
 		if(index < 0 || index >= visualizations.size()) return; //Ignore wrong index
 		visualizations.remove(index);
-		visComboItem.updateCombo();
+		visComboItem.update();
 	}
 	
 	public static void removeVisualization(Visualization v) {
 		visualizations.remove(v);
-		visComboItem.updateCombo();
+		visComboItem.update();
 	}
 	
 	public static String getNewName() {
@@ -169,11 +169,11 @@ public class VisualizationManager implements PropertyListener {
 					setCurrent(visCombo.getSelectionIndex() - 1);
 				}
 			});
-			updateCombo();
+			update();
 			return control;
 		}
 		
-		public void updateCombo() {
+		public void update() {
 			String previous = visCombo.getText();
 			int select = 0;
 			

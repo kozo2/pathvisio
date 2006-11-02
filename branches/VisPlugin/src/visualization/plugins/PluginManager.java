@@ -20,25 +20,27 @@ import java.util.zip.ZipEntry;
 
 import org.jdom.Element;
 
+import visualization.Visualization;
+
 public abstract class PluginManager {
 	static final String NAME_METHOD = "getName";
 	static final String PLUGIN_PKG = "visualization.plugins";
 	
 	static final Set<Class> plugins = new LinkedHashSet<Class>();
 	
-	public static VisualizationPlugin getInstance(Class pluginClass) throws SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		Constructor c = pluginClass.getConstructor(new Class[] {});
-		return (VisualizationPlugin)c.newInstance(new Object[] {});
+	public static VisualizationPlugin getInstance(Class pluginClass, Visualization v) throws SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		Constructor c = pluginClass.getConstructor(new Class[] { Visualization.class });
+		return (VisualizationPlugin)c.newInstance(new Object[] { v });
 	}
-	
-	public static VisualizationPlugin instanceFromXML(Element xml) throws ClassNotFoundException, SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		
+	public static VisualizationPlugin instanceFromXML(Element xml, Visualization v) throws ClassNotFoundException, SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		String className = xml.getAttributeValue(VisualizationPlugin.XML_ATTR_CLASS);
 		
 		if(className == null) throw new IllegalArgumentException(
 				"Element has no '" + VisualizationPlugin.XML_ATTR_CLASS + "' attribute");
 		
 		Class pluginClass = Class.forName(className);
-		VisualizationPlugin p = getInstance(pluginClass);
+		VisualizationPlugin p = getInstance(pluginClass, v);
 		p.loadXML(xml);
 		return p;
 	}
@@ -58,7 +60,7 @@ public abstract class PluginManager {
 	
 	public static String getPluginName(Class pluginClass) {
 		try {
-			VisualizationPlugin p = getInstance(pluginClass);
+			VisualizationPlugin p = getInstance(pluginClass, null);
 			return p.getName();
 		} catch(Exception e) {
 			GmmlVision.log.error("Unable to get plugin name for " + pluginClass, e);

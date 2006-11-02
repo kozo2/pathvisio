@@ -17,6 +17,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -26,6 +27,7 @@ import org.eclipse.swt.widgets.Label;
 import org.jdom.Element;
 
 import util.SwtUtils;
+import visualization.Visualization;
 
 import data.GmmlData;
 import data.GmmlDataObject;
@@ -41,8 +43,8 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	HashMap<Integer, RGB> id2col;
 	Random rnd;
 	
-	public ColorByLinkPlugin() {
-		super();
+	public ColorByLinkPlugin(Visualization v) {
+		super(v);
 		CONFIGURABLE = false;
 		CAN_USE = DRAWING;
 		GENERIC = true;
@@ -56,38 +58,74 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	public void createSidePanelComposite(Composite parent) { }
 
 	public void draw(GmmlGraphics g, PaintEvent e, GC buffer) {
-		RGB rgb = getRGB(g);
-		if(rgb == null) return;
+		GmmlDataObject gd = g.getGmmlData();
+		int[] ids = parseIds(gd);
+		if(ids[0] != 0) { //This is a shape
+			drawShape(ids[0], g, e, buffer);
+			return;
+		}
+		if(ids[1] != 0) {
+			drawLineStart(ids[1], g, e, buffer);
+		}
+		if(ids[2] != 0) {
+			drawLineEnd(ids[2], g, e, buffer);
+		}
+	}
+	
+	void drawLineStart(int id, GmmlGraphics g, PaintEvent e, GC buffer) {
+		Region r = g.createVisualizationRegion();
+		Rectangle bounds = r.getBounds();
+		bounds.width = bounds.width/2;
+		bounds.height = bounds.height/2;
+		buffer.drawRectangle(bounds);
+		r.intersect(bounds);
 		
+		buffer.setClipping(r);
+		drawShape(id, g, e, buffer);
+		Region none = null;
+		buffer.setClipping(none);
+		
+		r.dispose();
+	}
+	
+	void drawLineEnd(int id, GmmlGraphics g, PaintEvent e, GC buffer) {
+		Region r = g.createVisualizationRegion();
+		Rectangle bounds = r.getBounds();
+		bounds.x = bounds.width/2;
+		bounds.y = bounds.height/2;
+		bounds.width /= 2;
+		bounds.height /=2;
+		r.intersect(bounds);
+		
+		buffer.setClipping(r);
+		drawShape(id, g, e, buffer);
+		Region none = null;
+		buffer.setClipping(none);
+		
+		r.dispose();
+	}
+	
+	void drawShape(int id, GmmlGraphics g, PaintEvent e, GC buffer) {
 		GmmlDataObject gd = g.getGmmlData();
 		RGB oldRGB = gd.getColor();
-		gd.setColor(rgb);
+		gd.dontFireEventsOnce();
+		gd.setColor(getRGB(id));
 		g.draw(e, buffer);
+		gd.dontFireEventsOnce();
 		gd.setColor(oldRGB);
 	}
 	
-	RGB getRGB(GmmlGraphics g) {
-		int colorId = -1;
-		int[] ids = parseIds(g.getGmmlData());
-		if			(ids[0] != 0) { //This is a reference object
-			colorId = ids[0];
-		} else if	(ids[1] != 0) {
-			colorId = ids[1];
-		} else if	(ids[2] != 0) { //TODO: half color
-			colorId = ids[2];
+	RGB getRGB(int id) {
+		RGB rgb = id2col.get(id);
+		if(rgb == null) {
+			rgb = randomRGB();
+			id2col.put(id, rgb);
 		}
-		if(colorId == -1) return null;
-		
-		if(id2col.containsKey(colorId)) return id2col.get(colorId);
-		else {
-			RGB rgb = getRandomRGB();
-			id2col.put(colorId, rgb);
-			return rgb;
-		}
+		return rgb;
 	}
 	
-	RGB getRandomRGB() {
-		return new RGB(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+	RGB randomRGB() {
+		return new RGB(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255));
 	}
 	
 	int[] parseIds(GmmlDataObject gd) {

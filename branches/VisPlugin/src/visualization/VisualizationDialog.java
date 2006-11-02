@@ -73,6 +73,11 @@ public class VisualizationDialog extends ApplicationWindow {
 		setBlockOnOpen(true);
 	}
 	
+	public boolean close() {
+		VisualizationManager.getComboItem().update();
+		return super.close();
+	}
+	
 	public Control createContents(Composite parent) {
 		Shell shell = getShell();
 		shell.setSize(700, 500);
@@ -334,6 +339,7 @@ public class VisualizationDialog extends ApplicationWindow {
 		}
 		void setPluginButtonsEnabled(boolean enable) {
 			VisualizationPlugin p = getSelectedPlugin();
+			if(p == null) return;
 			boolean doEnable = enable ? p.isActive() : false;
 			pluginConfigButton.setEnabled(doEnable);
 			setOrderButtonsEnabled(doEnable);

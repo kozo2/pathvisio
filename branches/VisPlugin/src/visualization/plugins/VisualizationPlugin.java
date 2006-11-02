@@ -20,6 +20,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
 
+import visualization.Visualization;
+
 public abstract class VisualizationPlugin {
 	public static String XML_ELEMENT = "plugin";
 	public static String XML_ATTR_CLASS = "class";
@@ -40,10 +42,18 @@ public abstract class VisualizationPlugin {
 	private boolean dialogCompleted = true;
 	private boolean isActive;
 	
-	private boolean useDrawingObject = false;
-	private boolean useSidePanel = false;
-	private boolean useToolTip = false;
-			
+	private boolean useDrawingObject;
+	private boolean useSidePanel;
+	private boolean useToolTip;
+	
+	private Visualization visualization;
+	
+	public VisualizationPlugin(Visualization v) {
+		visualization = v;
+	}
+	
+	protected Visualization getVisualization() { return visualization; }
+	
 	public abstract String getName();
 	
 	public abstract void draw(GmmlGraphics g, PaintEvent e, GC buffer);

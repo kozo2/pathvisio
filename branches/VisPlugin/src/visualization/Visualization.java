@@ -46,7 +46,7 @@ public class Visualization {
 		drawingOrder = new ArrayList<VisualizationPlugin>();
 		for(Class c : PluginManager.getPlugins()) {
 			try {
-				VisualizationPlugin p = PluginManager.getInstance(c);
+				VisualizationPlugin p = PluginManager.getInstance(c, this);
 				plugins.put(c, p);
 				drawingOrder.add(p);
 			} catch(Exception e) {
@@ -72,6 +72,7 @@ public class Visualization {
 		drawingOrder.remove(plugins.get(pluginClass));
 		plugins.put(pluginClass, plugin);
 		drawingOrder.add(plugin);
+		plugin.setActive(true);
 	}
 			
 	public void drawToObject(GmmlGraphics g, PaintEvent e, GC buffer) {
@@ -79,18 +80,28 @@ public class Visualization {
 			if(p.isActive()) p.draw(g, e, buffer);
 	}
 	
-//	public Region getReservedRegion(VisualizationPlugin p, GmmlGraphics g) {
-//		//Determine number of plugins that to reserve a region
-//		int nrRes = 0;
-//		for(VisualizationPlugin pl : activePlugins.values()) 
-//			nrRes += pl.isUseReservedRegion() ? 1 : 0;
-//		
-//		Region region = g.createVisualizationRegion();
-//		//Distribute space over plugins
-//		Rectangle bounds = region.getBounds();
-//		double pw = bounds.width / nrRes;
-//		//We need some kind of order in plugins!!!!!!
-//	}
+	public Region getReservedRegion(VisualizationPlugin p, GmmlGraphics g) {
+		//Determine number of active plugins that to reserve a region
+		int nrRes = 0;
+		int index = 0;
+		for(VisualizationPlugin pl : drawingOrder) {
+			if(pl == p) index = nrRes;
+			nrRes += (pl.isActive() && pl.isUseReservedRegion()) ? 1 : 0;
+		}
+		
+		Region region = g.createVisualizationRegion();
+		System.out.println(region);
+		//Distribute space over plugins
+		Rectangle bounds = region.getBounds();
+		System.out.println(bounds);
+		bounds.width = bounds.width / nrRes;
+		bounds.x += bounds.width * index;
+		
+		region.intersect(bounds);
+		System.out.println(bounds);
+		System.out.println(region);
+		return region;
+	}
 	
 	public static final int ORDER_UP = 1;
 	public static final int ORDER_DOWN = -1;
@@ -157,7 +168,7 @@ public class Visualization {
 		
 		for(Object o : xml.getChildren(VisualizationPlugin.XML_ELEMENT)) {
 			try {
-				VisualizationPlugin p = PluginManager.instanceFromXML((Element)o);
+				VisualizationPlugin p = PluginManager.instanceFromXML((Element)o, v);
 				v.activatePlugin(p.getClass(), p);
 			} catch(Exception e) {
 				GmmlVision.log.error("Unable to load VisualizationPlugin", e);
