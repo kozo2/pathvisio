@@ -12,6 +12,9 @@ import org.eclipse.swt.widgets.TableColumn;
 /**
  * This class is responsible for resizing a table's column width to fit its parents width
  * Columns that are unresizable ({@link TableColumn#getResizable()} = false) are skipped
+ * NOTE: Don't set a layout on the table's parent that automaticly fills out the table
+ * (e.g. FillLayout or GridLayout in combination with GridData.FILL_BOTH). Advice is to
+ * use GridLayout without setting the layoutData of the table
  */
 public class TableColumnResizer extends ControlAdapter {
 	Table table;
@@ -35,7 +38,9 @@ public class TableColumnResizer extends ControlAdapter {
 	public void setWeights(int[] intWeights) {
 		if(intWeights == null) {
 			weights = new double[cols.length];
-			for(int i = 0; i < weights.length; i++) weights[i] = 1.0 / cols.length;
+			int resizable = 0;
+			for(TableColumn c : cols) resizable += c.getResizable() ? 1 : 0;
+			for(int i = 0; i < weights.length; i++) weights[i] = 1.0 / resizable;
 		} else {
 			int sum = 0;
 			for(int i : intWeights) sum += i;
@@ -73,12 +78,14 @@ public class TableColumnResizer extends ControlAdapter {
 		for(TableColumn col : cols) width -= !col.getResizable() ? col.getWidth() : 0;
 		
 		Point oldSize = table.getSize();
-		if (oldSize.x > area.width) {
+		if (oldSize.x >= area.width) {
 			// table is getting smaller so make the columns
 			// smaller first and then resize the table to
 			// match the client area width
 			for (int i = 0; i < cols.length; i++) {
-				if(cols[i].getResizable())	cols[i].setWidth((int)(width * weights[i]));
+				if(cols[i].getResizable()) {
+					cols[i].setWidth((int)(width * weights[i]));
+				}
 			}
 			
 			table.setSize(area.width, area.height);
@@ -89,7 +96,9 @@ public class TableColumnResizer extends ControlAdapter {
 			table.setSize(area.width, area.height);
 			
 			for (int i = 0; i < cols.length; i++) {
-				if(cols[i].getResizable())	cols[i].setWidth((int)(width * weights[i]));
+				if(cols[i].getResizable())	{
+					cols[i].setWidth((int)(width * weights[i]));
+				}
 			}
 		}
 	}

@@ -290,7 +290,7 @@ class GmmlSelectionBox extends GmmlGraphicsShape
 		}
 	}
 	
-	protected void draw(PaintEvent e, GC buffer)
+	public void draw(PaintEvent e, GC buffer)
 	{
 		if(isVisible) {
 			buffer.setAntialias(SWT.OFF);

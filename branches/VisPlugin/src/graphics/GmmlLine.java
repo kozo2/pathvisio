@@ -41,7 +41,7 @@ public class GmmlLine extends GmmlGraphics
 		setHandleLocation();
 	}
 		
-	protected void draw(PaintEvent e, GC buffer)
+	public void draw(PaintEvent e, GC buffer)
 	{
 		double endx = gdata.getEndX();
 		double endy = gdata.getEndY();

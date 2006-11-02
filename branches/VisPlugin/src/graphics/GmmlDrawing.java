@@ -30,6 +30,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import visualization.Visualization;
+import visualization.VisualizationManager;
+
 import data.GmmlData;
 import data.GmmlDataObject;
 import data.GmmlEvent;
@@ -387,15 +390,20 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 		Rectangle2D.Double r = new Rectangle.Double(e.x, e.y, e.width, e.height);
 		    	
 		Collections.sort(drawingObjects);
-		    	    	 
+		
+		Visualization v = VisualizationManager.getCurrent();
 		for(GmmlDrawingObject o : drawingObjects)
 		{
 			if(o.intersects(r))
 			{
 				o.draw (e, buffer);
+				
+				if(v != null && o instanceof GmmlGraphics) {
+						v.drawToObject((GmmlGraphics) o, e, buffer);
+				}	
 			}
 		}
-		
+				
 		e.gc.drawImage(image, 0, 0);
 		buffer.dispose();
 	}

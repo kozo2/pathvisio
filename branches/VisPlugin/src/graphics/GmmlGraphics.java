@@ -1,6 +1,12 @@
 package graphics;
 
+import java.awt.geom.Area;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.PathData;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Region;
 
 import preferences.GmmlPreferences;
 import data.GmmlDataObject;
@@ -51,5 +57,12 @@ public abstract class GmmlGraphics extends GmmlDrawingObject implements GmmlList
 	boolean listen = true;
 	public void gmmlObjectModified(GmmlEvent e) {	
 		if(listen) markDirty(); // mark everything dirty
+	}
+	
+	public Region createVisualizationRegion() {
+		Region region = new Region();
+		java.awt.Rectangle r = getBounds();
+		region.add(r.x, r.y, r.width, r.height);
+		return region;
 	}
 }

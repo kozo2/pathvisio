@@ -50,6 +50,8 @@ import org.eclipse.swt.widgets.Shell;
 import preferences.GmmlPreferenceManager;
 import preferences.GmmlPreferences;
 import search.PathwaySearchComposite;
+import visualization.VisualizationDialog;
+import visualization.VisualizationManager;
 import R.RController;
 import R.RDataIn;
 import R.RCommands.RException;
@@ -528,7 +530,6 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 			try {
 				GmmlGex.connect();
 				cacheExpressionData();
-				showColorSetActionsCI(true);
 				showLegend(true);
 			} catch(Exception e) {
 				String msg = "Failed to open Expression Dataset" + e.getMessage();
@@ -743,7 +744,6 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 			if(GmmlGex.isConnected())
 			{
 				colorSetWindow.open();
-				showColorSetActionsCI(true);
 				legend.resetContents();
 				if(GmmlVision.isDrawingOpen()) GmmlVision.getDrawing().redraw();
 			}
@@ -755,6 +755,22 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 		}
 	}
 	private ColorSetManagerAction colorSetManagerAction = new ColorSetManagerAction(this);
+	
+	private class VisualizationDialogAction extends Action
+	{
+		GmmlVisionWindow window;
+		public VisualizationDialogAction (GmmlVisionWindow w)
+		{
+			window = w;
+			setText("&Visualizations");
+			setToolTipText("Create and edit visualizations");
+		}
+		public void run () {
+			VisualizationDialog d = new VisualizationDialog(getShell());
+			d.open();
+		}
+	}
+	private VisualizationDialogAction visualizationDialogAction = new VisualizationDialogAction(this);
 	
 	/**
 	 * {@link Action} to open a {@link GmmlAboutBox} window
@@ -1213,19 +1229,21 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 	// Elements of the coolbar
 	ToolBarContributionItem commonActionsCI;
 	ToolBarContributionItem editActionsCI;
-	ToolBarContributionItem colorSetActionsCI;
+	ToolBarContributionItem visualizationCI;
 	ToolBarContributionItem viewActionsCI;
 	protected CoolBarManager createCoolBarManager(int style)
 	{
 		createCommonActionsCI();
 		createEditActionsCI();
 		createViewActionsCI();
+		createVisualizationCI();
 		
 		CoolBarManager coolBarManager = new CoolBarManager(style);
 		coolBarManager.setLockLayout(true);
 		
 		coolBarManager.add(commonActionsCI);
 		coolBarManager.add(viewActionsCI);
+		coolBarManager.add(visualizationCI);
 		return coolBarManager;
 	}
 	
@@ -1295,37 +1313,15 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 		
 		viewActionsCI =  new ToolBarContributionItem(toolBarManager, "SwitchActions");
 	}
-	
-	/**
-	 * Creates element of the coolbar containing actions related to color sets;  
-	 * only shown when expression data is loaded
-	 */
-	protected void createColorSetActionsCI()
-	{
-		ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
-		toolBarManager.add(new ControlContribution("ColorSetLabel") {
-			protected Control createControl(Composite parent) {
-				Composite comp = new Composite(parent, SWT.NONE);
-				comp.setLayout(new GridLayout(1, true));
-				Label label = new Label(comp, SWT.LEFT);
-				label.setText("Color by:");
-				label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-				label.pack();
-				return comp;
-			}	});
-		toolBarManager.add(new ControlContribution("ColorSetCombo") {
-			protected Control createControl(Composite parent) {				
-				colorSetCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-				colorSetCombo.setToolTipText("Select the colorset for coloring gene boxes");
-				colorSetCombo.addSelectionListener(new ColorSetComboListener());
-				setColorSetComboItems();
-				colorSetCombo.pack();
-				return colorSetCombo;
-			}
-		});
 		
+	/**
+	 * Creates element of the coolbar containing controls related to visualizations
+	 */
+	protected void createVisualizationCI() {
+		ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
+		toolBarManager.add(VisualizationManager.getComboItem());
 		toolBarManager.add(colorSetManagerAction);
-		colorSetActionsCI = new ToolBarContributionItem(toolBarManager, "ColorSetActions");
+		visualizationCI = new ToolBarContributionItem(toolBarManager, "ColorSetActions");
 	}
 	
 	/**
@@ -1335,61 +1331,26 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 	private void showEditActionsCI(boolean show)
 	{
 		if(show) {
-			// Hide the colorSetActionsCI if displayed
-			showColorSetActionsCI(false);
-			getCoolBarManager().add(editActionsCI);
+			getCoolBarManager().insertAfter(viewActionsCI.getId(), editActionsCI);
 		}
-		else { 
+		else {
 			getCoolBarManager().remove(editActionsCI);
-			// Show the colorSetActionsCI if needed
-			showColorSetActionsCI(true);
 		}
+		showVisualizationCI(!show);
 		getCoolBarManager().update(true);
 	}
 	
 	/**
-	 * Shows or hides the colorSetActionsCI
+	 * Shows or hides the visualizationCI
 	 * @param show	true/false for either show or hide
 	 */
-	private void showColorSetActionsCI(boolean show)
-	{
+	private void showVisualizationCI(boolean show) {
 		if(show) {
-			//Check if drawing is in edit mode if loaded
-			if(GmmlVision.isDrawingOpen()) { 
-				if(GmmlVision.getDrawing().isEditMode()) return;
-			}
-			//Check if expression data is loaded
-			if(!GmmlGex.isConnected()) return;
-			//Re-create the colorSetActions (to recreate disposed items)
-			createColorSetActionsCI();
-			//Add the elements to the coolbar and update
-			getCoolBarManager().add(colorSetActionsCI);
-			getCoolBarManager().update(true);
-
-			//Select the colorset used in the drawing if loaded
-			colorSetCombo.select(GmmlGex.getColorSetIndex() + 1); 
-		}
-		else { 
-			getCoolBarManager().remove(colorSetActionsCI);
+			getCoolBarManager().insertAfter(viewActionsCI.getId(), visualizationCI);
+		} else {
+			getCoolBarManager().remove(visualizationCI);
 		}
 		getCoolBarManager().update(true);
-	}
-
-	public void updateColorSetCombo() {
-		if(colorSetCombo == null || colorSetCombo.isDisposed()) return;
-		setColorSetComboItems();
-		colorSetCombo.select(GmmlGex.getColorSetIndex() + 1); 
-	}
-	
-	private void setColorSetComboItems() {
-		if(colorSetCombo == null || colorSetCombo.isDisposed()) return;
-		String[] colorSets = GmmlGex.getColorSetNames();
-		if(colorSets != null) {
-			String[] comboItems = new String[colorSets.length + 1];
-			comboItems[0] = COMBO_NO_COLORSET;
-			System.arraycopy(colorSets, 0, comboItems, 1, colorSets.length);
-			colorSetCombo.setItems(comboItems);
-		}
 	}
 	
 	protected StatusLineManager createStatusLineManager() {
@@ -1435,6 +1396,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements PropertyListe
 		dataMenu.add(selectGexAction);
 		dataMenu.add(createGexAction);
 		dataMenu.add(colorSetManagerAction);
+		dataMenu.add(visualizationDialogAction);
 		if(GmmlVision.USE_R) {
 			MenuManager statsMenu = new MenuManager("&Pathway statistics");
 			dataMenu.add(statsMenu);

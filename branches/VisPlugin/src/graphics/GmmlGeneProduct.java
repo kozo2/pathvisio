@@ -5,8 +5,12 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -14,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import sun.security.action.GetLongAction;
 import util.SwtUtils;
 import data.GmmlData;
 import data.GmmlDataObject;
@@ -136,9 +141,11 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		fontSize = (int)fontSizeDouble;
 	}
 
-	protected void draw(PaintEvent e, GC buffer)
+	public void draw(PaintEvent e, GC buffer)
 	{
 		Color c = null;
+		Font f = null;
+		
 		if(isSelected())
 		{
 			c = SwtUtils.changeColor(c, selectColor, e.display);
@@ -152,28 +159,34 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		buffer.setLineStyle (SWT.LINE_SOLID);
 		buffer.setLineWidth (1);		
 		
-		buffer.drawRectangle (
-			(int)(gdata.getLeft()),
-			(int)(gdata.getTop()),
-			(int)gdata.getWidth(),
-			(int)gdata.getHeight()
-		);
+		Rectangle area = new Rectangle(
+				(int)gdata.getLeft(), 
+				(int)gdata.getTop(), 
+				(int)gdata.getWidth(), 
+				(int)gdata.getHeight());
 		
-		buffer.setClipping (
-				(int)(gdata.getLeft()) + 1,
-				(int)(gdata.getTop()) + 1,
-				(int)gdata.getWidth() - 1,
-				(int)gdata.getHeight() - 1
-			);
+		buffer.drawRectangle (area);
 		
-		gpColor.draw(e, buffer);
+		buffer.setClipping ( area.x - 1, area.y - 1, area.width + 1, area.height + 1);
+	
+//		gpColor.draw(e, buffer);
+					
+		f = SwtUtils.changeFont(f, new FontData(gdata.getFontName(), fontSize, SWT.NONE), e.display);
+		buffer.setFont(f);
 		
+		String label = getName();
+		Point textSize = buffer.textExtent (label);
+		buffer.drawString (label, 
+				area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
+				area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
+				
 		Region r = null;
 		buffer.setClipping(r);
 		
 		drawHighlight(e, buffer);
 		
 		c.dispose();
+		f.dispose();
 	}
 	
 	protected void draw(PaintEvent e)
@@ -199,4 +212,11 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		}
 	}
 	
+	public Region createVisualizationRegion() {
+		Region region = new Region();
+		java.awt.Rectangle r = getBounds();
+		//Take bound minus 1 (to keep lines visible)
+		region.add(r.x + 1, r.y + 1, r.width - 1, r.height - 1);
+		return region;
+	}
 }

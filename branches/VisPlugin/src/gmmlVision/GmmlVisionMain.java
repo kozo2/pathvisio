@@ -1,5 +1,6 @@
 package gmmlVision;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -9,6 +10,8 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 
 import preferences.GmmlPreferences;
+import visualization.VisualizationManager;
+import visualization.plugins.PluginManager;
 
 import data.GmmlGdb;
 import data.GmmlGex;
@@ -70,11 +73,24 @@ public class GmmlVisionMain {
 		
 		//initiate Gene database (to load previously used gdb)
 		GmmlGdb.init();
+
+		//load visualizations and plugins
+		loadVisualizations();
 		
 		//NOTE: ImageRegistry will be initiated in "createContents" of GmmlVisionWindow,
 		//since the window has to be opened first (need an active Display)
 	}
 	
+	static void loadVisualizations() {
+		//load visualization plugins
+		try {
+			PluginManager.loadPlugins();
+		} catch (Exception e) {
+			GmmlVision.log.error("When loading visualization plugins", e);
+		}
+		
+		VisualizationManager.loadGeneric();
+	}
 	/**
 	 * Loads images used throughout the applications into an {@link ImageRegistry}
 	 */
@@ -101,6 +117,12 @@ public class GmmlVisionMain {
 				ImageDescriptor.createFromURL(cl.getResource("images/bigcateye.gif")));
 		imageRegistry.put("about.logo",
 				ImageDescriptor.createFromURL(cl.getResource("images/logo.jpg")));
+		imageRegistry.put("checkbox.unchecked",
+				ImageDescriptor.createFromURL(cl.getResource("icons/unchecked.gif")));
+		imageRegistry.put("checkbox.unavailable",
+				ImageDescriptor.createFromURL(cl.getResource("icons/unchecked_unavailable.gif")));
+		imageRegistry.put("checkbox.checked",
+				ImageDescriptor.createFromURL(cl.getResource("icons/checked.gif")));
 		GmmlVision.setImageRegistry(imageRegistry);
 	}
 	
