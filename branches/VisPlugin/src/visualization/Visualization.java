@@ -33,49 +33,50 @@ public class Visualization {
 	public static final String XML_ATTR_NAME = "name";
 	
 	String name;
-	HashMap<Class, VisualizationPlugin> activePlugins;
+	HashMap<Class, VisualizationPlugin> plugins;
+	ArrayList<VisualizationPlugin> drawingOrder;
 	
 	public Visualization(String name) {
-		activePlugins = new HashMap<Class, VisualizationPlugin>();
+		initPlugins();
 		this.name = name;
+	}
+	
+	void initPlugins() {
+		plugins = new HashMap<Class, VisualizationPlugin>();
+		drawingOrder = new ArrayList<VisualizationPlugin>();
+		for(Class c : PluginManager.getPlugins()) {
+			try {
+				VisualizationPlugin p = PluginManager.getInstance(c);
+				plugins.put(c, p);
+				drawingOrder.add(p);
+			} catch(Exception e) {
+				GmmlVision.log.error("Unable to create instance of plugin " + c, e);
+			}
+		}
 	}
 
 	public String getName() { return name; }
 	public void setName(String name) { this.name = name; }
 	
 	public boolean isGeneric() {
-		for(VisualizationPlugin p : activePlugins.values())
-			if(!p.isGeneric()) return false; //One or more non-generic plugins, so not generic
+		for(VisualizationPlugin p : plugins.values())
+			if(p.isActive() && !p.isGeneric()) return false; //One or more active non-generic plugins, so not generic
 		return true;
 	}
-	
-	public VisualizationPlugin getActivePlugin(Class pluginClass) { 
-		return activePlugins.get(pluginClass); 
+		
+	public Collection getPlugins() {
+		return plugins.values();
 	}
 	
-	public Collection getActivePlugins() { return activePlugins.keySet(); }
-	
-	public boolean isActivePlugin(Class pluginClass) {
-		return activePlugins.containsKey(pluginClass);
-	}
-
 	public void activatePlugin(Class pluginClass, VisualizationPlugin plugin) {
-		if(!activePlugins.containsKey(pluginClass))
-			activePlugins.put(pluginClass, plugin);
+		drawingOrder.remove(plugins.get(pluginClass));
+		plugins.put(pluginClass, plugin);
+		drawingOrder.add(plugin);
 	}
-	
-	public void activatePlugin(Class pluginClass) throws SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		if(!activePlugins.containsKey(pluginClass))
-			activePlugins.put(pluginClass, PluginManager.getInstance(pluginClass));
-	}
-	
-	public void deactivatePlugin(Class pluginClass) {
-		activePlugins.remove(pluginClass);
-	}
-	
+			
 	public void drawToObject(GmmlGraphics g, PaintEvent e, GC buffer) {
-		for(VisualizationPlugin p : activePlugins.values()) 
-			p.draw(g, e, buffer);
+		for(VisualizationPlugin p : drawingOrder) 
+			if(p.isActive()) p.draw(g, e, buffer);
 	}
 	
 //	public Region getReservedRegion(VisualizationPlugin p, GmmlGraphics g) {
@@ -96,41 +97,37 @@ public class Visualization {
 	public static final int ORDER_FIRST = 2;
 	public static final int ORDER_LAST = -2;
 	
-	public void setDrawingOrder(Class pluginClass, int order) {
-		VisualizationPlugin p = getActivePlugin(pluginClass);
-		
-		List<VisualizationPlugin> sorted = getActivePluginsSorted();
-		
+	public void setDrawingOrder(VisualizationPlugin plugin, int order) {
+		int index = drawingOrder.indexOf(plugin);
 		switch(order) {
 		case ORDER_UP:
+			if(index == 0) break;
+			drawingOrder.remove(index);
+			drawingOrder.add(index - 1, plugin);
+			break;
 		case ORDER_DOWN:
-			int index = sorted.indexOf(p);
-			int other = sorted.get(index - order).getDrawingOrder();
-			p.setDrawingOrder(other + order);
+			if(index == drawingOrder.size() - 1) break;
+			drawingOrder.remove(index);
+			drawingOrder.add(index + 1, plugin);
+			break;
 		case ORDER_FIRST:
-			p.setDrawingOrder(sorted.get(0).getDrawingOrder() + 1);
+			drawingOrder.remove(index);
+			drawingOrder.add(0, plugin);
+			break;
 		case ORDER_LAST:
-			p.setDrawingOrder(sorted.get(sorted.size() - 1).getDrawingOrder() - 1);
+			drawingOrder.remove(index);
+			drawingOrder.add(plugin);
+			break;
 		}
-		assignDrawingOrders();
 	}
 	
-	private List<VisualizationPlugin> getActivePluginsSorted() {
-		List<VisualizationPlugin> sorted = 
-			new ArrayList<VisualizationPlugin>(activePlugins.values());
-		Collections.sort(sorted);
-		return sorted;
-	}
-	
-	private void assignDrawingOrders() {
-		List<VisualizationPlugin> sorted = getActivePluginsSorted();
-		int size = sorted.size();
-		for(int i = 0; i < size; i++) sorted.get(i).setDrawingOrder(size + 1 - i);
+	public List<VisualizationPlugin> getPluginsSorted() {
+		return drawingOrder;
 	}
 	
 	public void updateSidePanel(GmmlGraphics g) {
-		for(VisualizationPlugin p : activePlugins.values()) 
-			p.updateSidePanel(g);
+		for(VisualizationPlugin p : drawingOrder) 
+			if(p.isActive()) p.updateSidePanel(g);
 	}
 	
 	public Shell getToolTip(Display display, GmmlGraphics g) {
@@ -138,8 +135,8 @@ public class Visualization {
 		tip.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 		tip.setLayout(new RowLayout());
 		
-		for(VisualizationPlugin p : activePlugins.values()) 
-			if(p.isUseToolTip()) p.getToolTipComposite(tip, g);
+		for(VisualizationPlugin p : drawingOrder) 
+			if(p.isActive() && p.isUseToolTip()) p.getToolTipComposite(tip, g);
 		
 		return tip;
 	}
@@ -147,8 +144,8 @@ public class Visualization {
 	public Element toXML() {
 		Element vis = new Element(XML_ELEMENT);
 		vis.setAttribute(XML_ATTR_NAME, getName());
-		for(VisualizationPlugin p : activePlugins.values())
-			vis.addContent(p.toXML());
+		for(VisualizationPlugin p : drawingOrder)
+			if(p.isActive()) vis.addContent(p.toXML());
 		return vis;
 	}
 	

@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
 
-public abstract class VisualizationPlugin implements Comparable {
+public abstract class VisualizationPlugin {
 	public static String XML_ELEMENT = "plugin";
 	public static String XML_ATTR_CLASS = "class";
 	private static String XML_ATTR_SIDEPANEL = "useSidePanel";
@@ -38,10 +38,11 @@ public abstract class VisualizationPlugin implements Comparable {
 	protected boolean USE_RESERVED_REGION; //Does this plugin use reserved region in GmmlGraphicsObject
 	
 	private boolean dialogCompleted = true;
+	private boolean isActive;
 	
-	private boolean useDrawingObject;
-	private boolean useSidePanel;
-	private boolean useToolTip;
+	private boolean useDrawingObject = false;
+	private boolean useSidePanel = false;
+	private boolean useToolTip = false;
 			
 	public abstract String getName();
 	
@@ -99,6 +100,9 @@ public abstract class VisualizationPlugin implements Comparable {
 	public boolean isUseToolTip() { return useToolTip; }
 	public boolean isUseDrawingObject() { return useDrawingObject; }
 	
+	public final boolean isActive() { return isActive; }
+	public final void setActive(boolean active) { isActive = active; }
+
 	public void setUseSidePanel(boolean use) { 
 		if(canSidePanel()) useSidePanel = use; 
 	}
@@ -116,21 +120,7 @@ public abstract class VisualizationPlugin implements Comparable {
 	public final boolean isGeneric() { return GENERIC; }
 	public final boolean isConfigurable() { return CONFIGURABLE; }
 	public final boolean isUseReservedRegion() { return USE_RESERVED_REGION; }
-		
-	private int drawingOrder;
-	
-	public int getDrawingOrder() { return drawingOrder; }
-	
-	public void setDrawingOrder(int order) { drawingOrder = order; }
-	
-	public int compareTo(Object o) {
-		if(!(o instanceof VisualizationPlugin)) 
-			throw new IllegalArgumentException("Object has wrong class");
-		
-		VisualizationPlugin p = (VisualizationPlugin) o;
-		return drawingOrder - p.drawingOrder;
-	}
-	
+				
 	private class ConfigurationDialog extends ApplicationWindow {
 		public ConfigurationDialog(Shell shell) {
 			super(shell);
