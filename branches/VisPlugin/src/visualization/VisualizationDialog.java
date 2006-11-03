@@ -39,10 +39,16 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+
+import colorSet.ColorSetComposite;
+import colorSet.ColorSetManager;
+import data.GmmlGex;
 
 import util.TableColumnResizer;
 import visualization.plugins.VisualizationPlugin;
@@ -75,6 +81,7 @@ public class VisualizationDialog extends ApplicationWindow {
 	
 	public boolean close() {
 		VisualizationManager.getComboItem().update();
+		ColorSetManager.save(GmmlGex.getColorSetOutput());
 		return super.close();
 	}
 	
@@ -82,6 +89,33 @@ public class VisualizationDialog extends ApplicationWindow {
 		Shell shell = getShell();
 		shell.setSize(700, 500);
 		
+		Composite content = new Composite(parent, SWT.NULL);
+		content.setLayout(new GridLayout());
+		
+		TabFolder tabs = new TabFolder(content, SWT.NULL);
+		TabItem visTab = new TabItem(tabs, SWT.NULL);
+		visTab.setControl(createVisualizationComp(tabs));
+		visTab.setText("Visualizations");
+		
+		TabItem colorTab = new TabItem(tabs, SWT.NULL);
+		colorTab.setControl(new ColorSetComposite(tabs, SWT.NULL));
+		colorTab.setText("Color sets");
+		
+		tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
+		
+		final Button ok = new Button(content, SWT.NULL);
+		ok.setText("  Ok  ");
+		ok.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				close();
+			}
+		});
+		ok.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+		
+		return tabs;
+	}
+
+	Composite createVisualizationComp(Composite parent) {
 		Composite content = new Composite(parent, SWT.NULL);
 		content.setLayout(new GridLayout(2, false));
 		
@@ -95,17 +129,9 @@ public class VisualizationDialog extends ApplicationWindow {
 		settingsComp = new VisualizationSettings(rightComp, SWT.NULL);
 		settingsStack.topControl = noneSelectedComp;
 		
-		final Button ok = new Button(content, SWT.NULL);
-		ok.setText("  Ok  ");
-		ok.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				close();
-			}
-		});
-		
 		return content;
 	}
-
+	
 	private void createNoneSelectedComp(Composite parent) {
 		noneSelectedComp = new Composite(parent, SWT.NULL);
 		noneSelectedComp.setLayout(new GridLayout());

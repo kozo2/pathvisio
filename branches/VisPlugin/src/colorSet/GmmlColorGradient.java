@@ -7,15 +7,35 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.jdom.Element;
+
+import util.ColorConverter;
 
 /**
  * This class represent a color gradient used for data visualization
  */
 public class GmmlColorGradient extends GmmlColorSetObject {
-	/**
-	 * Contains the colors and corresponding values used in this gradient as {@link ColorValuePair}
-	 */
+	public static final String XML_ELEMENT_NAME = "ColorGradient";
+
 	private ArrayList<ColorValuePair> colorValuePairs;
+	
+	/**
+	 * Constructor for this class
+	 * @param parent 		colorset this gradient belongs to
+	 * @param name 			name of the gradient
+	 */
+	public GmmlColorGradient(GmmlColorSet parent, String name)
+	{
+		super(parent, name);
+		getColorValuePairs();
+	}
+		
+	public GmmlColorGradient(GmmlColorSet parent, Element xml) {
+		super(parent, xml);
+	}
+	
 	/**
 	 * Get the the colors and corresponding values used in this gradient as {@link ColorValuePair}
 	 * @return ArrayList containing the ColorValuePairs
@@ -48,31 +68,7 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 		if(colorValuePairs == null || !colorValuePairs.contains(cvp)) return;
 		colorValuePairs.remove(cvp);
 	}
-	/**
-	 * Constructor for this class
-	 * @param parent 		colorset this gradient belongs to
-	 * @param name 			name of the gradient
-	 */
-	public GmmlColorGradient(GmmlColorSet parent, String name)
-	{
-		super(parent, name);
-		useSample = USE_SAMPLE_ALL;
-		getColorValuePairs();
-	}
-	
-	/**
-	 * Constructor for this class
-	 * @param parent 		colorset this gradient belongs to
-	 * @param name			name of the gradient	
-	 * @param criterion		string containing information to generate the gradient as stored
-	 * in the expression database
-	 */
-	public GmmlColorGradient(GmmlColorSet parent, String name, String criterion)
-	{
-		super(parent, name, criterion);
-		getColorValuePairs();
-	}
-	
+			
 	/**
 	 * get the color of the gradient for this value
 	 * @param value
@@ -113,12 +109,10 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 		double blue = colorStart.blue + alpha*(colorEnd.blue - colorStart.blue);
 		RGB rgb = null;
 		
-//		System.out.println("Finding color for: " + value);
 		//Try to create an RGB, if the color values are not valid (outside 0 to 255)
 		//This method returns null
 		try {
 			rgb = new RGB((int)red, (int)green, (int)blue);
-//			System.out.println("Found color: " + rgb);
 		} catch (Exception e) { 
 			GmmlVision.log.error("GmmlColorGradient:getColor: " + 
 					red + "," + green + "," +blue + ", for value " + value, e);
@@ -128,15 +122,8 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 	
 	public RGB getColor(HashMap<Integer, Object> data, int idSample)
 	{
-		int applySample = idSample; //The sample to apply the gradient on
-		if(useSample == USE_SAMPLE_ALL) //Check if this gradient applies to all samples
-		{
-			applySample = idSample; //Apply the gradient on the given sample
-		} else { //Does the gradient apply to the given sample?
-			if(useSample != idSample) return null;
-		}
 		try {
-			double value = (Double)data.get(applySample); //Try to get the data
+			double value = (Double)data.get(idSample); //Try to get the data
 			return getColor(value);
 		} catch(NullPointerException ne) { //No data available
 			GmmlVision.log.error("GmmlColorGradient:getColor: No data to calculate color", ne);
@@ -147,41 +134,22 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 		return null; //If anything goes wrong, return null
 	}
 	
-	public String getCriterionString()
-	{
-		//GRADIENT | useSample | value1 | color1 | ... | valueN | colorN |
-		String sep = "|";
-		StringBuilder criterion = new StringBuilder("GRADIENT" + sep);
-		criterion.append(
-				useSample + sep);
-		for(ColorValuePair cvp : colorValuePairs)
-		{
-			criterion.append(
-					cvp.value + sep +
-					GmmlColorSet.getColorString(cvp.color) + sep);
-		}
-		return criterion.toString();
+	String getXmlElementName() {
+		return XML_ELEMENT_NAME;
 	}
 	
-	public void parseCriterionString(String criterion)
-	{
+	public Element toXML() {
+		Element elm = super.toXML();
+		for(ColorValuePair cvp : colorValuePairs)
+			elm.addContent(cvp.toXML());
+		return elm;
+	}
+	
+	protected void loadXML(Element xml) {
+		super.loadXML(xml);
 		colorValuePairs = new ArrayList<ColorValuePair>();
-		String[] s = criterion.split("\\|");
-		try
-		{
-			useSample = Integer.parseInt(s[1]);
-			for(int i = 2; i < s.length - 1; i+=2)
-			{
-				colorValuePairs.add(new ColorValuePair(
-						GmmlColorSet.parseColorString(s[i+1]),
-						Double.parseDouble(s[i])));
-			}
-		}
-		catch (Exception e)
-		{
-			GmmlVision.log.error("Unable to parse color gradient data " +
-					"stored in expression database: " + criterion, e);
-		}
+		for(Object o : xml.getChildren(ColorValuePair.XML_ELEMENT))
+			colorValuePairs.add(new ColorValuePair((Element) o));
 	}
 	
 	/**
@@ -203,6 +171,9 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 	 * This class contains a color and its corresponding value used for the {@link GmmlColorGradient}
 	 */
 	public class ColorValuePair implements Comparable<ColorValuePair> {
+		static final String XML_ELEMENT = "color-value";
+		static final String XML_ATTR_VALUE = "value";
+		static final String XML_ELM_COLOR = "color";
 		public RGB color;
 		public double value;
 		public ColorValuePair(RGB color, double value)
@@ -211,9 +182,42 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 			this.value = value;
 		}
 		
+		public ColorValuePair(Element xml) {
+			Object o = xml.getChildren(XML_ELM_COLOR).get(0);
+			color = ColorConverter.parseColorElement((Element)o);
+			value = Double.parseDouble(XML_ATTR_VALUE);
+		}
+		
 		public int compareTo(ColorValuePair o)
 		{
 			return (int)(value - o.value);
+		}
+		
+		public Element toXML() {
+			Element elm = new Element(XML_ELEMENT);
+			elm.setAttribute(XML_ATTR_VALUE, Double.toString(value));
+			elm.addContent(ColorConverter.createColorElement(XML_ELM_COLOR, color));
+			return elm;
+		}
+	}
+	
+	public static class ColorGradientComposite extends ConfigComposite {		
+		public ColorGradientComposite(Composite parent, int style) {
+			super(parent, style);
+			createContents();
+		}
+		
+		GmmlColorGradient getInput() {
+			return (GmmlColorGradient)input;
+		}
+		
+		void refresh() {
+			super.refresh();
+		}
+				
+		void createContents() {
+			setLayout(new GridLayout());
+			createNameComposite(this);
 		}
 	}
 }

@@ -947,7 +947,7 @@ public class ColorSetWindow extends ApplicationWindow {
 	public void saveToGex()
 	{
 		GmmlGex.saveColorSets();
-		GmmlVision.getWindow().updateColorSetCombo();
+//		GmmlVision.getWindow().updateColorSetCombo();
 	}
 	/**
 	 * restores all colorsets from the expression database

@@ -18,6 +18,7 @@ public class CriterionComposite extends Composite {
 	String preExpression = "";
 	Criterion criterion;
 	List symbolList;
+	Text exprText;
 	
 	public CriterionComposite(Composite parent, Criterion criterion) {
 		super(parent, SWT.NULL);
@@ -33,18 +34,25 @@ public class CriterionComposite extends Composite {
 		criterion.setExpression(preExpression, symbolList.getItems());
 	}
 	
+	public void setInput(Criterion input) {
+		criterion = input;
+		refresh();
+	}
+	
+	public void refresh() {
+		if(criterion == null) exprText.setText("");
+		else exprText.setText(criterion.getExpression());
+	}
+	
 	protected void createContents() {
 		setLayout(new FillLayout());
 		
 		Group criterionGroup = new Group(this, SWT.SHADOW_IN);
 	    criterionGroup.setLayout(new GridLayout(2, false));
-//	    GridData groupGrid = new GridData(GridData.FILL_BOTH);
-//	    groupGrid.horizontalSpan = 3;
-//	    criterionGroup.setLayoutData(groupGrid);
 	    
 	    Label expressionLabel = new Label(criterionGroup, SWT.CENTER);
 	    expressionLabel.setText("Boolean expression:");
-	    final Text exprText = new Text(criterionGroup, SWT.SINGLE | SWT.BORDER);
+	    exprText = new Text(criterionGroup, SWT.SINGLE | SWT.BORDER);
 	    exprText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	    
 	    Label opsLabel = new Label(criterionGroup, SWT.CENTER);

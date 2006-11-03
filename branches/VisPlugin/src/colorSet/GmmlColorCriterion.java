@@ -4,9 +4,27 @@ import gmmlVision.GmmlVision;
 
 import java.util.HashMap;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.ColorDialog;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.jdom.Element;
+
+import util.ColorConverter;
+import util.SwtUtils;
 
 public class GmmlColorCriterion extends GmmlColorSetObject {
+	public static final String XML_ELEMENT_NAME = "ColorGradient";
+	
 	Criterion criterion = new Criterion();
 	
 	public static final RGB INITIAL_COLOR = new RGB(255, 255, 255);
@@ -18,18 +36,13 @@ public class GmmlColorCriterion extends GmmlColorSetObject {
 	
 	public GmmlColorCriterion(GmmlColorSet parent, String name) {
 		super(parent, name);
-		useSample = USE_SAMPLE_ALL;
 	}
 	
-	public GmmlColorCriterion(GmmlColorSet parent, String name, String criterion)
-	{
-		super(parent, name, criterion);
+	public GmmlColorCriterion(GmmlColorSet parent, Element xml) {
+		super(parent, xml);
 	}
-
+	
 	RGB getColor(HashMap<Integer, Object> data, int idSample) {
-		// Does this expression apply to the given sample?
-		if(useSample != USE_SAMPLE_ALL && useSample != idSample) return null; 
-
 		try {
 			if(criterion.evaluate(data)) return color;
 		} catch (Exception e) { 
@@ -39,30 +52,81 @@ public class GmmlColorCriterion extends GmmlColorSetObject {
 		return null;
 	}
 
-	void parseCriterionString(String criterion) {
-		// EXPRESSION | useSample | (r,g,b) | expression
-		String[] s = criterion.split("\\|", 4);
-		try
-		{
-			useSample = Integer.parseInt(s[1]);
-			color = GmmlColorSet.parseColorString(s[2]);
-			this.criterion.setExpression(s[3]);
-		}
-		catch (Exception e)
-		{
-			GmmlVision.log.error("Unable to parse color criterion data stored in " +
-					"expression database: " + criterion, e);
-		}
+	public String getXmlElementName() {
+		return XML_ELEMENT_NAME;
 	}
+	
+	static final String XML_ELM_COLOR = "color";
+	static final String XML_ATTR_EXPRESSION = "expression";
+	public Element toXML() {
+		Element elm = super.toXML();
+		ColorConverter.createColorElement(XML_ELM_COLOR, color);
+		elm.setAttribute(XML_ATTR_EXPRESSION, criterion.getExpression());
+		
+		return elm;
+	}
+		
+	public static class ColorCriterionComposite extends ConfigComposite {
+		final int colorLabelSize = 15;
+		
+		public ColorCriterionComposite(Composite parent, int style) {
+			super(parent, style);
+		}
+		
+		void refresh() {
+			super.refresh();
+		}
+		
+		GmmlColorCriterion getInput() {
+			return (GmmlColorCriterion)input;
+		}
+		
+		void changeColor(CLabel label) {
+			RGB rgb = new ColorDialog(getShell()).open();
+			if(rgb != null) {
+				label.setBackground(
+						SwtUtils.changeColor(
+								label.getBackground(), rgb, getShell().getDisplay()));
+				getInput().setColor(rgb);
+			}
+		}
+			
+		void createContents() {
+			setLayout(new GridLayout());
+			
+			createColorComp(this);
+			
+		    Group expressionGroup = new Group(this, SWT.SHADOW_IN);
+		    expressionGroup.setLayout(new FillLayout());
+		    expressionGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+		    
+		    new CriterionComposite(expressionGroup, getInput().getCriterion());
+		}
+		
+		Composite createColorComp(Composite parent) {
+			Composite colorComp = new Composite(parent, SWT.NULL);
+			colorComp.setLayout(new GridLayout(3, false));
+			
+			final GridData colorLabelGrid = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+			colorLabelGrid.widthHint = colorLabelGrid.heightHint = colorLabelSize;
+			
+			Label colorLabel = new Label(colorComp, SWT.CENTER);
+			colorLabel.setText("Color:");
 
-	public String getCriterionString() {
-		// EXPRESSION | useSample | (r,g,b) | expression
-		String sep = "|";
-		StringBuilder criterion = new StringBuilder("EXPRESSION" + sep);
-		criterion.append(useSample + sep);
-		criterion.append(GmmlColorSet.getColorString(color) + sep);
-		criterion.append(this.criterion.getExpression());
+			final CLabel color = new CLabel(colorComp, SWT.SHADOW_IN);
+			color.setLayoutData(colorLabelGrid);
 
-		return criterion.toString();
+			Button colorButton = new Button(colorComp, SWT.PUSH);
+			colorButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					changeColor(color);
+				}
+			});
+			
+			colorButton.setLayoutData(colorLabelGrid);
+			colorButton.setText("...");
+			
+			return colorComp;
+		}
 	}
 }

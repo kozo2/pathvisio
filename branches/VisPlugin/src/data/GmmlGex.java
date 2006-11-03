@@ -6,9 +6,13 @@ import graphics.GmmlDrawing;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -27,6 +31,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import util.FileUtils;
+import colorSet.ColorSetManager;
 import colorSet.GmmlColorCriterion;
 import colorSet.GmmlColorGradient;
 import colorSet.GmmlColorSet;
@@ -67,181 +72,26 @@ public abstract class GmmlGex {
 	 * (.properties file of the Hsql database)
 	 */
 	public static void setGexFile(File file) { gexFile = file; }
-	
-	private static Vector<GmmlColorSet> colorSets = new Vector<GmmlColorSet>();
-	
-	/**
-	 * Gets the {@link ColorSet}s used for the currently loaded Expression data
-	 */
-	public static Vector<GmmlColorSet> getColorSets() { return colorSets; }
-	
-	/**
-	 * Index of the colorSet that is currently used
-	 */
-	private static int colorSetIndex = -1;
-	
-	/**
-	 * Set the index of the colorset to use
-	 * @param colorSetIndex
-	 */
-	public static void setColorSetIndex(int _colorSetIndex)
-	{
-		GmmlVisionWindow window = GmmlVision.getWindow();
-		colorSetIndex = _colorSetIndex;
-		if(colorSetIndex < 0)
-		{
-			window.showLegend(false);
-		} else {
-			window.showLegend(true);
-		}
-		GmmlDrawing d = GmmlVision.getDrawing();
-		if(d != null) { d.redraw(); }
-	}
-	
-	public static void setColorSet(GmmlColorSet cs) {
-		int ci = getColorSets().indexOf(cs);
-		if(ci > -1) setColorSetIndex(ci);
-	}
-	
-	/**
-	 * Get the index of the currently used colorset
-	 * @return
-	 */
-	public static int getColorSetIndex() { 
-		return colorSetIndex;
-	}
-	
-	/**
-	 * Sets the {@link ColorSet}s used for the currently loaded Expression data
-	 * @param colorSets {@link Vector} containing the {@link ColorSet} objects
-	 */
-	public static void setColorSets(Vector<GmmlColorSet> _colorSets)
-	{
-		colorSets = _colorSets;
-	}
-	
-	/**
-	 * Removes this {@link ColorSet}
-	 * @param cs Colorset to remove
-	 */
-	public static void removeColorSet(GmmlColorSet cs) {
-		if(colorSets.contains(cs)) {
-			colorSets.remove(cs);
-			if(colorSetIndex == 0 && colorSets.size() > 0) setColorSetIndex(colorSetIndex);
-			else setColorSetIndex(colorSetIndex - 1);
+				
+	public static InputStream getColorSetInput() {
+		try {
+			InputStream in = new FileInputStream(new File(gexFile + ".xml"));
+			return in;
+		} catch(Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 	
-	/**
-	 * Removes this {@link ColorSet}
-	 * @param i index of ColorSet to remove
-	 */
-	public static void removeColorSet(int i) {
-		if(i > -1 && i < colorSets.size()) {
-			removeColorSet(colorSets.get(i));
+	public static OutputStream getColorSetOutput() {
+		try {
+			File f = new File(gexFile + ".xml");
+			OutputStream out = new FileOutputStream(f);
+			return out;
+		} catch(Exception e) {
+			e.printStackTrace();
+			return null;
 		}
-	}
-	
-	/**
-	 * Gets the names of all {@link GmmlColorSet}s used 
-	 * @return
-	 */
-	public static String[] getColorSetNames()
-	{
-		String[] colorSetNames = new String[colorSets.size()];
-		for(int i = 0; i < colorSetNames.length; i++)
-		{
-			colorSetNames[i] = ((GmmlColorSet)colorSets.get(i)).name;
-		}
-		return colorSetNames;
-	}
-	
-	/**
-	 * Saves the {@link ColorSets} in the Vector {@link colorSets} to the Expression database
-	 */
-	public static void saveColorSets()
-	{
-		try
-		{
-			con.setReadOnly(false);
-			Statement s = con.createStatement();
-			s.execute("DELETE FROM colorSets");
-			s.execute("DELETE FROM colorSetObjects");
-			
-			PreparedStatement sCs = con.prepareStatement(
-					"INSERT INTO colorSets	" +
-					"( colorSetId, name, criterion ) VALUES	" +
-			"( ?, ?, ? )"	);
-			PreparedStatement sCso = con.prepareStatement(
-					"INSERT INTO colorSetObjects 	" +
-					"( 	name, colorSetId,		" +
-					"	criterion	) VALUES		" +
-			"(	?, ?, ?	)"	);
-			
-			for(int i = 0; i < colorSets.size(); i++)
-			{
-				GmmlColorSet cs = (GmmlColorSet)colorSets.get(i);
-				sCs.setInt(1, i);
-				sCs.setString(2, cs.name);
-				sCs.setString(3, cs.getCriterionString());
-				sCs.execute();
-				for(int j = 0; j < cs.colorSetObjects.size(); j++)
-				{
-					GmmlColorSetObject cso = (GmmlColorSetObject)cs.colorSetObjects.get(j);
-					sCso.setString(1, cso.getName());
-					sCso.setInt(2, i);
-					sCso.setString(3, cso.getCriterionString());
-					sCso.execute();
-				}
-			}
-			con.setReadOnly(true);
-		}
-		catch (Exception e) {
-			GmmlVision.log.error("while saving colorset information to expression database: " + gexFile, e);
-		}
-	}
-	
-	/**
-	 * Load the colorset data stored in the Expression database in memory
-	 */
-	public static void loadColorSets()
-	{
-		try
-		{
-			Statement sCso = con.createStatement();
-			ResultSet r = con.createStatement().executeQuery(
-			"SELECT colorSetId, name, criterion FROM colorSets ORDER BY colorSetId" );
-			colorSets = new Vector<GmmlColorSet>();
-			while(r.next())
-			{
-				GmmlColorSet cs = new GmmlColorSet(r.getString(2), r.getString(3));
-				colorSets.add(cs);
-				ResultSet rCso = sCso.executeQuery(
-						"SELECT * FROM colorSetObjects" +
-						" WHERE colorSetId = " + r.getInt(1) +
-				" ORDER BY id");
-				while(rCso.next())
-				{
-					String name = rCso.getString(2);
-					String criterion = rCso.getString(4);
-					if(criterion.contains("GRADIENT"))
-					{
-						GmmlColorSetObject co = new GmmlColorGradient(cs, name, criterion);
-						cs.addObject(co);
-					} else if(criterion.contains("EXPRESSION"))
-					{
-						GmmlColorSetObject co = new GmmlColorCriterion(cs, name, criterion);
-						cs.addObject(co);
-					}
-				}
-			}
-			setColorSetIndex(colorSets.size() > 0 ? 0 : -1);
-		}
-		catch (Exception e)
-		{
-			GmmlVision.log.error("while loading colorset information from expression database: " + gexFile, e);
-		}
-		
 	}
 	
 	public static CachedData cachedData;
@@ -993,7 +843,7 @@ public abstract class GmmlGex {
 //		if(!clean) Utils.checkDbVersion(con, COMPAT_VERSION);
 		
 		setSamples();
-		loadColorSets();
+		ColorSetManager.load(getColorSetInput());
 	}
 	
 	/**
