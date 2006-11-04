@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
 
+import visualization.VisualizationManager.VisualizationEvent;
 import visualization.plugins.PluginManager;
 import visualization.plugins.VisualizationPlugin;
 
@@ -54,7 +55,15 @@ public class Visualization {
 	}
 
 	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
+	public void setName(String name) { 
+		this.name = name;
+		fireVisualizationEvent(VisualizationEvent.VISUALIZATION_MODIFIED);
+	}
+	
+	public final void fireVisualizationEvent(int type) {
+		VisualizationManager.firePropertyChange(
+				new VisualizationEvent(this, type));
+	}
 	
 	public boolean isGeneric() {
 		for(VisualizationPlugin p : plugins.values())
@@ -71,6 +80,7 @@ public class Visualization {
 		plugins.put(pluginClass, plugin);
 		drawingOrder.add(plugin);
 		plugin.setActive(true);
+		fireVisualizationEvent(VisualizationEvent.VISUALIZATION_MODIFIED);
 	}
 			
 	public void drawToObject(GmmlGraphics g, PaintEvent e, GC buffer) {
@@ -88,16 +98,12 @@ public class Visualization {
 		}
 		
 		Region region = g.createVisualizationRegion();
-		System.out.println(region);
 		//Distribute space over plugins
 		Rectangle bounds = region.getBounds();
-		System.out.println(bounds);
 		bounds.width = bounds.width / nrRes;
 		bounds.x += bounds.width * index;
 		
 		region.intersect(bounds);
-		System.out.println(bounds);
-		System.out.println(region);
 		return region;
 	}
 	
@@ -128,6 +134,7 @@ public class Visualization {
 			drawingOrder.add(plugin);
 			break;
 		}
+		fireVisualizationEvent(VisualizationEvent.VISUALIZATION_MODIFIED);
 	}
 	
 	public List<VisualizationPlugin> getPluginsSorted() {
@@ -137,6 +144,12 @@ public class Visualization {
 	public void updateSidePanel(GmmlGraphics g) {
 		for(VisualizationPlugin p : drawingOrder) 
 			if(p.isActive()) p.updateSidePanel(g);
+	}
+	
+	public boolean usesToolTip() {
+		for(VisualizationPlugin p : plugins.values())
+			if(p.isActive() && p.isUseToolTip()) return true;
+		return false;
 	}
 	
 	public Shell getToolTip(Display display, GmmlGraphics g) {

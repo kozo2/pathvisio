@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import sun.security.action.GetLongAction;
 import util.SwtUtils;
+import attic.GmmlGpColor;
 import data.GmmlData;
 import data.GmmlDataObject;
 import data.MappFormat;
@@ -41,12 +41,10 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 
 	// note: not the same as color!
 	RGB fillColor = INITIAL_FILL_COLOR;
-	GmmlGpColor gpColor;
 		
 	public GmmlGeneProduct (GmmlDrawing canvas, GmmlDataObject o) {
 		super(canvas, o);
 		drawingOrder = GmmlDrawing.DRAW_ORDER_GENEPRODUCT;				
-		gpColor = new GmmlGpColor(this);
 		
 		fontSizeDouble = INITIAL_FONTSIZE * canvas.getZoomFactor();
 		fontSize = (int)fontSizeDouble;

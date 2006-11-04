@@ -8,7 +8,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -24,27 +23,23 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import visualization.Visualization;
 import visualization.VisualizationManager;
-
+import visualization.VisualizationManager.VisualizationEvent;
+import visualization.VisualizationManager.VisualizationListener;
 import data.GmmlData;
 import data.GmmlDataObject;
 import data.GmmlEvent;
-import data.GmmlGex;
 import data.GmmlListener;
 import data.LineStyle;
 import data.LineType;
 import data.ObjectType;
 import data.OrientationType;
 import data.ShapeType;
-import data.GmmlGex.Sample;
-import data.GmmlGex.CachedData.Data;
 
 /**
  * This class implements and handles a drawing.
@@ -53,7 +48,7 @@ import data.GmmlGex.CachedData.Data;
  * event handling.
  */
 public class GmmlDrawing extends Canvas implements MouseListener, MouseMoveListener, 
-PaintListener, MouseTrackListener, KeyListener, GmmlListener
+PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListener
 {	
 	private static final long serialVersionUID = 1L;
 		
@@ -172,7 +167,8 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 		addMouseMoveListener(this);
 		addPaintListener (this);
 		addMouseTrackListener(this);
-		addKeyListener(this);	
+		addKeyListener(this);
+		VisualizationManager.addListener(this);
 	}
 		
 	/**
@@ -852,7 +848,8 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 	 * hovering over a geneproduct
 	 */
 	public void mouseHover(MouseEvent e) {
-		if(!editMode && GmmlGex.getColorSetIndex() > -1 && GmmlGex.isConnected()) {
+		Visualization v = VisualizationManager.getCurrent();
+		if(v != null && v.usesToolTip()) {
 			Point2D p = new Point2D.Double(e.x, e.y);
 			
 			Collections.sort(drawingObjects);
@@ -862,43 +859,47 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 				{
 					if (o instanceof GmmlGeneProduct)
 					{
-						GmmlGeneProduct gp = (GmmlGeneProduct)o;
-						
-						if(tip != null && !tip.isDisposed()) tip.dispose();
-						
-						tip = new Shell(getShell().getDisplay(), SWT.ON_TOP | SWT.TOOL);  
-						tip.setBackground(getShell().getDisplay()
-			                   .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-						tip.setLayout(new RowLayout());
-						Label labelL = new Label(tip, SWT.NONE);
-			            Label labelR = new Label(tip, SWT.NONE);
-			            labelL.setForeground(getShell().getDisplay()
-			                    .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-			            labelL.setBackground(getShell().getDisplay()
-			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-			            labelR.setForeground(getShell().getDisplay()
-			                    .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-			            labelR.setBackground(getShell().getDisplay()
-			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-			            
-			            Data mappIdData = GmmlGex.getCachedData(gp.getID(), gp.getSystemCode());
-			            if(mappIdData == null) return; //No data in cache for this geneproduct
-			            HashMap<Integer, Object> data = mappIdData.getAverageSampleData();
-			            String textL = "";
-			            String textR = "";
-			            for(Sample s : GmmlGex.getColorSets().get(GmmlGex.getColorSetIndex()).useSamples)
-			            {
-			            	textL += s.getName() + ":  \n";
-			            	textR += data.get(new Integer(s.idSample)) + "\n";
-			            }
-			            if(textL.equals("") && textR.equals("")) return;
-			            labelL.setText(textL);
-			            labelR.setText(textR);
-			            tip.pack();
-			            Point mp = toDisplay(e.x, e.y);
-			            tip.setLocation(mp.x + 15, mp.y + 15);
+						Shell tip = v.getToolTip(e.display, (GmmlGraphics)o);
+						Point mp = toDisplay(e.x, e.y);
+						tip.setLocation(mp.x + 15, mp.y + 15);
 			            tip.setVisible(true);
-						break;
+//						GmmlGeneProduct gp = (GmmlGeneProduct)o;
+//						
+//						if(tip != null && !tip.isDisposed()) tip.dispose();
+//						
+//						tip = new Shell(getShell().getDisplay(), SWT.ON_TOP | SWT.TOOL);  
+//						tip.setBackground(getShell().getDisplay()
+//			                   .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+//						tip.setLayout(new RowLayout());
+//						Label labelL = new Label(tip, SWT.NONE);
+//			            Label labelR = new Label(tip, SWT.NONE);
+//			            labelL.setForeground(getShell().getDisplay()
+//			                    .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+//			            labelL.setBackground(getShell().getDisplay()
+//			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+//			            labelR.setForeground(getShell().getDisplay()
+//			                    .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
+//			            labelR.setBackground(getShell().getDisplay()
+//			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+//			            
+//			            Data mappIdData = GmmlGex.getCachedData(gp.getID(), gp.getSystemCode());
+//			            if(mappIdData == null) return; //No data in cache for this geneproduct
+//			            HashMap<Integer, Object> data = mappIdData.getAverageSampleData();
+//			            String textL = "";
+//			            String textR = "";
+//			            for(Sample s : GmmlGex.getColorSets().get(GmmlGex.getColorSetIndex()).useSamples)
+//			            {
+//			            	textL += s.getName() + ":  \n";
+//			            	textR += data.get(new Integer(s.idSample)) + "\n";
+//			            }
+//			            if(textL.equals("") && textR.equals("")) return;
+//			            labelL.setText(textL);
+//			            labelR.setText(textR);
+//			            tip.pack();
+//			            Point mp = toDisplay(e.x, e.y);
+//			            tip.setLocation(mp.x + 15, mp.y + 15);
+//			            tip.setVisible(true);
+//						break;
 					}
 				}
 			}
@@ -1023,5 +1024,13 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener
 			}
 		}
 	}
-	
+
+	public void visualizationEvent(VisualizationEvent e) {
+		switch(e.type) {
+		case(VisualizationEvent.COLORSET_MODIFIED):
+		case(VisualizationEvent.VISUALIZATION_SELECTED):
+		case(VisualizationEvent.VISUALIZATION_MODIFIED):
+			redraw();
+		}
+	}	
 } // end of class

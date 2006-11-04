@@ -21,6 +21,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
 
 import visualization.Visualization;
+import visualization.VisualizationManager;
+import visualization.VisualizationManager.VisualizationEvent;
 
 public abstract class VisualizationPlugin {
 	public static String XML_ELEMENT = "plugin";
@@ -159,6 +161,11 @@ public abstract class VisualizationPlugin {
 	public final boolean isConfigurable() { return CONFIGURABLE; }
 	public final boolean isUseReservedRegion() { return USE_RESERVED_REGION; }
 				
+	public final void fireModifiedEvent() {
+		VisualizationManager.firePropertyChange(
+				new VisualizationEvent(this, VisualizationEvent.VISUALIZATION_MODIFIED));
+	}
+	
 	private class ConfigurationDialog extends ApplicationWindow {
 		public ConfigurationDialog(Shell shell) {
 			super(shell);

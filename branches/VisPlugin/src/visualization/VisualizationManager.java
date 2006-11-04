@@ -1,14 +1,14 @@
 package visualization;
 
 import gmmlVision.GmmlVision;
-import gmmlVision.GmmlVision.PropertyEvent;
-import gmmlVision.GmmlVision.PropertyListener;
-import graphics.GmmlDrawing;
+import gmmlVision.GmmlVision.ApplicationEvent;
+import gmmlVision.GmmlVision.ApplicationEventListener;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
 
 import org.eclipse.jface.action.ContributionItem;
@@ -29,13 +29,15 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
+import data.GmmlGex.ExpressionDataListener;
+
 /**
  * Manages visualizations
  * @author thomas
  *
  */
-public class VisualizationManager implements PropertyListener {
-	static { GmmlVision.addPropertyListener(new VisualizationManager()); }
+public class VisualizationManager implements ApplicationEventListener {
+	static { GmmlVision.addApplicationEventListener(new VisualizationManager()); }
 	
 	static final String XML_ELEMENT = "visualization-set";
 		
@@ -53,8 +55,8 @@ public class VisualizationManager implements PropertyListener {
 	
 	public static void setCurrent(int index) {
 		current = index;
-		GmmlDrawing d = GmmlVision.getDrawing();
-		if(d != null) d.redraw();
+		firePropertyChange(
+				new VisualizationEvent(null, VisualizationEvent.VISUALIZATION_SELECTED));
 	}
 	
 	public static List<Visualization> getVisualizations() {
@@ -76,18 +78,19 @@ public class VisualizationManager implements PropertyListener {
 	
 	public static void addVisualization(Visualization v) {
 		visualizations.add(v);
-		visComboItem.update();
+		firePropertyChange(
+				new VisualizationEvent(null, VisualizationEvent.VISUALIZATION_ADDED));
 	}
 	
 	public static void removeVisualization(int index) {
 		if(index < 0 || index >= visualizations.size()) return; //Ignore wrong index
 		visualizations.remove(index);
-		visComboItem.update();
+		firePropertyChange(
+				new VisualizationEvent(null, VisualizationEvent.VISUALIZATION_REMOVED));
 	}
 	
 	public static void removeVisualization(Visualization v) {
-		visualizations.remove(v);
-		visComboItem.update();
+		removeVisualization(visualizations.indexOf(v));
 	}
 	
 	public static String getNewName() {
@@ -144,12 +147,13 @@ public class VisualizationManager implements PropertyListener {
 		return visComboItem;
 	}
 	
-	static class VisComboItem extends ControlContribution {
+	static class VisComboItem extends ControlContribution implements VisualizationListener {
 		final String NONE = "no visualization";
 		Combo visCombo;
 		
 		public VisComboItem(String id) {
 			super(id);
+			addListener(this);
 		}
 
 		protected Control createControl(Composite parent) {
@@ -187,12 +191,67 @@ public class VisualizationManager implements PropertyListener {
 			visCombo.setItems(items);
 			visCombo.select(select);
 		}
+
+		public void visualizationEvent(VisualizationEvent e) {
+			switch(e.type) {
+			case(VisualizationEvent.VISUALIZATION_ADDED):
+			case(VisualizationEvent.VISUALIZATION_REMOVED):
+			case(VisualizationEvent.VISUALIZATION_MODIFIED):
+				update();
+			}
+			
+		}
 	}
 	
-	public void propertyChanged(PropertyEvent e) {
-		if(e.name == GmmlVision.PROPERTY_CLOSE_APPLICATION) {
+	public void applicationEvent(ApplicationEvent e) {
+		if(e.type == ApplicationEvent.CLOSE_APPLICATION) {
 			saveGeneric();
 		}		
 	}
 
+	static List<VisualizationListener> listeners = new ArrayList<VisualizationListener>();
+
+	/**
+	 * Add a {@link ExpressionDataListener}, that will be notified if an
+	 * event related to visualizations occurs
+	 * @param l The {@link ExpressionDataListener} to add
+	 */
+	public static void addListener(VisualizationListener l) {
+		if(listeners == null) listeners = new ArrayList<VisualizationListener>();
+		listeners.add(l);
+	}
+
+	/**
+	 * Fire a {@link VisualizationEvent} to notify all {@link VisualizationListener}s registered
+	 * to this class
+	 * @param e
+	 */
+	public static void firePropertyChange(VisualizationEvent e) {
+		for(VisualizationListener l : listeners) l.visualizationEvent(e);
+	}
+
+	public interface VisualizationListener {
+		public void visualizationEvent(VisualizationEvent e);
+	}
+
+	public static class VisualizationEvent extends EventObject {
+		private static final long serialVersionUID = 1L;
+		public static final int COLORSET_ADDED = 0;
+		public static final int COLORSET_REMOVED = 1;
+		public static final int COLORSET_MODIFIED = 2;
+		public static final int VISUALIZATION_ADDED = 3;
+		public static final int VISUALIZATION_REMOVED = 4;
+		public static final int VISUALIZATION_MODIFIED = 5;
+		public static final int VISUALIZATION_SELECTED = 6;
+
+		public Object source;
+		public int type;
+
+		public VisualizationEvent(Object source, int type) {
+			super(source == null ? VisualizationManager.class : source);
+			this.source = source;
+			this.type = type;
+		}
+	}
+	
 }

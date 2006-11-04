@@ -1,9 +1,13 @@
-package colorSet;
+package visualization.colorset;
 
-import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -23,20 +27,23 @@ import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import util.SwtUtils;
+import visualization.colorset.GmmlColorCriterion.ColorCriterionComposite;
+import visualization.colorset.GmmlColorGradient.ColorGradientComposite;
 
 public class ColorSetComposite extends Composite {
 	final int colorLabelSize = 15;
-	GmmlColorSet colorSet;
+	ColorSet colorSet;
 	
 	ListViewer objectList;
 	
 	Composite colorButtons;
+	Composite objectsGroup;
+	ObjectSettingsComposite objectSettings;
 	Color colorNCM, colorNGF, colorNDF;
 	CLabel labelColorNCM, labelColorNGF, labelColorNDF;
 	Combo colorSetCombo;
@@ -48,22 +55,29 @@ public class ColorSetComposite extends Composite {
 	}
 	
 	
-	public void setInput(GmmlColorSet cs) {
+	public void setInput(ColorSet cs) {
 		colorSet = cs;
 		if(colorSet == null) {
-			setColorSetEnabled(false);
+			setObjectsGroupEnabled(false);
 		} else {
-			setColorSetEnabled(true);
+			setObjectsGroupEnabled(true);
 			initColorLabels();
 			initName();
-			objectList.setInput(colorSet.getObjects().toArray());
+			objectList.setInput(colorSet);
+			objectList.getList().select(0);
 		}
 	}
+		
+	void setObjectsGroupEnabled(boolean enable) {
+		setCompositeEnabled(objectsGroup, enable);
+	}
 	
-	//TODO: also child composites
-	void setColorSetEnabled(boolean enable) {
-		for(Control c : colorButtons.getChildren()) c.setEnabled(enable);
-		nameText.setEnabled(enable);
+	void setCompositeEnabled(Composite comp, boolean enable) {
+		for(Control c : comp.getChildren()) {
+			if(c instanceof Composite) 
+				setCompositeEnabled((Composite) c, enable);
+			else c.setEnabled(enable);
+		}
 	}
 	
 	void initName() {
@@ -78,8 +92,6 @@ public class ColorSetComposite extends Composite {
 	
 	public void refreshCombo() {
 		colorSetCombo.setItems(ColorSetManager.getColorSetNames());
-		int current = ColorSetManager.getColorSetIndex();
-		colorSetCombo.select(current);
 		colorSetCombo.layout();
 	}
 
@@ -89,24 +101,82 @@ public class ColorSetComposite extends Composite {
 		colorSetComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 				
-		Group objectsGroup = new Group(this, SWT.NULL);
+		objectsGroup = new Group(this, SWT.NULL);
 		objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 		objectsGroup.setLayout(new GridLayout(2, false));
 		
-		objectList = new ListViewer(objectsGroup, SWT.SINGLE | SWT.READ_ONLY);
-		objectList.setContentProvider(new ArrayContentProvider());
+		Composite listComp = createObjectList(objectsGroup);
+		listComp.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+		
+		objectSettings = new ObjectSettingsComposite(objectsGroup, SWT.NONE);
+		objectSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+		refreshCombo();
+		
+		setCompositeEnabled(objectsGroup, false);
+		colorSetCombo.select(0);
+	}
+
+	Composite createObjectList(Composite parent) {
+		Composite listComp = new Composite(parent, SWT.NULL);
+		listComp.setLayout(new GridLayout());
+		
+		objectList = new ListViewer(listComp, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
+		objectList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
+		objectList.setContentProvider(new IStructuredContentProvider() {
+			public Object[] getElements(Object inputElement) {
+				return ((ColorSet)inputElement).getObjects().toArray();
+			}
+			
+			public void dispose() { }
+			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
+		});
 		objectList.setLabelProvider(new LabelProvider() {
 			public String getText(Object element) {
 				return ((GmmlColorSetObject)element).getName();
 			}
 		});
+		objectList.addSelectionChangedListener(new ISelectionChangedListener() {
+			boolean ignore;
+			GmmlColorSetObject previous = null;
+			public void selectionChanged(SelectionChangedEvent event) {
+				if(ignore) {
+					ignore = false;
+					return;
+				}
+				boolean save = true;
+				if(colorSet.getObjects().contains(previous))
+					save = objectSettings.save();
+				if(save) {
+					previous = getSelectedObject();
+					objectSettings.setInput(previous);
+				} else {
+					ignore = true;
+					objectList.setSelection(new StructuredSelection(previous));
+				}
+			}
+		});
 		
-		new ObjectSettingsComposite(objectsGroup, SWT.NONE);
-
-		refreshCombo();
-		colorSetCombo.select(0);
+		Composite buttons = new Composite(listComp, SWT.NULL);
+		buttons.setLayout(new RowLayout(SWT.HORIZONTAL));
+		final Button add = new Button(buttons, SWT.PUSH);
+		add.setText("Add");
+		final Button remove = new Button(buttons, SWT.PUSH);
+		remove.setText("Remove");
+		
+		SelectionListener buttonAdapter = new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				if(e.widget == add) addColorSetObject();
+				else removeColorSetObject();
+			}
+		};
+		
+		add.addSelectionListener(buttonAdapter);
+		remove.addSelectionListener(buttonAdapter);
+		
+		return  listComp;
 	}
-
+	
 	RGB askColor(RGB current) {
 		ColorDialog cd = new ColorDialog(getShell());
 		cd.setRGB(current);
@@ -123,6 +193,8 @@ public class ColorSetComposite extends Composite {
 		changeLabelColor(label, rgb);
 	}
 	
+	//TODO: need to keep reference to Color objects
+	//TODO: why don't they get a color??
 	void changeLabelColor(CLabel label, RGB rgb) {
 		Color c = null;
 		if		(label == labelColorNCM) c = colorNCM;
@@ -130,6 +202,8 @@ public class ColorSetComposite extends Composite {
 		else if (label == labelColorNDF) c = colorNDF;
 
 		label.setBackground(SwtUtils.changeColor(c, rgb, getShell().getDisplay()));
+		label.redraw();
+		label.layout();
 	}
 	
 	void addColorSet() {
@@ -143,6 +217,62 @@ public class ColorSetComposite extends Composite {
 		refreshCombo();
 	}
 	
+	void addColorSetObject() {
+		final int NEW_GRADIENT = 10;
+		final int NEW_EXPRESSION = 11;
+		Dialog dialog = new Dialog(getShell()) {
+			int newObject = NEW_GRADIENT;
+			public int open() {
+				int open = super.open();
+				return open == CANCEL ? CANCEL : newObject;
+			}
+			protected Control createDialogArea(Composite parent) {
+				setBlockOnOpen(true);
+				Composite contents = new Composite(parent, SWT.NULL);
+				contents.setLayout(new RowLayout(SWT.VERTICAL));
+				final Button gradient = new Button(contents, SWT.RADIO);
+				gradient.setText("Color by gradient");
+				final Button expression = new Button(contents, SWT.RADIO);
+				expression.setText("Color by boolean expression");
+				
+				SelectionListener lst = new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						if(e.widget == gradient) newObject =  NEW_GRADIENT;
+						else newObject = NEW_EXPRESSION;
+					}
+				};
+				
+				gradient.addSelectionListener(lst);
+				expression.addSelectionListener(lst);
+				gradient.setSelection(true);
+				return contents;
+			}
+		};
+		
+		int type = dialog.open();
+		if(type == Dialog.CANCEL) return;
+		switch(type) {
+		case NEW_GRADIENT:
+			colorSet.addObject(
+					new GmmlColorGradient(colorSet, colorSet.getNewName("New gradient")));
+			break;
+		case NEW_EXPRESSION:
+			colorSet.addObject(
+					new GmmlColorCriterion(colorSet, colorSet.getNewName("New expression")));
+			break;
+		}
+		objectList.refresh();
+	}
+	
+	void removeColorSetObject() {
+		colorSet.removeObject(getSelectedObject());
+		objectList.refresh();
+	}
+	
+	GmmlColorSetObject getSelectedObject() {
+		return (GmmlColorSetObject)
+			((IStructuredSelection)objectList.getSelection()).getFirstElement();
+	}
 	void modifyName(String newName) {
 		if(!newName.equals("")) colorSet.setName(newName);
 	}
@@ -157,15 +287,25 @@ public class ColorSetComposite extends Composite {
 	
 	Composite createColorSetComposite(Composite parent) {
 		final Composite csComp = new Composite(parent, SWT.NULL);
-		csComp.setLayout(new GridLayout(2, false));
+		csComp.setLayout(new GridLayout(3, false));
 		
 		colorSetCombo = new Combo(csComp, SWT.SINGLE | SWT.READ_ONLY);
 		colorSetCombo.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				colorSetSelected();
+				if(colorSet == null) enableSettings(false);
+				else enableSettings(true);
+			}
+			
+			void enableSettings(boolean enable) {
+				nameText.setEnabled(enable);
+				setCompositeEnabled(colorButtons, enable);
 			}
 		});
-			
+		
+		Label nameLabel = new Label(csComp, SWT.NULL);
+		nameLabel.setText("Name: ");
+		
 		nameText = new Text(csComp, SWT.SINGLE | SWT.BORDER);
 		nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		nameText.addModifyListener(new ModifyListener() {
@@ -193,8 +333,12 @@ public class ColorSetComposite extends Composite {
 		remove.addSelectionListener(buttonAdapter);
 		
 		colorButtons = createFixedColors(csComp);
-		colorButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		GridData span2cols = new GridData(GridData.FILL_HORIZONTAL);
+		span2cols.horizontalSpan = 2;
+		colorButtons.setLayoutData(span2cols);
 		
+		nameText.setEnabled(false);
+		setCompositeEnabled(colorButtons, false);
 		return csComp;
 	}
 	
@@ -236,9 +380,38 @@ public class ColorSetComposite extends Composite {
 	class ObjectSettingsComposite extends Composite {
 		StackLayout stack;
 		GmmlColorSetObject input;
+		ColorGradientComposite gradientComp;
+		ColorCriterionComposite criterionComp;
+		Composite nothing;
 		
 		public ObjectSettingsComposite(Composite parent, int style) {
 			super(parent, style);
+			createContents();
+		}
+		
+		public void setInput(GmmlColorSetObject cso) {
+			input = cso;
+			refresh();
+		}
+		
+		public boolean save() {
+			if(input instanceof GmmlColorGradient) return gradientComp.save();
+			else if (input instanceof GmmlColorCriterion) return criterionComp.save();
+			else return true;
+		}
+		
+		public void refresh() {
+			if(input == null) stack.topControl = nothing;
+			else {
+				if(input instanceof GmmlColorGradient) {
+					stack.topControl = gradientComp;
+					gradientComp.setInput(getSelectedObject());
+				} else {
+					stack.topControl = criterionComp;
+					criterionComp.setInput(getSelectedObject());
+				}
+			}
+			layout();
 		}
 		
 		void createContents() {
@@ -246,9 +419,11 @@ public class ColorSetComposite extends Composite {
 			setLayout(stack);
 						
 			//Gradient
-			new GmmlColorGradient.ColorGradientComposite(this, SWT.NULL);
+			gradientComp = new ColorGradientComposite(this, SWT.NULL);
 			//Criterion
-			new GmmlColorCriterion.ColorCriterionComposite(this, SWT.NULL);
+			criterionComp = new ColorCriterionComposite(this, SWT.NULL);
+			//Nothing
+			new Composite(this, SWT.NULL);
 		}		
 	}
 }

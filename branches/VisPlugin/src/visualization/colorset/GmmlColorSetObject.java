@@ -1,4 +1,4 @@
-package colorSet;
+package visualization.colorset;
 import java.util.HashMap;
 
 import org.eclipse.swt.SWT;
@@ -30,7 +30,7 @@ public abstract class GmmlColorSetObject {
 	/**
 	 * The parent colorset, that this colorSetObject is a part of.
 	 */
-	private GmmlColorSet parent;
+	private ColorSet parent;
 	
 	/**
 	 * The display name of this colorSetObject
@@ -55,13 +55,13 @@ public abstract class GmmlColorSetObject {
 	 * @param parent 		colorset this gradient belongs to
 	 * @param name 			name of the gradient
 	 */
-	public GmmlColorSetObject(GmmlColorSet parent, String name) 
+	public GmmlColorSetObject(ColorSet parent, String name) 
 	{	
 		this.parent = parent;
 		this.name = name;
 	}
 	
-	public GmmlColorSetObject(GmmlColorSet parent, Element xml) {
+	public GmmlColorSetObject(ColorSet parent, Element xml) {
 		this.parent = parent;
 		loadXML(xml);
 	}
@@ -79,7 +79,7 @@ public abstract class GmmlColorSetObject {
 	 * Returns the parent colorset
 	 * @return
 	 */
-	public GmmlColorSet getParent()
+	public ColorSet getParent()
 	{
 		return parent;
 	}
@@ -98,7 +98,7 @@ public abstract class GmmlColorSetObject {
 		name = xml.getAttributeValue(XML_ATTR_NAME);
 	}
 				
-	public static class ConfigComposite extends Composite {
+	public static abstract class ConfigComposite extends Composite {
 		final int colorLabelSize = 15;
 		GmmlColorSetObject input;
 		Text nameText;
@@ -108,26 +108,30 @@ public abstract class GmmlColorSetObject {
 			createContents();
 		}
 		
-		public void setInput(GmmlColorCriterion input) {
+		public void setInput(GmmlColorSetObject input) {
 			this.input = input;
 			refresh();
 		}
 		
+		public boolean save() {
+			return true;
+		}
+		
 		void refresh() {
-			nameText.setText(input.getName());
+			String nm = "";
+			if(input != null) nm = input.getName();
+			nameText.setText(nm);
 		}
 				
 		void changeName(String name) {
 			input.setName(name);
 		}
 		
-		void createContents() {
-			createNameComposite(this);
-		}
+		abstract void createContents();
 		
 		protected Composite createNameComposite(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NULL);
-			setLayout(new GridLayout(2, false));
+			comp.setLayout(new GridLayout(2, false));
 			
 			Label nameLabel = new Label(comp, SWT.CENTER);
 			nameLabel.setText("Name:");

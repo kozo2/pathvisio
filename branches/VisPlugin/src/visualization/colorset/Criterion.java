@@ -1,4 +1,4 @@
-package colorSet;
+package visualization.colorset;
 
 import gmmlVision.GmmlVision;
 

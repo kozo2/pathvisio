@@ -46,11 +46,11 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import colorSet.ColorSetComposite;
-import colorSet.ColorSetManager;
 import data.GmmlGex;
 
 import util.TableColumnResizer;
+import visualization.colorset.ColorSetComposite;
+import visualization.colorset.ColorSetManager;
 import visualization.plugins.VisualizationPlugin;
 
 /**
@@ -80,7 +80,6 @@ public class VisualizationDialog extends ApplicationWindow {
 	}
 	
 	public boolean close() {
-		VisualizationManager.getComboItem().update();
 		ColorSetManager.save(GmmlGex.getColorSetOutput());
 		return super.close();
 	}
@@ -96,11 +95,13 @@ public class VisualizationDialog extends ApplicationWindow {
 		TabItem visTab = new TabItem(tabs, SWT.NULL);
 		visTab.setControl(createVisualizationComp(tabs));
 		visTab.setText("Visualizations");
-		
-		TabItem colorTab = new TabItem(tabs, SWT.NULL);
-		colorTab.setControl(new ColorSetComposite(tabs, SWT.NULL));
-		colorTab.setText("Color sets");
-		
+
+		if(GmmlGex.isConnected()) {
+			TabItem colorTab = new TabItem(tabs, SWT.NULL);
+			colorTab.setControl(new ColorSetComposite(tabs, SWT.NULL));
+			colorTab.setText("Color sets");
+		}
+
 		tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		final Button ok = new Button(content, SWT.NULL);

@@ -1,4 +1,4 @@
-package graphics;
+package attic;
 
 
 import gmmlVision.GmmlVision;
@@ -22,7 +22,7 @@ import org.eclipse.swt.graphics.Region;
 
 import preferences.GmmlPreferences;
 import util.SwtUtils;
-import colorSet.GmmlColorSet;
+import visualization.colorset.ColorSet;
 import data.GmmlGdb;
 import data.GmmlGex;
 import data.GmmlGex.CachedData.Data;
@@ -83,7 +83,7 @@ public class GmmlGpColor {
 	{
 		Data mappIdData = GmmlGex.getCachedData(parent.getID(), parent.getSystemCode());
 		
-		GmmlColorSet cs = (GmmlColorSet)GmmlGex.getColorSets().get(GmmlGex.getColorSetIndex());
+		ColorSet cs = (ColorSet)GmmlGex.getColorSets().get(GmmlGex.getColorSetIndex());
 		
 		int nr = cs.useSamples.size();
 		int width = nr > 0 ? colorArea.width / nr : colorArea.width;
@@ -100,20 +100,20 @@ public class GmmlGpColor {
 			int sampleType = cs.sampleTypes.get(i);
 			switch(sampleType)
 			{
-			case GmmlColorSet.SAMPLE_TYPE_PROT:
-			case GmmlColorSet.SAMPLE_TYPE_TRANS:
+			case GmmlColorSet.SAMPColorSet:
+			case GmmlColorSet.SAMPLColorSet:
 				setBackgroundColor(cs, mappIdData.getAverageSampleData(), idSample);
 				drawAsImage(sampleType, r);
 				break;
-			case GmmlColorSet.SAMPLE_TYPE_UNDEF:
+			case GmmlColorSet.SAMPLColorSet:
 				switch(cs.getMultipleDataDisplay()) {
-				case GmmlColorSet.MULT_DATA_AVG:
+				case GmmlColorSet.MColorSet:
 					setBackgroundColor(cs, mappIdData.getAverageSampleData(), idSample);
 					buffer.fillRectangle(r.x, r.y, r.width, r.height);
 					buffer.setForeground(e.display.getSystemColor(SWT.COLOR_DARK_GRAY));
 					buffer.drawRectangle(r.x, r.y, r.width, r.height);
 					break;
-				case GmmlColorSet.MULT_DATA_DIV:
+				case GmmlColorSet.MColorSet:
 					drawAsHorizontalBars(cs, mappIdData, idSample, r);
 				}
 			}
@@ -141,7 +141,7 @@ public class GmmlGpColor {
 		}
 	}
 	
-	private void setBackgroundColor(GmmlColorSet cs, HashMap<Integer, Object> data, int idSample)
+	private void setBackgroundColor(ColorSet cs, HashMap<Integer, Object> data, int idSample)
 	{
 		c = SwtUtils.changeColor(c, cs.color_no_data_found, e.display);
 		RGB rgb = null;
@@ -150,7 +150,7 @@ public class GmmlGpColor {
 		buffer.setBackground(c);
 	}
 	
-	private void drawAsHorizontalBars(GmmlColorSet cs, Data mappIdData, 
+	private void drawAsHorizontalBars(ColorSet cs, Data mappIdData, 
 			int idSample, Rectangle r)
 	{
 		//TODO: divide in horizontal bars and color
@@ -161,9 +161,9 @@ public class GmmlGpColor {
 		Image image = null;
 		switch(sampleType)
 		{
-		case GmmlColorSet.SAMPLE_TYPE_PROT:
+		case GmmlColorSet.SAMPColorSet:
 			image = GmmlVision.getImageRegistry().get("data.protein"); break;
-		case GmmlColorSet.SAMPLE_TYPE_TRANS:
+		case GmmlColorSet.SAMPLColorSet:
 			image = GmmlVision.getImageRegistry().get("data.mRNA"); break;
 		}
 		
@@ -199,7 +199,7 @@ public class GmmlGpColor {
 			Rectangle colorArea = parent.getBounds();
 			
 			// Adjust width to enable to divide into nrSamples equal rectangles
-			GmmlColorSet cs = (GmmlColorSet)GmmlGex.getColorSets().get(colorSetIndex);
+			ColorSet cs = (ColorSet)GmmlGex.getColorSets().get(colorSetIndex);
 			colorArea.width = (int)(COLOR_AREA_RATIO * colorArea.width);
 			if(cs.useSamples.size() > 0) {
 				colorArea.width += cs.useSamples.size() - colorArea.width % cs.useSamples.size();

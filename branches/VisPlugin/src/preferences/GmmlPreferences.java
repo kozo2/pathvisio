@@ -1,7 +1,6 @@
 package preferences;
 
 import gmmlVision.GmmlVision;
-import graphics.GmmlGpColor;
 import graphics.GmmlGraphics;
 
 import java.io.File;
@@ -12,6 +11,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.RGB;
 
 import util.ColorConverter;
+import attic.GmmlGpColor;
 
 /**
  * This class contains all user preferences used in this application

@@ -1,4 +1,7 @@
-package colorSet;
+package visualization.colorset;
+
+import java.sql.Types;
+import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -13,6 +16,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
+
+import data.GmmlGex;
+import data.GmmlGex.Sample;
 
 public class CriterionComposite extends Composite {
 	String preExpression = "";
@@ -30,6 +36,19 @@ public class CriterionComposite extends Composite {
 		symbolList.setItems(symbols);
 	}
 	
+	public void fetchSymbolsFromGex() {
+		if(GmmlGex.isConnected()) {
+			ArrayList<String> numSmp = new ArrayList<String>();
+			ArrayList<Sample> samples = new ArrayList<Sample>(GmmlGex.getSamples().values());
+			for(Sample s : samples)
+				if(s.getDataType() == Types.REAL) numSmp.add(s.getName());
+			
+			symbolList.setItems(numSmp.toArray(new String[numSmp.size()]));	
+		} else {
+			symbolList.setItems(new String[] {});
+		}
+	}
+	
 	public void saveToCriterion() throws Exception {
 		criterion.setExpression(preExpression, symbolList.getItems());
 	}
@@ -38,6 +57,8 @@ public class CriterionComposite extends Composite {
 		criterion = input;
 		refresh();
 	}
+	
+	public Criterion getCriterion() { return criterion; }
 	
 	public void refresh() {
 		if(criterion == null) exprText.setText("");

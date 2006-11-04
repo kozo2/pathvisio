@@ -23,7 +23,6 @@ import org.jdom.Element;
 
 import util.SwtUtils;
 import visualization.Visualization;
-import data.GmmlDataObject;
 
 /**
  * Provides label for Gene Product
@@ -52,6 +51,11 @@ public class LabelPlugin extends VisualizationPlugin {
 		setUseReservedArea(true);
 	}
 
+	void setStyle(int style) {
+		this.style = style;
+		fireModifiedEvent();
+	}
+	
 	public String getName() { return NAME; }
 	
 	public void createSidePanelComposite(Composite parent) {
@@ -62,8 +66,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	public void draw(GmmlGraphics g, PaintEvent e, GC buffer) {
 		if(g instanceof GmmlGeneProduct) {
 			Font f = null;
-			
-			GmmlDataObject gd = g.getGmmlData();
+
 			Rectangle area = getVisualization().getReservedRegion(this, g).getBounds();
 			
 			buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
@@ -108,8 +111,8 @@ public class LabelPlugin extends VisualizationPlugin {
 		
 		SelectionAdapter radioAdapter = new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if		(e.widget == id) 		style = STYLE_ID;
-				else if (e.widget == symbol) 	style = STYLE_SYMBOL;
+				if		(e.widget == id) 		setStyle(STYLE_ID);
+				else if (e.widget == symbol) 	setStyle(STYLE_SYMBOL);
 			}
 		};
 		
@@ -147,9 +150,10 @@ public class LabelPlugin extends VisualizationPlugin {
 		String styleStr = xml.getAttributeValue(XML_ATTR_STYLE);
 		
 		try {
-			style = Integer.parseInt(styleStr);
+			setStyle(Integer.parseInt(styleStr));
 		} catch(NumberFormatException e) {
 			GmmlVision.log.error("Unable to get style for " + NAME, e);
 		}
 	}
 }
+

@@ -2,6 +2,8 @@ package data;
 
 import gmmlVision.GmmlVision;
 import gmmlVision.GmmlVisionWindow;
+import gmmlVision.GmmlVision.ApplicationEvent;
+import gmmlVision.GmmlVision.ApplicationEventListener;
 import graphics.GmmlDrawing;
 
 import java.io.BufferedReader;
@@ -23,7 +25,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -31,11 +35,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import util.FileUtils;
-import colorSet.ColorSetManager;
-import colorSet.GmmlColorCriterion;
-import colorSet.GmmlColorGradient;
-import colorSet.GmmlColorSet;
-import colorSet.GmmlColorSetObject;
+import visualization.colorset.ColorSetManager;
+import visualization.colorset.GmmlColorCriterion;
+import visualization.colorset.GmmlColorGradient;
+import visualization.colorset.ColorSet;
+import visualization.colorset.GmmlColorSetObject;
 import data.GmmlGex.CachedData.Data;
 import data.ImportExprDataWizard.ImportInformation;
 import data.ImportExprDataWizard.ImportPage;
@@ -841,9 +845,9 @@ public abstract class GmmlGex {
 		con.setReadOnly(true);
 		
 //		if(!clean) Utils.checkDbVersion(con, COMPAT_VERSION);
-		
 		setSamples();
-		ColorSetManager.load(getColorSetInput());
+		
+		firePropertyChange(new ExpressionDataEvent(GmmlGex.class, ExpressionDataEvent.CONNECTION_OPENED));
 	}
 	
 	/**
@@ -873,6 +877,7 @@ public abstract class GmmlGex {
 				}
 				sh.close();
 				con = null;
+				firePropertyChange(new ExpressionDataEvent(GmmlGex.class, ExpressionDataEvent.CONNECTION_CLOSED));
 			} catch (Exception e) {
 				GmmlVision.log.error("Error while closing connection to expression dataset " + gexFile, e);
 			}
@@ -918,6 +923,45 @@ public abstract class GmmlGex {
 			} catch (Exception e) {
 				GmmlVision.log.error("Error while closing connection to GenMAPP gex: " + e.getMessage(), e);
 			}
+		}
+	}
+	
+	static List<ExpressionDataListener> listeners = new ArrayList<ExpressionDataListener>();
+	
+	/**
+	 * Add a {@link ExpressionDataListener}, that will be notified if an
+	 * event related to expression data occurs
+	 * @param l The {@link ExpressionDataListener} to add
+	 */
+	public static void addListener(ExpressionDataListener l) {
+		listeners.add(l);
+	}
+	
+	/**
+	 * Fire a {@link ExpressionDataEvent} to notify all {@link ExpressionDataListener}s registered
+	 * to this class
+	 * @param e
+	 */
+	public static void firePropertyChange(ExpressionDataEvent e) {
+		for(ExpressionDataListener l : listeners) l.expressionDataEvent(e);
+	}
+	
+	public interface ExpressionDataListener {
+		public void expressionDataEvent(ExpressionDataEvent e);
+	}
+	
+	public static class ExpressionDataEvent extends EventObject {
+		private static final long serialVersionUID = 1L;
+		public static final int CONNECTION_OPENED = 0;
+		public static final int CONNECTION_CLOSED = 1;
+
+		public Object source;
+		public int type;
+		
+		public ExpressionDataEvent(Object source, int type) {
+			super(source);
+			this.source = source;
+			this.type = type;
 		}
 	}
 	
