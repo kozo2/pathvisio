@@ -25,7 +25,7 @@ public class ColorSet {
 		
 	String name;
 	
-	public List<GmmlColorSetObject> colorSetObjects;
+	public List<ColorSetObject> colorSetObjects;
 		
 	/**
 	 * Constructor of this class
@@ -34,7 +34,7 @@ public class ColorSet {
 	public ColorSet(String name)
 	{
 		this.name = name;
-		colorSetObjects = new ArrayList<GmmlColorSetObject>();
+		colorSetObjects = new ArrayList<ColorSetObject>();
 	}
 		
 	public String getName() { return name; }
@@ -42,24 +42,24 @@ public class ColorSet {
 	public void setName(String n) { name = n; }
 	
 	/**
-	 * Adds a new {@link GmmlColorSetObject} to this colorset
-	 * @param o the {@link GmmlColorSetObject} to add
+	 * Adds a new {@link ColorSetObject} to this colorset
+	 * @param o the {@link ColorSetObject} to add
 	 */
-	public void addObject(GmmlColorSetObject o)
+	public void addObject(ColorSetObject o)
 	{
 		colorSetObjects.add(o);
 	}
 	
-	public void removeObject(GmmlColorSetObject o) {
+	public void removeObject(ColorSetObject o) {
 		colorSetObjects.remove(o);
 	}
 	
-	public List<GmmlColorSetObject> getObjects() {
+	public List<ColorSetObject> getObjects() {
 		return colorSetObjects;
 	}
 	
 	public boolean nameExists(String name) {
-		for(GmmlColorSetObject o : colorSetObjects) 
+		for(ColorSetObject o : colorSetObjects) 
 			if(o.getName().equalsIgnoreCase(name)) return true;
 		return false;
 	}
@@ -84,7 +84,7 @@ public class ColorSet {
 		//Evaluate all colorset objects, return when a valid color is found
 		while(it.hasNext())
 		{
-			GmmlColorSetObject gc = (GmmlColorSetObject)it.next();
+			ColorSetObject gc = (ColorSetObject)it.next();
 			RGB gcRgb = gc.getColor(data, sampleId);
 			if(gcRgb != null)
 			{
@@ -108,7 +108,7 @@ public class ColorSet {
 		elm.addContent(ColorConverter.createColorElement(XML_ELM_COLOR_NGF, color_no_gene_found));
 		elm.addContent(ColorConverter.createColorElement(XML_ELM_COLOR_NDF, color_no_data_found));
 		
-		for(GmmlColorSetObject cso : colorSetObjects)
+		for(ColorSetObject cso : colorSetObjects)
 			elm.addContent(cso.toXML());
 		return elm;
 	}
@@ -118,10 +118,10 @@ public class ColorSet {
 		for(Object o : e.getChildren()) {
 			Element coe = (Element) o;
 			String type = coe.getName();
-			if(type.equals(GmmlColorGradient.XML_ELEMENT_NAME))
-				cs.addObject(new GmmlColorGradient(cs, coe));
-			else if(type.equals(GmmlColorCriterion.XML_ELEMENT_NAME))
-				cs.addObject(new GmmlColorCriterion(cs, coe));
+			if(type.equals(ColorGradient.XML_ELEMENT_NAME))
+				cs.addObject(new ColorGradient(cs, coe));
+			else if(type.equals(ColorCriterion.XML_ELEMENT_NAME))
+				cs.addObject(new ColorCriterion(cs, coe));
 		}
 		return cs;
 	}

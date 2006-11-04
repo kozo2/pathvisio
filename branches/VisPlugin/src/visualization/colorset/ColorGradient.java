@@ -40,7 +40,7 @@ import util.TableColumnResizer;
 /**
  * This class represent a color gradient used for data visualization
  */
-public class GmmlColorGradient extends GmmlColorSetObject {
+public class ColorGradient extends ColorSetObject {
 	public static final String XML_ELEMENT_NAME = "ColorGradient";
 
 	private ArrayList<ColorValuePair> colorValuePairs;
@@ -50,13 +50,13 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 	 * @param parent 		colorset this gradient belongs to
 	 * @param name 			name of the gradient
 	 */
-	public GmmlColorGradient(ColorSet parent, String name)
+	public ColorGradient(ColorSet parent, String name)
 	{
 		super(parent, name);
 		getColorValuePairs();
 	}
 		
-	public GmmlColorGradient(ColorSet parent, Element xml) {
+	public ColorGradient(ColorSet parent, Element xml) {
 		super(parent, xml);
 	}
 	
@@ -192,7 +192,7 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 	}
 	
 	/**
-	 * This class contains a color and its corresponding value used for the {@link GmmlColorGradient}
+	 * This class contains a color and its corresponding value used for the {@link ColorGradient}
 	 */
 	public class ColorValuePair implements Comparable<ColorValuePair> {
 		static final String XML_ELEMENT = "color-value";
@@ -233,11 +233,11 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 			super(parent, style);
 		}
 		
-		GmmlColorGradient getInput() {
-			return (GmmlColorGradient)input;
+		ColorGradient getInput() {
+			return (ColorGradient)input;
 		}
 		
-		public void setInput(GmmlColorSetObject o) {
+		public void setInput(ColorSetObject o) {
 			super.setInput(o);
 			colorTable.setInput(o);
 		}
@@ -322,7 +322,7 @@ public class GmmlColorGradient extends GmmlColorSetObject {
 		IStructuredContentProvider createContentProvider() {
 			return new IStructuredContentProvider() {
 				public Object[] getElements(Object inputElement) {
-					return ((GmmlColorGradient)inputElement).getColorValuePairs().toArray();
+					return ((ColorGradient)inputElement).getColorValuePairs().toArray();
 				}
 				public void dispose() {	}
 				public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }

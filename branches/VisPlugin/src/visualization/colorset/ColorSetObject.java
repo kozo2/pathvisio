@@ -25,7 +25,7 @@ import util.SwtUtils;
  * This class represent any object that can be present in a colorset
  * e.g. a gradient or boolean expression.
  */
-public abstract class GmmlColorSetObject {
+public abstract class ColorSetObject {
 	
 	/**
 	 * The parent colorset, that this colorSetObject is a part of.
@@ -55,13 +55,13 @@ public abstract class GmmlColorSetObject {
 	 * @param parent 		colorset this gradient belongs to
 	 * @param name 			name of the gradient
 	 */
-	public GmmlColorSetObject(ColorSet parent, String name) 
+	public ColorSetObject(ColorSet parent, String name) 
 	{	
 		this.parent = parent;
 		this.name = name;
 	}
 	
-	public GmmlColorSetObject(ColorSet parent, Element xml) {
+	public ColorSetObject(ColorSet parent, Element xml) {
 		this.parent = parent;
 		loadXML(xml);
 	}
@@ -100,7 +100,7 @@ public abstract class GmmlColorSetObject {
 				
 	public static abstract class ConfigComposite extends Composite {
 		final int colorLabelSize = 15;
-		GmmlColorSetObject input;
+		ColorSetObject input;
 		Text nameText;
 		
 		public ConfigComposite(Composite parent, int style) {
@@ -108,7 +108,7 @@ public abstract class GmmlColorSetObject {
 			createContents();
 		}
 		
-		public void setInput(GmmlColorSetObject input) {
+		public void setInput(ColorSetObject input) {
 			this.input = input;
 			refresh();
 		}

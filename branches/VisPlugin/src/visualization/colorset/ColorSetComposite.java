@@ -32,8 +32,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import util.SwtUtils;
-import visualization.colorset.GmmlColorCriterion.ColorCriterionComposite;
-import visualization.colorset.GmmlColorGradient.ColorGradientComposite;
+import visualization.colorset.ColorCriterion.ColorCriterionComposite;
+import visualization.colorset.ColorGradient.ColorGradientComposite;
 
 public class ColorSetComposite extends Composite {
 	final int colorLabelSize = 15;
@@ -133,12 +133,12 @@ public class ColorSetComposite extends Composite {
 		});
 		objectList.setLabelProvider(new LabelProvider() {
 			public String getText(Object element) {
-				return ((GmmlColorSetObject)element).getName();
+				return ((ColorSetObject)element).getName();
 			}
 		});
 		objectList.addSelectionChangedListener(new ISelectionChangedListener() {
 			boolean ignore;
-			GmmlColorSetObject previous = null;
+			ColorSetObject previous = null;
 			public void selectionChanged(SelectionChangedEvent event) {
 				if(ignore) {
 					ignore = false;
@@ -254,11 +254,11 @@ public class ColorSetComposite extends Composite {
 		switch(type) {
 		case NEW_GRADIENT:
 			colorSet.addObject(
-					new GmmlColorGradient(colorSet, colorSet.getNewName("New gradient")));
+					new ColorGradient(colorSet, colorSet.getNewName("New gradient")));
 			break;
 		case NEW_EXPRESSION:
 			colorSet.addObject(
-					new GmmlColorCriterion(colorSet, colorSet.getNewName("New expression")));
+					new ColorCriterion(colorSet, colorSet.getNewName("New expression")));
 			break;
 		}
 		objectList.refresh();
@@ -269,8 +269,8 @@ public class ColorSetComposite extends Composite {
 		objectList.refresh();
 	}
 	
-	GmmlColorSetObject getSelectedObject() {
-		return (GmmlColorSetObject)
+	ColorSetObject getSelectedObject() {
+		return (ColorSetObject)
 			((IStructuredSelection)objectList.getSelection()).getFirstElement();
 	}
 	void modifyName(String newName) {
@@ -379,7 +379,7 @@ public class ColorSetComposite extends Composite {
 	
 	class ObjectSettingsComposite extends Composite {
 		StackLayout stack;
-		GmmlColorSetObject input;
+		ColorSetObject input;
 		ColorGradientComposite gradientComp;
 		ColorCriterionComposite criterionComp;
 		Composite nothing;
@@ -389,21 +389,21 @@ public class ColorSetComposite extends Composite {
 			createContents();
 		}
 		
-		public void setInput(GmmlColorSetObject cso) {
+		public void setInput(ColorSetObject cso) {
 			input = cso;
 			refresh();
 		}
 		
 		public boolean save() {
-			if(input instanceof GmmlColorGradient) return gradientComp.save();
-			else if (input instanceof GmmlColorCriterion) return criterionComp.save();
+			if(input instanceof ColorGradient) return gradientComp.save();
+			else if (input instanceof ColorCriterion) return criterionComp.save();
 			else return true;
 		}
 		
 		public void refresh() {
 			if(input == null) stack.topControl = nothing;
 			else {
-				if(input instanceof GmmlColorGradient) {
+				if(input instanceof ColorGradient) {
 					stack.topControl = gradientComp;
 					gradientComp.setInput(getSelectedObject());
 				} else {

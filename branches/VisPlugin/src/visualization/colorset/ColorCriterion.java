@@ -33,9 +33,9 @@ import org.jdom.Element;
 
 import util.ColorConverter;
 import util.SwtUtils;
-import visualization.colorset.GmmlColorGradient.ColorValuePair;
+import visualization.colorset.ColorGradient.ColorValuePair;
 
-public class GmmlColorCriterion extends GmmlColorSetObject {
+public class ColorCriterion extends ColorSetObject {
 	public static final String XML_ELEMENT_NAME = "ColorCriterion";
 	
 	Criterion criterion = new Criterion();
@@ -47,11 +47,11 @@ public class GmmlColorCriterion extends GmmlColorSetObject {
 	
 	public Criterion getCriterion() { return criterion; }
 	
-	public GmmlColorCriterion(ColorSet parent, String name) {
+	public ColorCriterion(ColorSet parent, String name) {
 		super(parent, name);
 	}
 	
-	public GmmlColorCriterion(ColorSet parent, Element xml) {
+	public ColorCriterion(ColorSet parent, Element xml) {
 		super(parent, xml);
 	}
 	
@@ -91,8 +91,8 @@ public class GmmlColorCriterion extends GmmlColorSetObject {
 			super.refresh();
 		}
 		
-		GmmlColorCriterion getInput() {
-			return (GmmlColorCriterion)input;
+		ColorCriterion getInput() {
+			return (ColorCriterion)input;
 		}
 		
 		public boolean save() {
@@ -106,10 +106,10 @@ public class GmmlColorCriterion extends GmmlColorSetObject {
 			return true;
 		}
 		
-		public void setInput(GmmlColorSetObject o) {
+		public void setInput(ColorSetObject o) {
 			super.setInput(o);
 			if(o == null) critComp.setInput(null);
-			else critComp.setInput(((GmmlColorCriterion)o).getCriterion());
+			else critComp.setInput(((ColorCriterion)o).getCriterion());
 		}
 		
 		void changeColor(CLabel label) {

@@ -36,10 +36,10 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import util.FileUtils;
 import visualization.colorset.ColorSetManager;
-import visualization.colorset.GmmlColorCriterion;
-import visualization.colorset.GmmlColorGradient;
+import visualization.colorset.ColorCriterion;
+import visualization.colorset.ColorGradient;
 import visualization.colorset.ColorSet;
-import visualization.colorset.GmmlColorSetObject;
+import visualization.colorset.ColorSetObject;
 import data.GmmlGex.CachedData.Data;
 import data.ImportExprDataWizard.ImportInformation;
 import data.ImportExprDataWizard.ImportPage;

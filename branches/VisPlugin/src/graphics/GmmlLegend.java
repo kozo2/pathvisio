@@ -28,11 +28,11 @@ import util.SwtUtils;
 import visualization.VisualizationManager.VisualizationEvent;
 import visualization.VisualizationManager.VisualizationListener;
 import visualization.colorset.ColorSetManager;
-import visualization.colorset.GmmlColorCriterion;
-import visualization.colorset.GmmlColorGradient;
+import visualization.colorset.ColorCriterion;
+import visualization.colorset.ColorGradient;
 import visualization.colorset.ColorSet;
-import visualization.colorset.GmmlColorSetObject;
-import visualization.colorset.GmmlColorGradient.ColorValuePair;
+import visualization.colorset.ColorSetObject;
+import visualization.colorset.ColorGradient.ColorValuePair;
 
 public class GmmlLegend extends ScrolledComposite implements VisualizationListener {
 	static final String FONT = "arial narrow";
@@ -161,10 +161,10 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 			if(colorSet == null) return;
 			
 			//Draw CLabel for every criterion
-			for(GmmlColorSetObject co : colorSet.colorSetObjects)
+			for(ColorSetObject co : colorSet.colorSetObjects)
 			{
-				if(!(co instanceof GmmlColorCriterion)) continue; //skip objects other than criretia
-				GmmlColorCriterion cc = (GmmlColorCriterion)co;
+				if(!(co instanceof ColorCriterion)) continue; //skip objects other than criretia
+				ColorCriterion cc = (ColorCriterion)co;
 				c = SwtUtils.changeColor(c, cc.getColor(), getDisplay());
 				createCriterionLabel(cc.getName(), c);
 			}
@@ -237,8 +237,8 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 		
 		int getNrGradients() {
 			int n = 0;
-			for(GmmlColorSetObject co : colorSet.getObjects()) {
-				if(co instanceof GmmlColorGradient) n++;
+			for(ColorSetObject co : colorSet.getObjects()) {
+				if(co instanceof ColorGradient) n++;
 			}
 			return n;
 		}
@@ -251,9 +251,9 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 			Point size = getSize();
 			int n = getNrGradients();
 			int i = 0;
-			for(GmmlColorSetObject co : colorSet.getObjects())
-				if(co instanceof GmmlColorGradient) {
-					GmmlColorGradient cg = (GmmlColorGradient)co;
+			for(ColorSetObject co : colorSet.getObjects())
+				if(co instanceof ColorGradient) {
+					ColorGradient cg = (ColorGradient)co;
 					Rectangle area = new Rectangle(
 							0, i * size.y / n,
 							size.x, size.y / n++);
@@ -266,7 +266,7 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 		final static int MARGIN_VERTICAL = 20;
 		final static int MARGIN_HORIZONTAL = 10;
 		final static int MARKER_LENGTH = 4;
-		public void drawColorGradient(PaintEvent e, GmmlColorGradient cg, Rectangle r)
+		public void drawColorGradient(PaintEvent e, ColorGradient cg, Rectangle r)
 		{
 			Color c = null;
 			RGB oldBackground = getBackground().getRGB();
