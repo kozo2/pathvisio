@@ -68,7 +68,7 @@ public abstract class VisualizationPlugin {
 		return new Composite(parent, SWT.NULL); //Empty composite
 	}
 	
-	public void openConfigDialog(Shell shell) {
+	public final void openConfigDialog(Shell shell) {
 		if(!CONFIGURABLE) return; //Not configurable, so don't open config dialog
 		ApplicationWindow d = new ConfigurationDialog(shell);
 		d.open();

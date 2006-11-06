@@ -395,7 +395,13 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 				o.draw (e, buffer);
 				
 				if(v != null && o instanceof GmmlGraphics) {
-						v.drawToObject((GmmlGraphics) o, e, buffer);
+						try {
+							v.drawToObject((GmmlGraphics) o, e, buffer);
+						} catch(Exception ex) {
+							GmmlVision.log.error(
+									"Unable to apply visualization " + v + " on " + o, ex);
+							ex.printStackTrace();
+						}
 				}	
 			}
 		}

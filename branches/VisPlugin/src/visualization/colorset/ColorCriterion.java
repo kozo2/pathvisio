@@ -2,55 +2,47 @@ package visualization.colorset;
 
 import gmmlVision.GmmlVision;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableLayout;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jdom.Element;
 
-
 import util.ColorConverter;
 import util.SwtUtils;
-import visualization.colorset.ColorGradient.ColorValuePair;
 
 public class ColorCriterion extends ColorSetObject {
 	public static final String XML_ELEMENT_NAME = "ColorCriterion";
 	
-	Criterion criterion = new Criterion();
+	Criterion criterion;
 	
 	public static final RGB INITIAL_COLOR = new RGB(255, 255, 255);
 	private RGB color;
-	public void setColor(RGB color) { this.color = color; }
+	public void setColor(RGB color) { 
+		this.color = color;
+		fireModifiedEvent();
+	}
+	
 	public RGB getColor() { return color == null ? INITIAL_COLOR : color; }
 	
 	public Criterion getCriterion() { return criterion; }
 	
 	public ColorCriterion(ColorSet parent, String name) {
 		super(parent, name);
+		criterion = new Criterion();
 	}
-	
+
 	public ColorCriterion(ColorSet parent, Element xml) {
 		super(parent, xml);
 	}
@@ -64,9 +56,20 @@ public class ColorCriterion extends ColorSetObject {
 		}
 		return null;
 	}
-
+	
 	public String getXmlElementName() {
 		return XML_ELEMENT_NAME;
+	}
+	
+	protected void loadXML(Element xml) {
+		super.loadXML(xml);
+		try {
+			String expression = xml.getAttributeValue(XML_ATTR_EXPRESSION);
+			criterion = new Criterion();
+			criterion.setExpression(expression);
+		} catch(Exception e) {
+			GmmlVision.log.error("Unable to load ColorCriterion", e);
+		}
 	}
 	
 	static final String XML_ELM_COLOR = "color";
@@ -82,6 +85,7 @@ public class ColorCriterion extends ColorSetObject {
 	public static class ColorCriterionComposite extends ConfigComposite {
 		final int colorLabelSize = 15;
 		CriterionComposite critComp;
+		CLabel colorLabel;
 		
 		public ColorCriterionComposite(Composite parent, int style) {
 			super(parent, style);
@@ -89,6 +93,8 @@ public class ColorCriterion extends ColorSetObject {
 		
 		void refresh() {
 			super.refresh();
+			critComp.refresh();
+			setColorLabel(colorLabel, getInput() == null ? null : getInput().getColor());
 		}
 		
 		ColorCriterion getInput() {
@@ -110,18 +116,32 @@ public class ColorCriterion extends ColorSetObject {
 			super.setInput(o);
 			if(o == null) critComp.setInput(null);
 			else critComp.setInput(((ColorCriterion)o).getCriterion());
+			refresh();
 		}
 		
-		void changeColor(CLabel label) {
+		void askColor(CLabel label) {
 			RGB rgb = new ColorDialog(getShell()).open();
 			if(rgb != null) {
-				label.setBackground(
-						SwtUtils.changeColor(
-								label.getBackground(), rgb, getShell().getDisplay()));
+				setColorLabel(label, rgb);
 				getInput().setColor(rgb);
 			}
 		}
 			
+		Color c;
+		void setColorLabel(CLabel label, RGB rgb) {
+			if(rgb == null) return;
+			getInput().setColor(rgb);
+			System.out.println("Previous color " + c);
+			System.out.println("Previous label color " + label.getBackground());
+			c = SwtUtils.changeColor(c, rgb, getShell().getDisplay());
+			System.out.println("Setting bg to " + c);
+			label.setBackground(c);
+//			label.redraw();
+//			label.layout(true);
+			System.out.println(label.getBackground());
+//			if(c != null) c.dispose();
+		}
+		
 		void createContents() {
 			setLayout(new GridLayout());
 			
@@ -143,16 +163,16 @@ public class ColorCriterion extends ColorSetObject {
 			final GridData colorLabelGrid = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
 			colorLabelGrid.widthHint = colorLabelGrid.heightHint = colorLabelSize;
 			
-			Label colorLabel = new Label(colorComp, SWT.CENTER);
-			colorLabel.setText("Color:");
+			Label label = new Label(colorComp, SWT.CENTER);
+			label.setText("Color:");
 
-			final CLabel color = new CLabel(colorComp, SWT.SHADOW_IN);
-			color.setLayoutData(colorLabelGrid);
+			colorLabel = new CLabel(colorComp, SWT.SHADOW_IN);
+			colorLabel.setLayoutData(colorLabelGrid);
 
 			Button colorButton = new Button(colorComp, SWT.PUSH);
 			colorButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					changeColor(color);
+					askColor(colorLabel);
 				}
 			});
 			

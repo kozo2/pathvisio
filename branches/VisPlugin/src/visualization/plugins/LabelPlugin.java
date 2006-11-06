@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -39,6 +40,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	Label labelSidePanel;
 	
 	int style;
+	boolean adaptFontSize = true;
 	
 	String font = "Arial narrow";
 	int fontSize = 10;
@@ -66,20 +68,36 @@ public class LabelPlugin extends VisualizationPlugin {
 	public void draw(GmmlGraphics g, PaintEvent e, GC buffer) {
 		if(g instanceof GmmlGeneProduct) {
 			Font f = null;
-
-			Rectangle area = getVisualization().getReservedRegion(this, g).getBounds();
 			
+			Region region = getVisualization().getReservedRegion(this, g);
+			Rectangle area = region.getBounds();
+			
+			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
 			buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
 			buffer.fillRectangle(area);
+			buffer.drawRectangle(area);
+			
+			buffer.setClipping(region);
 			
 			f = SwtUtils.changeFont(f, new FontData(font, getFontSize(), SWT.NONE), e.display);
+		
 			String label = getLabelText((GmmlGeneProduct) g);
+			
+			if(adaptFontSize)
+				SwtUtils.adjustFontSize(f, new Point(area.width, area.height), label, buffer, e.display);
+			else
+				buffer.setFont(f);
+			
 			Point textSize = buffer.textExtent (label);
 			buffer.drawString (label, 
 					area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
 					area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
 			
+			Region none = null;
+			buffer.setClipping(none);
+						
 			f.dispose();
+			region.dispose();
 		}
 	}
 	

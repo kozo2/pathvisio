@@ -12,6 +12,8 @@ import org.jdom.Element;
 
 import preferences.GmmlPreferences;
 import util.ColorConverter;
+import visualization.VisualizationManager;
+import visualization.VisualizationManager.VisualizationEvent;
 
 
 /**
@@ -19,9 +21,13 @@ import util.ColorConverter;
  * results in a color given a collection of data
  */
 public class ColorSet {	
-	public RGB color_no_criteria_met = GmmlPreferences.getColorProperty(GmmlPreferences.PREF_COL_NO_CRIT_MET);
-	public RGB color_no_gene_found = GmmlPreferences.getColorProperty(GmmlPreferences.PREF_COL_NO_GENE_FOUND);
-	public RGB color_no_data_found = GmmlPreferences.getColorProperty(GmmlPreferences.PREF_COL_NO_DATA_FOUND);
+	public static final int ID_COLOR_NO_CRITERIA_MET = 1;
+	public static final int ID_COLOR_NO_GENE_FOUND = 2;
+	public static final int ID_COLOR_NO_DATA_FOUND = 3;
+	
+	RGB color_no_criteria_met = GmmlPreferences.getColorProperty(GmmlPreferences.PREF_COL_NO_CRIT_MET);
+	RGB color_no_gene_found = GmmlPreferences.getColorProperty(GmmlPreferences.PREF_COL_NO_GENE_FOUND);
+	RGB color_no_data_found = GmmlPreferences.getColorProperty(GmmlPreferences.PREF_COL_NO_DATA_FOUND);
 		
 	String name;
 	
@@ -39,7 +45,37 @@ public class ColorSet {
 		
 	public String getName() { return name; }
 	
-	public void setName(String n) { name = n; }
+	public void setName(String n) { 
+		name = n;
+		fireModifiedEvent();
+	}
+	
+	public void setColor(int id, RGB rgb) {
+		switch(id) {
+		case ID_COLOR_NO_CRITERIA_MET:
+			color_no_criteria_met = rgb;
+			break;
+		case ID_COLOR_NO_DATA_FOUND:
+			color_no_data_found = rgb;
+			break;
+		case ID_COLOR_NO_GENE_FOUND:
+			color_no_gene_found = rgb;
+			break;
+		}
+		fireModifiedEvent();
+	}
+	
+	public RGB getColor(int id) {
+		switch(id) {
+		case ID_COLOR_NO_CRITERIA_MET:
+			return color_no_criteria_met;
+		case ID_COLOR_NO_DATA_FOUND:
+			return color_no_data_found;
+		case ID_COLOR_NO_GENE_FOUND:
+			return color_no_gene_found;
+		default: return null;
+		}
+	}
 	
 	/**
 	 * Adds a new {@link ColorSetObject} to this colorset
@@ -48,10 +84,12 @@ public class ColorSet {
 	public void addObject(ColorSetObject o)
 	{
 		colorSetObjects.add(o);
+		fireModifiedEvent();
 	}
 	
 	public void removeObject(ColorSetObject o) {
 		colorSetObjects.remove(o);
+		fireModifiedEvent();
 	}
 	
 	public List<ColorSetObject> getObjects() {
@@ -79,6 +117,8 @@ public class ColorSet {
 	 */
 	public RGB getColor(HashMap<Integer, Object> data, int sampleId)
 	{
+		if(data == null) return color_no_data_found;
+		
 		RGB rgb = color_no_criteria_met; //The color to return
 		Iterator it = colorSetObjects.iterator();
 		//Evaluate all colorset objects, return when a valid color is found
@@ -131,5 +171,10 @@ public class ColorSet {
 				"expression database: " + criterion, e);
 		MessageDialog.openWarning(GmmlVision.getWindow().getShell(), 
 					"Warning", "Unable to parse the colorset data in this expression dataset");
+	}
+	
+	void fireModifiedEvent() {
+		VisualizationManager.firePropertyChange(
+				new VisualizationEvent(this, VisualizationEvent.COLORSET_MODIFIED));
 	}
 }

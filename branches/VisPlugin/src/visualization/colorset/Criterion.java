@@ -6,6 +6,9 @@ import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Composite;
 
+import visualization.VisualizationManager;
+import visualization.VisualizationManager.VisualizationEvent;
+
 import data.GmmlGex;
 import data.GmmlGex.Sample;
 
@@ -25,12 +28,14 @@ public class Criterion {
 	public void setExpression(String expression) throws Exception {
 		parse(expression);
 		this.expression = expression;
+		fireModifiedEvent();
 	}
 	
 	public void setExpression(String expression, String[] symbols) throws Exception {
 		//Evaluate with dummy data:
 		testExpression(expression, symbols);
 		this.expression = expression;
+		fireModifiedEvent();
 	}
 	
 	public String getPreExpression() {
@@ -59,7 +64,7 @@ public class Criterion {
 		HashMap<Integer, Sample> samples = GmmlGex.getSamples();
 		clearSymbols();
 		for(Sample s : samples.values()) {
-			Object value = data.get(s.idSample);
+			Object value = data.get(s.getId());
 			if(value instanceof Double) addSymbol(s.getName(), (Double)value);
 		}
 
@@ -96,6 +101,10 @@ public class Criterion {
 		return configComp;
 	}
 	
+	void fireModifiedEvent() {
+		VisualizationManager.firePropertyChange(
+				new VisualizationEvent(this, VisualizationEvent.COLORSET_MODIFIED));
+	}
 	//Boolean expression parser by Martijn
 	String input;
 	int charNr;

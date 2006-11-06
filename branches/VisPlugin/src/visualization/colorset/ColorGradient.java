@@ -21,8 +21,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -83,6 +81,7 @@ public class ColorGradient extends ColorSetObject {
 			colorValuePairs = new ArrayList<ColorValuePair>();
 		}
 		colorValuePairs.add(cvp);
+		fireModifiedEvent();
 	}
 	/**
 	 * Remove a {@link ColorValuePair} from this gradient
@@ -91,6 +90,7 @@ public class ColorGradient extends ColorSetObject {
 	{
 		if(colorValuePairs == null || !colorValuePairs.contains(cvp)) return;
 		colorValuePairs.remove(cvp);
+		fireModifiedEvent();
 	}
 			
 	/**
@@ -118,11 +118,10 @@ public class ColorGradient extends ColorSetObject {
 			ColorValuePair cvpNext = colorValuePairs.get(i + 1);
 			if(value >= cvp.value && value <= cvpNext.value)
 			{
-				valueStart = cvp.value;
-				colorStart = cvp.color;
-				valueEnd = cvpNext.value;
-				colorEnd = cvpNext.color;
-				break;
+				valueStart = cvp.getValue();
+				colorStart = cvp.getColor();
+				valueEnd = cvpNext.getValue();
+				colorEnd = cvpNext.getColor();
 			}
 		}
 		if(colorStart == null || colorEnd == null) return null; //Check if the values/colors are found
@@ -149,10 +148,7 @@ public class ColorGradient extends ColorSetObject {
 		try {
 			double value = (Double)data.get(idSample); //Try to get the data
 			return getColor(value);
-		} catch(NullPointerException ne) { //No data available
-			GmmlVision.log.error("GmmlColorGradient:getColor: No data to calculate color", ne);
-		} catch(ClassCastException ce) { //Data not of type double
-		} catch(Exception e) { //Any other exception
+		} catch(Exception e) {
 			GmmlVision.log.error("GmmlColorGradient:getColor", e);
 		}
 		return null; //If anything goes wrong, return null
@@ -198,8 +194,9 @@ public class ColorGradient extends ColorSetObject {
 		static final String XML_ELEMENT = "color-value";
 		static final String XML_ATTR_VALUE = "value";
 		static final String XML_ELM_COLOR = "color";
-		public RGB color;
-		public double value;
+		private RGB color;
+		private double value;
+		
 		public ColorValuePair(RGB color, double value)
 		{
 			this.color = color;
@@ -210,6 +207,18 @@ public class ColorGradient extends ColorSetObject {
 			Object o = xml.getChildren(XML_ELM_COLOR).get(0);
 			color = ColorConverter.parseColorElement((Element)o);
 			value = Double.parseDouble(xml.getAttributeValue(XML_ATTR_VALUE));
+		}
+		
+		public RGB getColor() { return color; }
+		public void setColor(RGB rgb) {
+			color = rgb;
+			fireModifiedEvent();
+		}
+		
+		public double getValue() { return value; }
+		public void setValue(double v) {
+			value = v;
+			fireModifiedEvent();
 		}
 		
 		public int compareTo(ColorValuePair o)
@@ -340,7 +349,7 @@ public class ColorGradient extends ColorSetObject {
 				public Image getColumnImage(Object element, int columnIndex) { 
 					if(columnIndex == 0) {
 						RGB rgb = ((ColorValuePair)element).color;
-						colorImage = new Image(null, createColorImage(rgb));
+						colorImage = new Image(null, ColorSetComposite.createColorImage(rgb));
 						return colorImage;
 					}
 					return null;
@@ -348,7 +357,7 @@ public class ColorGradient extends ColorSetObject {
 				
 				public String getColumnText(Object element, int columnIndex) {
 					if(columnIndex == 1) {
-						return Double.toString(((ColorValuePair)element).value);
+						return Double.toString(((ColorValuePair)element).getValue());
 					}
 					return null;
 				}
@@ -370,9 +379,9 @@ public class ColorGradient extends ColorSetObject {
 				public Object getValue(Object element, String property) {
 					ColorValuePair cvp = (ColorValuePair)element;
 					if(property.equals(tableColumns[0])) {
-						return cvp.color;
+						return cvp.getColor();
 					} else {
-						return Double.toString(cvp.value);
+						return Double.toString(cvp.getValue());
 					}
 				}
 
@@ -382,34 +391,13 @@ public class ColorGradient extends ColorSetObject {
 					}
 					ColorValuePair cvp = (ColorValuePair)element;
 					if(property.equals(tableColumns[0])) {
-						cvp.color = (RGB)value;
+						cvp.setColor((RGB)value);
 					} else {
-						cvp.value = Double.parseDouble((String)value);
+						cvp.setValue(Double.parseDouble((String)value));
 					}
 					colorTable.refresh();
 				}
 			};
-		}
-		
-		/**
-		 * creates an 16x16 image filled with the given color
-		 * @param rgb the color to fill the image with
-		 * @return imagedata of a 16x16 image filled with the given color
-		 */
-		ImageData createColorImage(RGB rgb) {
-			PaletteData colors = new PaletteData(new RGB[] { rgb, new RGB(0,0,0) });
-			ImageData data = new ImageData(16, 16, 1, colors);
-			for(int i = 0; i < 16; i++)
-			{
-				for(int j = 0; j < 16; j++)
-				{
-					if(j == 0 || j == 15 || i == 0 || i == 15) //Black border
-						data.setPixel(i, j, 1);
-					else
-						data.setPixel(i, j, 0);
-				}
-			}
-			return data;
 		}
 	}
 }

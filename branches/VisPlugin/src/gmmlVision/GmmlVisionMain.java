@@ -1,6 +1,5 @@
 package gmmlVision;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -11,8 +10,8 @@ import org.eclipse.swt.widgets.Display;
 
 import preferences.GmmlPreferences;
 import visualization.VisualizationManager;
+import visualization.colorset.ColorSetManager;
 import visualization.plugins.PluginManager;
-
 import data.GmmlGdb;
 import data.GmmlGex;
 
@@ -77,8 +76,16 @@ public class GmmlVisionMain {
 		//load visualizations and plugins
 		loadVisualizations();
 		
+		//register listeners for static classes
+		registerListeners();
+				
 		//NOTE: ImageRegistry will be initiated in "createContents" of GmmlVisionWindow,
 		//since the window has to be opened first (need an active Display)
+	}
+	
+	static void registerListeners() {
+		GmmlGex.addListener(new ColorSetManager());
+		GmmlVision.addApplicationEventListener(new VisualizationManager());
 	}
 	
 	static void loadVisualizations() {

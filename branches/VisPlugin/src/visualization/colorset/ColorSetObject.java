@@ -2,24 +2,18 @@ package visualization.colorset;
 import java.util.HashMap;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jdom.Element;
 
-import util.SwtUtils;
+import visualization.VisualizationManager;
+import visualization.VisualizationManager.VisualizationEvent;
 
 /**
  * This class represent any object that can be present in a colorset
@@ -84,6 +78,11 @@ public abstract class ColorSetObject {
 		return parent;
 	}
 
+	protected void fireModifiedEvent() {
+		VisualizationManager.firePropertyChange(
+				new VisualizationEvent(this, VisualizationEvent.COLORSET_MODIFIED));
+	}
+	
 	abstract String getXmlElementName();
 	
 	static final String XML_ATTR_NAME = "name";

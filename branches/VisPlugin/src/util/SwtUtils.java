@@ -11,7 +11,11 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 public class SwtUtils {
@@ -49,6 +53,57 @@ public class SwtUtils {
 			fOld = null;
 		}
 		return new Font(display, fd);
+	}
+	
+	public static void setCompositeAndChildrenEnabled(Composite comp, boolean enable) {
+		comp.setEnabled(enable);
+		for(Control c : comp.getChildren()) {
+			System.out.println(c);
+			c.setEnabled(enable);
+			if(c instanceof Composite)
+				setCompositeAndChildrenEnabled((Composite) c, enable);
+		}
+	}
+	
+	public static void adjustFontSize(Font f, Point toFit, String text, GC gc, Display display) {
+		System.out.println(text);
+		
+		//Start with current fontsize
+		FontData fd = f.getFontData()[0];
+		int fontSize = fd.getHeight();
+		
+		boolean first = true;
+		int dir = 0;
+		int i = 0;
+		for(;;) {
+			System.out.println(i++ + ": " + fontSize);
+			int nextDir = getFontSizeIncrement(toFit, text, gc);
+			System.out.println(nextDir);
+			
+			if(!first && (nextDir != dir)) break;
+			
+			fontSize += dir;
+			System.out.println(fontSize);
+			fd.setHeight(fontSize);
+			f = changeFont(f, fd, display);
+			gc.setFont(f);
+			System.out.println(gc.getFont().getFontData()[0]);
+								
+			dir = nextDir;
+			first = false;
+		}
+	}
+	
+	static int getFontSizeIncrement(Point toFit, String text, GC gc) {
+		int borderX = toFit.x / 10;
+		int borderY = toFit.y / 15;
+		
+		Point size = gc.textExtent(text);
+		int dx = size.x - toFit.x + borderX;
+		int dy = size.y - toFit.y + borderY;
+		if(dx == 0 && dy == 0) return 0;
+		if(dx < 0 && dy < 0) return 1;
+		return -1;
 	}
 	
 	/**

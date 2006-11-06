@@ -1,13 +1,14 @@
 package visualization.colorset;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -18,6 +19,9 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,17 +33,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 
 import util.SwtUtils;
+import util.TableColumnResizer;
+import visualization.VisualizationManager;
+import visualization.VisualizationManager.VisualizationEvent;
+import visualization.VisualizationManager.VisualizationListener;
 import visualization.colorset.ColorCriterion.ColorCriterionComposite;
 import visualization.colorset.ColorGradient.ColorGradientComposite;
 
-public class ColorSetComposite extends Composite {
+public class ColorSetComposite extends Composite implements VisualizationListener {
 	final int colorLabelSize = 15;
 	ColorSet colorSet;
 	
-	ListViewer objectList;
+	TableViewer objectsTable;
 	
 	Composite colorButtons;
 	Composite objectsGroup;
@@ -52,6 +62,7 @@ public class ColorSetComposite extends Composite {
 	public ColorSetComposite(Composite parent, int style) {
 		super(parent, style);
 		createContents();
+		VisualizationManager.addListener(this);
 	}
 	
 	
@@ -63,23 +74,15 @@ public class ColorSetComposite extends Composite {
 			setObjectsGroupEnabled(true);
 			initColorLabels();
 			initName();
-			objectList.setInput(colorSet);
-			objectList.getList().select(0);
+			objectsTable.setInput(colorSet);
+			objectsTable.getTable().select(0);
 		}
 	}
 		
 	void setObjectsGroupEnabled(boolean enable) {
-		setCompositeEnabled(objectsGroup, enable);
+		SwtUtils.setCompositeAndChildrenEnabled(objectsGroup, enable);
 	}
-	
-	void setCompositeEnabled(Composite comp, boolean enable) {
-		for(Control c : comp.getChildren()) {
-			if(c instanceof Composite) 
-				setCompositeEnabled((Composite) c, enable);
-			else c.setEnabled(enable);
-		}
-	}
-	
+		
 	void initName() {
 		nameText.setText(colorSet.getName());
 	}
@@ -113,7 +116,7 @@ public class ColorSetComposite extends Composite {
 
 		refreshCombo();
 		
-		setCompositeEnabled(objectsGroup, false);
+		SwtUtils.setCompositeAndChildrenEnabled(objectsGroup, false);
 		colorSetCombo.select(0);
 	}
 
@@ -121,9 +124,14 @@ public class ColorSetComposite extends Composite {
 		Composite listComp = new Composite(parent, SWT.NULL);
 		listComp.setLayout(new GridLayout());
 		
-		objectList = new ListViewer(listComp, SWT.SINGLE | SWT.READ_ONLY | SWT.BORDER);
-		objectList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
-		objectList.setContentProvider(new IStructuredContentProvider() {
+		Table table = new Table(listComp, SWT.BORDER | SWT.SINGLE);
+		table.setLayoutData(new GridData(GridData.FILL_BOTH));
+		TableColumn coCol = new TableColumn(table, SWT.LEFT);
+		coCol.setText("Name");
+		table.addControlListener(new TableColumnResizer(table, listComp));
+		
+		objectsTable = new TableViewer(table);
+		objectsTable.setContentProvider(new IStructuredContentProvider() {
 			public Object[] getElements(Object inputElement) {
 				return ((ColorSet)inputElement).getObjects().toArray();
 			}
@@ -131,12 +139,44 @@ public class ColorSetComposite extends Composite {
 			public void dispose() { }
 			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 		});
-		objectList.setLabelProvider(new LabelProvider() {
-			public String getText(Object element) {
-				return ((ColorSetObject)element).getName();
+		objectsTable.setLabelProvider(new ITableLabelProvider() {
+			private Image criterionImage;
+			private Image gradientImage;
+											
+			public void dispose() {
+				if(criterionImage != null)
+					criterionImage.dispose();
+				if(gradientImage != null)
+					gradientImage.dispose();
 			}
+			
+			public Image getColumnImage(Object element, int columnIndex) { 
+				if(element instanceof ColorGradient) {
+					gradientImage = new Image(null, createGradientImage((ColorGradient)element));
+					return gradientImage;
+				}
+				if(element instanceof ColorCriterion) {
+					criterionImage = new Image(null, createColorImage(
+							((ColorCriterion)element).getColor()));
+					return criterionImage;
+				}
+				return null;
+			}
+			
+			public String getColumnText(Object element, int columnIndex) {
+				if(element instanceof ColorSetObject)
+					return ((ColorSetObject)element).getName();
+				return "";
+			}
+			
+			public boolean isLabelProperty(Object element, String property) {
+				return false;
+			}
+			public void removeListener(ILabelProviderListener listener) {}
+			public void addListener(ILabelProviderListener listener) {}
 		});
-		objectList.addSelectionChangedListener(new ISelectionChangedListener() {
+		
+		objectsTable.addSelectionChangedListener(new ISelectionChangedListener() {
 			boolean ignore;
 			ColorSetObject previous = null;
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -145,14 +185,14 @@ public class ColorSetComposite extends Composite {
 					return;
 				}
 				boolean save = true;
-				if(colorSet.getObjects().contains(previous))
+				if(previous != null && colorSet.getObjects().contains(previous))
 					save = objectSettings.save();
 				if(save) {
 					previous = getSelectedObject();
 					objectSettings.setInput(previous);
 				} else {
 					ignore = true;
-					objectList.setSelection(new StructuredSelection(previous));
+					objectsTable.setSelection(new StructuredSelection(previous));
 				}
 			}
 		});
@@ -176,7 +216,7 @@ public class ColorSetComposite extends Composite {
 		
 		return  listComp;
 	}
-	
+		
 	RGB askColor(RGB current) {
 		ColorDialog cd = new ColorDialog(getShell());
 		cd.setRGB(current);
@@ -186,9 +226,12 @@ public class ColorSetComposite extends Composite {
 	void changeColor(CLabel label) {
 		RGB rgb = askColor(label.getBackground().getRGB());
 		if(rgb == null) return;
-		if		(label == labelColorNCM) colorSet.color_no_criteria_met = rgb;
-		else if	(label == labelColorNGF) colorSet.color_no_gene_found = rgb;
-		else if	(label == labelColorNDF) colorSet.color_no_data_found = rgb;
+		if		(label == labelColorNCM) 
+			colorSet.setColor(ColorSet.ID_COLOR_NO_CRITERIA_MET, rgb);
+		else if	(label == labelColorNGF) 
+			colorSet.setColor(ColorSet.ID_COLOR_NO_GENE_FOUND, rgb);
+		else if	(label == labelColorNDF) 
+			colorSet.setColor(ColorSet.ID_COLOR_NO_DATA_FOUND, rgb);
 		
 		changeLabelColor(label, rgb);
 	}
@@ -261,17 +304,17 @@ public class ColorSetComposite extends Composite {
 					new ColorCriterion(colorSet, colorSet.getNewName("New expression")));
 			break;
 		}
-		objectList.refresh();
+		objectsTable.refresh();
 	}
 	
 	void removeColorSetObject() {
 		colorSet.removeObject(getSelectedObject());
-		objectList.refresh();
+		objectsTable.refresh();
 	}
 	
 	ColorSetObject getSelectedObject() {
 		return (ColorSetObject)
-			((IStructuredSelection)objectList.getSelection()).getFirstElement();
+			((IStructuredSelection)objectsTable.getSelection()).getFirstElement();
 	}
 	void modifyName(String newName) {
 		if(!newName.equals("")) colorSet.setName(newName);
@@ -299,7 +342,7 @@ public class ColorSetComposite extends Composite {
 			
 			void enableSettings(boolean enable) {
 				nameText.setEnabled(enable);
-				setCompositeEnabled(colorButtons, enable);
+				SwtUtils.setCompositeAndChildrenEnabled(colorButtons, enable);
 			}
 		});
 		
@@ -338,7 +381,7 @@ public class ColorSetComposite extends Composite {
 		colorButtons.setLayoutData(span2cols);
 		
 		nameText.setEnabled(false);
-		setCompositeEnabled(colorButtons, false);
+		SwtUtils.setCompositeAndChildrenEnabled(colorButtons, false);
 		return csComp;
 	}
 	
@@ -425,5 +468,62 @@ public class ColorSetComposite extends Composite {
 			//Nothing
 			new Composite(this, SWT.NULL);
 		}		
+	}
+	
+	/**
+	 * creates an 16x16 image filled with the given color
+	 * @param rgb the color to fill the image with
+	 * @return imagedata of a 16x16 image filled with the given color
+	 */
+	static ImageData createColorImage(RGB rgb) {
+		PaletteData colors = new PaletteData(new RGB[] { rgb, new RGB(0,0,0) });
+		ImageData data = new ImageData(16, 16, 1, colors);
+		for(int i = 0; i < 16; i++)
+		{
+			for(int j = 0; j < 16; j++)
+			{
+				if(j == 0 || j == 15 || i == 0 || i == 15) //Black border
+					data.setPixel(i, j, 1);
+				else
+					data.setPixel(i, j, 0);
+			}
+		}
+		return data;
+	}
+	
+	/**
+	 * creates a 16x16 image representing the given {@link GmmlColorGradient}
+	 * @param cg the gradient to create the image from
+	 * @return imagedata representing the gradient
+	 */
+	static ImageData createGradientImage(ColorGradient cg)
+	{
+		PaletteData colors = new PaletteData(0xFF0000, 0x00FF00, 0x0000FF);
+		ImageData data = new ImageData(16, 16, 24, colors);
+		double[] minmax = cg.getMinMax();
+		for(int i = 0; i < 16; i++)
+		{
+			RGB rgb = cg.getColor(minmax[0] + (i * (minmax[1]- minmax[0])) / 16 );
+			if(rgb == null)
+				rgb = new RGB(255,255,255);
+			for(int j = 0; j < 16; j++)
+			{
+				if(j == 0 || j == 15 || i == 0 || i == 15) //Black border
+					data.setPixel(i, j, colors.getPixel(new RGB(0,0,0)));
+				else
+					data.setPixel(i, j, colors.getPixel(rgb));
+			}
+		}
+		return data;
+	}
+
+
+	public void visualizationEvent(VisualizationEvent e) {
+		switch(e.type) {
+		case(VisualizationEvent.COLORSET_MODIFIED):
+			if(objectsTable != null && !objectsTable.getTable().isDisposed())
+				objectsTable.refresh();
+		}
+		
 	}
 }

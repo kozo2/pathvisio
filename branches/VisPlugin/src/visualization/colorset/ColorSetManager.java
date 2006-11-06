@@ -21,11 +21,6 @@ import data.GmmlGex.ExpressionDataEvent;
 import data.GmmlGex.ExpressionDataListener;
 
 public class ColorSetManager implements ExpressionDataListener {
-	static 
-	{
-		GmmlGex.addListener(new ColorSetManager());
-	}
-
 	final static String XML_ELEMENT = "ColorSets";
 
 	private static List<ColorSet> colorSets = new ArrayList<ColorSet>();
@@ -51,7 +46,12 @@ public class ColorSetManager implements ExpressionDataListener {
 
 	public static void newColorSet(String name) {
 		if(name == null) name = getNewName();
-		colorSets.add(new ColorSet(name));
+		addColorSet(new ColorSet(name));
+		
+	}
+	
+	public static void addColorSet(ColorSet cs) {
+		colorSets.add(cs);
 		VisualizationManager.firePropertyChange(
 				new VisualizationEvent(null, VisualizationEvent.COLORSET_ADDED));
 	}
@@ -66,6 +66,12 @@ public class ColorSetManager implements ExpressionDataListener {
 			VisualizationManager.firePropertyChange(
 					new VisualizationEvent(null, VisualizationEvent.COLORSET_REMOVED));
 		}
+	}
+	
+	public static ColorSet getColorSet(int index) {
+		if(index >= 0 && index < colorSets.size())
+			return colorSets.get(index);
+		else return null;
 	}
 
 	/**
@@ -87,7 +93,7 @@ public class ColorSetManager implements ExpressionDataListener {
 		String[] colorSetNames = new String[colorSets.size()];
 		for(int i = 0; i < colorSetNames.length; i++)
 		{
-			colorSetNames[i] = ((ColorSet)colorSets.get(i)).name;
+			colorSetNames[i] = ((ColorSet)colorSets.get(i)).getName();
 		}
 		return colorSetNames;
 	}
@@ -115,7 +121,7 @@ public class ColorSetManager implements ExpressionDataListener {
 			Document doc = parser.build(in);
 			Element root = doc.getRootElement();
 			for(Object o : root.getChildren(ColorSet.XML_ELEMENT)) {
-				colorSets.add(ColorSet.fromXML((Element) o));				
+				addColorSet(ColorSet.fromXML((Element) o));				
 			}
 		} catch(Exception e) {
 			GmmlVision.log.error("Unable to load colorsets", e);
@@ -125,10 +131,13 @@ public class ColorSetManager implements ExpressionDataListener {
 	public void expressionDataEvent(ExpressionDataEvent e) {
 		switch(e.type) {
 		case ExpressionDataEvent.CONNECTION_OPENED:
+			System.out.println("Connection opened, loading colorset");
 			load(GmmlGex.getColorSetInput());
 			break;
 		case ExpressionDataEvent.CONNECTION_CLOSED:
+			System.out.println("Connection closed, clearing colorset");
 			colorSets.clear();
+			break;
 		}
 	}
 }

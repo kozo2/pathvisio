@@ -46,12 +46,11 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import data.GmmlGex;
-
 import util.TableColumnResizer;
 import visualization.colorset.ColorSetComposite;
 import visualization.colorset.ColorSetManager;
 import visualization.plugins.VisualizationPlugin;
+import data.GmmlGex;
 
 /**
  * Dialog to configure visualizations
@@ -300,7 +299,7 @@ public class VisualizationDialog extends ApplicationWindow {
 			
 			pluginTable.addSelectionChangedListener(new ISelectionChangedListener() {
 				public void selectionChanged(SelectionChangedEvent event) {
-						setPluginButtonsEnabled(true);
+					setPluginButtonsEnabled(true);
 				}
 			});
 			
@@ -365,9 +364,10 @@ public class VisualizationDialog extends ApplicationWindow {
 			};
 		}
 		void setPluginButtonsEnabled(boolean enable) {
+			
 			VisualizationPlugin p = getSelectedPlugin();
-			if(p == null) return;
-			boolean doEnable = enable ? p.isActive() : false;
+			Boolean doEnable = false;
+			if(p != null) doEnable = enable ? p.isActive() : false;
 			pluginConfigButton.setEnabled(doEnable);
 			setOrderButtonsEnabled(doEnable);
 		}

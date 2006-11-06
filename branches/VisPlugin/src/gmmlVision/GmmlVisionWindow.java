@@ -5,7 +5,6 @@ import gmmlVision.GmmlVision.ApplicationEventListener;
 import gmmlVision.sidepanels.TabbedSidePanel;
 import graphics.GmmlDrawing;
 import graphics.GmmlGeneProduct;
-import graphics.GmmlLegend;
 
 import java.io.File;
 import java.net.URL;
@@ -47,6 +46,7 @@ import org.eclipse.swt.widgets.Shell;
 import preferences.GmmlPreferenceManager;
 import preferences.GmmlPreferences;
 import search.PathwaySearchComposite;
+import visualization.GmmlLegend;
 import visualization.VisualizationDialog;
 import visualization.VisualizationManager;
 import R.RController;

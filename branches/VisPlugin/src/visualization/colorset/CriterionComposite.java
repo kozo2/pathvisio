@@ -38,11 +38,7 @@ public class CriterionComposite extends Composite {
 	
 	public void fetchSymbolsFromGex() {
 		if(GmmlGex.isConnected()) {
-			ArrayList<String> numSmp = new ArrayList<String>();
-			ArrayList<Sample> samples = new ArrayList<Sample>(GmmlGex.getSamples().values());
-			for(Sample s : samples)
-				if(s.getDataType() == Types.REAL) numSmp.add(s.getName());
-			
+			java.util.List<String> numSmp = GmmlGex.getSampleNames(Types.REAL);
 			symbolList.setItems(numSmp.toArray(new String[numSmp.size()]));	
 		} else {
 			symbolList.setItems(new String[] {});

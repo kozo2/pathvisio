@@ -1,10 +1,6 @@
 package data;
 
 import gmmlVision.GmmlVision;
-import gmmlVision.GmmlVisionWindow;
-import gmmlVision.GmmlVision.ApplicationEvent;
-import gmmlVision.GmmlVision.ApplicationEventListener;
-import graphics.GmmlDrawing;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,21 +21,17 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import util.FileUtils;
-import visualization.colorset.ColorSetManager;
-import visualization.colorset.ColorCriterion;
-import visualization.colorset.ColorGradient;
-import visualization.colorset.ColorSet;
-import visualization.colorset.ColorSetObject;
+import data.GmmlGdb.IdCodePair;
 import data.GmmlGex.CachedData.Data;
 import data.ImportExprDataWizard.ImportInformation;
 import data.ImportExprDataWizard.ImportPage;
@@ -101,45 +93,48 @@ public abstract class GmmlGex {
 	public static CachedData cachedData;
 	public static class CachedData
 	{
-		private HashMap<String, Data> data;		
+		private HashMap<IdCodePair, Data> data;		
 		public CachedData()
 		{
 			if(samples == null) setSamples(); //Cache the samples in the dataset
-			data = new HashMap<String, Data>();
+			data = new HashMap<IdCodePair, Data>();
 		}
 		
-		public boolean hasData(String id, String code)
+		public boolean hasData(IdCodePair idc)
 		{
-			if(data.containsKey(id)) return data.get(id).id.equalsIgnoreCase(id);
+			if(data.containsKey(idc)) return data.get(idc).idcode.equals(idc);
 			else return false;
 		}
 		
-		public Data getData(String id, String code)
+		public Data getData(IdCodePair idc)
 		{
 			Data d = null;
-			if(data.containsKey(id)) { 
-				d = data.get(id);
-				if(!d.id.equalsIgnoreCase(id)) d = null;
+			if(data.containsKey(idc)) { 
+				d = data.get(idc);
+				if(!d.idcode.equals(idc)) d = null;
 			}
 			return d;
 		}
 		
-		public void addData(String id, Data mappIdData)
+		public void addData(String id, String code, Data mappIdData)
 		{
-			data.put(id, mappIdData);
+			data.put(new IdCodePair(id, code), mappIdData);
 		}
 		
 		public class Data
 		{
-			private String id;
-			private String code;
+			private IdCodePair idcode;
 			private HashMap<Integer, Object> sampleData;
-			private HashMap<String, Data> refData;
+			private HashMap<IdCodePair, Data> refData;
 			
 			public Data(String id, String code) {
-				this.id = id;
-				this.code = code;
-				refData = new HashMap<String, Data>();
+				idcode = new IdCodePair(id, code);
+				refData = new HashMap<IdCodePair, Data>();
+				sampleData = new HashMap<Integer, Object>();
+			}
+			
+			public Data(IdCodePair idcode) {
+				this.idcode = idcode;
 				sampleData = new HashMap<Integer, Object>();
 			}
 			
@@ -148,14 +143,15 @@ public abstract class GmmlGex {
 			public void addRefData(String id, String code, int sampleId, String data) 
 			{ 
 				Data ref = null;
-				if(refData.containsKey(id)) ref = refData.get(id);
-				else ref = new Data(id, code);
+				IdCodePair idcode = new IdCodePair(id, code);
+				if(refData.containsKey(idcode)) ref = refData.get(idcode);
+				else ref = new Data(idcode);
 				
 				Object parsedData = null;
 				try { parsedData = Double.parseDouble(data); }
 				catch(Exception e) { parsedData = data; }
 				ref.addSampleData(sampleId, parsedData);
-				refData.put(id, ref);
+				refData.put(idcode, ref);
 			}
 			
 			public void addSampleData(int sampleId, Object data)
@@ -177,6 +173,10 @@ public abstract class GmmlGex {
 			public boolean hasMultipleData()
 			{
 				return refData.keySet().size() > 1;
+			}
+			
+			public HashMap<Integer, Object> getSampleData() {
+				return sampleData;
 			}
 			
 			public HashMap<Integer, Object> getAverageSampleData()
@@ -244,9 +244,9 @@ public abstract class GmmlGex {
 	 */
 	public static class Sample implements Comparable<Sample>
 	{
-		public int idSample;
+		private int idSample;
 		private String name;
-		public int dataType;
+		private int dataType;
 		
 		/**
 		 * Constructor of this class
@@ -266,7 +266,7 @@ public abstract class GmmlGex {
 		
 		public String getName() { return name == null ? "" : name; }
 		public int getDataType() { return dataType; }
-		
+		public int getId() { return idSample; }
 		/**
 		 * Compares this object to another {@link Sample} object based on the idSample property
 		 * @param o	The {@link Sample} object to compare with
@@ -289,15 +289,14 @@ public abstract class GmmlGex {
 	}
 	
 	/**
-	 * Checks whether Expression data is cached for a given gene id
-	 * @param id	the gene id
-	 * @param code	The systemcode of the gene identifier
+	 * Checks whether Expression data is cached for a given gene product
+	 * @param idc	the {@link IdCodePair} containing the id and code of the geneproduct to look for
 	 * @return		true if Expression data is found in cache, false if not
 	 */
-	public static boolean hasData(String id, String code)
+	public static boolean hasData(IdCodePair idc)
 	{
 		if(cachedData == null) return false;
-		return cachedData.hasData(id, code);
+		return cachedData.hasData(idc);
 	}
 	
 	public static HashMap<Integer, Sample> getSamples()
@@ -306,37 +305,58 @@ public abstract class GmmlGex {
 		return samples;
 	}
 	
-	public static Data getCachedData(String id, String code)
+	public static List<String> getSampleNames(int dataType) {
+		List<String> names = new ArrayList<String>();
+		List<Sample> sorted = new ArrayList<Sample>(samples.values());
+		Collections.sort(sorted);
+		for(Sample s : sorted) {
+			if(dataType == s.dataType || dataType == -1)
+				names.add(s.getName());
+		}
+		return names;
+	}
+	
+	public static List<Sample> getSamples(int dataType) {
+		List<Sample> smps = new ArrayList<Sample>();
+		List<Sample> sorted = new ArrayList<Sample>(samples.values());
+		Collections.sort(sorted);
+		for(Sample s : sorted) {
+			if(dataType == s.dataType || dataType == -1)
+				smps.add(s);
+		}
+		return smps;
+	}
+	
+	public static Data getCachedData(IdCodePair idc)
 	{
-		if(cachedData != null) return cachedData.getData(id, code);
+		if(cachedData != null) return cachedData.getData(idc);
 		return null;
 	}
 	
 	/**
 	 * Gets all available expression data for the given gene id and returns a string
 	 * containing this data in a HTML table
-	 * @param id	the gene id for which the data has to be returned
-	 * @param code	The systemcode of the gene identifier
+	 * @param idc	the {@link IdCodePair} containing the id and code of the geneproduct to look for
 	 * @return		String containing the expression data in HTML format or a string displaying a
 	 * 'no expression data found' message in HTML format
 	 */
-	public static String getDataString(String id, String code)
+	public static String getDataString(IdCodePair idc)
 	{
 		String noDataFound = "<P><I>No expression data found";
-		String exprInfo = "<P><B>Gene id on mapp: " + id + "</B><TABLE border='1'>";
+		String exprInfo = "<P><B>Gene id on mapp: " + idc.getId() + "</B><TABLE border='1'>";
 		
 		String colNames = "<TR><TH>Sample name";
 		if(		con == null //Need a connection to the expression data
 				|| GmmlGdb.getCon() == null //and to the gene database
 		) return noDataFound;
 		
-		Data mappIdData = cachedData.getData(id, code);
+		Data mappIdData = cachedData.getData(idc);
 		if(mappIdData == null) return noDataFound;
 		ArrayList<Data> refData = mappIdData.getRefData();
 		if(refData == null) return noDataFound; //The gene doesn't have data after all
 		for(Data d : refData)
 		{
-			colNames += "<TH>" + d.id;
+			colNames += "<TH>" + d.idcode.getId();
 		}
 		String dataString = "";
 		for(Sample s : getSamples().values())
@@ -392,7 +412,7 @@ public abstract class GmmlGex {
 						GmmlVision.log.error("while caching expression data: " + e.getMessage(), e);
 					}
 				}
-				if(mappGeneData.hasData()) cachedData.addData(id, mappGeneData);
+				if(mappGeneData.hasData()) cachedData.addData(id, code, mappGeneData);
 			}			
 			if(cacheThread.isInterrupted) //Check if the process is interrupted
 			{

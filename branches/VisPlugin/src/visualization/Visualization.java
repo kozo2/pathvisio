@@ -100,8 +100,11 @@ public class Visualization {
 		Region region = g.createVisualizationRegion();
 		//Distribute space over plugins
 		Rectangle bounds = region.getBounds();
-		bounds.width = bounds.width / nrRes;
-		bounds.x += bounds.width * index;
+		int w = bounds.width / nrRes;
+		int leftSpace = bounds.width - w * nrRes;
+		bounds.x += w * index;
+		bounds.width = w + (index == nrRes - 1 ? leftSpace : 0);
+		
 		
 		region.intersect(bounds);
 		return region;

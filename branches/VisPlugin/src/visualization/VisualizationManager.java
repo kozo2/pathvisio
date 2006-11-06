@@ -36,9 +36,7 @@ import data.GmmlGex.ExpressionDataListener;
  * @author thomas
  *
  */
-public class VisualizationManager implements ApplicationEventListener {
-	static { GmmlVision.addApplicationEventListener(new VisualizationManager()); }
-	
+public class VisualizationManager implements ApplicationEventListener {	
 	static final String XML_ELEMENT = "visualization-set";
 		
 	static final String FILENAME_GENERIC = "visualizations.xml";
