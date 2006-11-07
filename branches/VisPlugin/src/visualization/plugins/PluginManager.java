@@ -19,6 +19,8 @@ import java.util.zip.ZipEntry;
 
 import org.jdom.Element;
 
+import data.GmmlGex;
+
 import visualization.Visualization;
 
 public abstract class PluginManager {
@@ -45,7 +47,21 @@ public abstract class PluginManager {
 	}
 	
 	public static Class[] getPlugins() {
-		return plugins.toArray(new Class[plugins.size()]);
+		return GmmlGex.isConnected() ?
+				plugins.toArray(new Class[plugins.size()]) :
+				getGenericPlugins();
+	}
+	
+	public static Class[] getGenericPlugins() {
+		Set<Class> generic = new LinkedHashSet<Class>();
+		for(Class pc : plugins) {
+			try {
+				if(getInstance(pc, null).isGeneric()) generic.add(pc);
+			} catch(Exception e) {
+				GmmlVision.log.error("Unable to determine if plugin is generic", e);
+			}
+		}
+		return generic.toArray(new Class[generic.size()]);
 	}
 	
 	public static String[] getPluginNames() {

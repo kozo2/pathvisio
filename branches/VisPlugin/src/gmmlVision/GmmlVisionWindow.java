@@ -726,7 +726,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 	/**
 	 * {@link Action} to open the {@link ColorSetWindow}
 	 */
-	private class ColorSetManagerAction extends Action
+	private class ColorSetManagerAction extends Action implements ExpressionDataListener
 	{
 		GmmlVisionWindow window;
 		public ColorSetManagerAction (GmmlVisionWindow w)
@@ -736,20 +736,22 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 			setToolTipText("Create and edit color sets");
 			setImageDescriptor(ImageDescriptor.createFromURL(
 					GmmlVision.getResourceURL("icons/colorset.gif")));
+			GmmlGex.addListener(this);
+			setEnabled(false);
 		}
-//		public void run () {
-//			if(GmmlGex.isConnected())
-//			{
-//				colorSetWindow.open();
-//				legend.resetContents();
-//				if(GmmlVision.isDrawingOpen()) GmmlVision.getDrawing().redraw();
-//			}
-//			else
-//			{
-//				MessageDialog.openError (window.getShell(), "Error", 
-//				"No expression data loaded, load a gex file first");
-//			}
-//		}
+		public void run () {
+			VisualizationDialog d = new VisualizationDialog(getShell());
+			d.setTabItemOnOpen(VisualizationDialog.TABITEM_COLORSETS);
+			d.open();
+		}
+		public void expressionDataEvent(ExpressionDataEvent e) {
+			switch(e.type) {
+			case ExpressionDataEvent.CONNECTION_OPENED:
+				setEnabled(true); break;
+			case ExpressionDataEvent.CONNECTION_CLOSED:
+				setEnabled(false); break;
+			}	
+		}
 	}
 	private ColorSetManagerAction colorSetManagerAction = new ColorSetManagerAction(this);
 	
@@ -761,6 +763,8 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 			window = w;
 			setText("&Visualizations");
 			setToolTipText("Create and edit visualizations");
+			setImageDescriptor(ImageDescriptor.createFromURL(
+					GmmlVision.getResourceURL("icons/visualizations.gif")));
 		}
 		public void run () {
 			VisualizationDialog d = new VisualizationDialog(getShell());
@@ -1259,6 +1263,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 	protected void createVisualizationCI() {
 		ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
 		toolBarManager.add(VisualizationManager.getComboItem());
+		toolBarManager.add(visualizationDialogAction);
 		toolBarManager.add(colorSetManagerAction);
 		visualizationCI = new ToolBarContributionItem(toolBarManager, "ColorSetActions");
 	}
@@ -1275,7 +1280,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		else {
 			getCoolBarManager().remove(editActionsCI);
 		}
-		showVisualizationCI(!show);
+//		showVisualizationCI(!show); //Visualizations can show up in edit mode...
 		getCoolBarManager().update(true);
 	}
 	

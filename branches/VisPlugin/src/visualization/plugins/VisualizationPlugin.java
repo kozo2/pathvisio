@@ -44,9 +44,9 @@ public abstract class VisualizationPlugin {
 	private boolean dialogCompleted = true;
 	private boolean isActive;
 	
-	private boolean useDrawingObject;
-	private boolean useSidePanel;
-	private boolean useToolTip;
+	private boolean useDrawingObject = true;
+	private boolean useSidePanel = true;
+	private boolean useToolTip = true;
 	
 	private Visualization visualization;
 	
@@ -108,9 +108,9 @@ public abstract class VisualizationPlugin {
 		}
 	}
 	
-	public boolean isUseSidePanel() { return useSidePanel; }
-	public boolean isUseToolTip() { return useToolTip; }
-	public boolean isUseDrawingObject() { return useDrawingObject; }
+	public boolean isUseSidePanel() { return canSidePanel() && useSidePanel; }
+	public boolean isUseToolTip() { return canToolTip() && useToolTip; }
+	public boolean isUseDrawingObject() { return canDrawingObject() && useDrawingObject; }
 	
 	public final boolean isActive() { return isActive; }
 	public final void setActive(boolean active) { isActive = active; }
@@ -163,7 +163,7 @@ public abstract class VisualizationPlugin {
 				
 	public final void fireModifiedEvent() {
 		VisualizationManager.firePropertyChange(
-				new VisualizationEvent(this, VisualizationEvent.VISUALIZATION_MODIFIED));
+				new VisualizationEvent(this, VisualizationEvent.PLUGIN_MODIFIED));
 	}
 	
 	private class ConfigurationDialog extends ApplicationWindow {
@@ -180,7 +180,7 @@ public abstract class VisualizationPlugin {
 			config.setLayoutData(new GridData(GridData.FILL_BOTH));
 			
 			Composite buttonComp = createButtonComposite(contents);
-			buttonComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			buttonComp.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 			
 			return contents;
 		}

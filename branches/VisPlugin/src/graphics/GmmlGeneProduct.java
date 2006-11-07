@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import util.SwtUtils;
-import attic.GmmlGpColor;
 import data.GmmlData;
 import data.GmmlDataObject;
 import data.MappFormat;

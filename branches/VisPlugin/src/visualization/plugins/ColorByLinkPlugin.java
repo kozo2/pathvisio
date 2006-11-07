@@ -32,6 +32,7 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 		super(v);
 		setDisplayOptions(DRAWING);
 		setIsGeneric(true);
+		setIsConfigurable(false);
 		
 		id2col = new HashMap<Integer, RGB>();
 		rnd = new Random();

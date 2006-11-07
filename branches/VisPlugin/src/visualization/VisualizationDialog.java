@@ -47,8 +47,8 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import util.TableColumnResizer;
+import util.Utils;
 import visualization.colorset.ColorSetComposite;
-import visualization.colorset.ColorSetManager;
 import visualization.plugins.VisualizationPlugin;
 import data.GmmlGex;
 
@@ -64,6 +64,13 @@ public class VisualizationDialog extends ApplicationWindow {
 	StackLayout settingsStack;
 	ListViewer visList;
 	
+	int tabItemOnOpen = 0;
+	
+	public static final int TABITEM_VISUALIZATIONS = 0;
+	public static final int TABITEM_COLORSETS = 1;
+	final String[] tabItemNames = new String[] {
+		"Visualizations", "Color sets"	
+	};
 	final String[] columnNames = new String[] {
 			"Name", "Active", "Drawing", "Side panel", "Tooltip"
 	};
@@ -79,8 +86,12 @@ public class VisualizationDialog extends ApplicationWindow {
 	}
 	
 	public boolean close() {
-		ColorSetManager.save(GmmlGex.getColorSetOutput());
+		GmmlGex.saveXML();
 		return super.close();
+	}
+	
+	public void setTabItemOnOpen(int index) {
+		tabItemOnOpen = index;
 	}
 	
 	public Control createContents(Composite parent) {
@@ -93,12 +104,12 @@ public class VisualizationDialog extends ApplicationWindow {
 		TabFolder tabs = new TabFolder(content, SWT.NULL);
 		TabItem visTab = new TabItem(tabs, SWT.NULL);
 		visTab.setControl(createVisualizationComp(tabs));
-		visTab.setText("Visualizations");
+		visTab.setText(tabItemNames[0]);
 
 		if(GmmlGex.isConnected()) {
 			TabItem colorTab = new TabItem(tabs, SWT.NULL);
 			colorTab.setControl(new ColorSetComposite(tabs, SWT.NULL));
-			colorTab.setText("Color sets");
+			colorTab.setText(tabItemNames[1]);
 		}
 
 		tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -112,6 +123,10 @@ public class VisualizationDialog extends ApplicationWindow {
 		});
 		ok.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 		
+		Visualization v = VisualizationManager.getCurrent();
+		if(v != null) visList.setSelection(new StructuredSelection(v));
+		
+		tabs.setSelection(tabItemOnOpen);
 		return tabs;
 	}
 
@@ -134,10 +149,13 @@ public class VisualizationDialog extends ApplicationWindow {
 	
 	private void createNoneSelectedComp(Composite parent) {
 		noneSelectedComp = new Composite(parent, SWT.NULL);
-		noneSelectedComp.setLayout(new GridLayout());
+		RowLayout layout = new RowLayout(SWT.VERTICAL);
+		layout.justify = true;
+		layout.marginLeft = 30;
+		noneSelectedComp.setLayout(layout);
 		Label l = new Label(noneSelectedComp, SWT.CENTER | SWT.WRAP);
-		l.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
-		l.setText("No visualization selected, select one or click 'Add' to add a visualization");
+		l.setText("No visualization selected, click 'Add' to add a visualization or select " +
+				"one from the list to configure");
 	}
 	
 	private void createVisualizationsList(Composite parent) {
@@ -152,7 +170,7 @@ public class VisualizationDialog extends ApplicationWindow {
 		visList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
 		setListProviders();
 		setListListeners();
-		
+				
 		Composite bComp = new Composite(comp, SWT.NULL);
 		bComp.setLayout(new RowLayout(SWT.HORIZONTAL));
 		final Button add = new Button(bComp, SWT.PUSH);
@@ -186,13 +204,14 @@ public class VisualizationDialog extends ApplicationWindow {
 			public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
 			
 		});
-		visList.setInput(VisualizationManager.getVisualizations()); //To trigger getElements
+		visList.setInput(VisualizationManager.getVisualizations()); 
 	}
 	
 	private void setListListeners() {
 		visList.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent e) {
 				Visualization v = getSelectedVisualization();
+				VisualizationManager.setCurrent(v);
 				showVisualizationSettings(v);
 			}
 		});
@@ -351,13 +370,13 @@ public class VisualizationDialog extends ApplicationWindow {
 					
 					int order = 0;
 					if		(e.widget == firstButton)
-						order = Visualization.ORDER_FIRST;
+						order = Utils.ORDER_FIRST;
 					else if (e.widget == lastButton)
-						order = Visualization.ORDER_LAST;
+						order = Utils.ORDER_LAST;
 					else if (e.widget == upButton) 
-						order = Visualization.ORDER_UP;
+						order = Utils.ORDER_UP;
 					else if (e.widget == downButton) 
-						order = Visualization.ORDER_DOWN;
+						order = Utils.ORDER_DOWN;
 					v.setDrawingOrder(p, order);
 					pluginTable.refresh();
 				}
@@ -366,9 +385,13 @@ public class VisualizationDialog extends ApplicationWindow {
 		void setPluginButtonsEnabled(boolean enable) {
 			
 			VisualizationPlugin p = getSelectedPlugin();
-			Boolean doEnable = false;
-			if(p != null) doEnable = enable ? p.isActive() : false;
-			pluginConfigButton.setEnabled(doEnable);
+			boolean doEnable = false;
+			boolean config = false;
+			if(p != null) {
+				doEnable = enable ? p.isActive() : false;
+				config = p.isConfigurable();
+			}
+			pluginConfigButton.setEnabled(doEnable && config);
 			setOrderButtonsEnabled(doEnable);
 		}
 		

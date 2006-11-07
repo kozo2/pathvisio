@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
 
+import util.Utils;
 import visualization.VisualizationManager.VisualizationEvent;
 import visualization.plugins.PluginManager;
 import visualization.plugins.VisualizationPlugin;
@@ -109,34 +110,9 @@ public class Visualization {
 		region.intersect(bounds);
 		return region;
 	}
-	
-	public static final int ORDER_UP = 1;
-	public static final int ORDER_DOWN = -1;
-	public static final int ORDER_FIRST = 2;
-	public static final int ORDER_LAST = -2;
-	
+		
 	public void setDrawingOrder(VisualizationPlugin plugin, int order) {
-		int index = drawingOrder.indexOf(plugin);
-		switch(order) {
-		case ORDER_UP:
-			if(index == 0) break;
-			drawingOrder.remove(index);
-			drawingOrder.add(index - 1, plugin);
-			break;
-		case ORDER_DOWN:
-			if(index == drawingOrder.size() - 1) break;
-			drawingOrder.remove(index);
-			drawingOrder.add(index + 1, plugin);
-			break;
-		case ORDER_FIRST:
-			drawingOrder.remove(index);
-			drawingOrder.add(0, plugin);
-			break;
-		case ORDER_LAST:
-			drawingOrder.remove(index);
-			drawingOrder.add(plugin);
-			break;
-		}
+		Utils.setDrawingOrder(drawingOrder, plugin, order);
 		fireVisualizationEvent(VisualizationEvent.VISUALIZATION_MODIFIED);
 	}
 	
@@ -190,5 +166,10 @@ public class Visualization {
 		}
 		
 		return v;
+	}
+	
+	public boolean equals(Object o) {
+		if(o instanceof Visualization) return ((Visualization)o).getName().equals(name);
+		return false;
 	}
 }

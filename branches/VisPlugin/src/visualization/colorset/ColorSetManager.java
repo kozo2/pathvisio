@@ -1,27 +1,20 @@
 package visualization.colorset;
 
-import gmmlVision.GmmlVision;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 
 import visualization.VisualizationManager;
 import visualization.VisualizationManager.VisualizationEvent;
-import data.GmmlGex;
-import data.GmmlGex.ExpressionDataEvent;
-import data.GmmlGex.ExpressionDataListener;
 
-public class ColorSetManager implements ExpressionDataListener {
-	final static String XML_ELEMENT = "ColorSets";
+public class ColorSetManager {
+	public final static String XML_ELEMENT = "color-sets";
 
 	private static List<ColorSet> colorSets = new ArrayList<ColorSet>();
 
@@ -98,46 +91,26 @@ public class ColorSetManager implements ExpressionDataListener {
 		return colorSetNames;
 	}
 
-	public static void save(OutputStream out) {
-		Document doc = new Document();
-		Element root = new Element(XML_ELEMENT);
-		for(ColorSet cs : colorSets) root.addContent(cs.toXML());
-		doc.setRootElement(root);
-
-		XMLOutputter xmlout = new XMLOutputter(Format.getPrettyFormat());
-		try {
-			xmlout.output(doc, out);
-		} catch(IOException e) {
-			GmmlVision.log.error("Unable to save colorsets", e);
-		}
+	public static Element getXML() {
+		Element cse = new Element(XML_ELEMENT);
+				
+		for(ColorSet cs : colorSets) cse.addContent(cs.toXML());
+		
+		return cse;
 	}
 
-	public static void load(InputStream in) {
+	public static void fromXML(Element xml) {
 		colorSets.clear();
-		if(in == null) return;
+		
+		if(xml == null) return;
 
-		SAXBuilder parser = new SAXBuilder();
-		try {
-			Document doc = parser.build(in);
-			Element root = doc.getRootElement();
-			for(Object o : root.getChildren(ColorSet.XML_ELEMENT)) {
-				addColorSet(ColorSet.fromXML((Element) o));				
-			}
-		} catch(Exception e) {
-			GmmlVision.log.error("Unable to load colorsets", e);
+		for(Object o : xml.getChildren(ColorSet.XML_ELEMENT)) {
+			addColorSet(ColorSet.fromXML((Element) o));				
 		}
 	}
 
-	public void expressionDataEvent(ExpressionDataEvent e) {
-		switch(e.type) {
-		case ExpressionDataEvent.CONNECTION_OPENED:
-			System.out.println("Connection opened, loading colorset");
-			load(GmmlGex.getColorSetInput());
-			break;
-		case ExpressionDataEvent.CONNECTION_CLOSED:
-			System.out.println("Connection closed, clearing colorset");
-			colorSets.clear();
-			break;
-		}
+	static Document parseInput(InputStream in) throws JDOMException, IOException {
+		SAXBuilder parser = new SAXBuilder();
+		return parser.build(in);
 	}
 }

@@ -13,6 +13,16 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.dnd.ByteArrayTransfer;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceAdapter;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -35,10 +45,12 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import util.SwtUtils;
 import util.TableColumnResizer;
+import util.Utils;
 import visualization.VisualizationManager;
 import visualization.VisualizationManager.VisualizationEvent;
 import visualization.VisualizationManager.VisualizationListener;
@@ -103,7 +115,6 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		Composite colorSetComp = createColorSetComposite(this);
 		colorSetComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
-				
 		objectsGroup = new Group(this, SWT.NULL);
 		objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 		objectsGroup.setLayout(new GridLayout(2, false));
@@ -124,8 +135,10 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		Composite listComp = new Composite(parent, SWT.NULL);
 		listComp.setLayout(new GridLayout());
 		
-		Table table = new Table(listComp, SWT.BORDER | SWT.SINGLE);
-		table.setLayoutData(new GridData(GridData.FILL_BOTH));
+		Composite tableComp = new Composite(listComp, SWT.NULL);
+		tableComp.setLayout(new GridLayout());
+		tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		Table table = new Table(tableComp, SWT.BORDER | SWT.SINGLE);
 		TableColumn coCol = new TableColumn(table, SWT.LEFT);
 		coCol.setText("Name");
 		table.addControlListener(new TableColumnResizer(table, listComp));
@@ -196,6 +209,14 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 				}
 			}
 		});
+		
+		//Drag & Drop support
+		DragSource ds = new DragSource(objectsTable.getTable(), DND.DROP_MOVE);
+		ds.addDragListener(new ColorSetObjectDragAdapter());
+		ds.setTransfer(new Transfer[] { TextTransfer.getInstance() });
+		DropTarget dt = new DropTarget(objectsTable.getTable(), DND.DROP_MOVE);
+		dt.addDropListener(new ColorSetObjectDropAdapter());
+		dt.setTransfer(new Transfer[] { TextTransfer.getInstance() });
 		
 		Composite buttons = new Composite(listComp, SWT.NULL);
 		buttons.setLayout(new RowLayout(SWT.HORIZONTAL));
@@ -294,17 +315,21 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		
 		int type = dialog.open();
 		if(type == Dialog.CANCEL) return;
+		ColorSetObject newCso = null;
 		switch(type) {
 		case NEW_GRADIENT:
-			colorSet.addObject(
-					new ColorGradient(colorSet, colorSet.getNewName("New gradient")));
+			newCso = new ColorGradient(colorSet, colorSet.getNewName("New gradient"));
 			break;
 		case NEW_EXPRESSION:
-			colorSet.addObject(
-					new ColorCriterion(colorSet, colorSet.getNewName("New expression")));
+			newCso = new ColorCriterion(colorSet, colorSet.getNewName("New expression"));
 			break;
 		}
-		objectsTable.refresh();
+		if(newCso != null) {
+			colorSet.addObject(newCso);
+			objectsTable.refresh();
+			objectsTable.setSelection(new StructuredSelection(newCso));
+		}
+		
 	}
 	
 	void removeColorSetObject() {
@@ -329,10 +354,17 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 	}
 	
 	Composite createColorSetComposite(Composite parent) {
-		final Composite csComp = new Composite(parent, SWT.NULL);
-		csComp.setLayout(new GridLayout(3, false));
+		Composite csComp = new Composite(parent, SWT.NULL);
+		csComp.setLayout(new GridLayout(2, false));
 		
-		colorSetCombo = new Combo(csComp, SWT.SINGLE | SWT.READ_ONLY);
+		//Combo + buttons
+		Composite comboComp = new Composite(csComp, SWT.NULL);
+		comboComp.setLayout(new GridLayout());
+		
+		Label comboLabel = new Label(comboComp, SWT.NULL);
+		comboLabel.setText("Color set:");
+		colorSetCombo = new Combo(comboComp, SWT.SINGLE | SWT.READ_ONLY);
+		colorSetCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		colorSetCombo.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				colorSetSelected();
@@ -346,18 +378,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 			}
 		});
 		
-		Label nameLabel = new Label(csComp, SWT.NULL);
-		nameLabel.setText("Name: ");
-		
-		nameText = new Text(csComp, SWT.SINGLE | SWT.BORDER);
-		nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		nameText.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				modifyName(nameText.getText());
-			}
-		});
-		
-		Composite buttons = new Composite(csComp, SWT.NULL);
+		Composite buttons = new Composite(comboComp, SWT.NULL);
 		buttons.setLayout(new RowLayout(SWT.HORIZONTAL));
 		final Button add = new Button(buttons, SWT.PUSH);
 		add.setText("Add");
@@ -368,14 +389,30 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 			public void widgetSelected(SelectionEvent e) {
 				if(e.widget == add) addColorSet();
 				else removeColorSet();
-				csComp.layout();
 			}
 		};
 		
 		add.addSelectionListener(buttonAdapter);
 		remove.addSelectionListener(buttonAdapter);
 		
-		colorButtons = createFixedColors(csComp);
+		//Name + colors
+		Composite csSettings = new Composite(csComp, SWT.NULL);
+		csSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		csSettings.setLayout(new GridLayout(2, false));
+		
+		Label nameLabel = new Label(csSettings, SWT.NULL);
+		nameLabel.setText("Name: ");
+		
+		nameText = new Text(csSettings, SWT.SINGLE | SWT.BORDER);
+		nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		nameText.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				modifyName(nameText.getText());
+			}
+		});
+		
+				
+		colorButtons = createFixedColors(csSettings);
 		GridData span2cols = new GridData(GridData.FILL_HORIZONTAL);
 		span2cols.horizontalSpan = 2;
 		colorButtons.setLayoutData(span2cols);
@@ -526,4 +563,36 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		}
 		
 	}
+	
+    private class ColorSetObjectDragAdapter extends DragSourceAdapter {
+    	public void dragStart(DragSourceEvent e) {
+    		System.out.println("Starting to drag " + getSelectedObject());
+    		e.doit = getSelectedObject() == null ? false : true;
+    	}
+    	
+    	public void dragSetData(DragSourceEvent e) {
+    		System.out.println("here");
+    		ColorSetObject selected = getSelectedObject();
+    		int csoIndex = colorSet.colorSetObjects.indexOf(selected);
+    		e.data = csoIndex;
+    		System.out.println("Dragging: " + e.data);
+    	}
+    }
+    
+    private class ColorSetObjectDropAdapter extends DropTargetAdapter {
+    	public void drop(DropTargetEvent e) {
+    		TableItem item = (TableItem)e.item;
+    		System.out.println("dropping "+ e.item);
+    		if(item != null)
+    		{
+    			Object selected = item.getData();
+
+    			int index = (Integer)e.data;
+    			if(index >= 0) {
+    				ColorSetObject cso = colorSet.getObjects().get(index);
+    				Utils.setDrawingOrder(colorSet.getObjects(), cso, colorSet.getObjects().indexOf(selected));
+    			}
+    		}
+    	}
+    }
 }

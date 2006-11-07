@@ -14,11 +14,10 @@ import java.util.List;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -37,14 +36,14 @@ import data.GmmlGex.ExpressionDataListener;
  *
  */
 public class VisualizationManager implements ApplicationEventListener {	
-	static final String XML_ELEMENT = "visualization-set";
+	public static final String XML_ELEMENT = "visualizations";
 		
 	static final String FILENAME_GENERIC = "visualizations.xml";
 	
 	static final int CURRENT_NONE = -1;
 	
 	static List<Visualization> visualizations = new ArrayList<Visualization>();
-	static int current;
+	static int current = -1;
 		
 	public static Visualization getCurrent() {
 		if(current < 0 || current >= visualizations.size()) return null;
@@ -57,14 +56,25 @@ public class VisualizationManager implements ApplicationEventListener {
 				new VisualizationEvent(null, VisualizationEvent.VISUALIZATION_SELECTED));
 	}
 	
+	public static void setCurrent(Visualization v) {
+		int index = getVisualizations().indexOf(v);
+		if(index > -1) setCurrent(index);
+	}
+	
 	public static List<Visualization> getVisualizations() {
 		return visualizations;
 	}
 	
-	public static List<Visualization> getGenericVisualizations() {
+	public static List<Visualization> getGeneric() {
 		List<Visualization> generic = new ArrayList<Visualization>();
 		for(Visualization v : visualizations) if(v.isGeneric()) generic.add(v);
 		return generic;
+	}
+	
+	public static List<Visualization> getNonGeneric() {
+		List<Visualization> nongeneric = new ArrayList<Visualization>();
+		for(Visualization v : visualizations) if(!v.isGeneric()) nongeneric.add(v);
+		return nongeneric;
 	}
 	
 	public static String[] getNames() {
@@ -109,7 +119,9 @@ public class VisualizationManager implements ApplicationEventListener {
 		Document xmlDoc = new Document();
 		Element root = new Element(XML_ELEMENT);
 
-		for(Visualization v : visualizations) root.addContent(v.toXML());
+		for(Visualization v : visualizations) {
+			if(v.isGeneric()) root.addContent(v.toXML());
+		}
 		xmlDoc.addContent(root);
 		
 		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
@@ -136,6 +148,23 @@ public class VisualizationManager implements ApplicationEventListener {
 		}
 	}
 	
+	public static Element getNonGenericXML() {
+		Element xml = new Element(XML_ELEMENT);
+		
+		for(Visualization v : getNonGeneric()) xml.addContent(v.toXML());
+		
+		return xml;
+	}
+	
+	public static void loadNonGenericXML(Element xml) {
+		if(xml == null) return;
+		
+		for(Object o : xml.getChildren(Visualization.XML_ELEMENT)) {
+			Visualization vis = Visualization.fromXML((Element) o);
+			if(!visualizations.contains(vis)) visualizations.add(vis);				
+		}
+	}
+	
 	static File getGenericFile() {
 		return new File(GmmlVision.getApplicationDir(), FILENAME_GENERIC);
 	}
@@ -156,18 +185,21 @@ public class VisualizationManager implements ApplicationEventListener {
 
 		protected Control createControl(Composite parent) {
 			Composite control = new Composite(parent, SWT.NULL);
-			control.setLayout(new RowLayout(SWT.HORIZONTAL));
+			GridLayout layout = new GridLayout(2, false);
+			layout.marginHeight = layout.marginWidth = 1;
+			control.setLayout(layout);
 			
-			Label label = new Label(control, SWT.LEFT);
+			Label label = new Label(control, SWT.CENTER);
 			label.setText("Apply visualization: ");
 			visCombo = new Combo(control, SWT.DROP_DOWN | SWT.READ_ONLY);
+			visCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			visCombo.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					setCurrent(visCombo.getSelectionIndex() - 1);
 				}
 			});
-			visCombo.addModifyListener(new ModifyListener() {
-				public void modifyText(ModifyEvent e) {
+			visCombo.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
 					setCurrent(visCombo.getSelectionIndex() - 1);
 				}
 			});
@@ -176,18 +208,14 @@ public class VisualizationManager implements ApplicationEventListener {
 		}
 		
 		public void update() {
-			String previous = visCombo.getText();
-			int select = 0;
+			if(visCombo == null) return;
 			
 			String[] visnames = getNames();
 			String[] items = new String[visnames.length + 1];
 			items[0] = NONE;
-			for(int i = 1; i < items.length; i++) {
-				items[i] = visnames[i-1];
-				if(items[i].equals(previous)) select = i; 
-			}
+			for(int i = 1; i < items.length; i++) items[i] = visnames[i-1];
 			visCombo.setItems(items);
-			visCombo.select(select);
+			visCombo.select(current + 1);
 		}
 
 		public void visualizationEvent(VisualizationEvent e) {
@@ -206,8 +234,8 @@ public class VisualizationManager implements ApplicationEventListener {
 			saveGeneric();
 		}		
 	}
-
-	static List<VisualizationListener> listeners = new ArrayList<VisualizationListener>();
+	
+	static List<VisualizationListener> listeners;
 
 	/**
 	 * Add a {@link ExpressionDataListener}, that will be notified if an
@@ -215,7 +243,8 @@ public class VisualizationManager implements ApplicationEventListener {
 	 * @param l The {@link ExpressionDataListener} to add
 	 */
 	public static void addListener(VisualizationListener l) {
-		if(listeners == null) listeners = new ArrayList<VisualizationListener>();
+		if(listeners == null)
+			listeners = new ArrayList<VisualizationListener>();
 		listeners.add(l);
 	}
 
@@ -225,7 +254,9 @@ public class VisualizationManager implements ApplicationEventListener {
 	 * @param e
 	 */
 	public static void firePropertyChange(VisualizationEvent e) {
-		for(VisualizationListener l : listeners) l.visualizationEvent(e);
+		for(VisualizationListener l : listeners) {
+			l.visualizationEvent(e);
+		}
 	}
 
 	public interface VisualizationListener {
@@ -241,6 +272,7 @@ public class VisualizationManager implements ApplicationEventListener {
 		public static final int VISUALIZATION_REMOVED = 4;
 		public static final int VISUALIZATION_MODIFIED = 5;
 		public static final int VISUALIZATION_SELECTED = 6;
+		public static final int PLUGIN_MODIFIED = 7;
 
 		public Object source;
 		public int type;
@@ -250,6 +282,5 @@ public class VisualizationManager implements ApplicationEventListener {
 			this.source = source;
 			this.type = type;
 		}
-	}
-	
+	}	
 }

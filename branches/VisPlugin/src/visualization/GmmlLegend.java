@@ -231,7 +231,6 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 		}
 
 		public void refresh() {
-			System.out.println("refreshing gradients");
 			redraw();
 		}
 
@@ -245,18 +244,13 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 
 		public void paintControl (PaintEvent e)
 		{
-			System.out.println("Redrawing gradients");
-
 			if(colorSet == null) return;
-
-			System.out.println(colorSet);
 
 			//Divide canvas in nr-gradients rows
 			Point size = getSize();
 			int n = getNrGradients();
 			int i = 0;
 			for(ColorSetObject co : colorSet.getObjects()) {
-				System.out.println(co);
 				if(co instanceof ColorGradient) {
 					ColorGradient cg = (ColorGradient)co;
 					Rectangle area = new Rectangle(

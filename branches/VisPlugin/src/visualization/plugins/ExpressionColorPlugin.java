@@ -1,22 +1,29 @@
 package visualization.plugins;
 
+import gmmlVision.GmmlVision;
+import graphics.GmmlGeneProduct;
+import graphics.GmmlGraphics;
+
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import graphics.GmmlGeneProduct;
-import graphics.GmmlGraphics;
-
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -32,27 +39,39 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.jdom.Element;
 
+import R.RFunctionLoader.ZScore.SetConfigDialog;
+
+import util.ColorConverter;
+import util.SwtUtils;
+import util.TableColumnResizer;
+import visualization.Visualization;
+import visualization.colorset.ColorSet;
+import visualization.colorset.ColorSetManager;
 import data.GmmlGex;
 import data.GmmlGdb.IdCodePair;
 import data.GmmlGex.Sample;
 import data.GmmlGex.CachedData.Data;
 
-import util.SwtUtils;
-import visualization.Visualization;
-import visualization.VisualizationManager;
-import visualization.colorset.ColorSet;
-import visualization.colorset.ColorSetManager;
-
 public class ExpressionColorPlugin extends VisualizationPlugin {
 	static final String NAME = "Color by expression";
+	static final String[] useSampleColumns = { "sample", "color set" };
+	static final RGB LINE_COLOR_DEFAULT = new RGB(0, 0, 0);
 	
-	List<ConfiguredSample> useSamples;
+	List<ConfiguredSample> useSamples = new ArrayList<ConfiguredSample>();
 	
+	RGB lineColor;
+	boolean drawLine;
 	
 	public ExpressionColorPlugin(Visualization v) {
 		super(v);
@@ -60,14 +79,12 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		setIsConfigurable(true);
 		setIsGeneric(false);
 		setUseReservedArea(true);
-		
-		useSamples = new ArrayList<ConfiguredSample>();
 	}
 
 	public String getName() {
 		return NAME;
 	}
-	
+		
 	public void draw(GmmlGraphics g, PaintEvent e, GC buffer) {
 		if(!(g instanceof GmmlGeneProduct)) return;
 		if(useSamples.size() == 0) return; //Nothing to draw
@@ -129,17 +146,37 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 	
 	void drawColoredRectangle(Rectangle r, RGB rgb, PaintEvent e, GC buffer) {
 		Color c = null;
+		Color lc = null;
 		
 		c = SwtUtils.changeColor(c, rgb, e.display);
-//		buffer.setForeground(e.display.getSystemColor(SWT.COLOR_GRAY));
+		
 		buffer.setBackground(c);
 		
 		buffer.fillRectangle(r);
-		buffer.drawRectangle(r);
+		if(drawLine) {
+			lc = SwtUtils.changeColor(lc, getLineColor(), e.display);
+			buffer.setForeground(lc);
+			buffer.drawRectangle(r);
+		}
 		
 		c.dispose();
+		if(lc != null) lc.dispose();
 	}
 	
+	void setLineColor(RGB rgb) {
+		if(rgb != null)	{
+			lineColor = rgb;
+			fireModifiedEvent();
+		}
+	}
+	
+	RGB getLineColor() { return lineColor == null ? LINE_COLOR_DEFAULT : lineColor; }
+	
+	void setDrawLine(boolean draw) {
+		drawLine = draw;
+		fireModifiedEvent();
+	}
+		
 	void addUseSample(Sample s) {
 		if(s != null) {
 			useSamples.add(new ConfiguredSample(s));
@@ -170,48 +207,77 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		}
 	}
 	
-	ListViewer useSampleList;
+	static final String XML_ATTR_DRAWLINE = "drawLine";
+	static final String XML_ELM_LINECOLOR = "lineColor";
+	public Element toXML() {
+		Element xml = super.toXML();
+		xml.setAttribute(XML_ATTR_DRAWLINE, Boolean.toString(drawLine));
+		xml.addContent(ColorConverter.createColorElement(XML_ELM_LINECOLOR, getLineColor()));
+		for(ConfiguredSample s : useSamples) xml.addContent(s.toXML());
+		return xml;
+	}
+	
+	public void loadXML(Element xml) {
+		super.loadXML(xml);
+		try {
+			lineColor = ColorConverter.parseColorElement(xml.getChild(XML_ELM_LINECOLOR));
+			drawLine = Boolean.parseBoolean(xml.getAttributeValue(XML_ATTR_DRAWLINE));
+		} catch(Exception e) {
+			GmmlVision.log.error("Unable to parse settings for plugin " + NAME, e);
+		}
+		for(Object o : xml.getChildren(ConfiguredSample.XML_ELEMENT)) {
+			try {
+				useSamples.add(new ConfiguredSample((Element)o));
+			} catch(Exception e) {
+				GmmlVision.log.error("Unable to add sample to plugin " + NAME, e);
+			}
+		}
+			
+	}
+	
+	TableViewer useSampleTable;
 	SampleConfigComposite sampleConfigComp;
+	Button checkLine;
 	protected Composite createConfigComposite(Composite parent) {
 		Composite config = new Composite(parent, SWT.NULL);
 		config.setLayout(new GridLayout());
 		
-		Composite listsComp = createSampleLists(config);
-		listsComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		Composite optionsComp = createOptionsComp(config);
+		optionsComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		Composite samplesComp = createSamplesComp(config);
+		samplesComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 		sampleConfigComp = new SampleConfigComposite(config, SWT.NULL);
-		GridData span = new GridData(GridData.FILL_HORIZONTAL);
-		span.horizontalSpan = 2;
-		sampleConfigComp.setLayoutData(span);
+		sampleConfigComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		return config;
 	}
 	
-	Composite createSampleLists(Composite parent) {
-		Composite listsComp = new Composite(parent, SWT.NULL);
-		listsComp.setLayout(new GridLayout(3, false));
+	Composite createSamplesComp(Composite parent) {
+		Group samplesGroup = new Group(parent, SWT.NULL);
+		samplesGroup.setText("Samples to display");
+		samplesGroup.setLayout(new GridLayout(3, false));
 		
-		Label sampleLabel = new Label(listsComp, SWT.NULL);
+		Label sampleLabel = new Label(samplesGroup, SWT.NULL);
 		sampleLabel.setText("Available samples:");
 		GridData span = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
 		span.horizontalSpan = 2;
 		sampleLabel.setLayoutData(span);
 		
-		Label useSampleLabel = new Label(listsComp, SWT.NULL);
+		Label useSampleLabel = new Label(samplesGroup, SWT.NULL);
 		useSampleLabel.setText("Selected samples");
 		useSampleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-		
-		LabelProvider listLabelProvider = new LabelProvider() {
+				
+		final ListViewer sampleList = new ListViewer(samplesGroup, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		sampleList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
+		sampleList.setContentProvider(new ArrayContentProvider());
+		sampleList.setLabelProvider(new LabelProvider() {
 			public String getText(Object element) {
 				return ((Sample)element).getName();
 			}
-		};
-		
-		final ListViewer sampleList = new ListViewer(listsComp, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		sampleList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
-		sampleList.setContentProvider(new ArrayContentProvider());
-		sampleList.setLabelProvider(listLabelProvider);
+		});
 		sampleList.setInput(GmmlGex.getSamples(Types.REAL));
 		
-		Composite buttons = new Composite(listsComp, SWT.NULL);
+		Composite buttons = new Composite(samplesGroup, SWT.NULL);
 		buttons.setLayout(new RowLayout(SWT.VERTICAL));
 		final Button add = new Button(buttons, SWT.PUSH);
 		add.setText(">");
@@ -223,40 +289,139 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 				if(e.widget == add) {
 					addUseSamples((IStructuredSelection)sampleList.getSelection());
 				} else {
-					removeUseSamples((IStructuredSelection)useSampleList.getSelection());
+					removeUseSamples((IStructuredSelection)useSampleTable.getSelection());
 				}
-				useSampleList.refresh();
+				useSampleTable.refresh();
 			}
 		};
 		
 		add.addSelectionListener(buttonListener);
 		remove.addSelectionListener(buttonListener);
 		
-		useSampleList = new ListViewer(listsComp, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		useSampleList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
-		useSampleList.setContentProvider(new ArrayContentProvider());
-		useSampleList.setLabelProvider(listLabelProvider);
-		useSampleList.addSelectionChangedListener(new ISelectionChangedListener() {
+		Composite tableComp = new Composite(samplesGroup, SWT.NULL);
+		tableComp.setLayout(new GridLayout());
+		tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		Table t = new Table(tableComp, SWT.BORDER | SWT.FULL_SELECTION);
+		t.setHeaderVisible(true);
+		
+		TableColumn tcnm = new TableColumn(t, SWT.LEFT);
+		tcnm.setText(useSampleColumns[0]);
+		tcnm.setToolTipText("The samples that will be displayed in the gene box");
+		TableColumn tccs = new TableColumn(t, SWT.LEFT);
+		tccs.setText(useSampleColumns[1]);
+		tccs.setToolTipText("The color set to apply on this sample");
+		t.addControlListener(new TableColumnResizer(t, tableComp));
+		useSampleTable = new TableViewer(t);
+		useSampleTable.setContentProvider(new ArrayContentProvider());
+		useSampleTable.setLabelProvider(new ITableLabelProvider() {
+			public String getColumnText(Object element, int columnIndex) {
+				switch(columnIndex) {
+				case 0: return ((Sample)element).getName();
+				case 1: return ((ConfiguredSample)element).getColorSetName();
+				default: return null;
+				}
+			}
+			public Image getColumnImage(Object element, int columnIndex) { return null; }
+			public void addListener(ILabelProviderListener listener) { }
+			public void dispose() { }
+			public boolean isLabelProperty(Object element, String property) { return false; }
+			public void removeListener(ILabelProviderListener listener) { }
+		});
+		useSampleTable.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent e) {
 				sampleConfigComp.setInput(getSelectedUseSample());
 			}
 			
 		});
-		useSampleList.setInput(useSamples);
+		useSampleTable.setColumnProperties(useSampleColumns);
+		final ComboBoxCellEditor editor = new ComboBoxCellEditor(useSampleTable.getTable(), ColorSetManager.getColorSetNames());
+		useSampleTable.setCellEditors(new CellEditor[] { new TextCellEditor(), editor });
+		useSampleTable.setCellModifier(new ICellModifier() {
+			public boolean canModify(Object element, String property) {
+				return 
+				property.equals(useSampleColumns[1]) &&
+				editor.getItems().length > 0;
+			}
+			public Object getValue(Object element, String property) {
+				if(property.equals(useSampleColumns[1]))
+					return ((ConfiguredSample)element).getColorSetIndex();
+				return null;
+			}
+			public void modify(Object element, String property, Object value) {
+				if(property.equals(useSampleColumns[1])) {
+					TableItem ti = (TableItem)element;
+					((ConfiguredSample)ti.getData()).setColorSetIndex((Integer)value);
+					useSampleTable.refresh();
+				}
+			}
+			
+		});
 		
-		return listsComp;
+		useSampleTable.setInput(useSamples);
+		
+		return samplesGroup;
 	}
+	
+	Color labelColor;
+	Composite createOptionsComp(Composite parent) {
+		Group lineGroup = new Group(parent, SWT.NULL);
+		lineGroup.setLayout(new GridLayout());
+		lineGroup.setText("General options");
 		
+		checkLine = new Button(lineGroup, SWT.CHECK);
+		checkLine.setText("Draw line around color box");
+		checkLine.setSelection(drawLine);
+		
+		final Composite colorComp = new Composite(lineGroup, SWT.NULL);
+		colorComp.setLayout(new GridLayout(3, false));
+		
+		Label label = new Label(colorComp, SWT.NULL);
+		label.setText("Line color: ");
+		final CLabel colorLabel = new CLabel(colorComp, SWT.SHADOW_IN);
+		colorLabel.setLayoutData(SwtUtils.getColorLabelGrid());
+		labelColor = SwtUtils.changeColor(labelColor, getLineColor(), colorLabel.getDisplay());
+		colorLabel.setBackground(labelColor);
+		
+		Button colorButton = new Button(colorComp, SWT.PUSH);
+		colorButton.setText("...");
+		colorButton.setLayoutData(SwtUtils.getColorLabelGrid());
+		colorButton.addListener(SWT.Selection | SWT.Dispose, new Listener() {
+			public void handleEvent(Event e) {
+				switch(e.type) {
+				case SWT.Selection:
+					RGB rgb = new ColorDialog(colorLabel.getShell()).open();
+					if(rgb != null) {
+						labelColor = SwtUtils.changeColor(labelColor, rgb, e.display);
+						colorLabel.setBackground(labelColor);
+						setLineColor(rgb);
+					}
+				break;
+				case SWT.Dispose:
+					labelColor.dispose();
+				break;
+				}
+			}
+		});
+		
+		checkLine.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				boolean doDraw = checkLine.getSelection();
+				SwtUtils.setCompositeAndChildrenEnabled(colorComp, doDraw);
+				setDrawLine(doDraw);
+			}
+		});
+				
+		return lineGroup;
+	}
+	
 	ConfiguredSample getSelectedUseSample() {
 		return (ConfiguredSample)
-		((IStructuredSelection)useSampleList.getSelection()).getFirstElement();
+		((IStructuredSelection)useSampleTable.getSelection()).getFirstElement();
 	}
 	
 	class SampleConfigComposite extends Composite {
 		ConfiguredSample input;
-		Combo colorSetCombo;
-		Button radioBar;
-		Button radioAvg;
+		Button radioBar, radioAvg;
 		
 		public SampleConfigComposite(Composite parent, int style) {
 			super(parent, style);
@@ -269,31 +434,10 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 			group.setText("Selected sample confguration");
 			group.setLayout(new GridLayout());
 			
-			Composite comboComp = createComboComp(group);
-			comboComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			Composite ambComp = createAmbigiousComp(group);
 			ambComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 			
 			setInput(null);
-		}
-		
-		Composite createComboComp(Composite parent) {
-			Composite comboComp = new Composite(parent, SWT.NULL);
-		
-			comboComp.setLayout(new GridLayout(2, false));
-			Label label = new Label(comboComp, SWT.NULL);
-			label.setText("Colorset to apply:");
-			colorSetCombo = new Combo(comboComp, SWT.READ_ONLY);
-			colorSetCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			colorSetCombo.setItems(ColorSetManager.getColorSetNames());
-			colorSetCombo.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) {
-					changeColorSet(colorSetCombo.getSelectionIndex());
-				}
-			});
-			colorSetCombo.select(0);
-			
-			return comboComp;
 		}
 		
 		Composite createAmbigiousComp(Composite parent) {
@@ -334,7 +478,6 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 			if(input == null) setAllEnabled(false);
 			else {
 				setAllEnabled(true);
-				colorSetCombo.select(input.getColorSetIndex());
 				boolean avg = input.getAmbigiousType() == ConfiguredSample.AMBIGIOUS_AVG;
 				radioAvg.setSelection(avg);
 				radioBar.setSelection(!avg);
@@ -361,15 +504,49 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 			super(s.getId(), s.getName(), s.getDataType());
 		}
 		
+		public ConfiguredSample(Element xml) throws Exception {
+			super(0, "", 0);
+			loadXML(xml);
+		}
+		
 		public void setColorSetIndex(int index) { colorSetIndex = index; }
 		
 		public ColorSet getColorSet() { return ColorSetManager.getColorSet(colorSetIndex); }
 		
+		public String getColorSetName() {
+			ColorSet cs = getColorSet();
+			return cs == null ? "no colorsets available" : cs.getName();
+		}
 		public int getColorSetIndex() { return colorSetIndex; }
 		
 		public int getAmbigiousType() { return ambigious; }
 		
 		public void setAmbigiousType(int type) { ambigious = type; }
+		
+		static final String XML_ELEMENT = "sample";
+		static final String XML_ATTR_ID = "id";
+		static final String XML_ATTR_AMBIGIOUS = "ambigious";
+		static final String XML_ATTR_COLORSET = "colorset";
+		
+		public Element toXML() {
+			Element xml = new Element(XML_ELEMENT);
+			xml.setAttribute(XML_ATTR_ID, Integer.toString(getId()));
+			xml.setAttribute(XML_ATTR_AMBIGIOUS, Integer.toString(ambigious));
+			xml.setAttribute(XML_ATTR_COLORSET, Integer.toString(colorSetIndex));
+			return xml;
+		}
+		
+		public void loadXML(Element xml) throws Exception {
+			int id = Integer.parseInt(xml.getAttributeValue(XML_ATTR_ID));
+			int csi = Integer.parseInt(xml.getAttributeValue(XML_ATTR_COLORSET));
+			int amb = Integer.parseInt(xml.getAttributeValue(XML_ATTR_AMBIGIOUS));
+			Sample s = GmmlGex.getSamples().get(id);
+			setId(id);
+			setName(s.getName());
+			setDataType(s.getDataType());
+			setAmbigiousType(amb);
+			setColorSetIndex(csi);
+		}
 	}
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) { return null; }

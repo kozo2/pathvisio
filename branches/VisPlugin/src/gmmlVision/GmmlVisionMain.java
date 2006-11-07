@@ -10,7 +10,6 @@ import org.eclipse.swt.widgets.Display;
 
 import preferences.GmmlPreferences;
 import visualization.VisualizationManager;
-import visualization.colorset.ColorSetManager;
 import visualization.plugins.PluginManager;
 import data.GmmlGdb;
 import data.GmmlGex;
@@ -84,8 +83,11 @@ public class GmmlVisionMain {
 	}
 	
 	static void registerListeners() {
-		GmmlGex.addListener(new ColorSetManager());
-		GmmlVision.addApplicationEventListener(new VisualizationManager());
+		VisualizationManager vmgr = new VisualizationManager();
+		GmmlGex gex = new GmmlGex();
+		
+		GmmlVision.addApplicationEventListener(vmgr);
+		GmmlVision.addApplicationEventListener(gex);
 	}
 	
 	static void loadVisualizations() {

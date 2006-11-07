@@ -14,10 +14,11 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Region;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jdom.Element;
@@ -32,18 +33,18 @@ import visualization.Visualization;
  */
 public class LabelPlugin extends VisualizationPlugin {
 	static final String NAME = "Gene product label";
-	static final String XML_ATTR_STYLE = "style";
-		
+	
+	static final FontData DEFAULT_FONTDATA = new FontData("Arial narrow", 10, SWT.NORMAL);
+			
 	final static int STYLE_ID = 0;
 	final static int STYLE_SYMBOL = 1;
 	
 	Label labelSidePanel;
 	
-	int style;
+	int style = STYLE_SYMBOL;
 	boolean adaptFontSize = true;
 	
-	String font = "Arial narrow";
-	int fontSize = 10;
+	FontData fontData;
 	
 	public LabelPlugin(Visualization v) {
 		super(v);		
@@ -79,13 +80,13 @@ public class LabelPlugin extends VisualizationPlugin {
 			
 			buffer.setClipping(region);
 			
-			f = SwtUtils.changeFont(f, new FontData(font, getFontSize(), SWT.NONE), e.display);
+			f = SwtUtils.changeFont(f, getFontData(true), e.display);
 		
 			String label = getLabelText((GmmlGeneProduct) g);
 			
-			if(adaptFontSize)
+			if(adaptFontSize) {
 				SwtUtils.adjustFontSize(f, new Point(area.width, area.height), label, buffer, e.display);
-			else
+			} else
 				buffer.setFont(f);
 			
 			Point textSize = buffer.textExtent (label);
@@ -101,8 +102,35 @@ public class LabelPlugin extends VisualizationPlugin {
 		}
 	}
 	
-	private int getFontSize() {
-		return (int)(fontSize * GmmlVision.getDrawing().getZoomFactor());
+	void setAdaptFontSize(boolean adapt) {
+		adaptFontSize = adapt;
+		fireModifiedEvent();
+	}
+	
+	void setFontData(FontData fd) {
+		if(fd != null) {
+			fontData = fd;
+			fireModifiedEvent();
+		}
+	}
+	void setFontSize(int size) {
+		fontData.setHeight(size);
+		fireModifiedEvent();
+	}
+	
+	int getFontSize() {
+		return getFontData().getHeight();
+	}
+	
+	FontData getFontData() {
+		return getFontData(false);
+	}
+	
+	FontData getFontData(boolean adjustZoom) {
+		FontData fd = fontData == null ? DEFAULT_FONTDATA : fontData;
+		if(adjustZoom)
+			fd.setHeight((int)(fd.getHeight() * GmmlVision.getDrawing().getZoomFactor()));
+		return fd;
 	}
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) {
@@ -117,15 +145,17 @@ public class LabelPlugin extends VisualizationPlugin {
 
 	protected Composite createConfigComposite(Composite parent) {
 		Composite comp = new Composite(parent, SWT.NULL);
-		comp.setLayout(new FillLayout());
+		comp.setLayout(new GridLayout());
+		
+		createFontComp(comp);
 		
 		Group typeGroup = new Group(comp, SWT.NULL);
 		typeGroup.setLayout(new RowLayout(SWT.VERTICAL));
 		typeGroup.setText("Label text");
-		final Button id = new Button(typeGroup, SWT.RADIO);
-		id.setText("Geneproduct ID");
 		final Button symbol = new Button(typeGroup, SWT.RADIO);
 		symbol.setText("Geneproduct name");
+		final Button id = new Button(typeGroup, SWT.RADIO);
+		id.setText("Geneproduct ID");
 		
 		SelectionAdapter radioAdapter = new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -134,7 +164,8 @@ public class LabelPlugin extends VisualizationPlugin {
 			}
 		};
 		
-		symbol.setSelection(true);
+		symbol.setSelection(style == STYLE_SYMBOL);
+		id.setSelection(style == STYLE_ID);
 		
 		id.addSelectionListener(radioAdapter);
 		symbol.addSelectionListener(radioAdapter);
@@ -142,6 +173,31 @@ public class LabelPlugin extends VisualizationPlugin {
 		return comp;
 	}
 		
+	Composite createFontComp(Composite parent) {
+		Group fontSizeComp = new Group(parent, SWT.NULL);
+		fontSizeComp.setText("Label font");
+		fontSizeComp.setLayout(new RowLayout(SWT.VERTICAL));
+		final Button font = new Button(fontSizeComp, SWT.PUSH);
+		font.setText("Change label font");
+		font.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				FontDialog fd = new FontDialog(font.getShell());
+				fd.setFontList(new FontData[] { getFontData() });
+				setFontData(fd.open());
+			}
+		});
+		final Button adapt = new Button(fontSizeComp, SWT.CHECK);
+		adapt.setText("Adapt font size to genebox size");
+		adapt.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				setAdaptFontSize(adapt.getSelection());
+			}
+		});
+		adapt.setSelection(adaptFontSize);
+		return fontSizeComp;
+	}
+	
+	
 	public void updateSidePanel(GmmlGraphics g) {
 		if(g instanceof GmmlGeneProduct) 
 			labelSidePanel.setText(getLabelText((GmmlGeneProduct)g));
@@ -156,9 +212,14 @@ public class LabelPlugin extends VisualizationPlugin {
 		}
 	}
 
+	static final String XML_ATTR_STYLE = "style";
+	static final String XML_ATTR_ADAPT_FONT = "adjustFontSize";
+	static final String XML_ATTR_FONTDATA = "font";
 	public Element toXML() {
 		Element elm = super.toXML();
 		elm.setAttribute(XML_ATTR_STYLE, Integer.toString(style));
+		elm.setAttribute(XML_ATTR_ADAPT_FONT, Boolean.toString(adaptFontSize));
+		elm.setAttribute(XML_ATTR_FONTDATA, getFontData().toString());
 		return elm;
 	}
 	
@@ -166,9 +227,12 @@ public class LabelPlugin extends VisualizationPlugin {
 		super.loadXML(xml);
 		
 		String styleStr = xml.getAttributeValue(XML_ATTR_STYLE);
-		
+		String adaptStr = xml.getAttributeValue(XML_ATTR_ADAPT_FONT);
+		String fontStr = xml.getAttributeValue(XML_ATTR_FONTDATA);
 		try {
 			setStyle(Integer.parseInt(styleStr));
+			adaptFontSize = Boolean.parseBoolean(adaptStr);
+			fontData = new FontData(fontStr);
 		} catch(NumberFormatException e) {
 			GmmlVision.log.error("Unable to get style for " + NAME, e);
 		}

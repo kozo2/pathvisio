@@ -1,6 +1,8 @@
 package data;
 
 import gmmlVision.GmmlVision;
+import gmmlVision.GmmlVision.ApplicationEvent;
+import gmmlVision.GmmlVision.ApplicationEventListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,8 +31,15 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import util.FileUtils;
+import visualization.VisualizationManager;
+import visualization.colorset.ColorSetManager;
 import data.GmmlGdb.IdCodePair;
 import data.GmmlGex.CachedData.Data;
 import data.ImportExprDataWizard.ImportInformation;
@@ -41,7 +50,8 @@ import data.ImportExprDataWizard.ImportPage;
  * several methods to query data and write data and methods to convert a GenMAPP Expression Dataset
  * to hsqldb format
  */
-public abstract class GmmlGex {
+public class GmmlGex implements ApplicationEventListener {
+	public static final String XML_ELEMENT = "expression-data-visualizations";
 	private static final int COMPAT_VERSION = 1;
 	
 	private static Connection con;
@@ -69,9 +79,11 @@ public abstract class GmmlGex {
 	 */
 	public static void setGexFile(File file) { gexFile = file; }
 				
-	public static InputStream getColorSetInput() {
+	public static InputStream getXmlInput() {
+		File xmlFile = new File(gexFile + ".xml");
 		try {
-			InputStream in = new FileInputStream(new File(gexFile + ".xml"));
+			if(!xmlFile.exists()) xmlFile.createNewFile();
+			InputStream in = new FileInputStream(xmlFile);
 			return in;
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -79,7 +91,7 @@ public abstract class GmmlGex {
 		}
 	}
 	
-	public static OutputStream getColorSetOutput() {
+	public static OutputStream getXmlOutput() {
 		try {
 			File f = new File(gexFile + ".xml");
 			OutputStream out = new FileOutputStream(f);
@@ -90,6 +102,56 @@ public abstract class GmmlGex {
 		}
 	}
 	
+	public static void saveXML() {
+		if(!isConnected()) return;
+		
+		OutputStream out = getXmlOutput();
+		
+		Document xmlDoc = new Document();
+		Element root = new Element(XML_ELEMENT);
+		xmlDoc.setRootElement(root);
+		
+		root.addContent(VisualizationManager.getNonGenericXML());
+		root.addContent(ColorSetManager.getXML());
+		
+		XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
+		try {
+			xmlOut.output(xmlDoc, out);
+			out.close();
+		} catch(IOException e) {
+			GmmlVision.log.error("Unable to save visualization settings", e);
+		}
+	}
+	
+	public static void loadXML() {
+		Document doc = getXML();
+		Element root = doc.getRootElement();
+		Element vis = root.getChild(VisualizationManager.XML_ELEMENT);
+		VisualizationManager.loadNonGenericXML(vis);
+		Element cs = root.getChild(ColorSetManager.XML_ELEMENT);
+		ColorSetManager.fromXML(cs);
+	}
+	
+	public static Document getXML() {
+		InputStream in = GmmlGex.getXmlInput();
+		Document doc;
+		Element root;
+		try {
+			SAXBuilder parser = new SAXBuilder();
+			doc = parser.build(in);
+			in.close();
+			
+			root = doc.getRootElement();
+		} catch(Exception e) {
+			doc = new Document();
+			root = new Element(XML_ELEMENT);
+			doc.setRootElement(root);
+			
+		}
+		
+		return doc;
+	}
+		
 	public static CachedData cachedData;
 	public static class CachedData
 	{
@@ -265,8 +327,11 @@ public abstract class GmmlGex {
 		}
 		
 		public String getName() { return name == null ? "" : name; }
+		protected void setName(String nm) { name = nm; }
 		public int getDataType() { return dataType; }
+		protected void setDataType(int type) { dataType = type; }
 		public int getId() { return idSample; }
+		protected void setId(int id) { idSample = id; }
 		/**
 		 * Compares this object to another {@link Sample} object based on the idSample property
 		 * @param o	The {@link Sample} object to compare with
@@ -865,9 +930,11 @@ public abstract class GmmlGex {
 		con.setReadOnly(true);
 		
 //		if(!clean) Utils.checkDbVersion(con, COMPAT_VERSION);
+		
+		loadXML();
 		setSamples();
 		
-		firePropertyChange(new ExpressionDataEvent(GmmlGex.class, ExpressionDataEvent.CONNECTION_OPENED));
+		fireExpressionDataEvent(new ExpressionDataEvent(GmmlGex.class, ExpressionDataEvent.CONNECTION_OPENED));
 	}
 	
 	/**
@@ -890,6 +957,8 @@ public abstract class GmmlGex {
 		{
 			try
 			{
+				saveXML();
+				
 				Statement sh = con.createStatement();
 				if(shutdown) {
 					//Shutdown to write last changes, compact to compact the data file (can take a while)
@@ -897,7 +966,7 @@ public abstract class GmmlGex {
 				}
 				sh.close();
 				con = null;
-				firePropertyChange(new ExpressionDataEvent(GmmlGex.class, ExpressionDataEvent.CONNECTION_CLOSED));
+				fireExpressionDataEvent(new ExpressionDataEvent(GmmlGex.class, ExpressionDataEvent.CONNECTION_CLOSED));
 			} catch (Exception e) {
 				GmmlVision.log.error("Error while closing connection to expression dataset " + gexFile, e);
 			}
@@ -946,7 +1015,14 @@ public abstract class GmmlGex {
 		}
 	}
 	
-	static List<ExpressionDataListener> listeners = new ArrayList<ExpressionDataListener>();
+	public void applicationEvent(ApplicationEvent e) {
+		switch(e.type) {
+		case ApplicationEvent.CLOSE_APPLICATION:
+			if(isConnected()) close();
+		}
+	}
+	
+	static List<ExpressionDataListener> listeners;
 	
 	/**
 	 * Add a {@link ExpressionDataListener}, that will be notified if an
@@ -954,6 +1030,7 @@ public abstract class GmmlGex {
 	 * @param l The {@link ExpressionDataListener} to add
 	 */
 	public static void addListener(ExpressionDataListener l) {
+		if(listeners == null) listeners = new ArrayList<ExpressionDataListener>();
 		listeners.add(l);
 	}
 	
@@ -962,7 +1039,7 @@ public abstract class GmmlGex {
 	 * to this class
 	 * @param e
 	 */
-	public static void firePropertyChange(ExpressionDataEvent e) {
+	public static void fireExpressionDataEvent(ExpressionDataEvent e) {
 		for(ExpressionDataListener l : listeners) l.expressionDataEvent(e);
 	}
 	
@@ -1047,19 +1124,5 @@ public abstract class GmmlGex {
 			sh.execute(
 					"CREATE INDEX i_expression_groupId" +
 			" ON expression(groupId)	");
-			sh.execute(
-					"CREATE CACHED TABLE				" +
-					"		colorSets					" +
-					"(	colorSetId INTEGER PRIMARY KEY,	" +
-					"	name VARCHAR(50)," +
-			"	criterion VARCHAR(100)	)");
-			sh.execute(
-					"CREATE CACHED TABLE				" +
-					"		colorSetObjects				" +
-					"(	id INTEGER IDENTITY,			" +
-					"	name VARCHAR(50),				" +
-					"	colorSetId INTEGER,				" +
-					"	criterion VARCHAR(100)			" +
-			" )							");
 	}
 }
