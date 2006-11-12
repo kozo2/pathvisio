@@ -56,12 +56,18 @@ public abstract class PluginManager {
 		Set<Class> generic = new LinkedHashSet<Class>();
 		for(Class pc : plugins) {
 			try {
-				if(getInstance(pc, null).isGeneric()) generic.add(pc);
+				if(isGeneric(pc)) generic.add(pc);
 			} catch(Exception e) {
 				GmmlVision.log.error("Unable to determine if plugin is generic", e);
 			}
 		}
 		return generic.toArray(new Class[generic.size()]);
+	}
+	
+	public static boolean isGeneric(Class pluginClass) {
+		try {
+			return getInstance(pluginClass, null).isGeneric();
+		} catch(Exception e) { return false; }
 	}
 	
 	public static String[] getPluginNames() {
@@ -139,7 +145,7 @@ public abstract class PluginManager {
 			
 		return false;
 	}
-		
+			
 	static  FilenameFilter classFilter = new FilenameFilter() {
 		public boolean accept(File f, String name) {
 			return name.endsWith(".class");

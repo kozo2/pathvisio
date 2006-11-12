@@ -22,12 +22,15 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -39,8 +42,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -63,6 +64,9 @@ public class VisualizationDialog extends ApplicationWindow {
 	
 	StackLayout settingsStack;
 	ListViewer visList;
+	
+	Color nonGenericColor;
+	Color genericColor;
 	
 	int tabItemOnOpen = 0;
 	
@@ -101,13 +105,18 @@ public class VisualizationDialog extends ApplicationWindow {
 		Composite content = new Composite(parent, SWT.NULL);
 		content.setLayout(new GridLayout());
 		
-		TabFolder tabs = new TabFolder(content, SWT.NULL);
-		TabItem visTab = new TabItem(tabs, SWT.NULL);
+		CTabFolder tabs = new CTabFolder(content, SWT.BORDER);
+		tabs.setSimple(false);
+		tabs.setSelectionBackground(new Color[] {
+				tabs.getSelectionBackground(),
+				tabs.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND) }, 
+				new int[] { 100 }, true);
+		CTabItem visTab = new CTabItem(tabs, SWT.NULL);
 		visTab.setControl(createVisualizationComp(tabs));
 		visTab.setText(tabItemNames[0]);
 
 		if(GmmlGex.isConnected()) {
-			TabItem colorTab = new TabItem(tabs, SWT.NULL);
+			CTabItem colorTab = new CTabItem(tabs, SWT.NULL);
 			colorTab.setControl(new ColorSetComposite(tabs, SWT.NULL));
 			colorTab.setText(tabItemNames[1]);
 		}
@@ -127,6 +136,7 @@ public class VisualizationDialog extends ApplicationWindow {
 		if(v != null) visList.setSelection(new StructuredSelection(v));
 		
 		tabs.setSelection(tabItemOnOpen);
+		content.setFocus();
 		return tabs;
 	}
 
@@ -259,6 +269,7 @@ public class VisualizationDialog extends ApplicationWindow {
 	class VisualizationSettings extends Composite {		
 		Visualization input;
 		Text nameText;
+		Label description;
 		Button pluginConfigButton, firstButton, upButton, downButton, lastButton;
 		
 		VisualizationSettings(Composite parent, int style) {
@@ -318,14 +329,29 @@ public class VisualizationDialog extends ApplicationWindow {
 			
 			pluginTable.addSelectionChangedListener(new ISelectionChangedListener() {
 				public void selectionChanged(SelectionChangedEvent event) {
+					VisualizationPlugin p = getSelectedPlugin();
+					description.setText(p == null ? "" : "Description:\n" + p.getDescription());
+					layout();
 					setPluginButtonsEnabled(true);
 				}
 			});
 			
-			getPluginButtonComp(comp);
+			createPluginButtonComp(comp);
+			
+			Composite descrComp = createDescriptionComp(comp);
+			GridData span = new GridData(GridData.FILL_HORIZONTAL);
+			span.horizontalSpan= 2;
+			descrComp.setLayoutData(span);
 		}
 		
-		Composite getPluginButtonComp(Composite parent) {
+		Composite createDescriptionComp(Composite parent) {
+			Composite comp = new Composite(parent, SWT.NULL);
+			comp.setLayout(new FillLayout());
+			description = new Label(comp, SWT.NULL);
+			return comp;
+		}
+		
+		Composite createPluginButtonComp(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NULL);
 			comp.setLayout(new RowLayout(SWT.VERTICAL));
 			
@@ -379,6 +405,7 @@ public class VisualizationDialog extends ApplicationWindow {
 						order = Utils.ORDER_DOWN;
 					v.setDrawingOrder(p, order);
 					pluginTable.refresh();
+					colorPluginTable();
 				}
 			};
 		}
@@ -415,7 +442,7 @@ public class VisualizationDialog extends ApplicationWindow {
 		Table createPluginTable(Composite parent) {
 			Composite tableComp = new Composite(parent, SWT.NULL);
 			tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
-			tableComp.setLayout(new GridLayout());
+			tableComp.setLayout(new FillLayout());
 			Table t = new Table(tableComp, SWT.BORDER | SWT.FULL_SELECTION);
 			t.setHeaderVisible(true);
 				
@@ -449,6 +476,7 @@ public class VisualizationDialog extends ApplicationWindow {
 			if(input != null) {
 				nameText.setText(input.getName());
 				pluginTable.setInput(input);
+				colorPluginTable();
 			} else {
 				nameText.setText("");
 				pluginTable.setInput(null);
@@ -456,6 +484,18 @@ public class VisualizationDialog extends ApplicationWindow {
 			}
 		}
 		
+	}
+	
+	void colorPluginTable() {
+		if(genericColor == null) 
+			genericColor = pluginTable.getTable().getBackground();
+		if(nonGenericColor == null) 
+			nonGenericColor = pluginTable.getTable().getDisplay().getSystemColor(
+					SWT.COLOR_INFO_BACKGROUND);
+		for(TableItem ti : pluginTable.getTable().getItems()) {			
+			VisualizationPlugin p = (VisualizationPlugin)ti.getData();
+			ti.setBackground(p.isGeneric() ? genericColor : nonGenericColor);
+		}
 	}
 	
 	class PluginTableLabelProvider implements ITableLabelProvider {

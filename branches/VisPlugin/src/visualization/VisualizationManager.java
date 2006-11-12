@@ -161,7 +161,7 @@ public class VisualizationManager implements ApplicationEventListener {
 		
 		for(Object o : xml.getChildren(Visualization.XML_ELEMENT)) {
 			Visualization vis = Visualization.fromXML((Element) o);
-			if(!visualizations.contains(vis)) visualizations.add(vis);				
+			if(!visualizations.contains(vis)) addVisualization(vis);				
 		}
 	}
 	

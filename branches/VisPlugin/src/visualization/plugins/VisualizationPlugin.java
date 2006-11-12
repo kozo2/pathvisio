@@ -24,7 +24,7 @@ import visualization.Visualization;
 import visualization.VisualizationManager;
 import visualization.VisualizationManager.VisualizationEvent;
 
-public abstract class VisualizationPlugin {
+public abstract class VisualizationPlugin implements Comparable {
 	public static String XML_ELEMENT = "plugin";
 	public static String XML_ATTR_CLASS = "class";
 	private static String XML_ATTR_SIDEPANEL = "useSidePanel";
@@ -41,7 +41,6 @@ public abstract class VisualizationPlugin {
 	private boolean GENERIC; //For generic use, or expression dataset specific
 	private boolean USE_RESERVED_REGION; //Does this plugin use reserved region in GmmlGraphicsObject
 	
-	private boolean dialogCompleted = true;
 	private boolean isActive;
 	
 	private boolean useDrawingObject = true;
@@ -57,6 +56,7 @@ public abstract class VisualizationPlugin {
 	protected Visualization getVisualization() { return visualization; }
 	
 	public abstract String getName();
+	public abstract String getDescription();
 	
 	public abstract void draw(GmmlGraphics g, PaintEvent e, GC buffer);
 	public abstract void updateSidePanel(GmmlGraphics g);
@@ -72,10 +72,6 @@ public abstract class VisualizationPlugin {
 		if(!CONFIGURABLE) return; //Not configurable, so don't open config dialog
 		ApplicationWindow d = new ConfigurationDialog(shell);
 		d.open();
-	}
-	
-	protected void setDialogCompleted(boolean completed) {
-		dialogCompleted = completed;
 	}
 	
 	public String[] getRepresentations() {
@@ -116,13 +112,22 @@ public abstract class VisualizationPlugin {
 	public final void setActive(boolean active) { isActive = active; }
 
 	public void setUseSidePanel(boolean use) { 
-		if(canSidePanel()) useSidePanel = use; 
+		if(canSidePanel()) {
+			useSidePanel = use;
+			fireModifiedEvent();
+		}
 	}
 	public void setUseToolTip(boolean use) { ;
-		if(canToolTip()) useToolTip = use;
+		if(canToolTip()) {
+			useToolTip = use;
+			fireModifiedEvent();
+		}
 	}
 	public void setUseDrawingObject(boolean use) { 
-		if(canDrawingObject()) useDrawingObject = use; 
+		if(canDrawingObject()) {
+			useDrawingObject = use;
+			fireModifiedEvent();
+		}
 	}
 	
 	public final boolean canSidePanel() { return (DISPLAY_OPT & SIDEPANEL) != 0; }
@@ -145,7 +150,11 @@ public abstract class VisualizationPlugin {
 		DISPLAY_OPT = options;
 	}
 	
-	protected void setUseReservedArea(boolean use) {
+	/**
+	 * Specify if this plugin uses the area provided by its parent {@link Visualization}.
+	 * @param use	true if this plugin uses the provided area, false if not
+	 */
+	protected void setUseProvidedArea(boolean use) {
 		USE_RESERVED_REGION = use;
 	}
 	
@@ -159,7 +168,9 @@ public abstract class VisualizationPlugin {
 	
 	public final boolean isGeneric() { return GENERIC; }
 	public final boolean isConfigurable() { return CONFIGURABLE; }
-	public final boolean isUseReservedRegion() { return USE_RESERVED_REGION; }
+	public final boolean isUseReservedRegion() { 
+		return USE_RESERVED_REGION && isUseDrawingObject(); 
+	}
 				
 	public final void fireModifiedEvent() {
 		VisualizationManager.firePropertyChange(
@@ -188,23 +199,29 @@ public abstract class VisualizationPlugin {
 		public Composite createButtonComposite(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NULL);
 			comp.setLayout(new GridLayout(2, false));
-			Button cancel = new Button(comp, SWT.PUSH);
-			cancel.setText(" Cancel ");
-			cancel.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent arg0) {
-					close();
-				}
-			});
+//			Button cancel = new Button(comp, SWT.PUSH);
+//			cancel.setText(" Cancel ");
+//			cancel.addSelectionListener(new SelectionAdapter() {
+//				public void widgetSelected(SelectionEvent arg0) {
+//					close();
+//				}
+//			});
 			
 			Button ok = new Button(comp, SWT.PUSH);
 			ok.setText(" Ok ");
 			ok.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent arg0) {
-					if(dialogCompleted) close();
+					close();
 				}
 			});
 			
 			return comp;
 		}
+	}
+	
+	public int compareTo(Object o) {
+		if(o instanceof VisualizationPlugin)
+			return getName().compareTo(((VisualizationPlugin)o).getName());
+		return -1;
 	}
 }

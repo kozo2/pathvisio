@@ -136,9 +136,9 @@ public class ColorSet {
 	
 	final static String XML_ELEMENT = "ColorSet";
 	final static String XML_ATTR_NAME = "name";
-	final static String XML_ELM_COLOR_NCM = "no criteria met";
-	final static String XML_ELM_COLOR_NGF = "no gene found";
-	final static String XML_ELM_COLOR_NDF = "no data found";
+	final static String XML_ELM_COLOR_NCM = "no-criteria-met";
+	final static String XML_ELM_COLOR_NGF = "no-gene-found";
+	final static String XML_ELM_COLOR_NDF = "no-data-found";
 	
 	public Element toXML() {
 		Element elm = new Element(XML_ELEMENT);
@@ -156,12 +156,22 @@ public class ColorSet {
 	public static ColorSet fromXML(Element e) {
 		ColorSet cs = new ColorSet(e.getAttributeValue(XML_ATTR_NAME));
 		for(Object o : e.getChildren()) {
-			Element coe = (Element) o;
-			String type = coe.getName();
-			if(type.equals(ColorGradient.XML_ELEMENT_NAME))
-				cs.addObject(new ColorGradient(cs, coe));
-			else if(type.equals(ColorCriterion.XML_ELEMENT_NAME))
-				cs.addObject(new ColorCriterion(cs, coe));
+			try {
+				Element elm = (Element) o;
+				String name = elm.getName();
+				if(name.equals(ColorGradient.XML_ELEMENT_NAME))
+					cs.addObject(new ColorGradient(cs, elm));
+				else if(name.equals(ColorCriterion.XML_ELEMENT_NAME))
+					cs.addObject(new ColorCriterion(cs, elm));
+				else if(name.equals(XML_ELM_COLOR_NCM))
+					cs.setColor(ID_COLOR_NO_CRITERIA_MET, ColorConverter.parseColorElement(elm));
+				else if(name.equals(XML_ELM_COLOR_NGF))
+					cs.setColor(ID_COLOR_NO_GENE_FOUND, ColorConverter.parseColorElement(elm));
+				else if(name.equals(XML_ELM_COLOR_NDF))
+					cs.setColor(ID_COLOR_NO_DATA_FOUND, ColorConverter.parseColorElement(elm));
+			} catch(Exception ex) {
+				GmmlVision.log.error("Unable to parse colorset xml", ex);
+			}
 		}
 		return cs;
 	}

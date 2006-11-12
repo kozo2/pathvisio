@@ -5,6 +5,7 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -12,15 +13,15 @@ import org.eclipse.swt.widgets.TableColumn;
 /**
  * This class is responsible for resizing a table's column width to fit its parents width
  * Columns that are unresizable ({@link TableColumn#getResizable()} = false) are skipped
- * NOTE: Don't set a layout on the table's parent that automaticly fills out the table
- * (e.g. FillLayout or GridLayout in combination with GridData.FILL_BOTH). Advice is to
- * use GridLayout without setting the layoutData of the table
+ * NOTE: Be sure the table's parent {@link Composite} contains only the table (no
+ * other controls) and uses {@link FillLayout}.
  */
 public class TableColumnResizer extends ControlAdapter {
 	Table table;
 	Composite parent;
 	TableColumn[] cols;
 	double[] weights;
+	int[] widths;
 	
 	/**
 	 * Constructor for this class
@@ -33,6 +34,13 @@ public class TableColumnResizer extends ControlAdapter {
 		this.parent = parent == null ? table.getParent() : parent;
 		cols = table.getColumns();
 		setWeights(weights);
+		initWidths();
+	}
+	
+	void initWidths() {
+		widths = new int[cols.length];
+		for(int i = 0; i < cols.length; i++)
+			widths[i] = cols[i].getWidth();
 	}
 	
 	public void setWeights(int[] intWeights) {
@@ -75,7 +83,7 @@ public class TableColumnResizer extends ControlAdapter {
 		}
 		
 		//Subtract width of columns with fixed size from available width
-		for(TableColumn col : cols) width -= !col.getResizable() ? col.getWidth() : 0;
+		for(int i = 0; i < cols.length; i++) width -= cols[i].getResizable() ? 0 : widths[i];
 		
 		Point oldSize = table.getSize();
 		if (oldSize.x >= area.width) {

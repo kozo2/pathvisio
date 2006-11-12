@@ -387,6 +387,7 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		    	
 		Collections.sort(drawingObjects);
 		
+		//Draw visualizations and highlights
 		Visualization v = VisualizationManager.getCurrent();
 		for(GmmlDrawingObject o : drawingObjects)
 		{
@@ -402,7 +403,8 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 									"Unable to apply visualization " + v + " on " + o, ex);
 							ex.printStackTrace();
 						}
-				}	
+				}
+				if(o instanceof GmmlGeneProduct) ((GmmlGeneProduct)o).drawHighlight(e, buffer);
 			}
 		}
 				
@@ -863,49 +865,13 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 			{				
 				if (o.isContain(p))
 				{
-					if (o instanceof GmmlGeneProduct)
+					if (o instanceof GmmlGraphics)
 					{
-						Shell tip = v.getToolTip(e.display, (GmmlGraphics)o);
+						tip = v.getToolTip(e.display, (GmmlGraphics)o);
+						if(tip == null) return;
 						Point mp = toDisplay(e.x, e.y);
 						tip.setLocation(mp.x + 15, mp.y + 15);
 			            tip.setVisible(true);
-//						GmmlGeneProduct gp = (GmmlGeneProduct)o;
-//						
-//						if(tip != null && !tip.isDisposed()) tip.dispose();
-//						
-//						tip = new Shell(getShell().getDisplay(), SWT.ON_TOP | SWT.TOOL);  
-//						tip.setBackground(getShell().getDisplay()
-//			                   .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-//						tip.setLayout(new RowLayout());
-//						Label labelL = new Label(tip, SWT.NONE);
-//			            Label labelR = new Label(tip, SWT.NONE);
-//			            labelL.setForeground(getShell().getDisplay()
-//			                    .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-//			            labelL.setBackground(getShell().getDisplay()
-//			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-//			            labelR.setForeground(getShell().getDisplay()
-//			                    .getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-//			            labelR.setBackground(getShell().getDisplay()
-//			                    .getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-//			            
-//			            Data mappIdData = GmmlGex.getCachedData(gp.getID(), gp.getSystemCode());
-//			            if(mappIdData == null) return; //No data in cache for this geneproduct
-//			            HashMap<Integer, Object> data = mappIdData.getAverageSampleData();
-//			            String textL = "";
-//			            String textR = "";
-//			            for(Sample s : GmmlGex.getColorSets().get(GmmlGex.getColorSetIndex()).useSamples)
-//			            {
-//			            	textL += s.getName() + ":  \n";
-//			            	textR += data.get(new Integer(s.idSample)) + "\n";
-//			            }
-//			            if(textL.equals("") && textR.equals("")) return;
-//			            labelL.setText(textL);
-//			            labelR.setText(textR);
-//			            tip.pack();
-//			            Point mp = toDisplay(e.x, e.y);
-//			            tip.setLocation(mp.x + 15, mp.y + 15);
-//			            tip.setVisible(true);
-//						break;
 					}
 				}
 			}

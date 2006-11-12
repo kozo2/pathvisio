@@ -32,7 +32,7 @@ public abstract class GmmlVision {
 	/**
 	 * the transparent color used in the icons for visualization of protein/mrna data
 	 */
-	static final RGB TRANSPARENT_COLOR = new RGB(255, 0, 255);
+	public static final RGB TRANSPARENT_COLOR = new RGB(255, 0, 255);
 	
 	/**
 	 * {@link GmmlData} object containing JDOM representation of the gmml pathway 

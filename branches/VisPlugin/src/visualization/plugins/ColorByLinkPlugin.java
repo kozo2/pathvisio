@@ -21,7 +21,9 @@ import data.GmmlDataObject;
  */
 public class ColorByLinkPlugin extends VisualizationPlugin {	
 	static final String NAME = "Graphical link color";
-			
+	static final String DESCRIPTION = 
+		"This plugin colors objects depending on their graphRef and graphId attributes";
+	
 	static final int refMarkRadius = 12;
 	static final int refMarkAlpha = 128;
 	
@@ -39,6 +41,7 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	}
 
 	public String getName() { return NAME; }
+	public String getDescription() { return DESCRIPTION; }
 	
 	public void createSidePanelComposite(Composite parent) { }
 

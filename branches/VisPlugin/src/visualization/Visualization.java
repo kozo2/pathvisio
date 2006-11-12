@@ -22,13 +22,16 @@ import util.Utils;
 import visualization.VisualizationManager.VisualizationEvent;
 import visualization.plugins.PluginManager;
 import visualization.plugins.VisualizationPlugin;
+import data.GmmlGex;
+import data.GmmlGex.ExpressionDataEvent;
+import data.GmmlGex.ExpressionDataListener;
 
 /**
  * Represents a set of configured visualization plugins
  * @author thomas
  *
  */
-public class Visualization {
+public class Visualization implements ExpressionDataListener {
 	public static final String XML_ELEMENT = "visualization";
 	public static final String XML_ATTR_NAME = "name";
 	
@@ -39,6 +42,7 @@ public class Visualization {
 	public Visualization(String name) {
 		initPlugins();
 		this.name = name;
+		GmmlGex.addListener(this);
 	}
 	
 	void initPlugins() {
@@ -51,6 +55,20 @@ public class Visualization {
 				drawingOrder.add(p);
 			} catch(Exception e) {
 				GmmlVision.log.error("Unable to create instance of plugin " + c, e);
+			}
+		}
+	}
+
+	void updateAvailabelPlugins() {
+		for(Class pc : PluginManager.getPlugins()) {
+			if(!plugins.containsKey(pc)) {
+				try {
+					VisualizationPlugin p = PluginManager.getInstance(pc, this);
+					plugins.put(pc, p);
+					drawingOrder.add(p);
+				} catch(Exception e) {
+					GmmlVision.log.error("Unable to create instance of plugin " + pc, e);
+				}
 			}
 		}
 	}
@@ -86,7 +104,7 @@ public class Visualization {
 			
 	public void drawToObject(GmmlGraphics g, PaintEvent e, GC buffer) {
 		for(VisualizationPlugin p : drawingOrder) 
-			if(p.isActive()) p.draw(g, e, buffer);
+			if(p.isActive() && p.isUseDrawingObject()) p.draw(g, e, buffer);
 	}
 	
 	public Region getReservedRegion(VisualizationPlugin p, GmmlGraphics g) {
@@ -101,10 +119,12 @@ public class Visualization {
 		Region region = g.createVisualizationRegion();
 		//Distribute space over plugins
 		Rectangle bounds = region.getBounds();
+		
+		//Adjust width so we can divide into equal rectangles
+		bounds.width += bounds.width % nrRes;
 		int w = bounds.width / nrRes;
-		int leftSpace = bounds.width - w * nrRes;
 		bounds.x += w * index;
-		bounds.width = w + (index == nrRes - 1 ? leftSpace : 0);
+		bounds.width = w;
 		
 		
 		region.intersect(bounds);
@@ -134,12 +154,16 @@ public class Visualization {
 	public Shell getToolTip(Display display, GmmlGraphics g) {
 		Shell tip = new Shell(display, SWT.ON_TOP | SWT.TOOL);  
 		tip.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-		tip.setLayout(new RowLayout());
+		tip.setLayout(new RowLayout(SWT.VERTICAL));
 		
-		for(VisualizationPlugin p : drawingOrder) 
-			if(p.isActive() && p.isUseToolTip()) p.getToolTipComposite(tip, g);
-		
-		return tip;
+		boolean hasOne = false;
+		for(VisualizationPlugin p : drawingOrder) {
+			if(p.isActive() && p.isUseToolTip()) {
+				if(p.getToolTipComposite(tip, g) != null) hasOne = true;
+			}
+		}
+		tip.pack();
+		return hasOne ? tip : null;
 	}
 	
 	public Element toXML() {
@@ -171,5 +195,13 @@ public class Visualization {
 	public boolean equals(Object o) {
 		if(o instanceof Visualization) return ((Visualization)o).getName().equals(name);
 		return false;
+	}
+
+	public void expressionDataEvent(ExpressionDataEvent e) {
+		switch(e.type) {
+		case ExpressionDataEvent.CONNECTION_OPENED:
+			updateAvailabelPlugins();
+		}
+		
 	}
 }

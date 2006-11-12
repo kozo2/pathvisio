@@ -14,6 +14,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Region;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -33,7 +34,9 @@ import visualization.Visualization;
  */
 public class LabelPlugin extends VisualizationPlugin {
 	static final String NAME = "Gene product label";
-	
+	static final String DESCRIPTION = 
+		"This plugin shows a label with customizable font on Gene Products.\n" +
+		"The label text can be set to the Gene Product's ID or Symbol.";
 	static final FontData DEFAULT_FONTDATA = new FontData("Arial narrow", 10, SWT.NORMAL);
 			
 	final static int STYLE_ID = 0;
@@ -51,7 +54,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	    setIsConfigurable(true);
 		setDisplayOptions(DRAWING | SIDEPANEL | TOOLTIP);
 		setIsGeneric(true);
-		setUseReservedArea(true);
+		setUseProvidedArea(true);
 	}
 
 	void setStyle(int style) {
@@ -60,9 +63,11 @@ public class LabelPlugin extends VisualizationPlugin {
 	}
 	
 	public String getName() { return NAME; }
+	public String getDescription() { return DESCRIPTION; }
 	
 	public void createSidePanelComposite(Composite parent) {
 		Composite comp = new Composite(parent, SWT.NULL);
+		comp.setLayout(new FillLayout());
 		labelSidePanel = new Label(comp, SWT.CENTER);
 	}
 
@@ -94,6 +99,10 @@ public class LabelPlugin extends VisualizationPlugin {
 					area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
 					area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
 			
+//			buffer.drawRectangle( 
+//					area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
+//					area.y + (int)(area.height / 2) - (int)(textSize.y / 2), textSize.x, textSize.y);
+			
 			Region none = null;
 			buffer.setClipping(none);
 						
@@ -113,10 +122,6 @@ public class LabelPlugin extends VisualizationPlugin {
 			fireModifiedEvent();
 		}
 	}
-	void setFontSize(int size) {
-		fontData.setHeight(size);
-		fireModifiedEvent();
-	}
 	
 	int getFontSize() {
 		return getFontData().getHeight();
@@ -128,15 +133,20 @@ public class LabelPlugin extends VisualizationPlugin {
 	
 	FontData getFontData(boolean adjustZoom) {
 		FontData fd = fontData == null ? DEFAULT_FONTDATA : fontData;
-		if(adjustZoom)
-			fd.setHeight((int)(fd.getHeight() * GmmlVision.getDrawing().getZoomFactor()));
+		if(adjustZoom) {
+			fd = new FontData(fd.name, fd.height, fd.style);
+			fd.setHeight((int)Math.ceil(fd.getHeight() * GmmlVision.getDrawing().getZoomFactor()));
+		}
 		return fd;
 	}
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) {
 		if(g instanceof GmmlGeneProduct) {
 			Composite comp = new Composite(parent, SWT.NULL);
+			comp.setBackground(comp.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+			comp.setLayout(new FillLayout());
 			Label label = new Label(comp, SWT.CENTER);
+			label.setBackground(comp.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 			label.setText(getLabelText((GmmlGeneProduct) g));
 			return comp;
 		}

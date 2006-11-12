@@ -50,8 +50,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.jdom.Element;
 
-import R.RFunctionLoader.ZScore.SetConfigDialog;
-
 import util.ColorConverter;
 import util.SwtUtils;
 import util.TableColumnResizer;
@@ -64,26 +62,28 @@ import data.GmmlGex.Sample;
 import data.GmmlGex.CachedData.Data;
 
 public class ExpressionColorPlugin extends VisualizationPlugin {
-	static final String NAME = "Color by expression";
+	final String NAME = "Color by expression";
+	static final String DESCRIPTION = 
+		"This plugin colors gene product objects in the pathway by their expression data.";
+	
 	static final String[] useSampleColumns = { "sample", "color set" };
 	static final RGB LINE_COLOR_DEFAULT = new RGB(0, 0, 0);
 	
 	List<ConfiguredSample> useSamples = new ArrayList<ConfiguredSample>();
 	
 	RGB lineColor;
-	boolean drawLine;
+	boolean drawLine = false;
 	
 	public ExpressionColorPlugin(Visualization v) {
 		super(v);
 		setDisplayOptions(DRAWING);
 		setIsConfigurable(true);
 		setIsGeneric(false);
-		setUseReservedArea(true);
+		setUseProvidedArea(true);
 	}
 
-	public String getName() {
-		return NAME;
-	}
+	public String getName() { return NAME; }
+	public String getDescription() { return DESCRIPTION; }
 		
 	public void draw(GmmlGraphics g, PaintEvent e, GC buffer) {
 		if(!(g instanceof GmmlGeneProduct)) return;
@@ -95,52 +95,69 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		Rectangle area = region.getBounds();
 		
 		int nr = useSamples.size();
+		int left = area.width % nr; //Space left after dividing, give to last rectangle
 		int w = area.width / nr;
 		for(int i = 0; i < nr; i++) {
 			Rectangle r = new Rectangle(
 					area.x + w * i,
 					area.y,
-					w, area.height);
+					w + ((i == nr - 1) ? left : 0), area.height);
 			ConfiguredSample s = useSamples.get(i);
 			Data data = GmmlGex.getCachedData(new IdCodePair(gp.getID(), gp.getSystemCode()));
 			
-			if(data == null) {
-				drawNoDataFound(s, area, e, buffer);
-			} else if(data.hasMultipleData()) {
-				switch(s.getAmbigiousType()) {
-				case ConfiguredSample.AMBIGIOUS_AVG:
-					drawSampleAvg(s, data, r, e, buffer);
-					break;
-				case ConfiguredSample.AMBIGIOUS_BARS:
-//					drawSampleBar(gp, s, e, buffer, r);
-					break;
-				}
-			} else drawSample(s, data, r, e, buffer);
+			if(s.getColorSet() == null) continue; //No colorset for this sample
+			if(data == null) drawNoDataFound(s, area, e, buffer);
+			else drawSample(s, data, r, e, buffer);
 		}
 		
+		Color c = SwtUtils.changeColor(null, getLineColor(), e.display);
+		buffer.setForeground(c);
+		buffer.drawRectangle(area);
+		
+		c.dispose();
 		region.dispose();
 	}
-	
-	public void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC buffer) {
+
+	void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC buffer) {
 		ColorSet cs = s.getColorSet();
-		if(cs != null) {
-			drawColoredRectangle(area, cs.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND), e, buffer);
-		}
+		drawColoredRectangle(area, cs.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND), e, buffer);
 	}
-	
-	public void drawSample(ConfiguredSample s, Data data, Rectangle area, PaintEvent e, GC buffer) {
-		ColorSet cs = s.getColorSet();
-		if(cs != null) {
+
+	protected void drawSample(ConfiguredSample s, Data data, Rectangle area, PaintEvent e, GC buffer) {		
+		if(data.hasMultipleData()) {
+			switch(s.getAmbigiousType()) {
+			case ConfiguredSample.AMBIGIOUS_AVG:
+				drawSampleAvg(s, data, area, e, buffer);
+				break;
+			case ConfiguredSample.AMBIGIOUS_BARS:
+				drawSampleBar(s, data, area, e, buffer);
+				break;
+			}
+		} else {
+			ColorSet cs = s.getColorSet();
 			RGB rgb = cs.getColor(data.getSampleData(), s.getId());
 			drawColoredRectangle(area, rgb, e, buffer);
 		}
 	}
-	
-	public void drawSampleAvg(ConfiguredSample s, Data data, Rectangle area, PaintEvent e, GC buffer) {
+
+	void drawSampleAvg(ConfiguredSample s, Data data, Rectangle area, PaintEvent e, GC buffer) {
 		ColorSet cs = s.getColorSet();
-		if(cs != null) {
-			RGB rgb = cs.getColor(data.getAverageSampleData(), s.getId());
-			drawColoredRectangle(area, rgb, e, buffer);
+		RGB rgb = cs.getColor(data.getAverageSampleData(), s.getId());
+		drawColoredRectangle(area, rgb, e, buffer);
+	}
+	
+	void drawSampleBar(ConfiguredSample s, Data data, Rectangle area, PaintEvent e, GC buffer) {
+		ColorSet cs = s.getColorSet();
+		List<Data> refdata = data.getRefData();
+		int n = refdata.size();
+		int left = area.height % n;
+		int h = area.height / n;
+		for(int i = 0; i < n; i++) {
+			RGB rgb = cs.getColor(refdata.get(i).getSampleData(), s.getId());
+			Rectangle r = new Rectangle(
+					area.x, area.y + i*h,
+					area.width, h + (i == n-1 ? left : 0));
+			drawColoredRectangle(r, rgb, e, buffer);
 		}
 	}
 	
@@ -179,7 +196,7 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		
 	void addUseSample(Sample s) {
 		if(s != null) {
-			useSamples.add(new ConfiguredSample(s));
+			useSamples.add(createConfiguredSample(s));
 			fireModifiedEvent();
 		}
 	}
@@ -187,7 +204,7 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 	void addUseSamples(IStructuredSelection selection) {
 		Iterator it = selection.iterator();
 		while(it.hasNext()) {
-			useSamples.add(new ConfiguredSample((Sample)it.next()));
+			useSamples.add(createConfiguredSample((Sample)it.next()));
 		}
 		fireModifiedEvent();
 	}
@@ -211,28 +228,35 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 	static final String XML_ELM_LINECOLOR = "lineColor";
 	public Element toXML() {
 		Element xml = super.toXML();
-		xml.setAttribute(XML_ATTR_DRAWLINE, Boolean.toString(drawLine));
-		xml.addContent(ColorConverter.createColorElement(XML_ELM_LINECOLOR, getLineColor()));
+		saveAttributes(xml);
 		for(ConfiguredSample s : useSamples) xml.addContent(s.toXML());
 		return xml;
 	}
 	
+	protected void saveAttributes(Element xml) {
+		xml.setAttribute(XML_ATTR_DRAWLINE, Boolean.toString(drawLine));
+		xml.addContent(ColorConverter.createColorElement(XML_ELM_LINECOLOR, getLineColor()));
+	}
+	
 	public void loadXML(Element xml) {
 		super.loadXML(xml);
+		loadAttributes(xml);
+		for(Object o : xml.getChildren(ConfiguredSample.XML_ELEMENT)) {
+			try {
+				useSamples.add(createConfiguredSample((Element)o));
+			} catch(Exception e) {
+				GmmlVision.log.error("Unable to add sample to plugin " + NAME, e);
+			}
+		}	
+	}
+	
+	protected void loadAttributes(Element xml) {
 		try {
 			lineColor = ColorConverter.parseColorElement(xml.getChild(XML_ELM_LINECOLOR));
 			drawLine = Boolean.parseBoolean(xml.getAttributeValue(XML_ATTR_DRAWLINE));
 		} catch(Exception e) {
 			GmmlVision.log.error("Unable to parse settings for plugin " + NAME, e);
 		}
-		for(Object o : xml.getChildren(ConfiguredSample.XML_ELEMENT)) {
-			try {
-				useSamples.add(new ConfiguredSample((Element)o));
-			} catch(Exception e) {
-				GmmlVision.log.error("Unable to add sample to plugin " + NAME, e);
-			}
-		}
-			
 	}
 	
 	TableViewer useSampleTable;
@@ -247,7 +271,7 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		
 		Composite samplesComp = createSamplesComp(config);
 		samplesComp.setLayoutData(new GridData(GridData.FILL_BOTH));
-		sampleConfigComp = new SampleConfigComposite(config, SWT.NULL);
+		sampleConfigComp = createSampleConfigComp(config);
 		sampleConfigComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		return config;
 	}
@@ -299,7 +323,7 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		remove.addSelectionListener(buttonListener);
 		
 		Composite tableComp = new Composite(samplesGroup, SWT.NULL);
-		tableComp.setLayout(new GridLayout());
+		tableComp.setLayout(new FillLayout());
 		tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 		Table t = new Table(tableComp, SWT.BORDER | SWT.FULL_SELECTION);
 		t.setHeaderVisible(true);
@@ -369,7 +393,7 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		lineGroup.setText("General options");
 		
 		checkLine = new Button(lineGroup, SWT.CHECK);
-		checkLine.setText("Draw line around color box");
+		checkLine.setText("Draw line around sample boxes");
 		checkLine.setSelection(drawLine);
 		
 		final Composite colorComp = new Composite(lineGroup, SWT.NULL);
@@ -419,13 +443,16 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		((IStructuredSelection)useSampleTable.getSelection()).getFirstElement();
 	}
 	
-	class SampleConfigComposite extends Composite {
+	protected SampleConfigComposite createSampleConfigComp(Composite parent) {
+		return new SampleConfigComposite(parent, SWT.NULL);
+	}
+	
+	protected class SampleConfigComposite extends Composite {
 		ConfiguredSample input;
 		Button radioBar, radioAvg;
 		
 		public SampleConfigComposite(Composite parent, int style) {
 			super(parent, style);
-			createContents();
 		}
 		
 		void createContents() {
@@ -489,11 +516,19 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 		}
 	}
 	
-	class ConfiguredSample extends Sample {
+	protected ConfiguredSample createConfiguredSample(Sample s) {
+		return new ConfiguredSample(s);
+	}
+	
+	protected ConfiguredSample createConfiguredSample(Element xml) throws Exception {
+		return new ConfiguredSample(xml);
+	}
+	
+	protected class ConfiguredSample extends Sample {
 		public static final int AMBIGIOUS_AVG = 0;
 		public static final int AMBIGIOUS_BARS = 1;
 		
-		int ambigious;
+		int ambigious = AMBIGIOUS_BARS;
 		int colorSetIndex = 0;
 		
 		public ConfiguredSample(int idSample, String name, int dataType) {
@@ -509,43 +544,55 @@ public class ExpressionColorPlugin extends VisualizationPlugin {
 			loadXML(xml);
 		}
 		
-		public void setColorSetIndex(int index) { colorSetIndex = index; }
+		protected void setColorSetIndex(int index) { 
+			colorSetIndex = index;
+			fireModifiedEvent();
+		}
 		
-		public ColorSet getColorSet() { return ColorSetManager.getColorSet(colorSetIndex); }
+		protected ColorSet getColorSet() { return ColorSetManager.getColorSet(colorSetIndex); }
 		
-		public String getColorSetName() {
+		protected String getColorSetName() {
 			ColorSet cs = getColorSet();
 			return cs == null ? "no colorsets available" : cs.getName();
 		}
-		public int getColorSetIndex() { return colorSetIndex; }
+		protected int getColorSetIndex() { return colorSetIndex; }
 		
-		public int getAmbigiousType() { return ambigious; }
+		int getAmbigiousType() { return ambigious; }
 		
-		public void setAmbigiousType(int type) { ambigious = type; }
+		void setAmbigiousType(int type) { 
+			ambigious = type;
+			fireModifiedEvent();
+		}
 		
 		static final String XML_ELEMENT = "sample";
 		static final String XML_ATTR_ID = "id";
 		static final String XML_ATTR_AMBIGIOUS = "ambigious";
 		static final String XML_ATTR_COLORSET = "colorset";
 		
-		public Element toXML() {
+		Element toXML() {
 			Element xml = new Element(XML_ELEMENT);
 			xml.setAttribute(XML_ATTR_ID, Integer.toString(getId()));
-			xml.setAttribute(XML_ATTR_AMBIGIOUS, Integer.toString(ambigious));
 			xml.setAttribute(XML_ATTR_COLORSET, Integer.toString(colorSetIndex));
 			return xml;
 		}
 		
-		public void loadXML(Element xml) throws Exception {
+		void loadXML(Element xml) throws Exception {
 			int id = Integer.parseInt(xml.getAttributeValue(XML_ATTR_ID));
 			int csi = Integer.parseInt(xml.getAttributeValue(XML_ATTR_COLORSET));
-			int amb = Integer.parseInt(xml.getAttributeValue(XML_ATTR_AMBIGIOUS));
 			Sample s = GmmlGex.getSamples().get(id);
 			setId(id);
 			setName(s.getName());
 			setDataType(s.getDataType());
-			setAmbigiousType(amb);
 			setColorSetIndex(csi);
+		}
+		
+		protected void saveAttributes(Element xml) {
+			xml.setAttribute(XML_ATTR_AMBIGIOUS, Integer.toString(ambigious));
+		}
+		
+		protected void loadAttributes(Element xml) {
+			int amb = Integer.parseInt(xml.getAttributeValue(XML_ATTR_AMBIGIOUS));
+			setAmbigiousType(amb);
 		}
 	}
 	

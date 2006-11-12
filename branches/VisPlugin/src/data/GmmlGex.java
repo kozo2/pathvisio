@@ -183,7 +183,7 @@ public class GmmlGex implements ApplicationEventListener {
 			data.put(new IdCodePair(id, code), mappIdData);
 		}
 		
-		public class Data
+		public class Data implements Comparable
 		{
 			private IdCodePair idcode;
 			private HashMap<Integer, Object> sampleData;
@@ -221,9 +221,11 @@ public class GmmlGex implements ApplicationEventListener {
 				if(data != null) sampleData.put(sampleId, data);
 			}
 			
-			public ArrayList<Data> getRefData()
+			public List<Data> getRefData()
 			{
-				return new ArrayList<Data>(refData.values());
+				List<Data> rd = new ArrayList<Data>(refData.values());
+				Collections.sort(rd);
+				return rd;
 			}
 			
 			public Object getData(int idSample)
@@ -238,6 +240,9 @@ public class GmmlGex implements ApplicationEventListener {
 			}
 			
 			public HashMap<Integer, Object> getSampleData() {
+				if(sampleData.size() == 0) {
+					if(refData.size() > 0) return getAverageSampleData();
+				}
 				return sampleData;
 			}
 			
@@ -277,6 +282,11 @@ public class GmmlGex implements ApplicationEventListener {
 				int end = sb.lastIndexOf(", ");
 				return end < 0 ? "" : sb.substring(0, end).toString();
 			}
+
+			public int compareTo(Object o) {
+				Data d = (Data)o;
+				return idcode.compareTo(d.idcode);
+			}
 		}
 	}
     
@@ -299,6 +309,10 @@ public class GmmlGex implements ApplicationEventListener {
 		} catch (Exception e) {
 			GmmlVision.log.error("while loading data from the 'samples' table: " + e.getMessage(), e);
 		}
+	}
+	
+	public static Sample getSample(int id) {
+		return getSamples().get(id);
 	}
 	
 	/**
@@ -344,6 +358,15 @@ public class GmmlGex implements ApplicationEventListener {
 			return idSample - o.idSample;
 		}
 		
+		public int hashCode() {
+			return idSample;
+		}
+		
+		public boolean equals(Object o) {
+			if(o instanceof Sample) return ((Sample) o).idSample == idSample;
+			return false;
+		}
+		
 		/**
 		 * Returns a readable String representation of this object
 		 */
@@ -368,6 +391,10 @@ public class GmmlGex implements ApplicationEventListener {
 	{
 		if(samples == null) setSamples();
 		return samples;
+	}
+	
+	public static List<String> getSampleNames() {
+		return getSampleNames(-1);
 	}
 	
 	public static List<String> getSampleNames(int dataType) {
@@ -417,7 +444,7 @@ public class GmmlGex implements ApplicationEventListener {
 		
 		Data mappIdData = cachedData.getData(idc);
 		if(mappIdData == null) return noDataFound;
-		ArrayList<Data> refData = mappIdData.getRefData();
+		List<Data> refData = mappIdData.getRefData();
 		if(refData == null) return noDataFound; //The gene doesn't have data after all
 		for(Data d : refData)
 		{
@@ -765,6 +792,9 @@ public class GmmlGex implements ApplicationEventListener {
 			monitor.setTaskName("Closing database connection");
 			close(true, true);
 			error.close();
+			
+			setPropertyReadOnly(gexFile, true);
+			
 			connect(); //re-connect and use the created expression dataset
 			
 		} catch(Exception e) { 
@@ -1060,6 +1090,18 @@ public class GmmlGex implements ApplicationEventListener {
 			this.source = source;
 			this.type = type;
 		}
+	}
+	
+	public static void setPropertyReadOnly(File propertyFile, boolean readonly) {
+    	// Set readonly to true
+    	Properties prop = new Properties();
+		try {
+			prop.load(new FileInputStream(propertyFile));
+			prop.setProperty("hsqldb.files_readonly", Boolean.toString(readonly));
+			prop.store(new FileOutputStream(propertyFile), "HSQL Database Engine");
+			} catch (Exception e) {
+				GmmlVision.log.error("Unable to set database properties to readonly", e);
+			}
 	}
 	
 	/**

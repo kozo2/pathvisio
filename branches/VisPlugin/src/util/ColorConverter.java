@@ -142,6 +142,7 @@ public abstract class ColorConverter
 	final static String XML_COLOR_B = "blue";
     public static Element createColorElement(String name, RGB rgb) {
     	Element elm = new Element(XML_ELEMENT_COLOR);
+    	elm.setName(name);
     	elm.setAttribute(XML_COLOR_R, Integer.toString(rgb.red));
     	elm.setAttribute(XML_COLOR_G, Integer.toString(rgb.green));
     	elm.setAttribute(XML_COLOR_B, Integer.toString(rgb.blue));

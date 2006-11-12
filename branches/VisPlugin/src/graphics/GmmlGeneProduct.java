@@ -180,8 +180,6 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 		Region r = null;
 		buffer.setClipping(r);
 		
-		drawHighlight(e, buffer);
-		
 		c.dispose();
 		f.dispose();
 	}
@@ -208,13 +206,4 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 			if(c != null) c.dispose();
 		}
 	}
-	
-//	public Region createVisualizationRegion() {
-//		Region region = new Region();
-//		java.awt.Rectangle r = getBounds();
-//		//Take bound minus b (to keep lines visible)
-//		int b = 2;
-//		region.add(r.x + b, r.y + b, r.width - 2*b, r.height - 2*b);
-//		return region;
-//	}
 }

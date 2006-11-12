@@ -13,7 +13,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.dnd.ByteArrayTransfer;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
 import org.eclipse.swt.dnd.DragSourceAdapter;
@@ -33,6 +32,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -64,7 +64,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 	TableViewer objectsTable;
 	
 	Composite colorButtons;
-	Composite objectsGroup;
+	Group objectsGroup;
 	ObjectSettingsComposite objectSettings;
 	Color colorNCM, colorNGF, colorNDF;
 	CLabel labelColorNCM, labelColorNGF, labelColorNDF;
@@ -77,6 +77,12 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		VisualizationManager.addListener(this);
 	}
 	
+	public void dispose() {
+		colorNCM.dispose();
+		colorNGF.dispose();
+		colorNDF.dispose();
+		super.dispose();
+	}
 	
 	public void setInput(ColorSet cs) {
 		colorSet = cs;
@@ -100,11 +106,11 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 	}
 	
 	void initColorLabels() {
-		changeLabelColor(labelColorNCM, colorSet.color_no_criteria_met);
-		changeLabelColor(labelColorNGF, colorSet.color_no_gene_found);
-		changeLabelColor(labelColorNDF, colorSet.color_no_data_found);
+		changeColorLabel(labelColorNCM, colorSet.getColor(ColorSet.ID_COLOR_NO_CRITERIA_MET));
+		changeColorLabel(labelColorNGF, colorSet.getColor(ColorSet.ID_COLOR_NO_GENE_FOUND));
+		changeColorLabel(labelColorNDF, colorSet.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND));
 	}
-	
+		
 	public void refreshCombo() {
 		colorSetCombo.setItems(ColorSetManager.getColorSetNames());
 		colorSetCombo.layout();
@@ -116,6 +122,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		colorSetComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		objectsGroup = new Group(this, SWT.NULL);
+		objectsGroup.setText("Criteria");
 		objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 		objectsGroup.setLayout(new GridLayout(2, false));
 		
@@ -136,8 +143,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		listComp.setLayout(new GridLayout());
 		
 		Composite tableComp = new Composite(listComp, SWT.NULL);
-		tableComp.setLayout(new GridLayout());
-		tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		tableComp.setLayout(new FillLayout());
 		Table table = new Table(tableComp, SWT.BORDER | SWT.SINGLE);
 		TableColumn coCol = new TableColumn(table, SWT.LEFT);
 		coCol.setText("Name");
@@ -157,18 +163,20 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 			private Image gradientImage;
 											
 			public void dispose() {
-				if(criterionImage != null)
-					criterionImage.dispose();
-				if(gradientImage != null)
-					gradientImage.dispose();
+				disposeImage(criterionImage);
+				disposeImage(gradientImage);
 			}
+			
+			void disposeImage(Image img) { if(img != null) img.dispose(); }
 			
 			public Image getColumnImage(Object element, int columnIndex) { 
 				if(element instanceof ColorGradient) {
+					disposeImage(gradientImage);
 					gradientImage = new Image(null, createGradientImage((ColorGradient)element));
 					return gradientImage;
 				}
 				if(element instanceof ColorCriterion) {
+					disposeImage(criterionImage);
 					criterionImage = new Image(null, createColorImage(
 							((ColorCriterion)element).getColor()));
 					return criterionImage;
@@ -245,29 +253,38 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 	}
 	
 	void changeColor(CLabel label) {
-		RGB rgb = askColor(label.getBackground().getRGB());
-		if(rgb == null) return;
-		if		(label == labelColorNCM) 
-			colorSet.setColor(ColorSet.ID_COLOR_NO_CRITERIA_MET, rgb);
-		else if	(label == labelColorNGF) 
-			colorSet.setColor(ColorSet.ID_COLOR_NO_GENE_FOUND, rgb);
-		else if	(label == labelColorNDF) 
-			colorSet.setColor(ColorSet.ID_COLOR_NO_DATA_FOUND, rgb);
-		
-		changeLabelColor(label, rgb);
+		ColorDialog cd = new ColorDialog(getShell());
+		cd.setRGB(label.getBackground().getRGB());
+		changeColor(label, cd.open());
 	}
 	
-	//TODO: need to keep reference to Color objects
-	//TODO: why don't they get a color??
-	void changeLabelColor(CLabel label, RGB rgb) {
-		Color c = null;
-		if		(label == labelColorNCM) c = colorNCM;
-		else if (label == labelColorNGF) c = colorNGF;
-		else if (label == labelColorNDF) c = colorNDF;
+	void changeColor(CLabel label, RGB rgb) {
+		int id = -1;
+		if(label == labelColorNCM)
+			id = ColorSet.ID_COLOR_NO_CRITERIA_MET;
+		else if	(label == labelColorNDF)
+			id = ColorSet.ID_COLOR_NO_DATA_FOUND;
+		else if (label == labelColorNGF)
+			id = ColorSet.ID_COLOR_NO_GENE_FOUND;
 
-		label.setBackground(SwtUtils.changeColor(c, rgb, getShell().getDisplay()));
-		label.redraw();
-		label.layout();
+		if(id >= 0) {
+			if(rgb != null) {
+				colorSet.setColor(id, rgb);
+				changeColorLabel(label, rgb);
+			}
+		}
+	}
+	
+	void changeColorLabel(CLabel label, RGB rgb) {
+		Color c = null;
+		if(label == labelColorNCM)
+			c = colorNCM = SwtUtils.changeColor(colorNCM, rgb, getDisplay());
+		else if	(label == labelColorNDF)
+			c = colorNDF = SwtUtils.changeColor(colorNDF, rgb, getDisplay());
+		else if (label == labelColorNGF)
+			c = colorNGF = SwtUtils.changeColor(colorNGF, rgb, getDisplay());
+		
+		if(c != null) label.setBackground(c);
 	}
 	
 	void addColorSet() {
@@ -427,8 +444,6 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		buttonGroup.setLayout(new GridLayout(3, false));
 		buttonGroup.setText("Colors");
 		
-		GridData colorLabelGrid = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-		colorLabelGrid.widthHint = colorLabelGrid.heightHint = colorLabelSize;
 		CLabel[] colorLabels = new CLabel[3];
 		String[] names = new String[] {
 				"No criteria met", "Gene not found", "No data found"
@@ -437,12 +452,12 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 			Composite comp = new Composite(buttonGroup, SWT.NULL);
 			comp.setLayout(new GridLayout(3, false));
 			final CLabel clabel = new CLabel(comp, SWT.SHADOW_IN);
-			clabel.setLayoutData(colorLabelGrid);
+			clabel.setLayoutData(SwtUtils.getColorLabelGrid());
 			Button b = new Button(comp, SWT.PUSH);
-			b.setLayoutData(colorLabelGrid);
-			b.setText("...");;
+			b.setLayoutData(SwtUtils.getColorLabelGrid());
+			b.setText("...");
 			b.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) {
+				public void widgetSelected(SelectionEvent e) { 
 					changeColor(clabel);
 				}
 			});
@@ -450,9 +465,9 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 			label.setText(names[i]);
 			colorLabels[i] = clabel;
 		}
-		labelColorNCM = colorLabels[0]; colorNCM = labelColorNCM.getBackground();
-		labelColorNGF = colorLabels[1]; colorNGF = labelColorNGF.getBackground();
-		labelColorNDF = colorLabels[2]; colorNDF = labelColorNDF.getBackground();
+		labelColorNCM = colorLabels[0];
+		labelColorNGF = colorLabels[1];
+		labelColorNDF = colorLabels[2];
 				
 		return buttonGroup;
 	}
