@@ -2,10 +2,12 @@ package visualization;
 
 import gmmlVision.GmmlVision;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
@@ -39,6 +41,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -49,7 +52,9 @@ import org.eclipse.swt.widgets.Text;
 
 import util.TableColumnResizer;
 import util.Utils;
+import visualization.Visualization.PluginSet;
 import visualization.colorset.ColorSetComposite;
+import visualization.plugins.PluginManager;
 import visualization.plugins.VisualizationPlugin;
 import data.GmmlGex;
 
@@ -76,7 +81,7 @@ public class VisualizationDialog extends ApplicationWindow {
 		"Visualizations", "Color sets"	
 	};
 	final String[] columnNames = new String[] {
-			"Name", "Active", "Drawing", "Side panel", "Tooltip"
+			"Name", "Drawing", "Side panel", "Tooltip"
 	};
 	final String[] columnTips = new String[] {
 			"Plugin name", "Choose whether to activate this plugin or not",
@@ -270,7 +275,7 @@ public class VisualizationDialog extends ApplicationWindow {
 		Visualization input;
 		Text nameText;
 		Label description;
-		Button pluginConfigButton, firstButton, upButton, downButton, lastButton;
+		Button ttConfig, drConfig, spConfig, firstButton, upButton, downButton, lastButton;
 		
 		VisualizationSettings(Composite parent, int style) {
 			super(parent, style);
@@ -323,15 +328,15 @@ public class VisualizationDialog extends ApplicationWindow {
 			pluginTable.setCellModifier(new PluginTableModifier());
 			CellEditor[] editors = new CellEditor[columnNames.length];
 			editors[0] = null;
-			editors[1] = editors[2] = editors[3] = editors[4] = new CheckboxCellEditor();
+			editors[1] = editors[2] = editors[3] = new CheckboxCellEditor();
 			pluginTable.setCellEditors(editors);
 			pluginTable.setColumnProperties(columnNames);
 			
 			pluginTable.addSelectionChangedListener(new ISelectionChangedListener() {
 				public void selectionChanged(SelectionChangedEvent event) {
-					VisualizationPlugin p = getSelectedPlugin();
-					description.setText(p == null ? "" : "Description:\n" + p.getDescription());
-					layout();
+					VisualizationPlugin p = getSelectedPluginSet().getInstance();
+					description.setText(p == null ? "" : p.getDescription());
+					layout(true, true);
 					setPluginButtonsEnabled(true);
 				}
 			});
@@ -342,26 +347,29 @@ public class VisualizationDialog extends ApplicationWindow {
 			GridData span = new GridData(GridData.FILL_HORIZONTAL);
 			span.horizontalSpan= 2;
 			descrComp.setLayoutData(span);
+
+			Button loadJar = new Button(comp, SWT.NULL);
+			loadJar.setText("Load plugin");
+			loadJar.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					loadPluginJar();
+				}
+			});
 		}
 		
 		Composite createDescriptionComp(Composite parent) {
-			Composite comp = new Composite(parent, SWT.NULL);
-			comp.setLayout(new FillLayout());
-			description = new Label(comp, SWT.NULL);
-			return comp;
+			Group group = new Group(parent, SWT.NULL);
+			group.setLayout(new FillLayout());
+			group.setText("Plugin description");
+			description = new Label(group, SWT.NULL);
+			return group;
 		}
 		
 		Composite createPluginButtonComp(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NULL);
 			comp.setLayout(new RowLayout(SWT.VERTICAL));
 			
-			pluginConfigButton = new Button(comp, SWT.PUSH);
-			pluginConfigButton.setText("Configure plugin");
-			pluginConfigButton.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) {
-					openPluginConfiguration();
-				}
-			});
+			createPluginConfigGroup(comp);
 			
 			Group group = new Group(comp, SWT.NULL);
 			group.setText("Drawing order");
@@ -387,12 +395,41 @@ public class VisualizationDialog extends ApplicationWindow {
 			return comp;
 		}
 		
+		Composite createPluginConfigGroup(Composite parent) {
+			Group configGroup = new Group(parent, SWT.NULL);
+			configGroup.setText("Selected plugin configuration");
+			configGroup.setLayout(new RowLayout(SWT.VERTICAL));
+			
+			drConfig = new Button(configGroup, SWT.PUSH);
+			drConfig.setText("Drawing object...");
+			ttConfig = new Button(configGroup, SWT.PUSH);
+			ttConfig.setText("Tool tip...");
+			spConfig = new Button(configGroup, SWT.PUSH);
+			spConfig.setText("Side panel...");
+			
+			SelectionAdapter sa = new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if		(e.widget == drConfig) 
+						openPluginConfiguration(PluginSet.DRAWING);
+					else if	(e.widget == ttConfig) 
+						openPluginConfiguration(PluginSet.TOOLTIP);
+					else if	(e.widget == spConfig) 
+						openPluginConfiguration(PluginSet.SIDEPANEL);
+				}
+			};
+			
+			drConfig.addSelectionListener(sa);
+			ttConfig.addSelectionListener(sa);
+			spConfig.addSelectionListener(sa);
+			return configGroup;
+		}
+		
 		SelectionListener getDrawingOrderListener() {
 			return new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					Visualization v = getSelectedVisualization();
-					VisualizationPlugin p = getSelectedPlugin();
-					if(p == null || v == null) return; //Shouldn't happen
+					PluginSet ps = getSelectedPluginSet();
+					if(ps == null || v == null) return; //Shouldn't happen
 					
 					int order = 0;
 					if		(e.widget == firstButton)
@@ -403,23 +440,44 @@ public class VisualizationDialog extends ApplicationWindow {
 						order = Utils.ORDER_UP;
 					else if (e.widget == downButton) 
 						order = Utils.ORDER_DOWN;
-					v.setDrawingOrder(p, order);
+					v.setDrawingOrder(ps, order);
 					pluginTable.refresh();
 					colorPluginTable();
 				}
 			};
 		}
+				
+		void loadPluginJar() {
+			FileDialog fd = new FileDialog(getShell());
+			fd.setFilterExtensions(new String[] { "*.jar" });
+			fd.setFilterNames(new String[] { "jar file" });
+			String jar = fd.open();
+			if(jar != null) {
+				try {
+					PluginManager.loadAdditionalPlugin(new File(jar));
+					pluginTable.refresh();
+				} catch(Throwable e) {
+					MessageDialog.openError(getShell(), "Unable to load plugin", e.toString() + "\n" + e.getMessage());
+					GmmlVision.log.error("Unable to load plugin", e);
+				}
+			}
+		}
+		
 		void setPluginButtonsEnabled(boolean enable) {
 			
-			VisualizationPlugin p = getSelectedPlugin();
+			PluginSet ps = getSelectedPluginSet();
 			boolean doEnable = false;
-			boolean config = false;
-			if(p != null) {
-				doEnable = enable ? p.isActive() : false;
-				config = p.isConfigurable();
+			if(ps != null) {
+				doEnable = enable ? ps.isActive() : false;
 			}
-			pluginConfigButton.setEnabled(doEnable && config);
+			setConfigButtonsEnabled(doEnable && ps.getInstance().isConfigurable(), ps);
 			setOrderButtonsEnabled(doEnable);
+		}
+		
+		void setConfigButtonsEnabled(boolean doEnable, PluginSet ps) {
+			drConfig.setEnabled(doEnable && ps.isDrawing());
+			ttConfig.setEnabled(doEnable && ps.isToolTip());
+			spConfig.setEnabled(doEnable && ps.isSidePanel());
 		}
 		
 		void setOrderButtonsEnabled(boolean enable) {
@@ -429,14 +487,15 @@ public class VisualizationDialog extends ApplicationWindow {
 			lastButton.setEnabled(enable);
 		}
 		
-		VisualizationPlugin getSelectedPlugin() {
-			return (VisualizationPlugin)
+		PluginSet getSelectedPluginSet() {
+			return (PluginSet)
 				((IStructuredSelection)pluginTable.getSelection()).getFirstElement();
 		}
 		
-		void openPluginConfiguration() {
-			VisualizationPlugin p = getSelectedPlugin();
-			if(p.isActive()) p.openConfigDialog(getShell());
+		void openPluginConfiguration(int representation) {
+			PluginSet ps = getSelectedPluginSet();
+			if(ps.isActive()) 
+				ps.getPlugin(representation).openConfigDialog(getShell());
 		}
 		
 		Table createPluginTable(Composite parent) {
@@ -453,7 +512,7 @@ public class VisualizationDialog extends ApplicationWindow {
 					true, false,
 					false, false, false };
 			int[] width = new int[] {
-					50, 60, 60, 60, 60
+					50, 60, 60, 78, 60
 			};
 			for(int i = 0; i < columnNames.length; i++) {
 				TableColumn tc = new TableColumn(t, alignment[i]);
@@ -493,8 +552,8 @@ public class VisualizationDialog extends ApplicationWindow {
 			nonGenericColor = pluginTable.getTable().getDisplay().getSystemColor(
 					SWT.COLOR_INFO_BACKGROUND);
 		for(TableItem ti : pluginTable.getTable().getItems()) {			
-			VisualizationPlugin p = (VisualizationPlugin)ti.getData();
-			ti.setBackground(p.isGeneric() ? genericColor : nonGenericColor);
+			PluginSet ps = (PluginSet)ti.getData();
+			ti.setBackground(ps.isGeneric() ? genericColor : nonGenericColor);
 		}
 	}
 	
@@ -504,39 +563,29 @@ public class VisualizationDialog extends ApplicationWindow {
 		final Image checkUnavailable = GmmlVision.getImageRegistry().get("checkbox.unavailable");
 		
 		public String getColumnText(Object element, int columnIndex) {
-			VisualizationPlugin p = (VisualizationPlugin)element;
+			PluginSet ps = (PluginSet)element;
 			
-			if(columnIndex == 0) return p.getName();
+			if(columnIndex == 0) return ps.getInstance().getName();
 			return null;
 		}
 
 		public Image getColumnImage(Object element, int columnIndex) {
-			VisualizationPlugin p = (VisualizationPlugin) element;
+			PluginSet ps = (PluginSet)element;
 			
-			if(columnIndex == 1) return p.isActive() ? checkTrue : checkFalse;
-			if(p.isActive()) {
-				switch(columnIndex) {
-				case 2: 
-					if(p.canDrawingObject())
-						return p.isUseDrawingObject() ? checkTrue : checkFalse;
-					else return checkUnavailable;
-				case 3: 
-					if(p.canSidePanel()) 
-						return p.isUseSidePanel() ? checkTrue : checkFalse;
-					else return checkUnavailable;
-				case 4: 
-					if(p.canToolTip())
-						return p.isUseToolTip() ? checkTrue : checkFalse;
-					else return checkUnavailable;
-				default: return null; 
-				}
-			} else {
-				switch(columnIndex) {
-				case 2:
-				case 3:
-				case 4: return checkUnavailable;
-				default: return null;
-				}
+			switch(columnIndex) {
+			case 1: 
+				if(ps.getInstance().canDrawingObject())
+					return ps.isDrawing() ? checkTrue : checkFalse;
+				else return checkUnavailable;
+			case 2: 
+				if(ps.getInstance().canSidePanel()) 
+					return ps.isSidePanel() ? checkTrue : checkFalse;
+				else return checkUnavailable;
+			case 3: 
+				if(ps.getInstance().canToolTip())
+					return ps.isToolTip() ? checkTrue : checkFalse;
+				else return checkUnavailable;
+			default: return null; 
 			}
 		}
 		
@@ -549,27 +598,25 @@ public class VisualizationDialog extends ApplicationWindow {
 	
 	class PluginTableModifier implements ICellModifier {
 		public boolean canModify(Object element, String property) {
-			VisualizationPlugin p = (VisualizationPlugin) element;
+			PluginSet ps = (PluginSet)element;
 			int index = getColumnIndex(property);
 			switch(index) {
 			case 0: return false;
-			case 1: return true;
-			case 2:
-			case 3:
-			case 4: return p.isActive();
+			case 1: return ps.getInstance().canDrawingObject();
+			case 2: return ps.getInstance().canSidePanel();
+			case 3: return ps.getInstance().canToolTip();
 			default: return false;
 			}
 		}
 
 		public Object getValue(Object element, String property) {
-			VisualizationPlugin p = (VisualizationPlugin) element;
+			PluginSet ps = (PluginSet)element;
 			int index = getColumnIndex(property);
 			switch(index) {
-			case 0: return p.getName();
-			case 1: return p.isActive();
-			case 2: return p.isUseDrawingObject();
-			case 3: return p.isUseSidePanel();
-			case 4: return p.isUseToolTip();
+			case 0: return ps.getInstance().getName();
+			case 1: return ps.isDrawing();
+			case 2: return ps.isSidePanel();
+			case 3: return ps.isToolTip();
 			default: return null; //Shouldn't happen
 			}
 		}
@@ -577,19 +624,12 @@ public class VisualizationDialog extends ApplicationWindow {
 		public void modify(Object element, String property, Object value) {
 			int index = getColumnIndex(property);
 			TableItem ti = (TableItem) element;
-			VisualizationPlugin p = (VisualizationPlugin) ti.getData();
+			PluginSet ps = (PluginSet) ti.getData();
 
 			switch(index) {
-			case 1: {
-				p.setActive((Boolean) value);
-				break;
-			}
-			case 2: 
-				p.setUseDrawingObject((Boolean)value);
-				settingsComp.setOrderButtonsEnabled((Boolean)value);
-				break;
-			case 3: p.setUseSidePanel((Boolean)value); break;
-			case 4: p.setUseToolTip((Boolean)value); break;
+			case 1: ps.setActive(PluginSet.DRAWING, (Boolean)value); break;
+			case 2: ps.setActive(PluginSet.SIDEPANEL, (Boolean)value); break;
+			case 3: ps.setActive(PluginSet.TOOLTIP, (Boolean)value); break;
 			}
 			
 			pluginTable.refresh();

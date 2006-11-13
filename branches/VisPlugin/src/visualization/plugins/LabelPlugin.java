@@ -52,7 +52,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	public LabelPlugin(Visualization v) {
 		super(v);		
 	    setIsConfigurable(true);
-		setDisplayOptions(DRAWING | SIDEPANEL | TOOLTIP);
+		setDisplayOptions(DRAWING | TOOLTIP);
 		setIsGeneric(true);
 		setUseProvidedArea(true);
 	}

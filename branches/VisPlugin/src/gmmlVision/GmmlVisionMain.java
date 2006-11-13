@@ -94,7 +94,7 @@ public class GmmlVisionMain {
 		//load visualization plugins
 		try {
 			PluginManager.loadPlugins();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			GmmlVision.log.error("When loading visualization plugins", e);
 		}
 		

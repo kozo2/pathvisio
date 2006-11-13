@@ -45,19 +45,21 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
 import org.jdom.Element;
 
+import util.ColorConverter;
 import util.SwtUtils;
 import visualization.Visualization;
 import visualization.colorset.ColorSet;
 import data.GmmlGex.Sample;
 import data.GmmlGex.CachedData.Data;
 
-public class ExpressionImagePlugin extends ExpressionColorPlugin {
+public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	static final String NAME = "Colored image";
 	static final String DESCRIPTION = 
 		"This plugin displays one or more images on Gene Product objects and \n" +
-		"colors the image(s) accoring to the expression value of the Gene Product.";
+		"colors the image(s) accoring to the expression value for the Gene Product.";
 		
 	static final RGB DEFAULT_TRANSPARENT = GmmlVision.TRANSPARENT_COLOR;
 		
@@ -96,11 +98,41 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 		ImageData id = is.getImageData(new Point(area.width, area.height), rgb);
 		Image image = new Image(e.display, id);
 		
+		drawBackground(area, buffer, e);
 		buffer.drawImage(image, area.x, area.y);
-		
 		image.dispose();
 	}
 		
+	void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC buffer) {
+		drawBackground(area, buffer, e);
+	}
+	
+	void drawBackground(Rectangle area, GC buffer, PaintEvent e) {
+		buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
+		buffer.fillRectangle(area);
+		
+	}
+	
+	final static String XML_ELM_URL = "image";
+	void loadAttributes(Element xml) {
+		for(Object o : xml.getChildren(XML_ELM_URL)) {
+			try {
+				URL url = new URL(((Element)o).getText());
+				addImageURL(url);
+			} catch(Exception e) {
+				GmmlVision.log.error("couldn't load image URL for plugin", e);
+			}
+		}
+	}
+	
+	void saveAttributes(Element xml) {
+		for(URL url : getImageURLs()) {
+			Element elm = new Element(XML_ELM_URL);
+			elm.setText(url.toString());
+			xml.addContent(elm);
+		}
+	}
+	
 	protected ConfiguredSample createConfiguredSample(Sample s) {
 		return new ImageSample(s);
 	}
@@ -123,10 +155,10 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 		Color replaceColor;
 		Image image;
 		Button aspectButton;
+		Spinner spinner;
 		
 		public ImageConfigComposite(Composite parent, int style) {
 			super(parent, style);
-			createContents();
 		}
 		
 		ImageSample getInput() {
@@ -190,11 +222,11 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 		Composite createImageComp(Composite parent) {
 			Group imageGroup = new Group(parent, SWT.NULL);
 			imageGroup.setLayout(new GridLayout());
-			imageGroup.setText("Selected image");
+			imageGroup.setText("Image settings");
 			
 			imageLabel = new CLabel(imageGroup, SWT.CENTER);
 			GridData grid = new GridData(GridData.FILL_BOTH);
-			grid.heightHint = grid.widthHint = 50;
+			grid.heightHint = grid.widthHint = 70;
 			imageLabel.setLayoutData(grid);
 			imageLabel.addControlListener(new ControlAdapter() {
 				public void controlResized(ControlEvent e) {
@@ -203,11 +235,11 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 			});
 			Composite buttons = new Composite(imageGroup, SWT.NULL);
 			buttons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			buttons.setLayout(new GridLayout(3, false));
+			buttons.setLayout(new GridLayout(2, false));
 			
 			aspectButton = new Button(buttons, SWT.CHECK);
 			GridData span = new GridData();
-			span.horizontalSpan = 3;
+			span.horizontalSpan = 2;
 			aspectButton.setLayoutData(span);
 			aspectButton.setText("Maintain aspect ratio");
 			aspectButton.addSelectionListener(new SelectionAdapter() {
@@ -216,10 +248,13 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 					refreshImage();
 				}
 			});
-						
-			colorLabel = new CLabel(buttons, SWT.NULL);
+				
+			Composite cc = new Composite(buttons, SWT.NULL);
+			cc.setLayoutData(span);
+			cc.setLayout(new GridLayout(3, false));
+			colorLabel = new CLabel(cc, SWT.NULL);
 			colorLabel.setLayoutData(SwtUtils.getColorLabelGrid());
-			Button colorButton = new Button(buttons, SWT.PUSH);
+			Button colorButton = new Button(cc, SWT.PUSH);
 			colorButton.setText("...");
 			colorButton.setLayoutData(SwtUtils.getColorLabelGrid());
 			colorButton.addSelectionListener(new SelectionAdapter() {
@@ -227,10 +262,25 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 					changeColorLabel();
 				}
 			});
-			
-			Label label = new Label(buttons, SWT.WRAP);
+			Label label = new Label(cc, SWT.WRAP);
 			label.setText("Color to replace with expression data color");
+			
+			Label spl = new Label(buttons, SWT.NULL);
+			spl.setText("Tolerance:");
+			spinner = new Spinner(buttons, SWT.NULL);
+			spinner.setMaximum(255);
+			spinner.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					setTolerance();
+				}
+			});
+		
 			return imageGroup;
+		}
+		
+		void setTolerance() {
+			getInput().setTolerance(spinner.getSelection());
+			refreshImage();
 		}
 		
 		void changeColorLabel() {
@@ -303,6 +353,7 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 				else imageList.setSelection(new StructuredSelection(imageList.getElementAt(0)));
 				aspectButton.setSelection(getInput().getMaintainAspect());
 				setColorLabel();
+				spinner.setSelection(getInput().getTolerance());
 			}
 		}
 		
@@ -321,6 +372,7 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 		ImageData cacheImageData;
 		URL imageURL = imageURLs.get(0);
 		RGB replaceColor = DEFAULT_TRANSPARENT;
+		int tolerance; //range 0 - 255;
 		boolean aspectRatio = true;
 		
 		public ImageSample(int idSample, String name, int dataType) {
@@ -338,14 +390,26 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 		public void setURL(URL url) { 
 			imageURL = url;
 			cacheImageData = null;
+			fireModifiedEvent();
 		}
 		
 		public URL getURL() { return imageURL; }
 		
-		public void setReplaceColor(RGB rgb) { if(rgb != null) replaceColor = rgb; }
+		public void setReplaceColor(RGB rgb) { 
+			if(rgb != null) replaceColor = rgb;
+			fireModifiedEvent();
+		}
 		public RGB getReplaceColor() { return replaceColor; }
-		public void setMaintainAspect(boolean maintain) { aspectRatio = maintain; }
+		public void setMaintainAspect(boolean maintain) { 
+			aspectRatio = maintain;
+			fireModifiedEvent();
+		}
 		public boolean getMaintainAspect() { return aspectRatio;}
+		public void setTolerance(int tol) { 
+			fireModifiedEvent();
+			tolerance = tol; 
+		}
+		public int getTolerance() { return tolerance; }
 		
 		public ImageData getImageData() {
 			if(imageURL == null) return null;
@@ -353,7 +417,7 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 				InputStream in = getInputStream(imageURL);
 				cacheImageData = new ImageData(in);
 			}
-			return cacheImageData;
+			return (ImageData)cacheImageData.clone();
 		}
 		
 		public ImageData getImageData(Point size) {
@@ -378,26 +442,47 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 		
 		ImageData doReplaceColor(ImageData img, RGB replaceWith) {
 			PaletteData pd = img.palette;
-			if(pd.isDirect) {
-				int np = pd.getPixel(replaceWith);
-				int op = pd.getPixel(getReplaceColor());
-				for(int x = 0; x < img.width; x++)
-					for(int y = 0; y < img.height; y++)
-						if(img.getPixel(x, y) == op) img.setPixel(x, y, np);
-			} else {
-				RGB[] rgbs = pd.getRGBs();
-				int index = -1;
-				for(int i = 0; i < rgbs.length; i++) {
-					if(rgbs[i].equals(getReplaceColor())) {
-						index = i;
-						break;
+			if(pd.isDirect) 
+				replaceDirect(img, getReplaceColor(), replaceWith, getTolerance());
+			else 
+				replaceIndexed(img, getReplaceColor(), replaceWith, getTolerance());
+			return img;
+		}
+		
+		void replaceDirect(ImageData imgd, RGB tr, RGB rp, int tol) {
+			PaletteData pd = imgd.palette;
+			int rpvalue = pd.getPixel(rp);
+			int[] line = new int[imgd.width];
+			for (int y = 0; y < imgd.height; y++) {
+				imgd.getPixels(0, y, imgd.width, line, 0);
+				for (int x = 0; x < line.length; x++) {
+					if(compareRGB(tr, pd.getRGB(line[x]), tol)) {
+						imgd.setPixel(x, y, rpvalue);
 					}
 				}
-				if(index < 0) return img;
-				rgbs[index] = replaceWith;
-				img.palette = new PaletteData(rgbs);
+			};
+		}
+
+		void replaceIndexed(ImageData imgd, RGB tr, RGB rp, int tol) {
+			RGB[] rgbs = imgd.palette.getRGBs();
+			RGB[] newRgbs = new RGB[rgbs.length];
+			for(int i = 0; i < rgbs.length; i++) {
+				RGB rgb = rgbs[i];
+				if( compareRGB(tr, rgbs[i], tol)) {
+					rgb = rp;
+				}
+				newRgbs[i] = rgb;
 			}
-			return img;
+			imgd.palette = new PaletteData(newRgbs);
+		}
+		
+		boolean compareRGB(RGB rgb1, RGB rgb2, int tolerance) {
+			return 	rgb2.red >= rgb1.red - tolerance &&
+					rgb2.red <= rgb1.red + tolerance &&
+					rgb2.green >= rgb1.green - tolerance &&
+					rgb2.green <= rgb1.green + tolerance &&
+					rgb2.blue >= rgb1.blue - tolerance &&
+					rgb2.blue <= rgb1.blue + tolerance;
 		}
 		
 		InputStream getInputStream(URL url) {
@@ -410,10 +495,30 @@ public class ExpressionImagePlugin extends ExpressionColorPlugin {
 			return null;
 		}
 		
+		final static String XML_ATTR_ASPECT = "maintain-aspect-ratio";
+		final static String XML_ATTR_TOLERANCE = "tolerance";
+		final static String XML_ATTR_IMAGE = "image-url";
+		final static String XML_ATTR_REPLACE = "replace-color";
+		protected void saveAttributes(Element xml) {
+			xml.setAttribute(XML_ATTR_ASPECT, Boolean.toString(getMaintainAspect()));
+			xml.setAttribute(XML_ATTR_TOLERANCE, Integer.toString(getTolerance()));
+			xml.setAttribute(XML_ATTR_IMAGE, getURL().toString());
+			xml.addContent(ColorConverter.createColorElement(XML_ATTR_REPLACE, getReplaceColor()));
+		}
+		protected void loadAttributes(Element xml) {
+			try {
+				setMaintainAspect(Boolean.parseBoolean(xml.getAttributeValue(XML_ATTR_ASPECT)));
+				setTolerance(Integer.parseInt(xml.getAttributeValue(XML_ATTR_TOLERANCE)));
+				setURL(new URL(xml.getAttributeValue(XML_ATTR_IMAGE)));
+				setReplaceColor(ColorConverter.parseColorElement(xml.getChild(XML_ATTR_REPLACE)));
+			} catch(Exception e) {
+				GmmlVision.log.error("Unable to load plugin", e);
+			}
+		}
+		
 	}
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) { return null; }
 	public void createSidePanelComposite(Composite parent) { }
 	public void updateSidePanel(GmmlGraphics g) { }
-
 }

@@ -92,7 +92,7 @@ public class SwtUtils {
 				setCompositeAndChildrenBackground((Composite) c, color);
 		}
 	}
-		
+	
 	static int[] incrs;
 	static int ii;
 	static int pixratio;

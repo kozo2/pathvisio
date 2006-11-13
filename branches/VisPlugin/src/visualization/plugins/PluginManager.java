@@ -3,13 +3,14 @@ package visualization.plugins;
 import gmmlVision.GmmlVision;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -17,24 +18,33 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import org.jdom.Document;
 import org.jdom.Element;
-
-import data.GmmlGex;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 import visualization.Visualization;
+import visualization.VisualizationManager;
+import visualization.VisualizationManager.VisualizationEvent;
+import data.GmmlGex;
 
 public abstract class PluginManager {
-	static final String NAME_METHOD = "getName";
 	static final String PLUGIN_PKG = "visualization.plugins";
+	static final String FILE_ADD_PLUGINS = "visplugins.xml";
+	static final String XML_ELEMENT = "additional-plugins";
+	static final String XML_ELM_PLUGIN = "plugin";
+	static final String XML_ATTR_URL = "url";
 	
+	static Document addDoc;
 	static final Set<Class> plugins = new LinkedHashSet<Class>();
 	
-	public static VisualizationPlugin getInstance(Class pluginClass, Visualization v) throws SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	public static VisualizationPlugin getInstance(Class pluginClass, Visualization v) throws Throwable {
 		Constructor c = pluginClass.getConstructor(new Class[] { Visualization.class });
 		return (VisualizationPlugin)c.newInstance(new Object[] { v });
 	}
 		
-	public static VisualizationPlugin instanceFromXML(Element xml, Visualization v) throws ClassNotFoundException, SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	public static VisualizationPlugin instanceFromXML(Element xml, Visualization v) throws Throwable {
 		String className = xml.getAttributeValue(VisualizationPlugin.XML_ATTR_CLASS);
 		
 		if(className == null) throw new IllegalArgumentException(
@@ -55,11 +65,7 @@ public abstract class PluginManager {
 	public static Class[] getGenericPlugins() {
 		Set<Class> generic = new LinkedHashSet<Class>();
 		for(Class pc : plugins) {
-			try {
-				if(isGeneric(pc)) generic.add(pc);
-			} catch(Exception e) {
-				GmmlVision.log.error("Unable to determine if plugin is generic", e);
-			}
+			if(isGeneric(pc)) generic.add(pc);
 		}
 		return generic.toArray(new Class[generic.size()]);
 	}
@@ -67,7 +73,10 @@ public abstract class PluginManager {
 	public static boolean isGeneric(Class pluginClass) {
 		try {
 			return getInstance(pluginClass, null).isGeneric();
-		} catch(Exception e) { return false; }
+		} catch(Throwable e) { 
+			GmmlVision.log.error("Unable to determine if plugin is generic", e);
+			return false; 
+		}
 	}
 	
 	public static String[] getPluginNames() {
@@ -83,49 +92,179 @@ public abstract class PluginManager {
 		try {
 			VisualizationPlugin p = getInstance(pluginClass, null);
 			return p.getName();
-		} catch(Exception e) {
+		} catch(Throwable e) {
 			GmmlVision.log.error("Unable to get plugin name for " + pluginClass, e);
 			return pluginClass.getName();
 		}
 	}
-	
-	public static void loadPlugins() throws IOException, ClassNotFoundException {	
+
+	public static void loadPlugins() throws Throwable {	
 		GmmlVision.log.trace("> Loading visualization plugins");
 		Enumeration<URL> resources = 
 			ClassLoader.getSystemClassLoader().getResources(PLUGIN_PKG.replace('.', '/'));
         while (resources.hasMoreElements()) {
         	URL url = resources.nextElement();
+        	loadPlugin(url);
         	GmmlVision.log.trace("visualization.plugins package found in: ");
-        	if(url.getProtocol().equals("jar")) loadFromJar(url);
-        	else loadFromDir(url);
         }
+        loadAdditional();
   	}
 	    
-	static void loadFromDir(URL url) throws UnsupportedEncodingException, ClassNotFoundException {
+	static void loadPlugin(File f) throws Throwable {
+			loadPlugin(f.toURL());
+	}
+	
+	public static void loadAdditionalPlugin(File file) throws Throwable {
+		loadPlugin(file);
+		saveAdditional(file.toURL());
+		VisualizationManager.firePropertyChange(
+				new VisualizationEvent(PluginManager.class, VisualizationEvent.PLUGIN_ADDED));
+	}
+		
+	static void loadPlugin(URL url) throws Throwable {
+    	if(url.getProtocol().equals("jar")) loadFromJar(url);
+    	else if(url.getProtocol().equals("file")) {
+    		File f = new File(url.getFile());
+    		if(f.getName().endsWith(".jar")) loadFromJar(url);
+    		else loadFromDir(url);
+    	}
+		else GmmlVision.log.error("Unable to load additional plugin", new Exception("Unsupported URL protocol"));
+	}
+	
+	static Document getAdditionalXML() {
+		if(addDoc == null) {
+			File f = new File(GmmlVision.getApplicationDir(), FILE_ADD_PLUGINS);
+			if(!f.exists()) {
+				return createXML();
+			} else {
+				SAXBuilder parser = new SAXBuilder();
+				try {
+					Document doc = parser.build(f);
+					return doc;
+				} catch(Exception e) {
+					GmmlVision.log.error("Unable to load additional plugins file", e);
+					return createXML();
+				}
+			}
+		} else return addDoc;
+		
+	}
+	
+	static Document createXML() {
+		Document doc = new Document();
+		doc.setRootElement(new Element(XML_ELEMENT));
+		return doc;
+	}
+
+	static void loadAdditional() {
+		Document doc = getAdditionalXML();
+		Element root = doc.getRootElement();
+		for(Object o : root.getChildren(XML_ELM_PLUGIN)) {
+			URL url = null;
+			try {
+				url = new URL(((Element)o).getAttributeValue(XML_ATTR_URL));
+				loadPlugin(new File(url.getFile()));
+			} catch(Throwable ex) {
+				GmmlVision.log.error("Unable to load additional plugin", ex);
+				if(url != null) removeAdditional(url);
+			}
+		}
+	}
+	
+	static void saveAdditional(URL url) {
+		Document doc = getAdditionalXML();
+		Element root = doc.getRootElement();
+		
+		if(containsElement(root, url)) return;
+		
+		Element elm = new Element(XML_ELM_PLUGIN);
+		elm.setAttribute(XML_ATTR_URL, url.toString());
+		root.addContent(elm);
+		saveXML(doc);
+	}
+	
+	static void removeAdditional(URL url) {
+		Document doc = getAdditionalXML();
+		Element root = doc.getRootElement();
+		
+		Element toRemove = null;
+		for(Object o : root.getChildren(XML_ELM_PLUGIN)) {
+			Element e = (Element) o;
+			String url1 = e.getAttributeValue(XML_ATTR_URL);
+			if(url1.equals(url.toString())) {
+				toRemove = e;
+				break;
+			}
+		}
+		root.removeContent(toRemove);
+		saveXML(doc);
+	}
+	
+	static void saveXML(Document doc) {
+		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+		try {
+			FileWriter fw = new FileWriter(new File(GmmlVision.getApplicationDir(), FILE_ADD_PLUGINS));
+			out.output(doc, fw);
+			fw.close();
+		} catch(IOException e) {
+			GmmlVision.log.error("Unable to save additional plugins", e);
+		}
+	}
+	
+	static boolean containsElement(Element root, URL url) {
+		for(Object o : root.getChildren(XML_ELM_PLUGIN)) {
+			String url1 = ((Element)o).getAttributeValue(XML_ATTR_URL);
+			if(url1.equals(url.toString())) return true;
+		}
+		return false;
+	}
+	
+	static void loadFromDir(URL url) throws Throwable {
 		GmmlVision.log.trace("\tLoading from directory " + url);
 		File directory = new File(URLDecoder.decode(url.getPath(), "UTF-8"));
 		if (directory.exists()) {
             String[] files = directory.list(classFilter);
             for (String file : files)
-            	addPlugin(Class.forName(PLUGIN_PKG + '.' + file.substring(0, file.length() - 6)));
+            	addPlugin(Class.forName(PLUGIN_PKG + '.' + removeClassExt(file)));
         }
 	}
 	
-	//TODO: test this
-	static void loadFromJar(URL url) throws ClassNotFoundException, IOException {
-		GmmlVision.log.trace("\tLoading from jar " + url);
-		JarURLConnection conn = (JarURLConnection)url.openConnection();
-
-		JarFile jfile = conn.getJarFile();
+	static void loadFromJar(URL url) throws Throwable {
+		GmmlVision.log.trace("\tLoading from jar connection " + url);
+		JarFile f = null;
+		if(url.getProtocol().equals("jar")) {
+			JarURLConnection conn = (JarURLConnection)url.openConnection();
+			f = conn.getJarFile();
+		} else {
+			f = new JarFile(url.getFile());
+		}
+		loadFromJar(f, new URLClassLoader(new URL[] { url }));
+	}
+		
+	static void loadFromJar(JarFile jfile, URLClassLoader cl) throws Throwable {
+		Throwable error = null;
+		GmmlVision.log.trace("\tLoading from jar file " + jfile);
 		Enumeration e = jfile.entries();
 		while (e.hasMoreElements()) {
 			ZipEntry entry = (ZipEntry)e.nextElement();
 			GmmlVision.log.trace("Checking " + entry);
 			String entryname = entry.getName();
 			if(entryname.endsWith(".class")) {
-				addPlugin(Class.forName(PLUGIN_PKG + '.' + entryname.substring(0, entryname.length() - 6)));
+				try {
+					String cn = removeClassExt(entryname.replace('/', '.'));
+					Class pluginClass = Class.forName(cn, true, cl);
+					addPlugin(pluginClass);
+				} catch(Throwable ex) {
+					GmmlVision.log.error("Unable to load plugin", ex);
+					error = ex;
+				}
 			}
 		}
+		if(error != null) throw error;
+	}
+	
+	static String removeClassExt(String fn) {
+		return fn.substring(0, fn.length() - 6);
 	}
 	
 	static void addPlugin(Class c) {
@@ -137,12 +276,16 @@ public abstract class PluginManager {
 	}
 	
 	static boolean isPlugin(Class c) {
+		if(Modifier.isAbstract(c.getModifiers())) {
+			GmmlVision.log.trace("\t\t> Class " + c + " is not a visualization plugin (is abstract)");
+			return false;
+		}
 		Class superClass = c;
 		while((superClass = superClass.getSuperclass()) != null) {
 			GmmlVision.log.trace("\t\t>" + c + " with superclass: " + superClass);
 			if(superClass.equals(VisualizationPlugin.class)) return true;
 		}
-			
+		GmmlVision.log.trace("\t\t> Class " + c + " is not a visualization plugin");
 		return false;
 	}
 			

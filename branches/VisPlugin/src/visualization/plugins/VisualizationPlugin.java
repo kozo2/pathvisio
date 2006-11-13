@@ -1,6 +1,5 @@
 package visualization.plugins;
 
-import gmmlVision.GmmlVision;
 import graphics.GmmlGraphics;
 
 import java.util.ArrayList;
@@ -27,9 +26,6 @@ import visualization.VisualizationManager.VisualizationEvent;
 public abstract class VisualizationPlugin implements Comparable {
 	public static String XML_ELEMENT = "plugin";
 	public static String XML_ATTR_CLASS = "class";
-	private static String XML_ATTR_SIDEPANEL = "useSidePanel";
-	private static String XML_ATTR_TOOLTIP = "useToolTip";
-	private static String XML_ATTR_DRAWING = "useDrawingObject";
 	
 	private String[] rep_names = new String[] {"Drawing object", "Side panel", "Tooltip"};
 	protected static final int SIDEPANEL = 2;
@@ -42,11 +38,7 @@ public abstract class VisualizationPlugin implements Comparable {
 	private boolean USE_RESERVED_REGION; //Does this plugin use reserved region in GmmlGraphicsObject
 	
 	private boolean isActive;
-	
-	private boolean useDrawingObject = true;
-	private boolean useSidePanel = true;
-	private boolean useToolTip = true;
-	
+		
 	private Visualization visualization;
 	
 	public VisualizationPlugin(Visualization v) {
@@ -85,50 +77,13 @@ public abstract class VisualizationPlugin implements Comparable {
 	public Element toXML() {
 		Element elm = new Element(XML_ELEMENT);
 		elm.setAttribute(XML_ATTR_CLASS, getClass().getCanonicalName());
-		elm.setAttribute(XML_ATTR_DRAWING, Boolean.toString(isUseDrawingObject()));
-		elm.setAttribute(XML_ATTR_SIDEPANEL, Boolean.toString(isUseSidePanel()));
-		elm.setAttribute(XML_ATTR_TOOLTIP, Boolean.toString(isUseToolTip()));
 		return elm;
 	}
 	
-	public void loadXML(Element xml) {
-		String drw = xml.getAttributeValue(XML_ATTR_DRAWING);
-		String sp = xml.getAttributeValue(XML_ATTR_SIDEPANEL);
-		String tt = xml.getAttributeValue(XML_ATTR_TOOLTIP);
-		try {
-			setUseDrawingObject(Boolean.parseBoolean(drw));
-			setUseSidePanel(Boolean.parseBoolean(sp));
-			setUseToolTip(Boolean.parseBoolean(tt));
-		} catch(Exception e) {
-			GmmlVision.log.error("Unable to parse settings for VisualizationPlugin", e);
-		}
-	}
-	
-	public boolean isUseSidePanel() { return canSidePanel() && useSidePanel; }
-	public boolean isUseToolTip() { return canToolTip() && useToolTip; }
-	public boolean isUseDrawingObject() { return canDrawingObject() && useDrawingObject; }
-	
+	public void loadXML(Element xml) { }
+		
 	public final boolean isActive() { return isActive; }
 	public final void setActive(boolean active) { isActive = active; }
-
-	public void setUseSidePanel(boolean use) { 
-		if(canSidePanel()) {
-			useSidePanel = use;
-			fireModifiedEvent();
-		}
-	}
-	public void setUseToolTip(boolean use) { ;
-		if(canToolTip()) {
-			useToolTip = use;
-			fireModifiedEvent();
-		}
-	}
-	public void setUseDrawingObject(boolean use) { 
-		if(canDrawingObject()) {
-			useDrawingObject = use;
-			fireModifiedEvent();
-		}
-	}
 	
 	public final boolean canSidePanel() { return (DISPLAY_OPT & SIDEPANEL) != 0; }
 	public final boolean canToolTip() { return (DISPLAY_OPT & TOOLTIP) != 0; }
@@ -169,7 +124,7 @@ public abstract class VisualizationPlugin implements Comparable {
 	public final boolean isGeneric() { return GENERIC; }
 	public final boolean isConfigurable() { return CONFIGURABLE; }
 	public final boolean isUseReservedRegion() { 
-		return USE_RESERVED_REGION && isUseDrawingObject(); 
+		return USE_RESERVED_REGION; 
 	}
 				
 	public final void fireModifiedEvent() {
@@ -199,13 +154,6 @@ public abstract class VisualizationPlugin implements Comparable {
 		public Composite createButtonComposite(Composite parent) {
 			Composite comp = new Composite(parent, SWT.NULL);
 			comp.setLayout(new GridLayout(2, false));
-//			Button cancel = new Button(comp, SWT.PUSH);
-//			cancel.setText(" Cancel ");
-//			cancel.addSelectionListener(new SelectionAdapter() {
-//				public void widgetSelected(SelectionEvent arg0) {
-//					close();
-//				}
-//			});
 			
 			Button ok = new Button(comp, SWT.PUSH);
 			ok.setText(" Ok ");

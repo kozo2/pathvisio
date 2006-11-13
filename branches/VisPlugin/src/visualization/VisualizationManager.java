@@ -190,7 +190,7 @@ public class VisualizationManager implements ApplicationEventListener {
 			control.setLayout(layout);
 			
 			Label label = new Label(control, SWT.CENTER);
-			label.setText("Apply visualization: ");
+			label.setText("Visualization: ");
 			visCombo = new Combo(control, SWT.DROP_DOWN | SWT.READ_ONLY);
 			visCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			visCombo.addSelectionListener(new SelectionAdapter() {
@@ -273,6 +273,7 @@ public class VisualizationManager implements ApplicationEventListener {
 		public static final int VISUALIZATION_MODIFIED = 5;
 		public static final int VISUALIZATION_SELECTED = 6;
 		public static final int PLUGIN_MODIFIED = 7;
+		public static final int PLUGIN_ADDED = 8;
 
 		public Object source;
 		public int type;
