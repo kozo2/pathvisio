@@ -46,7 +46,7 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	
 	public ExpressionColorPlugin(Visualization v) {
 		super(v);
-		setDisplayOptions(DRAWING);
+		setDisplayOptions(DRAWING | SIDEPANEL);
 	}
 
 	public String getName() { return NAME; }
@@ -210,7 +210,6 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	}
 	
 	protected class ColorSampleConfigComposite extends SampleConfigComposite {
-		ConfiguredSample input;
 		Button radioBar, radioAvg;
 		
 		public ColorSampleConfigComposite(Composite parent, int style) {
@@ -229,7 +228,9 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 			setInput(null);
 		}
 		
-		ColorSample getInput() { return (ColorSample)input; }
+		ColorSample getInput() { 
+			return input == null || input.length == 0 ? null : (ColorSample)input[0]; 
+		}
 		
 		Composite createAmbigiousComp(Composite parent) {
 			Group ambGroup = new Group(parent, SWT.NULL);
@@ -254,29 +255,15 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 			
 			return ambGroup;
 		}
-		
-		void changeColorSet(int index) {
-			if(input != null) 
-				input.setColorSetIndex(index);
-		}
-		
-		public void setInput(ConfiguredSample s) {
-			input = s;
-			refresh();
-		}
-		
+					
 		public void refresh() {
-			if(input == null) setAllEnabled(false);
+			if(input == null || input.length > 1) setAllEnabled(false);
 			else {
 				setAllEnabled(true);
 				boolean avg = getInput().getAmbigiousType() == ColorSample.AMBIGIOUS_AVG;
 				radioAvg.setSelection(avg);
 				radioBar.setSelection(!avg);
 			}
-		}
-		
-		public void setAllEnabled(boolean enable) {
-			SwtUtils.setCompositeAndChildrenEnabled(this, enable);
 		}
 	}
 	
@@ -326,7 +313,4 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	}
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) { return null; }
-	public void createSidePanelComposite(Composite parent) { }
-	public void updateSidePanel(GmmlGraphics g) { }
-
 }

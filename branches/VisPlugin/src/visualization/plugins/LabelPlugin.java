@@ -1,5 +1,7 @@
 package visualization.plugins;
 
+import java.util.Collection;
+
 import gmmlVision.GmmlVision;
 import graphics.GmmlGeneProduct;
 import graphics.GmmlGraphics;
@@ -208,11 +210,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	}
 	
 	
-	public void updateSidePanel(GmmlGraphics g) {
-		if(g instanceof GmmlGeneProduct) 
-			labelSidePanel.setText(getLabelText((GmmlGeneProduct)g));
-		
-	}
+	public void updateSidePanel(Collection<GmmlGraphics> objects) { }
 	
 	private String getLabelText(GmmlGeneProduct g) {
 		switch(style) {

@@ -4,6 +4,7 @@ import gmmlVision.GmmlVision;
 import graphics.GmmlGeneProduct;
 import graphics.GmmlGraphics;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -334,7 +335,7 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 	}
 	
 	
-	public void updateSidePanel(GmmlGraphics g) { }
+	public void updateSidePanel(Collection<GmmlGraphics> objects) { }
 	public void createSidePanelComposite(Composite parent) { }
 
 	static final String XML_ATTR_FONTDATA = "font";

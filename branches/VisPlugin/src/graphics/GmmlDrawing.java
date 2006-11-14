@@ -185,7 +185,7 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	 * @return
 	 */
 	public GmmlInfoBox getMappInfo() { return infoBox; }
-	
+		
 	/**
 	 * Adds an element to the drawing
 	 * @param o the element to add
@@ -339,7 +339,6 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	 */
 	public void mouseUp(MouseEvent e)
 	{
-		if(!editMode) return;
 		if(isDragging)
 		{
 			updatePropertyTable(GmmlVision.getWindow().propertyTable.getGmmlDataObject());
@@ -379,9 +378,6 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		buffer.fillRectangle(e.x, e.y, e.width, e.height);
 		
 		buffer.setAntialias(SWT.ON);
-
-//		buffer.setForeground(e.display.getSystemColor(SWT.COLOR_CYAN));
-//		buffer.drawRectangle(e.x, e.y, e.width, e.height);
 		
 		Rectangle2D.Double r = new Rectangle.Double(e.x, e.y, e.width, e.height);
 		    	
@@ -393,7 +389,9 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		{
 			if(o.intersects(r))
 			{
-				o.draw (e, buffer);
+				if(checkDrawAllowed(o)) {
+					o.draw (e, buffer);
+				}
 				
 				if(v != null && o instanceof GmmlGraphics) {
 						try {
@@ -412,6 +410,12 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		buffer.dispose();
 	}
 
+	boolean checkDrawAllowed(GmmlDrawingObject o) {
+		return !isEditMode() && !(	
+				o instanceof GmmlHandle ||
+				(o == s && !isDragging)
+				);
+	}
 	/**
 	 * Updates the propertytable to display information about the given GmmlDrawingObject
 	 * @param o object to update the property table for, if instanceof {@link GmmlHandle}, 
@@ -473,21 +477,20 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	 * @param e	the mouse event to handle
 	 */
 	private void mouseDownViewMode(MouseEvent e) 
-	{ 
-		Point2D p = new Point2D.Double(e.x, e.y);
-		GmmlDrawingObject obj = null;
-		Collections.sort(drawingObjects);
-		Collections.reverse(drawingObjects);
-		for (GmmlDrawingObject o : drawingObjects)
-		{
-			if (o.isContain(p))
-			{
-				obj = o;
-				break;
-			}
-		}
-		updatePropertyTable(obj);
-		updateBackpageInfo(obj);
+	{
+		Point2D p2d = new Point2D.Double(e.x, e.y);
+
+		pressedObject = findPressedObject(p2d);
+		
+		if (pressedObject != null)
+			doClickSelect(p2d);
+		else
+			startSelecting(p2d);
+
+		redrawDirtyRect();
+		
+		updatePropertyTable(pressedObject);
+		updateBackpageInfo(pressedObject);
 	}
 	
 	/**
@@ -497,6 +500,10 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	 */
 	private void startSelecting(Point2D p)
 	{
+		previousX = (int)p.getX();
+		previousY = (int)p.getY();
+		isDragging = true;
+		
 		clearSelection();
 		s.reset(p.getX(), p.getY());
 		s.startSelecting();
@@ -520,8 +527,38 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	{
 		Point2D p2d = new Point2D.Double(p.x, p.y);
 		
-		pressedObject = null;
+		pressedObject = findPressedObject(p2d);
+		
+		// if we clicked on an object
+		if (pressedObject != null)
+		{
+			// if our object is an handle, select also it's parent.
+			if(pressedObject instanceof GmmlHandle)
+			{
+				((GmmlHandle)pressedObject).parent.select();
+			} else {
+				doClickSelect(p2d);
+			}
+			
+			// start dragging
+			previousX = p.x;
+			previousY = p.y;
+			
+			isDragging = true;		
+		}
+		else
+		{
+			// start dragging selectionbox	
+			startSelecting(p2d);
+		}		
+		updatePropertyTable(pressedObject);
+		updateBackpageInfo(pressedObject);
+		redrawDirtyRect();
+	}
+
+	GmmlDrawingObject findPressedObject(Point2D p2d) {
 		Collections.sort(drawingObjects);
+		GmmlDrawingObject probj = null;
 		for (GmmlDrawingObject o : drawingObjects)
 		{
 			if (o.isContain(p2d))
@@ -530,64 +567,41 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 				if (o instanceof GmmlHandle && !((GmmlHandle)o).isVisible()) 
 					;
 				else 
-					pressedObject = o;
+					probj = o;
 			}
 		}
-		// if we clicked on an object
-		if (pressedObject != null)
-		{
-			// if our object is an handle, select also it's parent.
-			if(pressedObject instanceof GmmlHandle)
-			{
-				((GmmlHandle)pressedObject).parent.select();
-			}
-			//Ctrl pressed, add/remove from selection
-			else if(ctrlPressed) 
-			{
-				if(pressedObject instanceof GmmlSelectionBox) {
-					//Object inside selectionbox clicked, pass to selectionbox
-					s.objectClicked(p2d);
-				}
-				else if(pressedObject.isSelected()) { //Already in selection: remove
-					s.removeFromSelection(pressedObject);
-				} else {
-					s.addToSelection(pressedObject); //Not in selection: add
-				}
-				pressedObject = null; //Disable dragging
-			} 
-			else //Ctrl not pressed
-			{
-				//If pressedobject is not selectionbox:
-				//Clear current selection and select pressed object
-				if(!(pressedObject instanceof GmmlSelectionBox))
-				{
-					clearSelection();
-					s.addToSelection(pressedObject);
-				} else { //Check if clicked object inside selectionbox
-					if(s.getChild(p2d) == null) clearSelection();
-				}
-			}
-			
-			// start dragging
-			previousX = p.x;
-			previousY = p.y;
-			
-			isDragging = true;			
-		}
-		else
-		{
-			// start dragging selectionbox
-			previousX = p.x;
-			previousY = p.y;
-			isDragging = true;
-	
-			startSelecting(p2d);
-		}		
-		updatePropertyTable(pressedObject);
-		updateBackpageInfo(pressedObject);
-		redrawDirtyRect();
+		return probj;
 	}
-
+	
+	void doClickSelect(Point2D p2d) {
+		//Ctrl pressed, add/remove from selection
+		if(ctrlPressed) 
+		{
+			if(pressedObject instanceof GmmlSelectionBox) {
+				//Object inside selectionbox clicked, pass to selectionbox
+				s.objectClicked(p2d);
+			}
+			else if(pressedObject.isSelected()) { //Already in selection: remove
+				s.removeFromSelection(pressedObject);
+			} else {
+				s.addToSelection(pressedObject); //Not in selection: add
+			}
+			pressedObject = null; //Disable dragging
+		} 
+		else //Ctrl not pressed
+		{
+			//If pressedobject is not selectionbox:
+			//Clear current selection and select pressed object
+			if(!(pressedObject instanceof GmmlSelectionBox))
+			{
+				clearSelection();
+				s.addToSelection(pressedObject);
+			} else { //Check if clicked object inside selectionbox
+				if(s.getChild(p2d) == null) clearSelection();
+			}
+		}
+	}
+	
 	public static final int NEWNONE = -1;
 	public static final int NEWLINE = 0;
 	public static final int NEWLABEL = 1;

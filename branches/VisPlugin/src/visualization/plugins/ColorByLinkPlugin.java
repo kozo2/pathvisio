@@ -2,6 +2,7 @@ package visualization.plugins;
 
 import graphics.GmmlGraphics;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -122,5 +123,5 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 		
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) { return null; }
 	
-	public void updateSidePanel(GmmlGraphics g) {	}
+	public void updateSidePanel(Collection<GmmlGraphics> objects) {	}
 }

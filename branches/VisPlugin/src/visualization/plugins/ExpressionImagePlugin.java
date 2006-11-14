@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -162,7 +163,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		}
 		
 		ImageSample getInput() {
-			return (ImageSample)input;
+			return input == null || input.length == 0 ? null : (ImageSample)input[0];
 		}
 		
 		void createContents() {
@@ -335,14 +336,9 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 			URL url = (URL)((IStructuredSelection)imageList.getSelection()).getFirstElement();
 			removeImageURL(url);
 		}
-		
-		public void setInput(ConfiguredSample s) {
-			input = s;
-			refresh();
-		}
-		
+				
 		public void refresh() {
-			if(input == null) {
+			if(input == null || input.length > 1) {
 				setAllEnabled(false);
 				refreshImage();
 			}
@@ -355,10 +351,6 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 				setColorLabel();
 				spinner.setSelection(getInput().getTolerance());
 			}
-		}
-		
-		public void setAllEnabled(boolean enable) {
-			SwtUtils.setCompositeAndChildrenEnabled(this, enable);
 		}
 		
 		public void dispose() {
@@ -520,5 +512,5 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) { return null; }
 	public void createSidePanelComposite(Composite parent) { }
-	public void updateSidePanel(GmmlGraphics g) { }
+	public void updateSidePanel(Collection<GmmlGraphics> objects) { }
 }

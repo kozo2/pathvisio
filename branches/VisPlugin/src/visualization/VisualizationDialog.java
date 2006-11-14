@@ -55,7 +55,6 @@ import util.Utils;
 import visualization.Visualization.PluginSet;
 import visualization.colorset.ColorSetComposite;
 import visualization.plugins.PluginManager;
-import visualization.plugins.VisualizationPlugin;
 import data.GmmlGex;
 
 /**
@@ -105,7 +104,7 @@ public class VisualizationDialog extends ApplicationWindow {
 	
 	public Control createContents(Composite parent) {
 		Shell shell = getShell();
-		shell.setSize(700, 500);
+		shell.setSize(700, 600);
 		
 		Composite content = new Composite(parent, SWT.NULL);
 		content.setLayout(new GridLayout());
@@ -334,8 +333,8 @@ public class VisualizationDialog extends ApplicationWindow {
 			
 			pluginTable.addSelectionChangedListener(new ISelectionChangedListener() {
 				public void selectionChanged(SelectionChangedEvent event) {
-					VisualizationPlugin p = getSelectedPluginSet().getInstance();
-					description.setText(p == null ? "" : p.getDescription());
+					PluginSet p = getSelectedPluginSet();
+					description.setText(p == null ? "" : p.getInstance().getDescription());
 					layout(true, true);
 					setPluginButtonsEnabled(true);
 				}
@@ -375,8 +374,6 @@ public class VisualizationDialog extends ApplicationWindow {
 			group.setText("Drawing order");
 			RowLayout rl = new RowLayout(SWT.VERTICAL);
 			rl.fill = true;
-			rl.pack = false;
-			rl.justify = true;
 			group.setLayout(rl);
 			firstButton = new Button(group, SWT.PUSH);
 			firstButton.setText("First");
@@ -398,7 +395,9 @@ public class VisualizationDialog extends ApplicationWindow {
 		Composite createPluginConfigGroup(Composite parent) {
 			Group configGroup = new Group(parent, SWT.NULL);
 			configGroup.setText("Selected plugin configuration");
-			configGroup.setLayout(new RowLayout(SWT.VERTICAL));
+			RowLayout rl = new RowLayout(SWT.VERTICAL);
+			rl.fill = true;
+			configGroup.setLayout(rl);
 			
 			drConfig = new Button(configGroup, SWT.PUSH);
 			drConfig.setText("Drawing object...");
@@ -466,12 +465,8 @@ public class VisualizationDialog extends ApplicationWindow {
 		void setPluginButtonsEnabled(boolean enable) {
 			
 			PluginSet ps = getSelectedPluginSet();
-			boolean doEnable = false;
-			if(ps != null) {
-				doEnable = enable ? ps.isActive() : false;
-			}
-			setConfigButtonsEnabled(doEnable && ps.getInstance().isConfigurable(), ps);
-			setOrderButtonsEnabled(doEnable);
+			setConfigButtonsEnabled(enable && ps.getInstance().isConfigurable(), ps);
+			setOrderButtonsEnabled(enable);
 		}
 		
 		void setConfigButtonsEnabled(boolean doEnable, PluginSet ps) {

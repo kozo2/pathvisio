@@ -143,6 +143,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		listComp.setLayout(new GridLayout());
 		
 		Composite tableComp = new Composite(listComp, SWT.NULL);
+		tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 		tableComp.setLayout(new FillLayout());
 		Table table = new Table(tableComp, SWT.BORDER | SWT.SINGLE);
 		TableColumn coCol = new TableColumn(table, SWT.LEFT);

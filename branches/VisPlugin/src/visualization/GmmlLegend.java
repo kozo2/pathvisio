@@ -69,17 +69,15 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 		}
 	}
 	void refreshContent() {		
-		System.out.println("refreshing content");
 		criteria.refresh();
 		gradients.refresh();
 	}
 
-	public void createContents() {	
+	void createContents() {	
 		Composite contents = new Composite(this, SWT.NULL);
 		setContent(contents);
 		setExpandHorizontal(true);
 		setExpandVertical(true);
-
 		contents.setLayout(new GridLayout());
 
 		Composite comboComp = createColorSetCombo(contents);
@@ -89,6 +87,8 @@ public class GmmlLegend extends ScrolledComposite implements VisualizationListen
 		legendComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		setChildrenBackground(contents);
+		
+		setMinSize(contents.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
 
 	void setChildrenBackground(Composite comp) {

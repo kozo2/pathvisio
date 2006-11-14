@@ -3,19 +3,28 @@ package visualization;
 import gmmlVision.GmmlVision;
 import gmmlVision.GmmlVision.ApplicationEvent;
 import gmmlVision.GmmlVision.ApplicationEventListener;
+import gmmlVision.sidepanels.SidePanel;
+import graphics.GmmlDrawingObject;
+import graphics.GmmlGraphics;
+import graphics.GmmlSelectionBox;
+import graphics.GmmlSelectionBox.SelectionListener;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -174,6 +183,17 @@ public class VisualizationManager implements ApplicationEventListener {
 		return visComboItem;
 	}
 	
+	static VisualizationPanel sidePanel;
+		
+	public static Composite getSidePanel() {
+		return sidePanel;
+	}
+	public static Composite createSidePanel(Composite parent) {
+		if(sidePanel != null && !sidePanel.isDisposed()) sidePanel.dispose();
+		sidePanel = new VisualizationPanel(parent, SWT.NULL);
+		return sidePanel;
+	}
+	
 	static class VisComboItem extends ControlContribution implements VisualizationListener {
 		final String NONE = "no visualization";
 		Combo visCombo;
@@ -229,6 +249,88 @@ public class VisualizationManager implements ApplicationEventListener {
 		}
 	}
 	
+	static class VisualizationPanel extends ScrolledComposite implements SelectionListener, VisualizationListener {
+		Visualization vis;
+		Composite contents;
+		Set<GmmlGraphics> input;
+		
+		public VisualizationPanel(Composite parent, int style) {
+			super(parent, style);
+			createContents();
+			GmmlSelectionBox.addListener(this);
+			VisualizationManager.addListener(this);
+			input = new LinkedHashSet<GmmlGraphics>();
+		}
+		
+		void createContents() {
+			contents = new Composite(this, SWT.NULL);
+			contents.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			setContent(contents);
+			setExpandHorizontal(true);
+			setExpandVertical(true);
+			contents.setLayout(new FillLayout());
+			setMinSize(contents.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		}
+		
+		void fillContents() {
+			if(vis != null) {
+				vis.disposeSidePanel();
+				vis.createSideSidePanel(contents);
+			}
+		}
+		
+		public void setVisualization(Visualization v) {
+			if(vis != null) vis.disposeSidePanel();
+			vis = v;
+			fillContents();
+		}
+		
+		void addInput(GmmlGraphics g) {
+			input.add(g);
+			refresh();
+		}
+		
+		void removeInput(GmmlGraphics g) {
+			input.remove(g);
+			refresh();
+		}
+		
+		void clearInput() {
+			input.clear();
+			refresh();
+		}
+		
+		void refresh() {
+			if(vis != null) vis.updateSidePanel(input);
+			layout(true, true);
+		}
+
+		public void drawingEvent(graphics.GmmlSelectionBox.SelectionEvent e) {
+			switch(e.type) {
+			case graphics.GmmlSelectionBox.SelectionEvent.OBJECT_ADDED:
+				if(e.source instanceof GmmlGraphics) 
+					addInput((GmmlGraphics)e.source);
+				break;
+			case graphics.GmmlSelectionBox.SelectionEvent.OBJECT_REMOVED:
+				if(e.source instanceof GmmlGraphics) 
+					removeInput((GmmlGraphics)e.source);
+				break;
+			case graphics.GmmlSelectionBox.SelectionEvent.SELECTION_CLEARED:
+				clearInput();
+			}
+		}
+
+		public void visualizationEvent(VisualizationEvent e) {
+			switch(e.type) {
+			case VisualizationEvent.VISUALIZATION_SELECTED:
+				setVisualization(getCurrent());
+			case VisualizationEvent.PLUGIN_SIDEPANEL_ACTIVATED:
+				fillContents();
+			}
+			
+		}		
+	}
+	
 	public void applicationEvent(ApplicationEvent e) {
 		if(e.type == ApplicationEvent.CLOSE_APPLICATION) {
 			saveGeneric();
@@ -274,6 +376,7 @@ public class VisualizationManager implements ApplicationEventListener {
 		public static final int VISUALIZATION_SELECTED = 6;
 		public static final int PLUGIN_MODIFIED = 7;
 		public static final int PLUGIN_ADDED = 8;
+		public static final int PLUGIN_SIDEPANEL_ACTIVATED = 9;
 
 		public Object source;
 		public int type;

@@ -6,6 +6,7 @@ import graphics.GmmlGraphics;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -38,6 +40,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -61,7 +64,9 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	static final RGB LINE_COLOR_DEFAULT = new RGB(0, 0, 0);
 	
 	List<ConfiguredSample> useSamples = new ArrayList<ConfiguredSample>();
-		
+	Canvas sidePanel;
+	Collection<GmmlGraphics> spGraphics;
+	
 	public PluginWithColoredSamples(Visualization v) {
 		super(v);
 		setIsConfigurable(true);
@@ -78,6 +83,17 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		Region region = getVisualization().getReservedRegion(this, g);
 		Rectangle area = region.getBounds();
 		
+		drawArea(gp, area, e, buffer);
+		
+		Color c = SwtUtils.changeColor(null, gp.getGmmlData().getColor(), e.display);
+		buffer.setForeground(c);
+		buffer.drawRectangle(area);
+		
+		c.dispose();
+		region.dispose();
+	}
+	
+	void drawArea(GmmlGeneProduct gp, Rectangle area, PaintEvent e, GC buffer) {
 		int nr = useSamples.size();
 		int left = area.width % nr; //Space left after dividing, give to last rectangle
 		int w = area.width / nr;
@@ -93,21 +109,68 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 			if(data == null) drawNoDataFound(s, area, e, buffer);
 			else drawSample(s, data, r, e, buffer);
 		}
-		
-		Color c = SwtUtils.changeColor(null, gp.getGmmlData().getColor(), e.display);
-		buffer.setForeground(c);
-		buffer.drawRectangle(area);
-		
-		c.dispose();
-		region.dispose();
 	}
 	
 	abstract void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC buffer);
 	abstract void drawSample(ConfiguredSample s, Data data, Rectangle area, PaintEvent e, GC buffer);
+
+	static final int SIDEPANEL_SPACING = 3;
+	static final int SIDEPANEL_MARGIN = 5;
+	void drawSidePanel(PaintEvent e) {
+		if(spGraphics == null) return;
+		
+		Rectangle area = sidePanel.getClientArea();
+		area.x += SIDEPANEL_MARGIN;
+		area.y += SIDEPANEL_MARGIN;
+		area.width -= SIDEPANEL_MARGIN * 2;
+		area.height -= SIDEPANEL_MARGIN * 2;
+		
+		int nr = 0;
+		for(GmmlGraphics g : spGraphics) if(g instanceof GmmlGeneProduct) nr++;
+
+		if(nr == 0) {
+			e.gc.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
+			e.gc.fillRectangle(sidePanel.getClientArea());
+			return;
+		}
+		
+		GmmlGeneProduct[] gps = new GmmlGeneProduct[nr];
+		int x = 0;
+		for(GmmlGraphics g : spGraphics) 
+			if(g instanceof GmmlGeneProduct) gps[x++] = (GmmlGeneProduct)g;
+		
+		e.gc.setFont(e.display.getSystemFont());
+		int tw = 0;
+		for(GmmlGeneProduct g : gps) tw = Math.max(tw, e.gc.textExtent(g.getName()).x);
+		
+		int h = area.height / nr;
+		for(int i = 0; i < nr; i++) {
+			int y = area.y + i*h;
+			e.gc.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
+			e.gc.drawText(gps[i].getName(), area.x, y + h / 2 - e.gc.getFontMetrics().getHeight() / 2);
+			Rectangle r = new Rectangle(area.x + tw, y, area.width - tw, h - SIDEPANEL_SPACING);
+			drawArea(gps[i], r, e, e.gc);
+		}
+	}
+	
+	public void createSidePanelComposite(Composite parent) { 
+		sidePanel = new Canvas(parent, SWT.NULL);
+		sidePanel.setBackground(sidePanel.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		sidePanel.addPaintListener(new PaintListener() {
+			public void paintControl(PaintEvent e) {
+				drawSidePanel(e);
+			}
+		});
+	}
+	
+	public void updateSidePanel(Collection<GmmlGraphics> objects) {
+		spGraphics = objects;
+		sidePanel.redraw();
+	}
 	
 	void addUseSample(Sample s) {
 		if(s != null) {
-			useSamples.add(createConfiguredSample(s));
+			if(!useSamples.contains(s)) useSamples.add(createConfiguredSample(s));
 			fireModifiedEvent();
 		}
 	}
@@ -115,7 +178,9 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	void addUseSamples(IStructuredSelection selection) {
 		Iterator it = selection.iterator();
 		while(it.hasNext()) {
-			useSamples.add(createConfiguredSample((Sample)it.next()));
+			Sample s = (Sample)it.next();
+			if(!useSamples.contains(s)) 
+				useSamples.add(createConfiguredSample(s));
 		}
 		fireModifiedEvent();
 	}
@@ -188,11 +253,11 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		sampleLabel.setLayoutData(span);
 		
 		Label useSampleLabel = new Label(samplesGroup, SWT.NULL);
-		useSampleLabel.setText("Selected samples");
+		useSampleLabel.setText("Selected samples\t\t\t\t\t");
 		useSampleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 				
 		final ListViewer sampleList = new ListViewer(samplesGroup, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		sampleList.getList().setLayoutData(new GridData(GridData.FILL_BOTH));
+		sampleList.getList().setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		sampleList.setContentProvider(new ArrayContentProvider());
 		sampleList.setLabelProvider(new LabelProvider() {
 			public String getText(Object element) {
@@ -225,7 +290,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		Composite tableComp = new Composite(samplesGroup, SWT.NULL);
 		tableComp.setLayout(new FillLayout());
 		tableComp.setLayoutData(new GridData(GridData.FILL_BOTH));
-		Table t = new Table(tableComp, SWT.BORDER | SWT.FULL_SELECTION);
+		Table t = new Table(tableComp, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		t.setHeaderVisible(true);
 		
 		TableColumn tcnm = new TableColumn(t, SWT.LEFT);
@@ -253,7 +318,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		});
 		useSampleTable.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent e) {
-				sampleConfigComp.setInput(getSelectedUseSample());
+				sampleConfigComp.setInput(getSelectedUseSamples());
 			}
 			
 		});
@@ -282,7 +347,6 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		});
 		
 		useSampleTable.setInput(useSamples);
-		
 		return samplesGroup;
 	}
 		
@@ -291,10 +355,18 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		((IStructuredSelection)useSampleTable.getSelection()).getFirstElement();
 	}
 	
+	ConfiguredSample[] getSelectedUseSamples() {
+		Object[] selection = ((IStructuredSelection)useSampleTable.getSelection()).toArray();
+		ConfiguredSample[] samples = new ConfiguredSample[selection.length];
+		int i = 0;
+		for(Object o : selection) samples[i++] = (ConfiguredSample)o;
+		return samples;
+	}
+	
 	abstract SampleConfigComposite createSampleConfigComp(Composite parent);
 	
 	abstract class SampleConfigComposite extends Composite {
-		ConfiguredSample input;
+		ConfiguredSample[] input;
 		
 		public SampleConfigComposite(Composite parent, int style) {
 			super(parent, style);
@@ -303,8 +375,8 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		
 		abstract void createContents();
 		
-		public void setInput(ConfiguredSample s) {
-			input = s;
+		public void setInput(ConfiguredSample[] samples) {
+			input = samples;
 			refresh();
 		}
 		

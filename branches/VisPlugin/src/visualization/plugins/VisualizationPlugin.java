@@ -3,6 +3,7 @@ package visualization.plugins;
 import graphics.GmmlGraphics;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jface.window.ApplicationWindow;
@@ -51,7 +52,7 @@ public abstract class VisualizationPlugin implements Comparable {
 	public abstract String getDescription();
 	
 	public abstract void draw(GmmlGraphics g, PaintEvent e, GC buffer);
-	public abstract void updateSidePanel(GmmlGraphics g);
+	public abstract void updateSidePanel(Collection<GmmlGraphics> objects);
 	public abstract Composite getToolTipComposite(Composite parent, GmmlGraphics g);
 	
 	public abstract void createSidePanelComposite(Composite parent);
