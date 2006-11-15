@@ -10,7 +10,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -70,7 +69,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	
 	public ExpressionImagePlugin(Visualization v) {
 		super(v);
-		setDisplayOptions(DRAWING);
+		setDisplayOptions(DRAWING | SIDEPANEL);
 		setIsConfigurable(true);
 		setIsGeneric(false);
 		setUseProvidedArea(true);
@@ -96,11 +95,17 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		RGB rgb = cs.getColor(data.getAverageSampleData(), s.getId());
 		
 		ImageSample is = (ImageSample)s;
-		ImageData id = is.getImageData(new Point(area.width, area.height), rgb);
+		ImageData id = is.getImageData(rgb);
 		Image image = new Image(e.display, id);
+		Point scaleTo = is.getScaleSize(new Point(area.width, area.height));
 		
 		drawBackground(area, buffer, e);
-		buffer.drawImage(image, area.x, area.y);
+		
+		Rectangle ib = image.getBounds();
+		int xs = area.width - scaleTo.x;
+		int ys = area.height - scaleTo.y;
+		buffer.drawImage(image, ib.x, ib.y, ib.width, ib.height, 
+				area.x + xs / 2, area.y + ys / 2, scaleTo.x, scaleTo.y);
 		image.dispose();
 	}
 		
@@ -362,7 +367,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	
 	protected class ImageSample extends ConfiguredSample {
 		ImageData cacheImageData;
-		URL imageURL = imageURLs.get(0);
+		URL imageURL;
 		RGB replaceColor = DEFAULT_TRANSPARENT;
 		int tolerance; //range 0 - 255;
 		boolean aspectRatio = true;
@@ -385,7 +390,9 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 			fireModifiedEvent();
 		}
 		
-		public URL getURL() { return imageURL; }
+		public URL getURL() { 
+			return imageURL == null ? imageURL = imageURLs.get(0) : imageURL; 
+		}
 		
 		public void setReplaceColor(RGB rgb) { 
 			if(rgb != null) replaceColor = rgb;
@@ -416,20 +423,34 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 			return getImageData(size, null);
 		}
 		
+		public ImageData getImageData(RGB replaceWith) {
+			ImageData img = getImageData();
+			if(img == null) return null;
+			if(replaceWith != null) img = doReplaceColor(img, replaceWith);
+			return img;
+		}
+		
 		public ImageData getImageData(Point size, RGB replaceWith) {
 			ImageData img = getImageData();
 			if(img == null) return null;
 			
-			if(replaceWith != null) img = doReplaceColor(img, replaceWith);
+			img = getImageData(replaceWith);
 			
-			if(aspectRatio) {
-				double r = (double)img.height / img.width;
-				int min = Math.min(size.x, size.y);
-				if(min == size.x) size.y = (int)(min * r);
-				else size.x = (int)(min * r);
-			}
+			size = getScaleSize(size);
+			
 			img = img.scaledTo(size.x, size.y);
 			return img;
+		}
+		
+		public Point getScaleSize(Point target) {
+			if(aspectRatio) {
+				ImageData img = getImageData();
+				double r = (double)img.height / img.width;
+				int min = Math.min(target.x, target.y);
+				if(min == target.x) target.y = (int)(min * r);
+				else target.x = (int)(min * r);
+			}
+			return target;
 		}
 		
 		ImageData doReplaceColor(ImageData img, RGB replaceWith) {
@@ -511,6 +532,4 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	}
 	
 	public Composite getToolTipComposite(Composite parent, GmmlGraphics g) { return null; }
-	public void createSidePanelComposite(Composite parent) { }
-	public void updateSidePanel(Collection<GmmlGraphics> objects) { }
 }

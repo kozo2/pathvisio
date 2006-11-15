@@ -8,7 +8,6 @@ import org.eclipse.swt.widgets.Composite;
 
 import visualization.VisualizationManager;
 import visualization.VisualizationManager.VisualizationEvent;
-
 import data.GmmlGex;
 import data.GmmlGex.Sample;
 

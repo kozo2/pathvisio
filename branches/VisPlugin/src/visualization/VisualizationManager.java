@@ -3,8 +3,6 @@ package visualization;
 import gmmlVision.GmmlVision;
 import gmmlVision.GmmlVision.ApplicationEvent;
 import gmmlVision.GmmlVision.ApplicationEventListener;
-import gmmlVision.sidepanels.SidePanel;
-import graphics.GmmlDrawingObject;
 import graphics.GmmlGraphics;
 import graphics.GmmlSelectionBox;
 import graphics.GmmlSelectionBox.SelectionListener;
