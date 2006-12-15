@@ -46,8 +46,9 @@ public class GmmlVisionMain {
 		initiate();
 		
 		window.setBlockOnOpen(true);
-		window.open();
-		
+		window.setDIR("D:\\My Documents\\My Documents\\3e Jaar TUe\\Project BioInformatica\\MAPPs\\Hs_Apoptosis_plus.gpml");
+                window.open();
+               
 		//Perform exit operations
 		//TODO: implement PropertyChangeListener and fire exit property when closing
 		// make classes themself responsible for closing when exit property is changed

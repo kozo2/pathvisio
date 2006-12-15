@@ -1148,6 +1148,13 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		GmmlGex.addListener(this);
 	}
 	
+        String dir=null;
+        public String setDIR(String pass) {
+           dir = pass;
+           System.out.println("Loaded pathway:" + dir);
+           return(dir);
+        }
+        
 	public boolean close() {
 		GmmlVision.fireApplicationEvent(
 				new ApplicationEvent(this, ApplicationEvent.CLOSE_APPLICATION));
@@ -1205,10 +1212,12 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		rightPanel.hideTab("Legend"); //hide legend on startup
 		
 		setStatus("Using Gene Database: '" + GmmlVision.getPreferences().getString(GmmlPreferences.PREF_CURR_GDB) + "'");
-		String pwf = "D:\\Work\\BI\\SVN\\testData\\test.gpml";
-                if (pwf != null) {
-                    GmmlVision.openPathway(pwf);              
+		
+                //Load a pathway given by string dir
+                if (dir != null) {
+                    GmmlVision.openPathway(dir);              
                 }
+                
                 return parent;
 		
 	};
