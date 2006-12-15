@@ -92,8 +92,8 @@ public class GmmlData
 	 */
 	public void addDataObject (GmmlDataObject o)
 	{
-		if (o.getObjectType() == ObjectType.MAPPINFO && o != mappInfo)
-			throw new IllegalArgumentException("Can't add more mappinfo objects");
+	//	if (o.getObjectType() == ObjectType.MAPPINFO && o != mappInfo)
+	//		throw new IllegalArgumentException("Can't add more mappinfo objects");
 		dataObjects.add(o);
 		fireObjectModifiedEvent(new GmmlEvent(o, GmmlEvent.ADDED));
 	}
