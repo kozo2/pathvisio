@@ -1147,13 +1147,6 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		GmmlVision.addApplicationEventListener(this);
 		GmmlGex.addListener(this);
 	}
-	
-        String dir=null;
-        public String setDIR(String pass) {
-           dir = pass;
-           System.out.println("Loaded pathway:" + dir);
-           return(dir);
-        }
         
 	public boolean close() {
 		GmmlVision.fireApplicationEvent(
@@ -1161,6 +1154,11 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		return super.close();
 	}
 	
+        String pwf = null;
+        public void setPWF(String pass) {
+           pwf = pass;
+        }        
+        
 	public ScrolledComposite sc;
 	public GmmlBpBrowser bpBrowser; //Browser for showing backpage information
 	public GmmlPropertyTable propertyTable;	//Table showing properties of GmmlGraphics objects
@@ -1214,8 +1212,8 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		setStatus("Using Gene Database: '" + GmmlVision.getPreferences().getString(GmmlPreferences.PREF_CURR_GDB) + "'");
 		
                 //Load a pathway given by string dir
-                if (dir != null) {
-                    GmmlVision.openPathway(dir);              
+                if (pwf != null) {
+                    GmmlVision.openPathway(pwf);              
                 }
                 
                 return parent;

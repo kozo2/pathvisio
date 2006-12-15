@@ -1418,7 +1418,12 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 				new ApplicationEvent(this, ApplicationEvent.CLOSE_APPLICATION));
 		return super.close();
 	}
-	
+
+        String pwf = null;
+        public void setPWF(String pass) {
+           pwf = pass;
+        }
+        
 	public ScrolledComposite sc;
 	public GmmlBpBrowser bpBrowser; //Browser for showing backpage information
 	public GmmlPropertyTable propertyTable;	//Table showing properties of GmmlGraphics objects

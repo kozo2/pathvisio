@@ -46,7 +46,7 @@ public class GmmlVisionMain {
 		initiate();
 		
 		window.setBlockOnOpen(true);
-		window.setDIR("D:\\My Documents\\My Documents\\3e Jaar TUe\\Project BioInformatica\\MAPPs\\Hs_Apoptosis_plus.gpml");
+		window.setPWF("D:\\Work\\BI\\SVN\\testData\\test.gpml");
                 window.open();
                
 		//Perform exit operations
