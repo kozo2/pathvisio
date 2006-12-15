@@ -1205,8 +1205,11 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		rightPanel.hideTab("Legend"); //hide legend on startup
 		
 		setStatus("Using Gene Database: '" + GmmlVision.getPreferences().getString(GmmlPreferences.PREF_CURR_GDB) + "'");
-				
-		return parent;
+		String pwf = "D:\\Work\\BI\\SVN\\testData\\test.gpml";
+                if (pwf != null) {
+                    GmmlVision.openPathway(pwf);              
+                }
+                return parent;
 		
 	};
 	
