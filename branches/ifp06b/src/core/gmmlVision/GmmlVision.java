@@ -62,6 +62,11 @@ public abstract class GmmlVision {
 		if(window == null) window = new GmmlVisionWindow();
 		return window;
 	}
+        
+//        public static GmmlVisionWindow getWindow(string pwf) {
+//            if(winow == null) window = new GmmlVisionWindow();
+//            
+//        }
 	
 	/**
 	 * Initiates an instance of {@link GmmlVisionWindow} that is monitored by Sleak.java,
