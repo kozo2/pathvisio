@@ -46,7 +46,7 @@ public class GmmlVisionMain {
 		initiate();
 		
 		window.setBlockOnOpen(true);
-		window.setPWF("D:\\Work\\BI\\SVN\\testData\\test.gpml");
+		window.setPWF("C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Hs_Apoptosis_plus.gpml");
                 window.open();
                
 		//Perform exit operations

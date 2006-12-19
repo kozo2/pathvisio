@@ -2,10 +2,10 @@
 
 # load library and set working directory
 library("rJava")
-setwd("D:/Work/BI/SVN")
+setwd("D:/Project BioInformatica/SVN")
 
 # initialize jvm
-.jinit(classpath = "D:/Work/BI/SVN/pathvisio_v1.jar")
+.jinit(classpath = "D:/Project BioInformatica/SVN/pathvisio_v1.jar")
 
 # create window object
 # gmmlVisionWindow window = new gmmlVisionWindow();
@@ -21,13 +21,13 @@ window <- .jcall("gmmlVision/GmmlVision", "LgmmlVision/GmmlVisionWindow;", "getW
 
 # pass data file with map to use to the window so it will be shown when the window opens.
 # window.setPWF("D:\\Work\\BI\\SVN\\testData\\test.gpml");
-.jcall(window, "V", "setPWF","D:\\Work\\BI\\SVN\\testData\\test.gpml");
+.jcall(window, "V", "setPWF","C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Hs_Apoptosis_plus.gpml");
 
 # open window 
 # window.open();
 .jcall(window, "I", "open");
 
-setwd("D:/Work/BI/SVN/JR-Interface")
+setwd("D:/Project BioInformatica/SVN")
 
 
 
