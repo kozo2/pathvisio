@@ -47,7 +47,9 @@ public class GmmlVisionMain {
 		
 		window.setBlockOnOpen(true);
 		window.setPWF("C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Hs_Apoptosis_plus.gpml");
+                window.setDbName("C:\\Documents And Settings\\s040778\\Pathvisio-Data\\gene databases\\Rn_39_34i.pgdb");
                 window.open();
+                
                
 		//Perform exit operations
 		//TODO: implement PropertyChangeListener and fire exit property when closing

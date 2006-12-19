@@ -1154,10 +1154,17 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		return super.close();
 	}
 	
+        // Setter voor de path van de pathway
         String pwf = null;
         public void setPWF(String pass) {
            pwf = pass;
-        }        
+        } 
+        
+        // Setter voor de path van de gene database
+        String dbName = null;
+        public void setDbName(String pass) {
+            dbName=pass;
+        }
         
 	public ScrolledComposite sc;
 	public GmmlBpBrowser bpBrowser; //Browser for showing backpage information

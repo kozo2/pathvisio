@@ -1418,10 +1418,16 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 				new ApplicationEvent(this, ApplicationEvent.CLOSE_APPLICATION));
 		return super.close();
 	}
-
+// Setter voor de path van de pathway
         String pwf = null;
         public void setPWF(String pass) {
            pwf = pass;
+        }
+ 
+// Setter voor de path van de gene database
+        String dbName = null;
+        public void setDbName(String pass) {
+            dbName = pass;
         }
         
 	public ScrolledComposite sc;
@@ -1481,6 +1487,12 @@ public class GmmlVisionWindow extends ApplicationWindow implements
                     GmmlVision.openPathway(pwf);              
                 }				
 		
+                //To load a gene database given by string gdName
+                if (dbName != null) {
+                    GmmlGdb.setCurrentGdb(dbName);
+                    setStatus("Using Gene Database: '" + GmmlVision.getPreferences().getString(GmmlPreferences.PREF_CURR_GDB) + "'");
+                }
+                 
                 return parent;
 		
 	};
