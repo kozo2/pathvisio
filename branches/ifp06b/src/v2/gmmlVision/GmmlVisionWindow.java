@@ -541,28 +541,26 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 	/**
 	 * Loads expression data for all {@link GmmlGeneProduct}s in the loaded pathway
 	 */
-	private void cacheExpressionData()
-	{
-		if(GmmlVision.isDrawingOpen())
-		{
-			GmmlDrawing drawing = GmmlVision.getDrawing();
-			//Check for neccesary connections
-			if(GmmlGex.isConnected() && GmmlGdb.isConnected())
-			{
-				ProgressMonitorDialog dialog = new ProgressMonitorDialog(getShell());
-				try {
-					dialog.run(true, true, GmmlGex.createCacheRunnable(drawing.getMappIds(), drawing.getSystemCodes()));
-					drawing.redraw();
-				} catch(Exception e) {
-					String msg = "while caching expression data: " + e.getMessage();					
-					MessageDialog.openError (getShell(), "Error", 
-							"Error: " + msg + "\n\n" + 
-							"See the error log for details.");
-					GmmlVision.log.error(msg, e);
-				}
-			}
-		}
-	}
+        private void cacheExpressionData() 
+        {
+            if(GmmlVision.isDrawingOpen()) {
+                GmmlDrawing drawing = GmmlVision.getDrawing();
+                //Check for neccesary connections
+                if(GmmlGex.isConnected() && GmmlGdb.isConnected()) {
+                    ProgressMonitorDialog dialog = new ProgressMonitorDialog(getShell());
+                    try {
+                        dialog.run(true, true, GmmlGex.createCacheRunnable(drawing.getMappIds(), drawing.getSystemCodes()));
+                        drawing.redraw();
+                    } catch(Exception e) {
+                        String msg = "while caching expression data: " + e.getMessage();
+                        MessageDialog.openError(getShell(), "Error",
+                                "Error: " + msg + "\n\n" +
+                                "See the error log for details.");
+                        GmmlVision.log.error(msg, e);
+                    }
+                }
+            }
+        }
 	
 	/**
 	 * {@link Action} that opens an {@link ImportExprDataWizard} that guides the user
@@ -1430,6 +1428,12 @@ public class GmmlVisionWindow extends ApplicationWindow implements
             dbName = pass;
         }
         
+// Setter voor de path van de expression dataset
+        String exName = null;
+        public void setExName(String name) { 
+            exName = name; 
+        }
+        
 	public ScrolledComposite sc;
 	public GmmlBpBrowser bpBrowser; //Browser for showing backpage information
 	public GmmlPropertyTable propertyTable;	//Table showing properties of GmmlGraphics objects
@@ -1489,10 +1493,19 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		
                 //To load a gene database given by string gdName
                 if (dbName != null) {
-                    GmmlGdb.setCurrentGdb(dbName);
-                    setStatus("Using Gene Database: '" + GmmlVision.getPreferences().getString(GmmlPreferences.PREF_CURR_GDB) + "'");
+                 try    {GmmlGdb.connect(dbName);}
+                 catch (Exception e) {}
+                 setStatus("Using Gene Database: '" + GmmlVision.getPreferences().getString(GmmlPreferences.PREF_CURR_GDB) + "'");
+                 GmmlGdb.init();
                 }
-                 
+                
+                //To load a expression dataset given by exName
+                if (exName != null) {
+                    GmmlGex.setDbName(exName);
+                    try {GmmlGex.connect();}
+                    catch (Exception e) {}
+                 }
+                
                 return parent;
 		
 	};
