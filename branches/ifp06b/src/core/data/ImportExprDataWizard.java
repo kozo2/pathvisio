@@ -652,7 +652,7 @@ public class ImportExprDataWizard extends Wizard {
 			stringCols = cols;
 		}
 
-		/**
+		/**\
 		 * Sets the private property stringCols
 		 * @return	Column numbers (start with 0) of columns containing data that
 		 * should not be treated as numeric, or an empty String[]

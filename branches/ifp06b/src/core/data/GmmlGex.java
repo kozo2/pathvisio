@@ -700,11 +700,18 @@ public class GmmlGex implements ApplicationEventListener {
 	 * @param monitor	{@link IProgressMonitor} that reports the progress of the process and enables
 	 * the user to cancel
 	 */
-	private static void importFromTxt(ImportInformation info, ImportPage page, IProgressMonitor monitor)
+	public static void importFromTxt(ImportInformation info, ImportPage page, IProgressMonitor monitor)
 	{
 		int importWork = (int)(ImportRunnableWithProgress.totalWork * 0.8);
 		int finalizeWork = (int)(ImportRunnableWithProgress.totalWork * 0.2);
-		
+		boolean iswiz = true;
+                if (page == null){
+                    iswiz = false;
+                }
+                boolean showprog = true;
+                if (monitor == null){
+                    showprog = false;
+                }
 //		Open a connection to the error file
 		String errorFile = info.dbName + ".ex.txt";
 		int errors = 0;
@@ -714,22 +721,26 @@ public class GmmlGex implements ApplicationEventListener {
 			ef.getParentFile().mkdirs();
 			error = new PrintStream(errorFile);
 		} catch(IOException ex) {
-			page.println("Error: could not open exception file: " + ex.getMessage());
+			if (iswiz){
+                            page.println("Error: could not open exception file: " + ex.getMessage());
+                        }
 			error = System.out;
 		}
 		
 		StopWatch timer = new StopWatch();
 		try 
 		{
-			page.println("\nCreating expression dataset");
+			if (iswiz){
+                            page.println("\nCreating expression dataset");
+                        }
 						
 			//Create a new expression database (or overwrite existing)
 			dbName = info.dbName;
 			connect(true, false);
-			
-			page.println("Importing data");
-			page.println("> Processing headers");
-			
+			if (iswiz) {
+                            page.println("Importing data");
+                            page.println("> Processing headers");
+                        }
 			timer.start();
 			
 			BufferedReader in = new BufferedReader(new FileReader(info.getTxtFile()));
@@ -745,7 +756,9 @@ public class GmmlGex implements ApplicationEventListener {
 			int sampleId = 0;
 			ArrayList<Integer> dataCols = new ArrayList<Integer>();
 			for(int i = 0; i < headers.length; i++) {
-				if(monitor.isCanceled()) { close(true); error.close(); return; } //User pressed cancel
+                            if (showprog) {
+                                if(monitor.isCanceled()) { close(true); error.close(); return; } //User pressed cancel
+                            }
 				if(i != info.idColumn && i != info.codeColumn) { //skip the gene and systemcode column
 					try {
 						pstmt.setInt(1, sampleId++);
@@ -761,7 +774,9 @@ public class GmmlGex implements ApplicationEventListener {
 				}
 			}
 			
-			page.println("> Processing lines");
+                        if (iswiz) {
+                            page.println("> Processing lines");
+                        }
 			
 			//Check ids and add expression data
 			for(int i = 1; i < info.firstDataRow; i++) in.readLine(); //Go to line where data starts
@@ -776,7 +791,9 @@ public class GmmlGex implements ApplicationEventListener {
 			int worked = importWork / nrLines;
 			while((line = in.readLine()) != null) 
 			{
-				if(monitor.isCanceled()) { close(); error.close(); return; } //User pressed cancel
+                                if(showprog) {
+                                    if(monitor.isCanceled()) { close(); error.close(); return; } //User pressed cancel
+                                }
 				String[] data = line.split(ImportInformation.DELIMITER, headers.length);
 				n++;
 				if(n == info.headerRow) continue; //Don't add header row (very unlikely that this will happen)
@@ -786,7 +803,9 @@ public class GmmlGex implements ApplicationEventListener {
 							errors);
 					continue;
 				}
-				monitor.setTaskName("Importing expression data - processing line " + n + "; " + errors + " errors");
+                                if (showprog) {
+                                    monitor.setTaskName("Importing expression data - processing line " + n + "; " + errors + " errors");
+                                }
 				//Check id and add data
 				String id = data[info.idColumn];
 				String code = data[info.codeColumn];
@@ -819,17 +838,23 @@ public class GmmlGex implements ApplicationEventListener {
 					}
 					if(success) added++;
 				}
-				monitor.worked(worked);
+                                if (showprog) {
+                                    monitor.worked(worked);
+                                }
 			}
-			page.println(added + " genes were added succesfully to the expression dataset");
-			if(errors > 0) {
+                        if (showprog) {
+                            page.println(added + " genes were added succesfully to the expression dataset");
+                            if(errors > 0) {
 				page.println(errors + " errors occured, see file '" + errorFile + "' for details");
-			} else {
+                            } else {
 				new File(errorFile).delete(); // If no errors were found, delete the error file
-			}
-			monitor.setTaskName("Closing database connection");
-			close(true);
-			monitor.worked(finalizeWork);
+                            }
+                        }
+                        if (iswiz) {
+                            monitor.setTaskName("Closing database connection");
+                            close(true);
+                            monitor.worked(finalizeWork);
+                        }
 			
 			error.println("Time to create expression dataset: " + timer.stop());
 			error.close();
@@ -841,7 +866,9 @@ public class GmmlGex implements ApplicationEventListener {
 			}
 			
 		} catch(Exception e) { 
+                    if (iswiz) {
 			page.println("Import aborted due to error: " + e.getMessage());
+                    }
 			GmmlVision.log.error("Expression data import error", e);
 			close(true);
 			error.close();
