@@ -46,8 +46,12 @@ public class GmmlVisionMain {
 		initiate();
 		
 		window.setBlockOnOpen(true);
-		window.setPWF("C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Hs_Apoptosis_plus.gpml");
+                // Potential: Setting the pathway that you want to analyze
+		window.setPWF("C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Rn_GO_Samples_20060106\\Biological process\\protein transport.gpml");
+                // Potential: Setting the gene database that you want to use
                 window.setDbName("C:\\Documents And Settings\\s040778\\Pathvisio-Data\\gene databases\\Rn_39_34i.pgdb");
+                // Potential: Setting the expression dataset that you want
+                window.setExName("C:\\Documents And Settings\\s040778\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex");
                 window.open();
                 
                
