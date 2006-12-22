@@ -1,11 +1,12 @@
-# run_pv.r: runs PathVisio from R enviroment
+# run_pv.r: runs PathVisio from R environment
 
 # load library and set working directory
 library("rJava")
-setwd("D:/Work/BI/SVN")
+setwd("D:/Project BioInformatica/SVN")
 
 # initialize jvm
-.jinit(classpath = "D:/Work/BI/SVN/pathvisio_v2.jar; D:/Work/BI/SVN/lib/org.eclipse.jface.jar; D:/Work/BI/SVN/lib/swt-win32.jar; D:/Work/BI/SVN/lib/swt-win32-lib.jar")
+# loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
+.jinit(classpath = "D:/Project BioInformatica/SVN/pathvisio_v2.jar; D:/Project BioInformatica/SVN/lib/org.eclipse.jface.jar; D:/Project BioInformatica/SVN/lib/swt-win32.jar; D:/Work/BI/SVN/lib/swt-win32-lib.jar")
 
 # create window object
 # gmmlVisionWindow window = new gmmlVisionWindow();
@@ -21,16 +22,19 @@ window <- .jcall("gmmlVision/GmmlVision", "LgmmlVision/GmmlVisionWindow;", "getW
 
 # pass data file with map to use to the window so it will be shown when the window opens.
 # window.setPWF("D:\\Work\\BI\\SVN\\testData\\test.gpml");
-.jcall(window, "V", "setPWF", "D:\\Work\\BI\\data\\GpmlFiles\\MAPPs\\Rn_Contributed_20060824\\cellular_process-GenMAPP\\Rn_Apoptosis.gpml");
+.jcall(window, "V", "setPWF", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Rn_Contributed_20060824\\cellular_process-GenMAPP\\Rn_Apoptosis.gpml");
 
 # pass data file with gene database to use to the window
-.jcall(window, "V", "setDbName", "D:\\Work\\BI\\data\\Rn_39_34i.pgdb");
+.jcall(window, "V", "setDbName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\gene databases\\Rn_39_34i.pgdb");
+
+# Select data file with expression dataset
+.jcall(window, "V", "setExName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex");
 
 # open window 
 # window.open();
 .jcall(window, "I", "open");
 
-setwd("D:/Work/BI/SVN/JR-Interface")
+setwd("D:/Project BioInformatica/SVN/JR-Interface")
 
 
 
