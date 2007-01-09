@@ -6,7 +6,10 @@ setwd("D:/Project BioInformatica/SVN")
 
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-.jinit(classpath = "D:\\Project BioInformatica\\SVN\\lib\\swt-win32.jar;D:\\Project BioInformatica\\SVN\\lib\\swt-linux.jar;D:\\Project BioInformatica\\SVN\\lib\\jdom.jar;D:\\Project BioInformatica\\SVN\\lib\\JRI.jar;D:\\Project BioInformatica\\SVN\\lib\\org.eclipse.core.commands.jar;D:\\Project BioInformatica\\SVN\\lib\\org.eclipse.equinox.common.jar;D:\\Project BioInformatica\\SVN\\lib\\org.eclipse.jface.jar;D:\\Project BioInformatica\\SVN\\lib\\derby.jar;D:\\Project BioInformatica\\SVN\\lib\\junit.jar;D:\\Project BioInformatica\\SVN\\lib\\BrowserLauncher.jar;D:\\Project BioInformatica\\SVN\\lib\\resources.jar;D:\\Project BioInformatica\\SVN\\lib\\R-resources.jar;D:\\Project BioInformatica\\SVN\\build\\v2")
+base <- "D:\\Project BioInformatica\\SVN\\lib\\"
+classpath = paste (base, c("swt-win32.jar","pathvisio_v2.jar","jdom.jar","JRI.jar","org.eclipse.core.commands.jar","org.eclipse.equinox.common.jar","org.eclipse.jface.jar","derby.jar","junit.jar","BrowserLauncher.jar","resources.jar","R-resources.jar"), sep="");
+
+.jinit(classpath)
 
 # create window object
 # gmmlVisionWindow window = new gmmlVisionWindow();
@@ -29,8 +32,6 @@ window <- .jcall("gmmlVision/GmmlVision", "LgmmlVision/GmmlVisionWindow;", "getW
 
 # Select data file with expression dataset
 .jcall(window, "V", "setExName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex");
-
-.jcall(window, "V", "printje");
 
 # open window 
 # window.open();
