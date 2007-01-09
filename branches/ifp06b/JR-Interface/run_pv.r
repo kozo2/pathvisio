@@ -28,7 +28,7 @@ window <- .jcall("gmmlVision/GmmlVision", "LgmmlVision/GmmlVisionWindow;", "getW
 .jcall(window, "V", "setDbName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\gene databases\\Rn_39_34i.pgdb");
 
 # Select data file with expression dataset
-.jcall(window, "V", "setExName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex");
+#.jcall(window, "V", "setExName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex");
 
 # open window 
 # window.open();
