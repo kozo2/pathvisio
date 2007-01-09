@@ -7,7 +7,20 @@ setwd("D:/Project BioInformatica/SVN")
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
 base <- "D:\\Project BioInformatica\\SVN\\lib\\"
-classpath = paste (base, c("swt-win32.jar","pathvisio_v2.jar","jdom.jar","JRI.jar","org.eclipse.core.commands.jar","org.eclipse.equinox.common.jar","org.eclipse.jface.jar","derby.jar","junit.jar","BrowserLauncher.jar","resources.jar","R-resources.jar"), sep="");
+classpath = paste (base, c(
+	"swt-win32.jar",
+	"pathvisio_v2.jar",
+	"jdom.jar",
+	"JRI.jar",
+	"org.eclipse.core.commands.jar",
+	"org.eclipse.equinox.common.jar",
+	"org.eclipse.jface.jar",
+	"derby.jar",
+	"junit.jar",
+	"BrowserLauncher.jar",
+	"resources.jar",
+	"R-resources.jar"
+), sep="");
 
 .jinit(classpath)
 
