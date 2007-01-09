@@ -49,9 +49,11 @@ import debug.StopWatch;
 class RImporter {
     
     public RImporter(int[] cols, String file, String dbName, int head, int first, int id, int code) {  
-        ImportInformation info = new ImportExprDataWizard.ImportInformation();
-        ImportPage page;
-        IProgressMonitor monitor;
+        ImportExprDataWizard temp = new ImportExprDataWizard();
+        //ImportInformation info = new temp.ImportInformation();
+        ImportInformation info = temp.importInformation;
+        ImportPage page = null;
+        IProgressMonitor monitor = null;
         //setInfo(cols, file, dbName, head, first, id, code);
         info.setStringCols(cols);
         File txtFile = new File(file);

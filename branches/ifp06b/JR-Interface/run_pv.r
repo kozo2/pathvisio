@@ -2,24 +2,24 @@
 
 # load library
 library("rJava")
-setwd("D:/Project BioInformatica/SVN")
+setwd("D:/Work/BI/SVN")
 
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-base <- "D:\\Project BioInformatica\\SVN\\lib\\"
+base <- "D:\\Work\\BI\\SVN\\"
 classpath = paste (base, c(
-	"swt-win32.jar",
+	"lib\\swt-win32.jar",
 	"pathvisio_v2.jar",
-	"jdom.jar",
-	"JRI.jar",
-	"org.eclipse.core.commands.jar",
-	"org.eclipse.equinox.common.jar",
-	"org.eclipse.jface.jar",
-	"derby.jar",
-	"junit.jar",
-	"BrowserLauncher.jar",
-	"resources.jar",
-	"R-resources.jar"
+	"lib\\jdom.jar",
+	"lib\\JRI.jar",
+	"lib\\org.eclipse.core.commands.jar",
+	"lib\\org.eclipse.equinox.common.jar",
+	"lib\\org.eclipse.jface.jar",
+	"lib\\derby.jar",
+	"lib\\junit.jar",
+	"lib\\BrowserLauncher.jar",
+	"lib\\resources.jar",
+	"lib\\R-resources.jar"
 ), sep="");
 
 .jinit(classpath)
@@ -38,13 +38,26 @@ window <- .jcall("gmmlVision/GmmlVision", "LgmmlVision/GmmlVisionWindow;", "getW
 
 # pass data file with map to use to the window so it will be shown when the window opens.
 # window.setPWF("D:\\Work\\BI\\SVN\\testData\\test.gpml");
-.jcall(window, "V", "setPWF", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\pathways\\MAPPs\\Rn_Contributed_20060824\\cellular_process-GenMAPP\\Rn_Apoptosis.gpml");
+.jcall(window, "V", "setPWF", "D:\\Work\\BI\\data\\GpmlFiles\\MAPPs\\Rn_Contributed_20060824\\cellular_process-GenMAPP\\Rn_Apoptosis.gpml");
+
 
 # pass data file with gene database to use to the window
-.jcall(window, "V", "setDbName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\gene databases\\Rn_39_34i.pgdb");
+.jcall(window, "V", "setDbName", "D:\\Work\\BI\\data\\Rn_39_34i.pgdb");
+
+# create expression dataset
+head = as.integer(1)
+first = as.integer(2)
+id = as.integer(0)
+code = as.integer(1)
+cols = .jarray(c(as.integer(0),as.integer(1)))
+file = "D:\\Work\\BI\\data\\expr_genmapp_format.txt"
+dbName = "D:\\Work\\BI\\data\\Rn_39_34i.pgdb"
+.jnew("data/RImporter", cols, file, dbName, head, first, id, code)
+
 
 # Select data file with expression dataset
-.jcall(window, "V", "setExName", "C:\\Documents and Settings\\s040778\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex");
+.jcall(window, "V", "setExName", "D:\\Work\\BI\\data\\expr_genmapp_format.pgex");
+
 
 # open window 
 # window.open();

@@ -609,7 +609,7 @@ public class GmmlGex implements ApplicationEventListener {
 					if(prevProgress < (int)cacheThread.progress) {
 						monitor.worked((int)cacheThread.progress - prevProgress);
 						prevProgress = (int)cacheThread.progress;
-					}
+                                        }
 				}
 				monitor.done();
 			}
@@ -661,6 +661,7 @@ public class GmmlGex implements ApplicationEventListener {
 				if(prevProgress < (int)convertThread.progress) {
 					monitor.worked((int)convertThread.progress - prevProgress);
 					prevProgress = (int)convertThread.progress;
+                                        
 				}
 			}
 			monitor.done();
@@ -789,8 +790,11 @@ public class GmmlGex implements ApplicationEventListener {
 			int n = info.firstDataRow - 1;
 			int added = 0;
 			int worked = importWork / nrLines;
+                        float lines = 0;
+                        double lastperc = 0;
 			while((line = in.readLine()) != null) 
 			{
+                             lines = lines + 1;
                                 if(showprog) {
                                     if(monitor.isCanceled()) { close(); error.close(); return; } //User pressed cancel
                                 }
@@ -841,6 +845,13 @@ public class GmmlGex implements ApplicationEventListener {
                                 if (showprog) {
                                     monitor.worked(worked);
                                 }
+                               
+                                if ((lines / nrLines) > (lastperc + 0.005)){
+                                    System.out.print("+");
+                                    lastperc = lines / nrLines;
+                                }
+           
+                                // print statement
 			}
                         if (showprog) {
                             page.println(added + " genes were added succesfully to the expression dataset");

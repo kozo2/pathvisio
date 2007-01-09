@@ -44,7 +44,7 @@ import util.TableColumnResizer;
  * create an expression dataset from a delimited text file
  */
 public class ImportExprDataWizard extends Wizard {
-	ImportInformation importInformation;
+	public ImportInformation importInformation;
 
 	public ImportExprDataWizard() {
 		importInformation = new ImportInformation();
