@@ -846,7 +846,7 @@ public class GmmlGex implements ApplicationEventListener {
                                     monitor.worked(worked);
                                 }
                                
-                                if ((lines / nrLines) > (lastperc + 0.005)){
+                                if ((lines / nrLines) > (lastperc + 0.05)){
                                     System.out.print("+");
                                     lastperc = lines / nrLines;
                                 }
