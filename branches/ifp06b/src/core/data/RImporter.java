@@ -50,11 +50,9 @@ class RImporter {
     
     public RImporter(int[] cols, String file, String dbName, int head, int first, int id, int code) {  
         ImportExprDataWizard temp = new ImportExprDataWizard();
-        //ImportInformation info = new temp.ImportInformation();
         ImportInformation info = temp.importInformation;
         ImportPage page = null;
         IProgressMonitor monitor = null;
-        //setInfo(cols, file, dbName, head, first, id, code);
         info.setStringCols(cols);
         File txtFile = new File(file);
         info.setTxtFile(txtFile);
@@ -64,20 +62,9 @@ class RImporter {
         info.idColumn = id;
         info.codeColumn = code;        
         GmmlGex.importFromTxt(info, page, monitor);
-        //ImportRunnableWithProgress import = new GmmlGex.ImportRunnableWithProgress(info,page);
-        //import.run(monitor);
     }
     
-//    public void setInfo(int[] cols, String file, String dbName, int head, int first, int id, int code) {
-//        info.setStringCols(cols);
-//        File txtFile = new File(file);
-//        info.setTxtFile(file);
-//        info.dbName = dbName;
-//        info.headerRow = head;
-//        info.firstDataRow = first;
-//        info.idColumn = id;
-//        info.codeColumn = code;
-//    }
+
 
     
         
