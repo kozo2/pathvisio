@@ -7,10 +7,30 @@ setwd("D:/Project BioInformatica/SVN")
 
 
 # function to set the base 
-setBase <- function(pass="D:\\Project BioInformatica\\SVN\\lib\\") {
-base <<- pass
+setBase <- function(pass="D:\\Project BioInformatica\\SVN\\") {
+base <<- pass;
+setClassPath();
 }
 
+# function to set classpath
+setClassPath <- function() 
+{
+pass= paste (base, c(
+	"lib\\swt-win32.jar",
+	"pathvisio_v2.jar",
+	"lib\\jdom.jar",
+	"lib\\JRI.jar",
+	"lib\\org.eclipse.core.commands.jar",
+	"lib\\org.eclipse.equinox.common.jar",
+	"lib\\org.eclipse.jface.jar",
+	"lib\\derby.jar",
+	"lib\\junit.jar",
+	"lib\\BrowserLauncher.jar",
+	"lib\\resources.jar",
+	"lib\\R-resources.jar"
+), sep="");
+classpath <<- pass
+}
 
 
 
@@ -19,22 +39,6 @@ base <<- pass
 openPathway <- function(y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways\\MAPPs\\Rn_Contributed_20060824\\cellular_process-GenMAPP\\Rn_Apoptosis.gpml") {
 
 # initialize jvm
-# loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-classpath = paste (base, c(
-	"swt-win32.jar",
-	"pathvisio_v2.jar",
-	"jdom.jar",
-	"JRI.jar",
-	"org.eclipse.core.commands.jar",
-	"org.eclipse.equinox.common.jar",
-	"org.eclipse.jface.jar",
-	"derby.jar",
-	"junit.jar",
-	"BrowserLauncher.jar",
-	"resources.jar",
-	"R-resources.jar"
-), sep="");
-
 .jinit(classpath)
 
 # create window object
@@ -68,22 +72,6 @@ openGenDb <- function(	y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways\
 			y2="D:\\Project BioInformatica\\Pathvisio-Data\\gene databases\\Rn_39_34i.pgdb") {
 
 # initialize jvm
-# loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-classpath = paste (base, c(
-	"swt-win32.jar",
-	"pathvisio_v2.jar",
-	"jdom.jar",
-	"JRI.jar",
-	"org.eclipse.core.commands.jar",
-	"org.eclipse.equinox.common.jar",
-	"org.eclipse.jface.jar",
-	"derby.jar",
-	"junit.jar",
-	"BrowserLauncher.jar",
-	"resources.jar",
-	"R-resources.jar"
-), sep="");
-
 .jinit(classpath)
 
 # create window object
@@ -123,22 +111,6 @@ openExpr <- function(	y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways\\
 			y3="D:\\Project BioInformatica\\Pathvisio-Data\\expression datasets\\expr_genmapp_format.pgex") {
 
 # initialize jvm
-# loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-classpath = paste (base, c(
-	"swt-win32.jar",
-	"pathvisio_v2.jar",
-	"jdom.jar",
-	"JRI.jar",
-	"org.eclipse.core.commands.jar",
-	"org.eclipse.equinox.common.jar",
-	"org.eclipse.jface.jar",
-	"derby.jar",
-	"junit.jar",
-	"BrowserLauncher.jar",
-	"resources.jar",
-	"R-resources.jar"
-), sep="");
-
 .jinit(classpath)
 
 # create window object
@@ -179,22 +151,6 @@ createExpr <- function(	y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways
 			y3="D:\\Project BioInformatica\\Data\\expr_genmapp_format.txt") {
 
 # initialize jvm
-# loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-classpath = paste (base, c(
-	"swt-win32.jar",
-	"pathvisio_v2.jar",
-	"jdom.jar",
-	"JRI.jar",
-	"org.eclipse.core.commands.jar",
-	"org.eclipse.equinox.common.jar",
-	"org.eclipse.jface.jar",
-	"derby.jar",
-	"junit.jar",
-	"BrowserLauncher.jar",
-	"resources.jar",
-	"R-resources.jar"
-), sep="");
-
 .jinit(classpath)
 
 # create window object
