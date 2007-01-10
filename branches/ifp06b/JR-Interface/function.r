@@ -5,13 +5,21 @@ library("rJava")
 setwd("D:/Project BioInformatica/SVN")
 
 
+
+# function to set the base 
+setBase <- function(pass="D:\\Project BioInformatica\\SVN\\lib\\") {
+base <<- pass
+}
+
+
+
+
 # function to open a pathway
 # parameter y1: path of pathway
 openPathway <- function(y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways\\MAPPs\\Rn_Contributed_20060824\\cellular_process-GenMAPP\\Rn_Apoptosis.gpml") {
 
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-base <- "D:\\Project BioInformatica\\SVN\\lib\\"
 classpath = paste (base, c(
 	"swt-win32.jar",
 	"pathvisio_v2.jar",
@@ -61,7 +69,6 @@ openGenDb <- function(	y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways\
 
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-base <- "D:\\Project BioInformatica\\SVN\\lib\\"
 classpath = paste (base, c(
 	"swt-win32.jar",
 	"pathvisio_v2.jar",
@@ -117,7 +124,6 @@ openExpr <- function(	y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways\\
 
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-base <- "D:\\Project BioInformatica\\SVN\\lib\\"
 classpath = paste (base, c(
 	"swt-win32.jar",
 	"pathvisio_v2.jar",
@@ -174,7 +180,6 @@ createExpr <- function(	y1="D:\\Project BioInformatica\\Pathvisio-Data\\pathways
 
 # initialize jvm
 # loading classpath's : pathvisio_v2.jar, jface.jar, swt-win32.jar, swt-win32-lib.jar
-base <- "D:\\Project BioInformatica\\SVN\\lib\\"
 classpath = paste (base, c(
 	"swt-win32.jar",
 	"pathvisio_v2.jar",
