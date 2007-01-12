@@ -179,7 +179,7 @@ id = as.integer(0)
 code = as.integer(1)
 cols = .jarray(c(as.integer(0),as.integer(1)))
 file = y3
-dbName = "D:\\Project BioInformatica\\PathVisio-Data\\gene databases\\Rn_39_34i.pgdb"
+dbName = y2
 .jnew("data/RImporter", cols, file, dbName, head, first, id, code)
 
 
