@@ -1,6 +1,8 @@
 package data;
 
-import org.jdom.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.Namespace;
 
 public class SvgFormat 
 {

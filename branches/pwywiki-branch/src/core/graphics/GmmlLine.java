@@ -28,7 +28,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 
 import preferences.GmmlPreferences;
-
 import util.SwtUtils;
 import data.GmmlDataObject;
 import data.GmmlEvent;

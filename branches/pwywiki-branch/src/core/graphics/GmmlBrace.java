@@ -24,7 +24,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Transform;
 
 import preferences.GmmlPreferences;
-
 import util.SwtUtils;
 import data.GmmlDataObject;
 

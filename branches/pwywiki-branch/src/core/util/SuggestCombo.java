@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import sun.awt.FocusingTextField;
 import util.SuggestCombo.SuggestionProvider.SuggestThread;
 
 public class SuggestCombo extends Composite {

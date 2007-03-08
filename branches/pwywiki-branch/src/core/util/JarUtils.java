@@ -16,8 +16,8 @@
 //
 package util;
 
-import gmmlVision.GmmlVision;
 import gmmlVision.Globals;
+import gmmlVision.GmmlVision;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -19,6 +19,7 @@ package gmmlVision;
 import graphics.GmmlDrawing;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -34,6 +35,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import preferences.GmmlPreferences;
+import util.FileUtils;
 import util.Utils;
 import data.ConverterException;
 import data.DBConnector;
@@ -156,41 +158,76 @@ public abstract class GmmlVision {
 	public static List<GmmlDataObject> clipboard = null;
 	
 	/**
-	 * Open a pathway from a gpml file
+	 * Open a gpml file from an URL by downloading it to a temporary file
+	 * @param url The URL pointing to the gpml file location
+	 * @return the temporary file the pathway is downloaded to
+	 * @throws IOException 
 	 */
-	public static void openPathway(String pwf)
-	{
-		GmmlData _gmmlData = null;
-		GmmlDrawing _drawing = getWindow().createNewDrawing();
-		
-		// initialize new JDOM gpml representation and read the file
-		try { 
-			
-			_gmmlData = new GmmlData();
-			if (pwf.endsWith(".mapp"))
-			{
-				_gmmlData.readFromMapp(new File(pwf));
-			}
-			else
-			{
-				_gmmlData.readFromXml(new File(pwf), true);
-			}
-		} catch(ConverterException e) {
-			MessageDialog.openError(getWindow().getShell(), 
-					"Unable to open Gpml file", e.getClass() + e.getMessage());
-			log.error("Unable to open Gpml file", e);
+	public static File openPathway(URL url) throws IOException {
+		String protocol = url.getProtocol();
+		File f = null;
+		if(protocol.equals("file")) {
+			f = new File(url.getFile());
+			openPathway(f.toString());
+		} else {
+				f = File.createTempFile("urlPathway", ".gpml");
+				FileUtils.downloadFile(url, f);
+				openPathway(f.toString());
 		}
-		
-		if(_gmmlData != null) //Only continue if the data is correctly loaded
-		{
-			drawing = _drawing;
-			gmmlData = _gmmlData;
-			drawing.fromGmmlData(_gmmlData);
-			fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.OPEN_PATHWAY));
-		}
-		
+		return f;
 	}
 	
+	/**
+	 * Open a pathway from a gpml file
+	 */
+	public static void openPathway(final String pwf)
+	{
+		GmmlVisionWindow window = getWindow();
+		Display display = null;
+		if(window != null) {
+			Shell shell = window.getShell();
+			if(shell != null) display = shell.getDisplay();
+		}
+
+		if(display == null || display.isDisposed()) {
+			log.error("Unable to open pathway: no display available");
+			return;
+		}
+		
+		display.asyncExec(new Runnable() {
+			public void run() {
+				GmmlData _gmmlData = null;
+				GmmlDrawing _drawing = getWindow().createNewDrawing();
+
+				// initialize new JDOM gpml representation and read the file
+				try { 
+
+					_gmmlData = new GmmlData();
+					if (pwf.endsWith(".mapp"))
+					{
+						_gmmlData.readFromMapp(new File(pwf));
+					}
+					else
+					{
+						_gmmlData.readFromXml(new File(pwf), true);
+					}
+				} catch(ConverterException e) {
+					MessageDialog.openError(getWindow().getShell(), 
+							"Unable to open Gpml file", e.getClass() + e.getMessage());
+					log.error("Unable to open Gpml file", e);
+				}
+
+				if(_gmmlData != null) //Only continue if the data is correctly loaded
+				{
+					drawing = _drawing;
+					gmmlData = _gmmlData;
+					drawing.fromGmmlData(_gmmlData);
+					fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.OPEN_PATHWAY));
+				}
+			}	
+		});
+	}
+
 	/**
 	 * Create a new pathway (drawing + gpml data)
 	 */
@@ -201,13 +238,13 @@ public abstract class GmmlVision {
 		drawing.fromGmmlData(gmmlData);
 		fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.NEW_PATHWAY));
 	}
-	
+
 	/**
 	 * Find out whether a drawing is currently open or not
 	 * @return true if a drawing is open, false if not
 	 */
 	public static boolean isDrawingOpen() { return drawing != null; }
-			
+
 	/**
 	 * Get the working directory of this application
 	 */
