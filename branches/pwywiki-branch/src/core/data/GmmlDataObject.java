@@ -18,11 +18,13 @@ package data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.swt.graphics.RGB;
+
+import data.GraphLink.GraphIdContainer;
+import data.GraphLink.GraphRefContainer;
 
 /**
  * GmmlDataObject is responsible for maintaining the data
@@ -41,14 +43,113 @@ import org.eclipse.swt.graphics.RGB;
  * @author Martijn
  *
  */
-public class GmmlDataObject
-{		
+public class GmmlDataObject implements GraphIdContainer
+{	
 
-	private static final int M_INITIAL_SHAPE_SIZE = 30; // initial Radius for rect and oval
-	private static final int M_INITIAL_BRACE_HEIGHT = 15;
-	private static final int M_INITIAL_BRACE_WIDTH = 60; 
-	private static final int M_INITIAL_GENEPRODUCT_WIDTH = 80;
-	private static final int M_INITIAL_GENEPRODUCT_HEIGHT = 20;
+	public class Comment implements Cloneable
+	{
+		Comment (String _comment, String _source)
+		{
+			source = _source;
+			comment = _comment;
+		}
+		
+		public Object clone() throws CloneNotSupportedException
+		{
+			return super.clone();
+		}
+		
+		public String source;
+		public String comment;
+	}
+	
+	public class Point implements Cloneable, GraphIdContainer, GraphRefContainer
+	{
+		private double x;
+		private double y;
+		
+		private String graphRef;
+		private String graphId;
+				
+		Point (double _x, double _y) { x = _x; y = _y; }
+		Point (Point p) {
+			x = p.x;
+			y = p.y;
+			if(p.graphRef != null) graphRef = new String(p.graphRef);
+			if(p.graphId != null) graphId = new String(p.graphId);
+		}
+		
+		public void moveBy(double dx, double dy) {
+			x += dx;
+			y += dy;
+			fireObjectModifiedEvent(new GmmlEvent(GmmlDataObject.this, GmmlEvent.MODIFIED_GENERAL));
+		}
+		
+		public void setX(double nx) {
+			if(nx != x) moveBy(nx - x, 0);
+		}
+		
+		public void setY(double ny) {
+			if(ny != y) moveBy(0, ny - y);
+		}
+		
+		public String getGraphId() { return graphId; }
+		
+		public void setGraphId (String v) { 
+			GraphLink.setGraphId(v, this, GmmlDataObject.this);
+			graphId = v;
+			fireObjectModifiedEvent(new GmmlEvent (GmmlDataObject.this, GmmlEvent.MODIFIED_GENERAL));
+		}
+				
+		public String getGraphRef() { return graphRef; }
+
+		/**
+		 * Set a reference to another object with a graphId.
+		 * If a parent is set, this will automatically deregister
+		 * the previously held reference and register the new reference
+		 * as necessary
+		 * @param v reference to set.
+		 */
+		public void setGraphRef (String v) 
+		{ 
+			if (graphRef != v && v != null && !v.equals(""))
+			{
+				if (parent != null)
+				{
+					if (graphRef != null)
+					{
+						parent.removeRef(graphRef, this);
+					}
+					if (v != null)
+					{
+						parent.addRef(v, this);
+					}
+				}
+				graphRef = v;
+				//fireObjectModifiedEvent(new GmmlEvent (GmmlDataObject.this, GmmlEvent.MODIFIED_GENERAL));
+			}
+		}
+
+		
+		public Object clone() throws CloneNotSupportedException
+		{
+			Point p = (Point)super.clone();
+			if(graphId != null) p.graphId = new String(graphId);
+			if(graphRef != null) p.graphRef = new String(graphRef);
+			return p;
+		}
+
+		public Set<GraphRefContainer> getStickyPoints() {
+			return GraphLink.getStickyPoints(this, parent);
+		}
+
+	}
+	
+	private static final int M_INITIAL_SHAPE_SIZE = 30*15; // initial Radius for rect and oval
+	private static final int M_INITIAL_BRACE_HEIGHT = 15*15;
+	private static final int M_INITIAL_BRACE_WIDTH = 60*15; 
+	private static final int M_INITIAL_GENEPRODUCT_WIDTH = 80*15;
+	private static final int M_INITIAL_GENEPRODUCT_HEIGHT = 20*15;
 	
 	/**
 	 * The required parameter objectType ensures only
@@ -85,13 +186,11 @@ public class GmmlDataObject
 		{
 			if (parent != null)
 			{
-				if (startGraphRef != null)
-				{
-					parent.removeRef(startGraphRef, this);
-				}
-				if (endGraphRef != null)
-				{
-					parent.removeRef(startGraphRef, this);
+				for(Point p : mPoints) {
+					if (p.getGraphRef() != null)
+					{
+						parent.removeRef(p.getGraphRef(), p);
+					}
 				}
 				if (graphId != null)
 				{
@@ -101,13 +200,10 @@ public class GmmlDataObject
 			parent = v;
 			if (v != null)
 			{
-				if (startGraphRef != null)
-				{
-					v.addRef(startGraphRef, this);
-				}
-				if (endGraphRef != null)
-				{
-					v.addRef(startGraphRef, this);
+				for(Point p : mPoints) {
+					if(p.getGraphRef() != null) {
+						v.addRef(p.getGraphRef(), p);
+					}
 				}
 				if (graphId != null)
 				{
@@ -144,7 +240,7 @@ public class GmmlDataObject
 						PropertyType.WINDOWHEIGHT
 				}));
 				break;
-			case ObjectType.GENEPRODUCT:
+			case ObjectType.DATANODE:
 				result = ( Arrays.asList (new PropertyType[] {
 						PropertyType.NOTES,
 						PropertyType.COMMENT,
@@ -153,9 +249,9 @@ public class GmmlDataObject
 						PropertyType.WIDTH,
 						PropertyType.HEIGHT,
 						PropertyType.COLOR,
-						PropertyType.NAME,
-						PropertyType.GENEPRODUCT_DATA_SOURCE,
 						PropertyType.GENEID,
+						PropertyType.SYSTEMCODE,
+						PropertyType.TEXTLABEL,
 						//PropertyType.XREF,
 						PropertyType.BACKPAGEHEAD,
 						PropertyType.TYPE,
@@ -175,19 +271,6 @@ public class GmmlDataObject
 						PropertyType.SHAPETYPE,
 						PropertyType.ROTATION,
 						PropertyType.TRANSPARENT,
-						PropertyType.GRAPHID
-				}));
-				break;
-			case ObjectType.BRACE:
-				result = (Arrays.asList(new PropertyType[] {
-						PropertyType.NOTES,
-						PropertyType.COMMENT,
-						PropertyType.CENTERX,
-						PropertyType.CENTERY,
-						PropertyType.WIDTH,
-						PropertyType.HEIGHT,
-						PropertyType.COLOR,
-						PropertyType.ORIENTATION,
 						PropertyType.GRAPHID
 				}));
 				break;
@@ -244,7 +327,6 @@ public class GmmlDataObject
 	{
 		switch (key)
 		{		
-			case NOTES: setNotes		((String) value); break;
 			case COMMENT: setComment 		((String) value); break;
 			case COLOR: setColor 		((RGB)    value); break;
 				
@@ -254,26 +336,25 @@ public class GmmlDataObject
 			case HEIGHT: setMHeight		((Double) value); break;
 			
 			case FILLCOLOR: setFillColor	((RGB)	  value); break;
-			case SHAPETYPE: setShapeType	((Integer)value); break;
+			case SHAPETYPE: setShapeType	(ShapeType.values()[(Integer)value]); break;
 			case ROTATION: setRotation		((Double) value); break;
 				
 			case STARTX: setMStartX 		((Double) value); break;
 			case STARTY: setMStartY 		((Double) value); break;
 			case ENDX: setMEndX 		((Double) value); break;
 			case ENDY: setMEndY 		((Double) value); break;
-			case LINETYPE: setLineType		((Integer)value); break;
+			case LINETYPE: setLineType		(LineType.values()[(Integer)value]); break;
 			case LINESTYLE: setLineStyle	((Integer)value); break;
 				
 			case ORIENTATION: setOrientation	((Integer)value); break;
 	
-			case NAME: setGeneProductName ((String) value); break;
-			case GENEPRODUCT_DATA_SOURCE: setDataSource		((String) value); break;
-			case GENEID: setGeneID			((String)value); break;
+			case GENEID: setGeneID ((String) value); break;
+			case SYSTEMCODE: setDataSource		((String) value); break;
 			case XREF: setXref			((String)  value); break;
 			case BACKPAGEHEAD: setBackpageHead	((String)value); break;
-			case TYPE: setGeneProductType ((String)  value); break;
+			case TYPE: setDataNodeType ((String)  value); break;
 			
-			case TEXTLABEL: setLabelText 	((String) value); break;
+			case TEXTLABEL: setTextLabel 	((String) value); break;
 			case FONTNAME: setFontName		((String)  value); break;
 			case FONTWEIGHT: setBold 		((Boolean) value); break;
 			case FONTSTYLE: setItalic 		((Boolean) value); break;
@@ -284,10 +365,10 @@ public class GmmlDataObject
 			case DATA_SOURCE: setDataSource ((String) value); break;
 			case VERSION: setVersion ((String) value); break;
 			case AUTHOR: setAuthor ((String) value); break;
-			case MAINTAINED_BY: setMaintainedBy((String) value); break;
+			case MAINTAINED_BY: setMaintainer((String) value); break;
 			case EMAIL: setEmail ((String) value); break;
 			case LAST_MODIFIED: setLastModified ((String)value); break;
-			case AVAILABILITY: setAvailability ((String)value); break;
+			case AVAILABILITY: setCopyright ((String)value); break;
 			case BOARDWIDTH: setMBoardWidth ((Double)value); break;
 			case BOARDHEIGHT: setMBoardHeight ((Double)value); break;
 			case WINDOWWIDTH: setWindowWidth ((Double)value); break;
@@ -302,11 +383,9 @@ public class GmmlDataObject
 	
 	public Object getProperty(PropertyType x)
 	{		
-		//TODO: use hashtable or other way better than switch statement
 		Object result = null;
 		switch (x)
 		{
-			case NOTES: result = getNotes(); break;
 			case COMMENT: result = getComment(); break;
 			case COLOR: result = getColor(); break;
 			
@@ -328,14 +407,13 @@ public class GmmlDataObject
 			
 			case ORIENTATION: result = getOrientation(); break;
 						
-			case NAME: result = getGeneProductName(); break;
-			case GENEPRODUCT_DATA_SOURCE: result = getDataSource(); break;
 			case GENEID: result = getGeneID(); break;
+			case SYSTEMCODE: result = getDataSource(); break;
 			case XREF: result = getXref(); break;
 			case BACKPAGEHEAD: result = getBackpageHead(); break;
-			case TYPE: result = getGeneProductType(); break;
+			case TYPE: result = getDataNodeType(); break;
 			
-			case TEXTLABEL: result = getLabelText(); break;	
+			case TEXTLABEL: result = getTextLabel(); break;	
 			case FONTNAME: result = getFontName(); break;
 			case FONTWEIGHT: result = isBold(); break;
 			case FONTSTYLE: result = isItalic(); break;
@@ -346,10 +424,10 @@ public class GmmlDataObject
 			case DATA_SOURCE: result = getDataSource (); break;
 			case VERSION: result = getVersion (); break;
 			case AUTHOR: result = getAuthor (); break;
-			case MAINTAINED_BY: result = getMaintainedBy(); break;
+			case MAINTAINED_BY: result = getMaintainer(); break;
 			case EMAIL: result = getEmail (); break;
 			case LAST_MODIFIED: result = getLastModified (); break;
-			case AVAILABILITY: result = getAvailability (); break;
+			case AVAILABILITY: result = getCopyright (); break;
 			case BOARDWIDTH: result = getMBoardWidth (); break;
 			case BOARDHEIGHT: result = getMBoardHeight (); break;
 			case WINDOWWIDTH: result = getWindowWidth (); break;
@@ -373,7 +451,7 @@ public class GmmlDataObject
 	public void copyValuesFrom(GmmlDataObject src)
 	{
 		author = src.author;
-		availability = src.availability;
+		copyright = src.copyright;
 		backpageHead = src.backpageHead;
 		mBoardHeight = src.mBoardHeight;
 		mBoardWidth = src.mBoardWidth;
@@ -381,11 +459,8 @@ public class GmmlDataObject
 		mCentery = src.mCentery;
 		color = src.color;
 		fillColor = src.fillColor;
-		comment = src.comment;
 		dataSource = src.dataSource;
 		email = src.email;
-		mEndx = src.mEndx;
-		mEndy = src.mEndy;
 		fBold = src.fBold;
 		fItalic = src.fItalic;
 		fontName = src.fontName;
@@ -393,32 +468,38 @@ public class GmmlDataObject
 		fStrikethru = src.fStrikethru;
 		fTransparent = src.fTransparent;
 		fUnderline = src.fUnderline;
-		geneID = src.geneID;
-		geneProductName = src.geneProductName;
-		geneProductType = src.geneProductType;
+		setGeneID = src.setGeneID;
+		dataNodeType = src.dataNodeType;
 		mHeight = src.mHeight;
-		labelText = src.labelText;
+		textLabel = src.textLabel;
 		lastModified = src.lastModified;
 		lineStyle = src.lineStyle;
 		lineType = src.lineType;
-		maintainedBy = src.maintainedBy;
+		maintainer = src.maintainer;
 		mapInfoDataSource = src.mapInfoDataSource;
-		mapInfoLeft = src.mapInfoLeft;
 		mapInfoName = src.mapInfoName;
-		mapInfoTop = src.mapInfoTop;
-		notes = src.notes;
 		organism = src.organism;
 		rotation = src.rotation;
 		shapeType = src.shapeType;
-		mStartx = src.mStartx;
-		mStarty = src.mStarty;
+		mPoints = new ArrayList<Point>();
+		for (Point p : src.mPoints)
+		{
+				mPoints.add(new Point(p));
+		}
+		comments = new ArrayList<Comment>();
+		for (Comment c : src.comments)
+		{
+			try
+			{
+				comments.add((Comment)c.clone());
+			}
+			catch (CloneNotSupportedException e) { /* not going to happen */ }
+		}
 		version = src.version;
 		mWidth = src.mWidth;
 		windowHeight = src.windowHeight;
 		windowWidth = src.windowWidth;
 		xref = src.xref;
-		startGraphRef = src.startGraphRef;
-		endGraphRef = src.endGraphRef;
 		graphId = src.graphId;	
 		fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 	}
@@ -438,7 +519,7 @@ public class GmmlDataObject
 		return result;
 	}
 
-	protected int objectType = ObjectType.GENEPRODUCT;
+	protected int objectType = ObjectType.DATANODE;
 	public int getObjectType() { return objectType; }
 	
 	/**
@@ -458,52 +539,39 @@ public class GmmlDataObject
 	}
 	
 	// only for lines:	
-	// TODO: move to point subclass
-	protected double mStartx = 0;
-	public double getMStartX() { return mStartx; }
+	private Point[] defaultPoints = {new Point(0,0), new Point(0,0)};
+	private List<Point> mPoints = Arrays.asList(defaultPoints);
+	
+	public Point getMStart() { return mPoints.get(0); }
+	public Point getMEnd() { return mPoints.get(mPoints.size() - 1); }
+	public List<Point> getMPoints() { return mPoints; }
+	
+	public double getMStartX() 
+	{ 
+		return getMStart().x; 
+	}
+	
 	public void setMStartX(double v) 
 	{ 
-		if (mStartx != v)
-		{
-			mStartx = v;		
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
+		getMStart().setX(v);
 	}
 	
-	// TODO: move to point subclass
-	protected double mStarty = 0;
-	public double getMStartY() { return mStarty; }
+	public double getMStartY() { return getMStart().y; }
 	public void setMStartY(double v) 
 	{ 
-		if (mStarty != v)
-		{
-			mStarty = v; 
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
+		getMStart().setY(v);
 	}
 	
-	// TODO: move to point subclass
-	protected double mEndx = 0;
-	public double getMEndX() { return mEndx; }
+	public double getMEndX() { return mPoints.get(mPoints.size()-1).x; }
 	public void setMEndX(double v) 
 	{
-		if (mEndx != v)
-		{
-			mEndx = v; 
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
+		getMEnd().setX(v);
 	}
 	
-	// TODO: move to point subclass
-	protected double mEndy = 0;
-	public double getMEndY() { return mEndy; }
+	public double getMEndY() { return getMEnd().y; }
 	public void setMEndY(double v) 
 	{
-		if (mEndy != v)
-		{
-			mEndy = v; 
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL)); 
-		}
+		getMEnd().setY(v);
 	}
 	
 	protected int lineStyle = LineStyle.SOLID;
@@ -517,9 +585,14 @@ public class GmmlDataObject
 		}
 	}
 	
-	protected int lineType = LineType.LINE;
-	public int getLineType() { return lineType; }
-	public void setLineType(int value) 
+	
+	/** @deprecated Line Type should be stored as head, for start and end */
+	//TODO: no alternative yet
+	protected LineType lineType = LineType.LINE;
+	/** @deprecated Line Type should be stored as head, for start and end */
+	public LineType getLineType() { return lineType; }
+	/** @deprecated Line Type should be stored as head, for start and end */
+	public void setLineType(LineType value) 
 	{
 		if (lineType != value)
 		{
@@ -567,8 +640,48 @@ public class GmmlDataObject
 	}
 
 	// general
+	List<Comment> comments = new ArrayList<Comment>();
+	
+	public List<Comment> getComments()
+	{
+		return comments;
+	}
+	
+	public void setComments(List<Comment> value)
+	{
+		if (comments != value)
+		{
+			comments = value; 
+			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));		
+		}
+	}
+	
+	public void addComment(String comment, String source)
+	{
+		comments.add(new Comment(comment, source));
+		fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));		
+	}
+	
+	/**
+	 * Finds the first comment with a specific source
+	 */
+	public String findComment (String source)
+	{
+		for (Comment c : comments)
+		{
+			if (source.equals(c.source))
+			{
+				return c.comment;
+			}
+		}
+		return null;
+	}
+	
+	/** @deprecated */
 	protected String comment = "";
+	/** @deprecated */
 	public String getComment() { return comment; }
+	/** @deprecated */
 	public void setComment (String v) 
 	{
 		if (v == null) throw new IllegalArgumentException();
@@ -578,37 +691,11 @@ public class GmmlDataObject
 			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 		}
 	}
-	
-	protected String notes = "";
-	public String getNotes() { return notes; }
-	public void setNotes (String v) 
-	{ 
-		if (v == null) throw new IllegalArgumentException();
-		if (notes != v)
-		{
-			notes = v;		
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
-	}
-	
-	// for geneproduct only
-	protected String geneID = "";
-	public String getGeneID() { return geneID; }
-	public void setGeneID(String v) 
-	{ 
-		if (v == null) throw new IllegalArgumentException();
-		if (geneID != v)
-		{
-			geneID = v;		
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
-	}
-	
-	protected String xref = "";
+		
+	protected String xref = null;
 	public String getXref() { return xref; }
 	public void setXref(String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (xref != v)
 		{
 			xref = v; 
@@ -616,23 +703,22 @@ public class GmmlDataObject
 		}
 	}
 	
-	protected String geneProductName = "";
-	public String getGeneProductName() { return geneProductName; }
-	public void setGeneProductName(String v) 
+	protected String setGeneID = "";
+	public String getGeneID() { return setGeneID; }
+	public void setGeneID(String v) 
 	{ 
 		if (v == null) throw new IllegalArgumentException();
-		if (geneProductName != v)
+		if (setGeneID != v)
 		{
-			geneProductName = v;		
+			setGeneID = v;		
 			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 		}
 	} 
 	
-	protected String backpageHead = "";
+	protected String backpageHead = null;
 	public String getBackpageHead() { return backpageHead; }
 	public void setBackpageHead(String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (backpageHead != v)
 		{
 			backpageHead = v;		
@@ -640,18 +726,21 @@ public class GmmlDataObject
 		}
 	}
 	
-	protected String geneProductType = "unknown";
-	public String getGeneProductType() { return geneProductType; }
-	public void setGeneProductType(String v) 
+	protected String dataNodeType = "Unknown";
+	public String getDataNodeType() { return dataNodeType; }
+	public void setDataNodeType(String v) 
 	{ 
 		if (v == null) throw new IllegalArgumentException();
-		if (geneProductType != v)
+		if (dataNodeType != v)
 		{
-			geneProductType = v; 
+			dataNodeType = v; 
 			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL)); 
 		}
 	}
 	
+	/** 
+	 * The pathway datasource
+	 */
 	protected String dataSource = "";
 	public String getDataSource() { return dataSource; }
 	public void setDataSource(String v) 
@@ -675,7 +764,6 @@ public class GmmlDataObject
 		return systemCode;
 	}
 	 
-	// TODO: move to point subclass
 	protected double mCenterx = 0;
 	public double getMCenterX() { return mCenterx; }
 	public void setMCenterX(double v) 
@@ -687,7 +775,6 @@ public class GmmlDataObject
 		}
 	}
 	
-	// TODO: move to point subclass
 	protected double mCentery = 0;
 	public double getMCenterY() { return mCentery; }
 	public void setMCenterY(double v) 
@@ -737,9 +824,9 @@ public class GmmlDataObject
 		fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 	}
 	
-	protected int shapeType = ShapeType.RECTANGLE;
-	public int getShapeType() { return shapeType; }
-	public void setShapeType(int v) 
+	protected ShapeType shapeType = ShapeType.RECTANGLE;
+	public ShapeType getShapeType() { return shapeType; }
+	public void setShapeType(ShapeType v) 
 	{ 
 		if (shapeType != v)
 		{
@@ -835,14 +922,14 @@ public class GmmlDataObject
 		}
 	}
 	
-	protected String labelText = "";
-	public String getLabelText() { return labelText; }
-	public void setLabelText (String v) 
+	protected String textLabel = "";
+	public String getTextLabel() { return textLabel; }
+	public void setTextLabel (String v) 
 	{ 
 		if (v == null) throw new IllegalArgumentException();
-		if (labelText != v)
+		if (textLabel != v)
 		{
-			labelText = v;
+			textLabel = v;
 			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 		}
 	}
@@ -858,7 +945,7 @@ public class GmmlDataObject
 		}
 	}	
 	
-	protected String mapInfoName = "";
+	protected String mapInfoName = "untitled";
 	public String getMapInfoName() { return mapInfoName; }
 	public void setMapInfoName (String v) 
 	{ 
@@ -870,11 +957,10 @@ public class GmmlDataObject
 		}
 	}
 	
-	protected String organism = "";
+	protected String organism = null;
 	public String getOrganism() { return organism; }
 	public void setOrganism (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (organism != v)
 		{
 			organism = v;
@@ -882,11 +968,10 @@ public class GmmlDataObject
 		}
 	}
 
-	protected String mapInfoDataSource = "";
+	protected String mapInfoDataSource = null;
 	public String getMapInfoDataSource() { return mapInfoDataSource; }
 	public void setMapInfoDataSource (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (mapInfoDataSource != v)
 		{
 			mapInfoDataSource = v;
@@ -894,11 +979,10 @@ public class GmmlDataObject
 		}
 	}
 
-	protected String version = "";
+	protected String version = null;
 	public String getVersion() { return version; }
 	public void setVersion (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (version != v)
 		{
 			version = v;
@@ -906,11 +990,10 @@ public class GmmlDataObject
 		}
 	}
 
-	protected String author = "";
+	protected String author = null;
 	public String getAuthor() { return author; }
 	public void setAuthor (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (author != v)
 		{
 			author = v;
@@ -918,23 +1001,21 @@ public class GmmlDataObject
 		}
 	}
 
-	protected String maintainedBy = ""; 
-	public String getMaintainedBy() { return maintainedBy; }
-	public void setMaintainedBy (String v) 
+	protected String maintainer = null; 
+	public String getMaintainer() { return maintainer; }
+	public void setMaintainer (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
-		if (maintainedBy != v)
+		if (maintainer != v)
 		{
-			maintainedBy = v;
+			maintainer = v;
 			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 		}
 	}
 
-	protected String email = "";
+	protected String email = null;
 	public String getEmail() { return email; }
 	public void setEmail (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (email != v)
 		{
 			email = v;
@@ -942,23 +1023,21 @@ public class GmmlDataObject
 		}
 	}
 
-	protected String availability = "";
-	public String getAvailability() { return availability; }
-	public void setAvailability (String v) 
+	protected String copyright = null;
+	public String getCopyright() { return copyright; }
+	public void setCopyright (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
-		if (availability != v)
+		if (copyright != v)
 		{
-			availability = v;
+			copyright = v;
 			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 		}
 	}
 
-	protected String lastModified = "";
+	protected String lastModified = null;
 	public String getLastModified() { return lastModified; }
 	public void setLastModified (String v) 
 	{ 
-		if (v == null) throw new IllegalArgumentException();
 		if (lastModified != v)
 		{
 			lastModified = v;
@@ -1035,44 +1114,8 @@ public class GmmlDataObject
 		}
 	}
 	
-	protected int mapInfoLeft;
+	protected String graphId;
 	
-	/**
-	 * @deprecated use regular mLeft and mTop
-	 */
-	public int getMapInfoLeft() { return mapInfoLeft; }
-	
-	/**
-	 * @deprecated use regular mLeft and mTop
-	 */
-	public void setMapInfoLeft(int v) 
-	{ 
-		if (mapInfoLeft != v)
-		{
-			mapInfoLeft = v;
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
-	}
-	protected int mapInfoTop;
-	
-	/**
-	 * @deprecated 
-	 */
-	public int getMapInfoTop() { return mapInfoTop; }
-	
-	/**
-	 * @deprecated 
-	 */
-	public void setMapInfoTop(int v) 
-	{ 
-		if (mapInfoTop != v)
-		{
-			mapInfoTop = v;
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
-	}
-
-	protected String graphId = null;
 	public String getGraphId() { return graphId; }
 	/**
 	 * Set graphId. This id must be any string unique within the GmmlData object 
@@ -1081,80 +1124,58 @@ public class GmmlDataObject
 	 */
 	public void setGraphId (String v) 
 	{ 
-		if (graphId == null || !graphId.equals(v))
-		{
-			if (parent != null)
-			{
-				if (graphId != null)
-				{
-					parent.removeGraphId(v);
-				}
-				if (v != null)
-				{
-					parent.addGraphId(v);
-				}
-			}
-			graphId = v;
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
+		GraphLink.setGraphId(v, this, this);
+		graphId = v;
+		fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
 	}
-
-	protected String startGraphRef = null;
-	public String getStartGraphRef() { return startGraphRef; }
-
-	/**
-	 * Set a reference to another object with a graphId.
-	 * If a parent is set, this will automatically deregister
-	 * the previously held reference and register the new reference
-	 * as necessary
-	 * @param v reference to set.
-	 */
-	public void setStartGraphRef (String v) 
-	{ 
-		if (startGraphRef != v)
-		{
-			if (parent != null)
-			{
-				if (startGraphRef != null)
-				{
-					parent.removeRef(startGraphRef, this);
-				}
-				if (v != null)
-				{
-					parent.addRef(v, this);
-				}
-			}
-			startGraphRef = v;
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
+			
+	public String getStartGraphRef() {
+		return mPoints.get(0).getGraphRef();
 	}
-
-	protected String endGraphRef = null;
-	public String getEndGraphRef() { return endGraphRef; }
-	/**
-	 * @see #setStartGraphRef(String)
-	 * @param v
-	 */
-	public void setEndGraphRef (String v) 
-	{ 
-		if (endGraphRef != v)
-		{
-			if (parent != null)
-			{
-				if (endGraphRef != null)
-				{
-					parent.removeRef(endGraphRef, this);
-				}
-				if (v != null)
-				{
-					parent.addRef(v, this);
-				}
-			}
-			endGraphRef = v;
-			fireObjectModifiedEvent(new GmmlEvent (this, GmmlEvent.MODIFIED_GENERAL));
-		}
+	
+	public void setStartGraphRef(String ref) {
+		Point start = mPoints.get(0);
+		start.setGraphRef(ref);
 	}
+	
+	public String getEndGraphRef() {
+		return mPoints.get(mPoints.size() - 1).getGraphRef();
+	}
+	
+	public void setEndGraphRef(String ref) {
+		Point end = mPoints.get(mPoints.size() - 1);
+		end.setGraphRef(ref);
+	}
+	
+	public GmmlDataObject[] splitLine() {
+		double centerX = (getMStartX() + getMEndX()) / 2;
+		double centerY = (getMStartY() + getMEndY()) / 2;
+		GmmlDataObject l1 = new GmmlDataObject(ObjectType.LINE);
+		l1.copyValuesFrom(this);
+		l1.setMStartX(getMStartX());
+		l1.setMStartY(getMStartY());
+		l1.setMEndX(centerX);
+		l1.setMEndY(centerY);
+		GmmlDataObject l2 = new GmmlDataObject(ObjectType.LINE);
+		l2.copyValuesFrom(this);
+		l2.setMStartX(centerX);
+		l2.setMStartY(centerY);
+		l2.setMEndX(getMEndX());
+		l2.setMEndY(getMEndY());
+		
+		parent.add(l1);
+		parent.add(l2);
+		
+		String id1 = parent.getUniqueId();
+		l1.getMEnd().setGraphId(id1);
+		l2.getMStart().setGraphRef(id1);
+		String id2 = parent.getUniqueId();
+		l2.getMStart().setGraphId(id2);
+		l1.getMEnd().setGraphRef(id2);
 
+		return new GmmlDataObject[] { l1, l2 };
+	}
+	
 	int noFire = 0;
 	public void dontFireEvents(int times) {
 		noFire = times;
@@ -1187,16 +1208,18 @@ public class GmmlDataObject
 		switch (objectType)
 		{
 			case ObjectType.SHAPE:
-			case ObjectType.FIXEDSHAPE:
-			case ObjectType.COMPLEXSHAPE:
-				setMWidth(M_INITIAL_SHAPE_SIZE);
-				setMHeight(M_INITIAL_SHAPE_SIZE);
+				if (shapeType == ShapeType.BRACE)
+				{
+					setMWidth(M_INITIAL_BRACE_WIDTH);
+					setMHeight(M_INITIAL_BRACE_HEIGHT);
+				}
+				else
+				{
+					setMWidth(M_INITIAL_SHAPE_SIZE);
+					setMHeight(M_INITIAL_SHAPE_SIZE);
+				}
 				break;
-			case ObjectType.BRACE:
-				setMWidth(M_INITIAL_BRACE_WIDTH);
-				setMHeight(M_INITIAL_BRACE_HEIGHT);
-				break;
-			case ObjectType.GENEPRODUCT:
+			case ObjectType.DATANODE:
 				setMWidth(M_INITIAL_GENEPRODUCT_WIDTH);
 				setMHeight(M_INITIAL_GENEPRODUCT_HEIGHT);
 				break;
@@ -1206,68 +1229,8 @@ public class GmmlDataObject
 				break;
 		}
 	}
-
-	/**
-	 * Gets a list of all lines that refer to this object with their startPoints
-	 */
-	public Set<GmmlDataObject> getStickyStarts()
-	{
-		Set<GmmlDataObject> result = 
-			new HashSet<GmmlDataObject>();
-
-		if (parent == null) return result;
-		
-		List<GmmlDataObject> reflist = parent.getReferringObjects(graphId);
-		
-		if (reflist != null && !graphId.equals("")) 
-		{
-			// get all referring lines as a hashset, so
-			// that a line that refers to the same object twice
-			// is only treated once.
-			for (GmmlDataObject o : reflist)
-			{
-				if (o.getObjectType() == ObjectType.LINE)
-				{
-					String startRef = o.getStartGraphRef();
-					if (startRef != null && startRef.equals (graphId))
-					{
-						result.add(o);
-					}
-				}
-			}
-		}
-		return result;	
-	}
 	
-	/**
-	 * Gets a list of all lines that refer to this object with their endPoints
-	 */
-	public Set<GmmlDataObject> getStickyEnds()
-	{		
-		Set<GmmlDataObject> result = 
-			new HashSet<GmmlDataObject>();
-
-		if (parent == null) return result;
-		
-		List<GmmlDataObject> reflist = parent.getReferringObjects(graphId);
-		
-		if (reflist != null && !graphId.equals("")) 
-		{
-			// get all referring lines as a hashset, so
-			// that a line that refers to the same object twice
-			// is only treated once.
-			for (GmmlDataObject o : reflist)
-			{
-				if (o.getObjectType() == ObjectType.LINE)
-				{
-					String endRef = o.getEndGraphRef();
-					if (endRef != null && o.getEndGraphRef().equals (graphId))
-					{
-						result.add(o);
-					}
-				}
-			}
-		}
-		return result;
+	public Set<GraphRefContainer> getStickyPoints() {
+		return GraphLink.getStickyPoints(this, parent);
 	}
 }

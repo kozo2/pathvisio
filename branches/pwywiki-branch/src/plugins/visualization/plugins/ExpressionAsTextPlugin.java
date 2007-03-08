@@ -107,9 +107,8 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 						
 			Font f = new Font(e.display, getFontData(true));
 			
-			GmmlDataObject gd = g.getGmmlData();
-			int startx = (int)(gd.getMLeft() + gd.getMWidth() + SPACING);
-			int starty = (int)(gd.getMTop() + gd.getMHeight() / 2);
+			int startx = (int)(g.getVLeft() + g.getVWidth() + SPACING);
+			int starty = (int)(g.getVTop() + g.getVHeight() / 2);
 			
 
 			buffer.setFont(f);
@@ -193,9 +192,12 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 		List<Data> refdata = cache.getData(idc);
 		StringBuilder strb = new StringBuilder();
 		for(Data d : refdata) {
-			strb.append(formatData(d.getSampleData().get(s.getId())) + sep);
+			String str = formatData(d.getSampleData().get(s.getId())).toString();
+			if(!str.equals("NaN")) {
+				strb.append(str + sep);
+			}
 		}
-		return strb.substring(0, strb.length() - (sep).length());
+		return strb.length() > sep.length() ? strb.substring(0, strb.length() - sep.length()) : strb;
 	}
 	
 	Object formatData(Object data) {

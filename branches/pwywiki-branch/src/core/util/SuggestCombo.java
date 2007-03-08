@@ -127,10 +127,6 @@ public class SuggestCombo extends Composite {
 					if(selection.length > 0) 
 						suggestionSelected(suggestList.getSelection()[0]);
 					break;
-				case SWT.FocusIn:
-					System.out.println("Focus on list");
-					//try { throw new Exception(); } catch(Exception ex) { ex.printStackTrace(); }
-					break;
 				case SWT.FocusOut:
 					if(!ignoreFocusOut) {
 						stopSuggesting();
@@ -142,7 +138,6 @@ public class SuggestCombo extends Composite {
 		suggestList.addListener(SWT.DefaultSelection, listListener);
 		suggestList.addListener(SWT.MouseDown, listListener);
 		suggestList.addListener(SWT.FocusOut, listListener);
-		suggestList.addListener(SWT.FocusIn, listListener);
 		
 		getShell().addShellListener(new ShellAdapter() {
 			public void shellDeactivated(ShellEvent e) {
@@ -185,7 +180,6 @@ public class SuggestCombo extends Composite {
 	void stopSuggesting() {
 		doHideSuggestions();
 		if(currThread != null) {
-			System.out.println("> SuggestThread interrupt requested");
 			currThread.interrupt();
 		}
 		currThread = null;

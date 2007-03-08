@@ -50,6 +50,8 @@ import org.jdom.output.SAXOutputter;
 import org.jdom.output.XMLOutputter;
 import org.xml.sax.SAXException;
 
+import data.GraphLink.GraphRefContainer;
+
 
 /**
 * This class is the model for pathway data. It is responsible for
@@ -66,6 +68,8 @@ public class GmmlData implements GmmlListener
 	 * factor to convert screen cordinates used in GenMAPP to pixel cordinates
 	 * NOTE: maybe it is better to adapt gpml to store cordinates as pixels and
 	 * divide the GenMAPP cordinates by this factor on conversion
+	 * 
+	 * @deprecated
 	 */
 	final public static int OLD_GMMLZOOM = 15;
 	
@@ -160,19 +164,19 @@ public class GmmlData implements GmmlListener
 	/**
 	 * Stores references of line endpoints to other objects
 	 */
-	private HashMap<String, List<GmmlDataObject>> graphRefs = new HashMap<String, List<GmmlDataObject>>();
+	private HashMap<String, List<GraphRefContainer>> graphRefs = new HashMap<String, List<GraphRefContainer>>();
 	private Set<String> graphIds = new HashSet<String>();
 	
-	public void addRef (String ref, GmmlDataObject target)
+	public void addRef (String ref, GraphRefContainer target)
 	{
 		if (graphRefs.containsKey(ref))
 		{
-			List<GmmlDataObject> l = graphRefs.get(ref);
+			List<GraphRefContainer> l = graphRefs.get(ref);
 			l.add(target);
 		}
 		else
 		{
-			List<GmmlDataObject> l = new ArrayList<GmmlDataObject>();
+			List<GraphRefContainer> l = new ArrayList<GraphRefContainer>();
 			l.add(target);		
 			graphRefs.put(ref, l);
 		}
@@ -183,7 +187,7 @@ public class GmmlData implements GmmlListener
 	 * @param ref
 	 * @param target
 	 */
-	public void removeRef (String ref, GmmlDataObject target)
+	public void removeRef (String ref, GraphRefContainer target)
 	{
 		if (!graphRefs.containsKey(ref)) throw new IllegalArgumentException();
 		
@@ -244,7 +248,7 @@ public class GmmlData implements GmmlListener
 	/**
 	 * Returns all lines that refer to an object with a particular graphId.
 	 */
-	public List<GmmlDataObject> getReferringObjects (String id)
+	public List<GraphRefContainer> getReferringObjects (String id)
 	{
 		return graphRefs.get(id);
 	}
@@ -269,40 +273,27 @@ public class GmmlData implements GmmlListener
 		this.add (infoBox);
 	}
 	
+	static final double M_INITIAL_BOARD_WIDTH = 18000;
+	static final double M_INITIAL_BOARD_HEIGHT = 12000;
+	
 	/*
 	 * Call when making a new mapp.
-	 */
+	 */	
 	public void initMappInfo()
 	{
 		GmmlVisionWindow window = GmmlVision.getWindow();
 		if (window.sc != null)
 		{
-			mappInfo.setMBoardWidth(window.sc.getSize().x);
-			mappInfo.setMBoardHeight(window.sc.getSize().y);
-			mappInfo.setWindowWidth(window.getShell().getSize().x);
-			mappInfo.setWindowHeight(window.getShell().getSize().y);
+			mappInfo.setMBoardWidth(M_INITIAL_BOARD_WIDTH);
+			mappInfo.setMBoardHeight(M_INITIAL_BOARD_HEIGHT);
+			mappInfo.setWindowWidth(M_INITIAL_BOARD_WIDTH);
+			mappInfo.setWindowHeight(M_INITIAL_BOARD_HEIGHT);
 			String dateString = new SimpleDateFormat("yyyyMMdd").format(new Date());
 			mappInfo.setVersion(dateString);
 		}
 		mappInfo.setMapInfoName("New Pathway");
 	}
-		
-	/**
-	 * Constructor for this class, opens a gpml pathway and adds its elements to the drawing
-	 * @param file		String pointing to the gpml file to open
-	 * 
-	 * @deprecated - use general constructor, then specify readFromXml or readFromMapp
-	 */
-	public GmmlData(String file) throws ConverterException
-	{
-		// Start XML processing
-		GmmlVision.log.info("Start reading the Gpml file: " + file);
-		// try to read the file; if an error occurs, catch the exception and print feedback
 
-		sourceFile = new File(file);
-		readFromXml(sourceFile, true);		
-	}
-	
 	/**
 	 * validates a JDOM document against the xml-schema definition specified by 'xsdFile'
 	 * @param doc the document to validate
@@ -348,7 +339,7 @@ public class GmmlData implements GmmlListener
 	 */
 	public void writeToXml(File file, boolean validate) throws ConverterException 
 	{
-		Document doc = GmmlFormat.createJdom(this);
+		Document doc = GpmlFormat.createJdom(this);
 		
 		//Validate the JDOM document
 		if (validate) validateDocument(doc);
@@ -389,12 +380,12 @@ public class GmmlData implements GmmlListener
 			// Copy the pathway information to a GmmlDrawing
 			Element root = doc.getRootElement();
 			
-			GmmlFormat.mapElement(root, this); // MappInfo
+			GpmlFormat.mapElement(root, this); // MappInfo
 			
 			// Iterate over direct children of the root element
 			Iterator it = root.getChildren().iterator();
 			while (it.hasNext()) {
-				GmmlFormat.mapElement((Element)it.next(), this);
+				GpmlFormat.mapElement((Element)it.next(), this);
 			}
 			
 			setSourceFile (file);
@@ -479,7 +470,7 @@ public class GmmlData implements GmmlListener
 		ArrayList<String> systemCodes = new ArrayList<String>();
 		for(GmmlDataObject o : dataObjects)
 		{
-			if(o.getObjectType() == ObjectType.GENEPRODUCT)
+			if(o.getObjectType() == ObjectType.DATANODE)
 			{
 				systemCodes.add(o.getSystemCode());
 			}

@@ -70,7 +70,8 @@ public class GmmlDrawing extends Canvas implements MouseListener, MouseMoveListe
 PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListener
 {	
 	private static final long serialVersionUID = 1L;
-		
+	static final double M_PASTE_OFFSET = 10 * 15;
+	
 	/**
 	 * All objects that are visible on this mapp, including the handles
 	 * but excluding the legend, mappInfo and selectionBox objects
@@ -118,8 +119,7 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		GmmlGraphics result = null;
 		switch (o.getObjectType())
 		{
-			case ObjectType.BRACE: result = new GmmlBrace(this, o); break;
-			case ObjectType.GENEPRODUCT: result = new GmmlGeneProduct(this, o); break;
+			case ObjectType.DATANODE: result = new GmmlGeneProduct(this, o); break;
 			case ObjectType.SHAPE: result = new GmmlShape(this, o); break;
 			case ObjectType.LINE: result = new GmmlLine(this, o); break;
 			case ObjectType.MAPPINFO: 
@@ -144,7 +144,9 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		{
 			fromGmmlDataObject (o);
 		}
-		setSize(getMappInfo().getBoardSize());
+		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+		setSize(width, height); 
 		data.fireObjectModifiedEvent(new GmmlEvent(null, GmmlEvent.MODIFIED_GENERAL));
 		data.addListener(this);
 	}
@@ -282,11 +284,11 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		redraw();
 	}
 	
-	private double zoomFactor = 1;
+	private double zoomFactor = 1.0/15.0;
 	/**
 	 * Get the current zoomfactor used. 
-	 * 1.0 means 100%, 15 gpml unit = 1 pixel
-	 * 2.0 means 200%, 7.5 gpml unit = 1 pixel
+	 * 1/15 means 100%, 15 gpml unit = 1 pixel
+	 * 2/15 means 200%, 7.5 gpml unit = 1 pixel
 	 * 
 	 * The 15/1 ratio is there because of 
 	 * the Visual Basic legacy of GenMAPP
@@ -308,17 +310,23 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	 * @return	the current zoomfactor
 	 */
 	public double getZoomFactor() { return zoomFactor; }
-	
+
+	/**
+	 * same as getZoomFactor, but in %
+	 * @return
+	 */
+	public double getPctZoom() { return zoomFactor * 100 * 15.0; }
+
 	/**
 	 * Sets the drawings zoom in percent
 	 * @param pctZoomFactor zoomfactor in percent
 	 */
 	public void setPctZoom(double pctZoomFactor)
 	{
-		double factor = 0.01*pctZoomFactor/zoomFactor;
-		zoomFactor = pctZoomFactor / 100;
-		setSize((int)(getSize().x * factor), (int)(getSize().y * factor));
-				
+		zoomFactor = pctZoomFactor / 100.0 / 15.0;
+		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+		setSize(width, height); 				
 		redraw();
 	}
 
@@ -334,11 +342,6 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	 */
 	public void mouseMove(MouseEvent ve)
 	{
-//		// Dispose the tooltip if shown
-//		if(tip != null)
-//		{
-//			if(!tip.isDisposed()) tip.dispose();
-//		}
 		// If draggin, drag the pressed object
 		if (pressedObject != null && isDragging)
 		{
@@ -369,22 +372,6 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 				}
 				if(x != null) x.highlight();
 				
-			}
-			if (pressedObject instanceof GmmlGraphics)
-			{
-				GmmlDataObject x = ((GmmlGraphics)pressedObject).getGmmlData();
-				
-				for(GmmlDataObject g : x.getStickyStarts()) 
-				{				
-					g.setMStartX(g.getMStartX() + mFromV(vdx));
-					g.setMStartY(g.getMStartY() + mFromV(vdy));
-				}
-
-				for(GmmlDataObject g : x.getStickyEnds()) 
-				{				
-					g.setMEndX(g.getMEndX() + mFromV(vdx));
-					g.setMEndY(g.getMEndY() + mFromV(vdy));
-				}
 			}
 			redrawDirtyRect();
 		}
@@ -459,6 +446,7 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 				|| image.getBounds().width != getSize().x
 				|| image.getBounds().height != getSize().y)
 		{
+			GmmlVision.log.trace("Creating image of size " + getSize().x + ", " + getSize().y);
 			image = new Image(getDisplay(), getSize().x, getSize().y);
 			setData("double-buffer-image", image);
 		}
@@ -773,9 +761,9 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 			gdata = new GmmlDataObject(ObjectType.LABEL);
 			gdata.setMCenterX(mx);
 			gdata.setMCenterY(my);
-			gdata.setMWidth(mFromV(GmmlLabel.M_INITIAL_WIDTH));
-			gdata.setMHeight(mFromV(GmmlLabel.M_INITIAL_HEIGHT));
-			gdata.setMFontSize (mFromV(GmmlLabel.M_INITIAL_FONTSIZE));
+			gdata.setMWidth(GmmlLabel.M_INITIAL_WIDTH);
+			gdata.setMHeight(GmmlLabel.M_INITIAL_HEIGHT);
+			gdata.setMFontSize (GmmlLabel.M_INITIAL_FONTSIZE);
 			gdata.setGraphId(data.getUniqueId());
 			data.add (gdata); // will cause lastAdded to be set
 			((GmmlLabel)lastAdded).createTextControl();
@@ -795,7 +783,8 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 			isDragging = true;
 			break;
 		case NEWBRACE:
-			gdata = new GmmlDataObject(ObjectType.BRACE);
+			gdata = new GmmlDataObject(ObjectType.SHAPE);
+			gdata.setShapeType(ShapeType.BRACE);
 			gdata.setMCenterX (mx);
 			gdata.setMCenterY (my);
 			gdata.setMWidth(1);
@@ -803,16 +792,16 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 			gdata.setOrientation(OrientationType.RIGHT);
 			gdata.setColor(stdRGB);
 			data.add (gdata); // will cause lastAdded to be set
-			h = ((GmmlBrace)lastAdded).handleSE;
+			h = ((GmmlShape)lastAdded).handleSE;
 			isDragging = true;
 			break;
 		case NEWGENEPRODUCT:
-			gdata = new GmmlDataObject(ObjectType.GENEPRODUCT);
+			gdata = new GmmlDataObject(ObjectType.DATANODE);
 			gdata.setMCenterX(mx);
 			gdata.setMCenterY(my);
 			gdata.setMWidth(1);
 			gdata.setMHeight(1);
-			gdata.setGeneID("Gene");
+			gdata.setTextLabel("Gene");
 			gdata.setXref("");
 			gdata.setColor(stdRGB);
 			gdata.setGraphId(data.getUniqueId());
@@ -931,20 +920,18 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	public static final int DRAW_ORDER_SELECTIONBOX = 1;
 	public static final int DRAW_ORDER_SELECTED = 2;
 	public static final int DRAW_ORDER_GENEPRODUCT = 3;
-	public static final int DRAW_ORDER_LABEL = 4;
-	public static final int DRAW_ORDER_SHAPE = 5;
-	public static final int DRAW_ORDER_ARC = 6;
-	public static final int DRAW_ORDER_BRACE = 7;
-	public static final int DRAW_ORDER_LINESHAPE = 8;
-	public static final int DRAW_ORDER_LINE = 9;
+	public static final int DRAW_ORDER_LINE = 4;
+	public static final int DRAW_ORDER_LINESHAPE = 5;
+	public static final int DRAW_ORDER_LABEL = 6;
+	public static final int DRAW_ORDER_ARC = 7;
+	public static final int DRAW_ORDER_BRACE = 8;
+	public static final int DRAW_ORDER_SHAPE = 9;
 	public static final int DRAW_ORDER_MAPPINFO = 10;
 	public static final int DRAW_ORDER_DEFAULT = 11;
 	
 	public void mouseEnter(MouseEvent e) {}
 
 	public void mouseExit(MouseEvent e) {}
-
-//	Shell tip;
 	
 	/**
 	 * Responsible for drawing a tooltip displaying expression data when 
@@ -983,23 +970,35 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		resetHighlight();
 		altPressed = false; 	
 	}
+	
+	private void insertPressed() {
+		ArrayList<GmmlDrawingObject> toRemove = new ArrayList<GmmlDrawingObject>();
+		for(GmmlDrawingObject o : s.getSelection()) {
+			if(o instanceof GmmlLine) {
+				((GmmlGraphics)o).gdata.splitLine();
+				toRemove.add(o);
+			}
+		}
+		removeDrawingObjects(toRemove);
+		s.addToSelection(lastAdded);
+	}
 
 	public void keyPressed(KeyEvent e) { 
 		if(e.keyCode == SWT.CTRL) ctrlPressed();
 		if(e.keyCode == SWT.ALT) altPressed();
-		if(e.keyCode == 103) 
+		if(e.keyCode == SWT.INSERT) insertPressed();
+		if(e.keyCode == 103) //CTRL-G to select all gene-products
 			if(ctrlPressed) {
 				selectGeneProducts();
 				redraw();
 			}
 	}
 
-	public void keyReleased(KeyEvent e) {
-		ArrayList<GmmlDrawingObject> toRemove = new ArrayList<GmmlDrawingObject>();
-		
+	public void keyReleased(KeyEvent e) {		
 		if(e.keyCode == SWT.CTRL) ctrlReleased();
 		if(e.keyCode == SWT.ALT) altReleased();
 		if(e.keyCode == SWT.DEL) {
+			ArrayList<GmmlDrawingObject> toRemove = new ArrayList<GmmlDrawingObject>();
 			for(GmmlDrawingObject o : drawingObjects)
 			{
 				if(!o.isSelected() || o == s || o == infoBox) continue; //Object not selected, skip
@@ -1011,16 +1010,6 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 			}
 			removeDrawingObjects(toRemove);
 		}
-		if(e.keyCode == SWT.HOME) {
-			System.out.println("================");
-			Collections.sort(drawingObjects);
-			for(GmmlDrawingObject o : drawingObjects) {
-				System.out.println(o.toString() + "\t" + o.isSelected() + "\t" + o.drawingOrder + "\t");
-				if(o instanceof GmmlGraphics) {
-					System.out.println("\t is GmmlGraphics\t" + ((GmmlGraphics)o).getGmmlData().getObjectType());
-				}
-			}
-		}
 	}
 	
 	/**
@@ -1031,16 +1020,20 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 	{
 		for(GmmlDrawingObject o : toRemove)
 		{
-			drawingObjects.remove(o); //Remove from drawing
-			s.removeFromSelection(o); //Remove from selection
-			if(o instanceof GmmlGraphics) {
-				GmmlGraphics g = (GmmlGraphics)o;
-				GmmlVision.getGmmlData().remove(g.getGmmlData());
-				g.getGmmlData().removeListener(this);
-			}
+			removeDrawingObject(o);
 			
 		}
 		s.fitToSelection();
+	}
+	
+	public void removeDrawingObject(GmmlDrawingObject toRemove) {
+		drawingObjects.remove(toRemove); //Remove from drawing
+		s.removeFromSelection(toRemove); //Remove from selection
+		if(toRemove instanceof GmmlGraphics) {
+			GmmlGraphics g = (GmmlGraphics)toRemove;
+			GmmlVision.getGmmlData().remove(g.getGmmlData());
+			g.getGmmlData().removeListener(this);
+		}
 	}
 
 	GmmlGraphics lastAdded = null;
@@ -1057,8 +1050,10 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 				addDirtyRect(null); // mark everything dirty
 				break;
 			case GmmlEvent.WINDOW:
-				setSize((int)infoBox.getGmmlData().getMBoardWidth(), 
-						(int)infoBox.getGmmlData().getMBoardHeight());
+				int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
+				int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
+				setSize(width, height); 
+				break;
 		}
 		redrawDirtyRect();
 	}
@@ -1137,12 +1132,12 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 			for (GmmlDataObject o : GmmlVision.clipboard)
 			{
 				lastAdded = null;
-				o.setMStartX(o.getMStartX() + 10);
-				o.setMStartY(o.getMStartY() + 10);
-				o.setMEndX(o.getMEndX() + 10);
-				o.setMEndY(o.getMEndY() + 10);
-				o.setMLeft(o.getMLeft() + 10);
-				o.setMTop(o.getMTop() + 10);
+				o.setMStartX(o.getMStartX() + M_PASTE_OFFSET);
+				o.setMStartY(o.getMStartY() + M_PASTE_OFFSET);
+				o.setMEndX(o.getMEndX() + M_PASTE_OFFSET);
+				o.setMEndY(o.getMEndY() + M_PASTE_OFFSET);
+				o.setMLeft(o.getMLeft() + M_PASTE_OFFSET);
+				o.setMTop(o.getMTop() + M_PASTE_OFFSET);
 				// make another copy to preserve clipboard contents for next paste
 				GmmlDataObject p = o.copy();
 				
@@ -1192,7 +1187,11 @@ PaintListener, MouseTrackListener, KeyListener, GmmlListener, VisualizationListe
 		case(VisualizationEvent.VISUALIZATION_SELECTED):
 		case(VisualizationEvent.VISUALIZATION_MODIFIED):
 		case(VisualizationEvent.PLUGIN_MODIFIED):
-			redraw();
+			getDisplay().syncExec(new Runnable() {
+				public void run() {
+					redraw();
+				}
+			});
 		}
 	}	
 	

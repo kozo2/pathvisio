@@ -39,9 +39,12 @@ use converter;
 #    config     #
 #################
 
-my $dirMapps = "c:/GenMAPP 2 Data/MAPPs";
-my $dirGpml = "c:/PathVisio Data/MAPPs";
-my $fnConf = "c:/convert_test.conf";
+my $fnDefaultConfig = "convert.conf";
+
+my $dirMapps;
+my $dirGpml;
+my $fnState;
+my $fnArgs;
 
 #################
 #   globals     #
@@ -50,12 +53,47 @@ my $fnConf = "c:/convert_test.conf";
 my $fnSchema = 'GPML.xsd';
 my $uriSchemaSchema = 'http://www.w3.org/2001/XMLSchema.xsd';
 
-my $dieOnError = 1; # die on first error encountered
-my $fResume = 1; # if true, starts from entry saved in $fnConf.
+my $dieOnError; # die on first error encountered
+my $fResume; # if true, starts from entry saved in $fnState.
 
 #################
 #    subs       #
 #################
+
+# Read configuration file
+sub read_config
+{
+	my $conffile = shift;
+	open INFILE, "< $conffile" or die "Error: Couldn't open $conffile, $!";
+	
+	while (my $line = <INFILE>)
+	{
+		#skip emties and comments...
+		if ($line =~ /^\s*$/) { next; }
+		if ($line =~ /^#/) { next; }
+		
+		if ($line =~ /^(.*?)\s*=\s*(.*)$/)
+		{
+			my ($field, $value) = ($1, $2);
+			if    ($field eq "mapp_in_dir")      		{ $dirMapps = $value; }
+			elsif ($field eq "gpml_out_dir")          { $dirGpml = $value; }
+			elsif ($field eq "state_file")         { $fnState = $value; }
+			elsif ($field eq "args_file")   		{ $fnArgs = $value; }
+			elsif ($field eq "die_on_error")  			{ $dieOnError = $value; }
+			elsif ($field eq "resume")  			{ $fResume = $value; }
+			else { die "Error: Syntax error in configuration file, near $line"; }
+		}
+		else
+		{
+			die "Error: Syntax error in configuration file, near $line";
+		}
+	}
+	unless (-d $dirMapps && -d $dirGpml && defined $fnState && 
+		defined $fnArgs && defined $dieOnError && defined $fResume)
+	{	die "Error: Configuration file misses certain configuration strings!"; }
+	
+	close INFILE;
+}
 
 #copied from MiscUtils on CPAN
 #with modifications
@@ -84,9 +122,22 @@ sub convert
 {
 	my $fnMapp = shift;
 	my $fnOut = shift;
+		
 	print " in: $fnMapp\n";
 	print "out: $fnOut\n";
-	system ("java", "-cp", '"lib/JRI.jar";"lib/org.eclipse.equinox.common.jar";"lib/org.eclipse.equinox.supplement.jar";"lib/org.eclipse.jface.jar";"lib/swt-win32.jar";"lib/org.eclipse.core.commands.jar";"lib/jdom.jar";build;"lib/hsqldb.jar";"lib/swt-win32-lib.jar";"lib/resources.jar"', "util.Converter", $fnMapp, $fnOut);
+	system ("java", "-cp", 
+		join (";", qw(
+			"lib/JRI.jar"
+			"lib/org.eclipse.equinox.common.jar"
+			"lib/org.eclipse.equinox.supplement.jar"
+			"lib/org.eclipse.jface.jar"
+			"lib/swt-win32.jar"
+			"lib/org.eclipse.core.commands.jar"
+			"lib/jdom.jar"
+			build
+			"lib/hsqldb.jar"
+			"lib/swt-win32-lib.jar"
+			"lib/resources.jar")), "util.Converter", $fnMapp, $fnOut);
 	print "Exit status ", $? >> 8;
 	if ($?) { print " Error!"; }
 	print "\n";
@@ -132,6 +183,7 @@ sub mappdiff
 #   main        #
 #################
 
+read_config ($fnDefaultConfig);
 
 chdir ("../..");
 my %okDirs;
@@ -160,10 +212,10 @@ find (\&wanted, $dirMapps);
 
 my $last;
 @list = sort @list;
-if (-r $fnConf && $fResume)
+if (-r $fnState && $fResume)
 {
 	#read last tested from conf file.
-	open INFILE, "$fnConf" or die;
+	open INFILE, "$fnState" or die;
 	$last = <INFILE>;
 	chomp $last;
 	close INFILE;
@@ -179,7 +231,7 @@ if (-r $fnConf && $fResume)
 #convert mapps 2 gmmlOld
 for my $fnIn (@list)
 {
-	open OUTFILE, "> $fnConf" or die;
+	open OUTFILE, "> $fnState" or die;
 	print OUTFILE $fnIn;
 	close OUTFILE;
 
@@ -195,10 +247,21 @@ for my $fnIn (@list)
 		$okDirs{$targetDir} = 1;
 	}
 	
+	#write arguments to a temporary file, to make it easier to reproduce in java
+	my $ARGSFILE;
+	open ($ARGSFILE, "> $fnArgs") or die "$!";
+	print $ARGSFILE "\"$fnIn\"\n\"$fnOut\"";
+	close $ARGSFILE;
+	
 	convert ($fnIn, $fnOut);
 	validate($fnOut);
 	my $fnBack = $fnIn;
 	$fnBack =~ s/(.mapp$)/_back.mapp/i;
+
+	open ($ARGSFILE, ">> $fnArgs") or die "$!";
+	print $ARGSFILE "\n\n\"$fnOut\"\n\"$fnBack\"";
+	close $ARGSFILE;
+
 	convert ($fnOut, $fnBack);
 
 	#hack: mappdiff doesn't work in files with ( ) , in the filename. Just skip and hope for the best...

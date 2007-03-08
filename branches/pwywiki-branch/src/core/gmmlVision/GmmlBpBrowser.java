@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import data.GmmlGdb;
 import data.GmmlGex;
+import data.MappFormat;
 import data.GmmlGdb.IdCodePair;
 
 /**
@@ -94,8 +95,9 @@ public class GmmlBpBrowser extends Composite implements SelectionListener {
 				}
 				// Get the backpage text
 				String geneHeader = geneProduct.getGmmlData().getBackpageHead();
-				String geneId = geneProduct.getID();
-				String systemCode = geneProduct.getSystemCode();
+				if (geneHeader == null) geneHeader = "";
+				String geneId = geneProduct.getGmmlData().getGeneID();
+				String systemCode = geneProduct.getGmmlData().getSystemCode();
 				String bpText = geneHeader.equals("") ? geneHeader : "<H2>" + geneHeader + "</H2><P>";
 				String bpInfo = GmmlGdb.getBpInfo(geneId, systemCode);
 				bpText += bpInfo == null ? "<I>No gene information found</I>" : bpInfo;
@@ -120,7 +122,8 @@ public class GmmlBpBrowser extends Composite implements SelectionListener {
 			String url = getCrossRefLink(cr);
 			if(url != null)
 				idtxt = "<a href='" + url + "' target='_blank'>" + idtxt + "</a>";
-			crt.append( idtxt + ", " + cr.getCode() + "<br>");
+			String dbName = MappFormat.sysCode2Name.get(cr.getCode());
+			crt.append( idtxt + ", " + (dbName != null ? dbName : cr.getCode()) + "<br>");
 		}
 		return crt.toString();
 	}

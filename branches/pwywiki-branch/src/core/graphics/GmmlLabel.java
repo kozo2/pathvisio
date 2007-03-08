@@ -46,9 +46,9 @@ public class GmmlLabel extends GmmlGraphicsShape
 {
 	private static final long serialVersionUID = 1L;
 	
-	public static final int M_INITIAL_FONTSIZE = 10;
-	public static final int M_INITIAL_WIDTH = 80;
-	public static final int M_INITIAL_HEIGHT = 20;
+	public static final int M_INITIAL_FONTSIZE = 10 * 15;
+	public static final int M_INITIAL_WIDTH = 80 * 15;
+	public static final int M_INITIAL_HEIGHT = 20 * 15;
 		
 	double getFontSize()
 	{
@@ -72,12 +72,12 @@ public class GmmlLabel extends GmmlGraphicsShape
 	}
 	
 	public String getLabelText() {
-		return gdata.getLabelText();
+		return gdata.getTextLabel();
 	}
 	
 	String prevText = "";
 	public void adjustWidthToText() {
-		if(gdata.getLabelText().equals(prevText)) return;
+		if(gdata.getTextLabel().equals(prevText)) return;
 		
 		prevText = getLabelText();
 		
@@ -138,7 +138,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 				gdata.getFontName(), 
 				(int)gdata.getMFontSize(), getFontStyle());
 		gc.setFont (f);
-		Point ts = gc.textExtent(gdata.getLabelText());
+		Point ts = gc.textExtent(gdata.getTextLabel());
 		f.dispose();
 		gc.dispose();
 		
@@ -147,7 +147,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 	
 	protected void disposeTextControl()
 	{
-		gdata.setLabelText(t.getText());
+		gdata.setTextLabel(t.getText());
 		Composite c = t.getParent();
 		c.setVisible(false);
 		c.dispose();
@@ -181,7 +181,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 		
 		buffer.setFont (f);
 		
-		Point textSize = buffer.textExtent (gdata.getLabelText());
+		Point textSize = buffer.textExtent (gdata.getTextLabel());
 		
 		Color c = null;
 		if (isSelected())
@@ -199,7 +199,7 @@ public class GmmlLabel extends GmmlGraphicsShape
 		}
 		buffer.setForeground (c);
 		
-		buffer.drawString (gdata.getLabelText(), 
+		buffer.drawString (gdata.getTextLabel(), 
 			(int) getVCenterX() - (textSize.x / 2) , 
 			(int) getVCenterY() - (textSize.y / 2), true);
 		

@@ -37,21 +37,10 @@ public class SvgFormat
 		
 		switch (o.getObjectType())
 		{
-			case ObjectType.FIXEDSHAPE:
-			case ObjectType.COMPLEXSHAPE:
-			case ObjectType.BRACE:
-				e = new Element("rect", ns);
-				e.setAttribute("x", "" + o.getMLeft());
-				e.setAttribute("y", "" + o.getMTop());
-				e.setAttribute("width", "" + o.getMWidth());
-				e.setAttribute("height", "" + o.getMHeight());
-				e.setAttribute("style", "stroke:black;fill:none");
-				root.addContent(e);
-				break;
 			case ObjectType.SHAPE:
 				switch (o.getShapeType())
 				{
-					case ShapeType.OVAL:
+					case OVAL:
 						e = new Element("ellipse", ns);
 						e.setAttribute("cx", "" + o.getMCenterX());
 						e.setAttribute("cy", "" + o.getMCenterY());
@@ -60,8 +49,7 @@ public class SvgFormat
 						e.setAttribute("style", "stroke:black;fill:none");
 						root.addContent(e);
 						break;
-					case ShapeType.RECTANGLE:
-					case ShapeType.ARC:				
+					default:
 						e = new Element("rect", ns);
 						e.setAttribute("x", "" + o.getMLeft());
 						e.setAttribute("y", "" + o.getMTop());
@@ -72,7 +60,7 @@ public class SvgFormat
 					break;
 				}
 				break;
-			case ObjectType.GENEPRODUCT:
+			case ObjectType.DATANODE:
 				e = new Element("rect", ns);
 				e.setAttribute("x", "" + o.getMLeft());
 				e.setAttribute("y", "" + o.getMTop());
@@ -83,7 +71,7 @@ public class SvgFormat
 				e = new Element("text", ns);
 				e.setAttribute("x", "" + o.getMCenterX());
 				e.setAttribute("y", "" + o.getMCenterY());
-				e.addContent(o.getGeneID());
+				e.addContent(o.getTextLabel());
 				root.addContent(e);
 				break;
 			case ObjectType.LINE:
@@ -101,7 +89,7 @@ public class SvgFormat
 				e.setAttribute("y", "" + o.getMCenterY());
 				e.setAttribute("style", "font-family:" + o.getFontName() + 
 						".ttf;font-size:" + o.getMFontSize());
-				e.addContent(o.getLabelText());
+				e.addContent(o.getTextLabel());
 				root.addContent(e);
 				break;
 		}

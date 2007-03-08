@@ -1635,12 +1635,10 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 		case ApplicationEvent.NEW_PATHWAY:
 			drawing = GmmlVision.getDrawing();
 			sc.setContent(drawing);
-			drawing.setSize(drawing.getMappInfo().getBoardSize());
 			break;
 		case ApplicationEvent.OPEN_PATHWAY:
 			drawing = GmmlVision.getDrawing();
 			sc.setContent(drawing);
-			drawing.setSize(drawing.getMappInfo().getBoardSize());
 			if(GmmlGex.isConnected()) cacheExpressionData();
 			break;	
 		}
@@ -1649,16 +1647,16 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 	public void expressionDataEvent(ExpressionDataEvent e) {
 		switch(e.type) {
 		case ExpressionDataEvent.CONNECTION_CLOSED:
-			getShell().getDisplay().asyncExec(new Runnable() {
+			getShell().getDisplay().syncExec(new Runnable() {
 				public void run() {
 					showLegend(false);
 				}
 			});
 			break;
 		case ExpressionDataEvent.CONNECTION_OPENED:
-			cacheExpressionData();
-			getShell().getDisplay().asyncExec(new Runnable() {
+			getShell().getDisplay().syncExec(new Runnable() {
 				public void run() {
+					cacheExpressionData();
 					showLegend(true);
 				}
 			});
