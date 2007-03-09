@@ -14,6 +14,7 @@
 	<property name="exec.perl" value="perl"/>
 	<property name="svn.exec.svnversion" value="svnversion"/>
 	<property name="exec.inno.setup" value="iscc"/>
+	<property name="wiki.dir" value="tools/pathwaywiki" />
 	
 	<path id="project.v1.class.path">
 		<pathelement location="lib/swt-linux.jar"/>
@@ -157,7 +158,17 @@ class Revision
 			<jvmarg value='-Djava.library.path=lib/swt-linux-lib'/>
 		</java>
 	</target>
-
+	
+	<target name="wiki" depends="jar,resources-jar,webstart" description="Create resources for WikiPathways">
+		<!-- Copy webstart files -->
+		<copy toDir="${wiki.dir}/www/bin" overwrite="true">
+			<fileset dir="${webstart.dir}/www" includes="**/*.jar"/>
+		</copy>
+		<!-- Copy converter -->
+		<copy file="pathvisio_convert.jar" toDir="${wiki.dir}/www/bin" overwrite="true" />
+		<copy file="GPML.xsd" toDir="${wiki.dir}/www/bin" overwrite="true" />
+	</target>
+	
 	<target name="webstart" depends="jar,resources-jar" description="Sign jars and upload webstart files">
 		<!-- Copy files needed for webstart !-->
 		<copy file="pathvisio_v1.jar" toDir="${webstart.dir}/www"/>
@@ -176,12 +187,15 @@ class Revision
 		</signjar>
 		<copy file="${webstart.dir}/pathvisio_v1.jnlp" toDir="${webstart.dir}/www"/>
 		<copy file="${webstart.dir}/pathvisio_v2.jnlp" toDir="${webstart.dir}/www"/>
-                <!-- Run perl script to upload to server !-->
+	</target>
+	
+	<target name="upload-webstart" depends="webstart" description="Upload the webstart directory to webstart server">
+        <!-- Run perl script to upload to server !-->
 		<exec executable="${exec.perl}" dir="${webstart.dir}" failifexecutionfails="true">
 			<arg line="autoftp.pl"/>
 		</exec>	
 	</target>
-	
+			
 	<target name="docs" depends="prepare" description="generate api-docs">
 		<javadoc destdir="${apidoc.dir}">
 			<classpath refid="project.v2.class.path"/>
