@@ -128,15 +128,20 @@ public class WikiPathways {
 			final File fgpmlFile = gpmlFile;
 			try {
 				IRunnableWithProgress op = new IRunnableWithProgress() {
-					public void run(IProgressMonitor arg0) throws InvocationTargetException, InterruptedException {
+					public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
 						try {
+							m.beginTask("Saving pathway to wiki", IProgressMonitor.UNKNOWN);
 							wiki.saveToWiki(fgpmlFile);
+							m.done();
 						} catch(Exception e) {
 							throw new InvocationTargetException(e);
 						}
 					}
 				};
-				new ProgressMonitorDialog(shell).run(false, false, op);
+				ProgressMonitorDialog pd = new ProgressMonitorDialog(shell);
+				pd.run(true, false, op);
+				MessageDialog.openInformation(shell, "Info", "Pathway saved to wiki");
+				
 			} catch (InvocationTargetException e) {
 				// handle exception
 				GmmlVision.log.error("Unable to save pathway to wiki", e.getCause());
@@ -144,7 +149,6 @@ public class WikiPathways {
 			} catch (InterruptedException ie) {
 				GmmlVision.log.error("Unable to save pathway to wiki", ie);
 			}
-			MessageDialog.openInformation(shell, "Info", "Pathway saved to wiki");
 		}
 		//Close log stream
 		GmmlVision.log.getStream().close();
