@@ -4,11 +4,15 @@ define("FILETYPE_GPML", "gpml");
 define("FILETYPE_MAPP", "mapp");
 
 //Initialize MediaWiki
-define( 'MEDIAWIKI', true );
-require_once( '../wikipathways/includes/Defines.php' );
-require_once( '../wikipathways/LocalSettings.php' );
-require_once( '../wikipathways/includes/Setup.php' );
-require_once( "../wikipathways/includes/Wiki.php" );
+#define( 'MEDIAWIKI', true );
+#require_once( '../includes/Defines.php' );
+#require_once( '../LocalSettings.php' );
+$dir = getcwd();
+chdir("../");
+#require_once( '.StartProfiler.php' );
+require_once ( 'includes/WebStart.php');
+require_once( 'includes/Wiki.php' );
+chdir($dir);
 
 $wgDebugLogFile = 'debug.txt';
 
@@ -27,7 +31,7 @@ function launchPathVisio($pwTitle) {
 		echo "Image does not exist<BR>";
 		exit;
 	}
-
+	
 	$webstart = file_get_contents("bin/pathvisio_wikipathways.jnlp");
 	
 	//Add cookies
@@ -42,12 +46,36 @@ function launchPathVisio($pwTitle) {
 	
 	//Add commandline arguments (replace <!--ARG-->)
 	$webstart = str_replace("<!--ARG-->", $arg, $webstart);
-	header("Content-type: application/x-java-jnlp-file");
-	header("Content-Disposition: attachment; filename=\"PathVisio.jnlp\"");
-	echo $webstart;
+
+	$os = getClientOs();
+	if($os == 'linux') { //return shell script that sets MOZILLA_FIVE_HOME and opens webstart
+		header("Content-type: application/x-shellscript");
+		header("Content-Disposition: attachment; filename=\"PathVisio.sh\"");
+		echo "#!/bin/sh\n";
+		echo "export MOZILLA_FIVE_HOME=/usr/lib/firefox\n";
+		echo "LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH\n";
+		$wsFile = tempnam(getcwd() . "/tmp",$pathway->name());
+		writeFile($wsFile, $webstart);
+		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"';
+	} else { //return webstart file directly
+		header("Content-type: application/x-java-jnlp-file");
+		header("Content-Disposition: attachment; filename=\"PathVisio.jnlp\"");
+		echo $webstart;
+	}
 	exit;
 }
 
+function getClientOs() {
+	$regex = array(
+		'windows' => '([^dar]win[dows]*)[\s]?([0-9a-z]*)[\w\s]?([a-z0-9.]*)',
+		'mac' => '(68[k0]{1,3})|(ppc mac os x)|([p\S]{1,5}pc)|(darwin)',
+		'linux' => 'x11|inux');
+	$ua = $_SERVER['HTTP_USER_AGENT'];
+	foreach (array_keys($regex) as $os) {
+		if(eregi($regex[$os], $ua)) return $os;
+	}	
+}
+ 
 function createJnlpArg($flag, $value) {
 	//return "<argument>" . $flag . ' "' . $value . '"' . "</argument>\n";
 	return "<argument>" . $flag . "</argument>\n<argument>" . $value . "</argument>\n";
@@ -92,7 +120,8 @@ class Pathway {
 		if(count($parts) < 2) {
 			throw new Exception("Invalid pathway article title: $title");
 		}
-		return array_pop(array_slice($parts, -2, 1));
+		$species = array_slice($parts, -2, 1);
+		return array_pop($species);
 	}
 
 	public function name($name = NULL) {
@@ -151,9 +180,10 @@ class Pathway {
 
 	public function saveGpml($gpmlData) {		
 		$file = $this->getFileName(FILETYPE_GPML);
+		$tmp = "tmp/" . $file;
 	
-		writeFile($file, $gpmlData);
-		return Pathway::saveFileToWiki($file, $file);
+		writeFile($tmp, $gpmlData);
+		return Pathway::saveFileToWiki($tmp, $file);
 	}
 	
 	## Based on SpecialUploadForm.php

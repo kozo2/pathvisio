@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp codebase="http://localhost/wpi/bin" href="pathvisio_wikipathways.jnlp">
+<jnlp codebase="http://blog.bigcat.unimaas.nl/~thomas/wpi/bin/" href="pathvisio_wikipathways.jnlp">
 	<information>
 		 <title>PathVisio 1.0</title>
 		 <vendor>BiGCaT Bioinformatics, Maastricht University</vendor>

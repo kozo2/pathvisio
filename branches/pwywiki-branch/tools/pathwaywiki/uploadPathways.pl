@@ -61,7 +61,7 @@ perl uploadPathways.pl directory [pathwaylist] [ovrFiles] [ovrPages]
 
 #The URL pointing to the wiki index.php
 #my $wiki_php = "http://localhost/wikipathways/index.php"; #Tryout wiki
-my $wiki_php = "http://blog.bigcat.unimaas.nl/pathwaywiki/index.php";
+my $wiki_php = "http://blog.bigcat.unimaas.nl/wikipathways/index.php";
 
 #Read configuration options
 my $config = readconfig("wiki.cfg");
@@ -285,7 +285,6 @@ sub uploadFile {
                 symlink("$file","$eckey");
         }
         $mech->get("$php?title=Special:Upload");
-	
         my $response = $mech->submit_form(
         button => 'wpUpload',
         fields  => {

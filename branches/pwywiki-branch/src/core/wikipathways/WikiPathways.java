@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -25,7 +26,10 @@ import org.apache.xmlrpc.client.XmlRpcTransport;
 import org.apache.xmlrpc.client.XmlRpcTransportFactory;
 import org.apache.xmlrpc.common.XmlRpcStreamRequestConfig;
 import org.apache.xmlrpc.util.HttpUtil;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.xml.sax.SAXException;
@@ -47,7 +51,7 @@ public class WikiPathways {
 		final GmmlVisionWindow window = GmmlVision.getWindow();
 		GmmlVisionMain.initiate();
 		
-		WikiPathways wiki = new WikiPathways();
+		final WikiPathways wiki = new WikiPathways();
 		
 		for(int i = 0; i < args.length - 1; i++) {
 			//Check for parameters
@@ -111,18 +115,36 @@ public class WikiPathways {
 		
 		//Wait for user to finish editing
 		while(thr.isAlive()) {
-			Thread.yield();
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				break;
+			}
 		}
 		
 		//Save the pathway back to the wiki
 		if(gpmlFile != null) {
+			final Shell shell = new Shell();
+			final File fgpmlFile = gpmlFile;
 			try {
-				wiki.saveToWiki(gpmlFile);
-				MessageDialog.openInformation(new Shell(), "Info", "Pathway saved to wiki");
-			} catch(Exception e) {
-				GmmlVision.log.error("Unable to save pathway to wiki", e);
-				MessageDialog.openError(new Shell(), "Unable to save pathway to wiki", e.getMessage());
+				IRunnableWithProgress op = new IRunnableWithProgress() {
+					public void run(IProgressMonitor arg0) throws InvocationTargetException, InterruptedException {
+						try {
+							wiki.saveToWiki(fgpmlFile);
+						} catch(Exception e) {
+							throw new InvocationTargetException(e);
+						}
+					}
+				};
+				new ProgressMonitorDialog(shell).run(false, false, op);
+			} catch (InvocationTargetException e) {
+				// handle exception
+				GmmlVision.log.error("Unable to save pathway to wiki", e.getCause());
+				MessageDialog.openError(shell, "Unable to save pathway to wiki", e.getCause().getMessage());
+			} catch (InterruptedException ie) {
+				GmmlVision.log.error("Unable to save pathway to wiki", ie);
 			}
+			MessageDialog.openInformation(shell, "Info", "Pathway saved to wiki");
 		}
 		//Close log stream
 		GmmlVision.log.getStream().close();
