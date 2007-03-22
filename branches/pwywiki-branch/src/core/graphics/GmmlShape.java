@@ -26,7 +26,6 @@ import org.eclipse.swt.graphics.Transform;
 import preferences.GmmlPreferences;
 import util.SwtUtils;
 import data.GmmlDataObject;
-import data.ShapeType;
 
 /**
  * This class represents a GMMLShape, which can be a 

@@ -300,7 +300,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 			GmmlData gmmlData = GmmlVision.getGmmlData();
 			GmmlDrawing drawing = GmmlVision.getDrawing();
 			
-			double usedZoom = drawing.getZoomFactor() * 100;
+			double usedZoom = drawing.getPctZoom();
 			// Set zoom to 100%
 			drawing.setPctZoom(100);			
 			// Overwrite the existing xml file
@@ -351,7 +351,7 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 				FileDialog fd = new FileDialog(window.getShell(), SWT.SAVE);
 				fd.setText("Save");
 				fd.setFilterExtensions(new String[] {"*." + GmmlVision.PATHWAY_FILE_EXTENSION, "*.*"});
-				fd.setFilterNames(new String[] {GmmlVision.PATHWAY_FILTER_NAME, "All files (*.*)"});				
+				fd.setFilterNames(new String[] {GmmlVision.PATHWAY_FILTER_NAME, "All files (*.*)"});
 				
 				File xmlFile = gmmlData.getSourceFile();
 				if(xmlFile != null) {
@@ -379,9 +379,15 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 				}
 				if(confirmed)
 				{
+					double usedZoom = drawing.getPctZoom();
+					// Set zoom to 100%
+					drawing.setPctZoom(100);					
+					// Overwrite the existing xml file
 					try
 					{
 						gmmlData.writeToXml(checkFile, true);
+						// Set zoom back
+						drawing.setPctZoom(usedZoom);
 					}
 					catch (ConverterException e)
 					{
@@ -576,8 +582,8 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 					Point shellSize = window.sc.getSize();
 					Point drawingSize = drawing.getSize();
 					newPctZoomFactor = (int)Math.min(
-							drawing.getZoomFactor() * 100 * (double)shellSize.x / drawingSize.x,
-							drawing.getZoomFactor() * 100 * (double)shellSize.y / drawingSize.y
+							drawing.getPctZoom() * (double)shellSize.x / drawingSize.x,
+							drawing.getPctZoom() * (double)shellSize.y / drawingSize.y
 					);
 				} 
 				drawing.setPctZoom(newPctZoomFactor);

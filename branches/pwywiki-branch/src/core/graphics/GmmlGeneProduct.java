@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Region;
 
 import util.SwtUtils;
+import data.DataSources;
 import data.GmmlDataObject;
 import data.MappFormat;
 
@@ -38,7 +39,6 @@ import data.MappFormat;
 public class GmmlGeneProduct extends GmmlGraphicsShape
 {
 	private static final long serialVersionUID = 1L;
-	private static final double M_INITIAL_FONTSIZE = 150;
 	public static final RGB INITIAL_FILL_COLOR = new RGB(255, 255, 255);
 	
 	// note: not the same as color!
@@ -69,8 +69,8 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	public String getSystemCode()
 	{
 		String systemCode = "";
-		if(MappFormat.sysName2Code.containsKey(gdata.getDataSource())) 
-			systemCode = MappFormat.sysName2Code.get(gdata.getDataSource());
+		if(DataSources.sysName2Code.containsKey(gdata.getDataSource())) 
+			systemCode = DataSources.sysName2Code.get(gdata.getDataSource());
 		return systemCode;
 	}
 	
@@ -128,7 +128,7 @@ public class GmmlGeneProduct extends GmmlGraphicsShape
 	 */
 	private int getVFontSize()
 	{
-		return (int)(vFromM (M_INITIAL_FONTSIZE));
+		return (int)(vFromM (gdata.getMFontSize()));
 	}
 
 	public void draw(PaintEvent e, GC buffer)

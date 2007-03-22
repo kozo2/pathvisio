@@ -22,8 +22,8 @@ import java.sql.SQLException;
 
 public class H2GDBMaker extends GDBMaker {
 	
-	public H2GDBMaker(String txtFile, String dbName) {
-		super(txtFile, dbName);
+	public H2GDBMaker(String dbName) {
+		super(dbName);
 	}
 
 	public void connect() throws ClassNotFoundException, SQLException {
@@ -34,6 +34,10 @@ public class H2GDBMaker extends GDBMaker {
 
 	String getDbName() {
 		return "h2/" + super.getDbName();
+	}
+
+	public void connect(boolean create) throws ClassNotFoundException, SQLException {
+		connect();		
 	}
 
 }
