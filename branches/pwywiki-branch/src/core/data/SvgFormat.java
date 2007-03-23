@@ -186,17 +186,18 @@ public class SvgFormat
 	
 	static void mapColor(Element e, GmmlDataObject o) {
 		e.setAttribute("stroke", rgb2String(o.getColor()));
+		//Ignoring fill-color for now, not supported in PathVisio
+		//DataNodes have fill="white", other shapes are transparent
+		//TODO: support fill in PathVisio
 		if(o.isTransparent()) {
 			e.setAttribute("fill", "none");
 		} else {
-			//Ignoring fill-color for now, not supported in PathVisio
-			//TODO: support fill in PathVisio
 			//e.setAttribute("fill", rgb2String(o.getFillColor()));
-			if(o.getObjectType() == ObjectType.DATANODE) {
-				e.setAttribute("fill", "white");
-			} else {
-				e.setAttribute("fill", "none");
-			}
+		}
+		if(o.getObjectType() == ObjectType.DATANODE) {
+			e.setAttribute("fill", "white");
+		} else {
+			e.setAttribute("fill", "none");
 		}
 	}
 	

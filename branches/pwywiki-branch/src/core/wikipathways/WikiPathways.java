@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.xml.sax.SAXException;
@@ -148,7 +149,7 @@ public class WikiPathways {
 		
 		//Save the pathway back to the wiki
 		if(wiki.getLocalFile() != null) {
-			final Shell shell = new Shell();
+			final Shell shell = new Shell(SWT.ON_TOP);
 			final File fgpmlFile = wiki.getLocalFile();
 			try {
 				IRunnableWithProgress op = new IRunnableWithProgress() {
