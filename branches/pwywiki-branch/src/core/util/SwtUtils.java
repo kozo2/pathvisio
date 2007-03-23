@@ -47,8 +47,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 
-public class SwtUtils {
-
+public class SwtUtils {	
 	public static GridData getColorLabelGrid() {
 		GridData colorLabelGrid = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
 		colorLabelGrid.widthHint = colorLabelGrid.heightHint = 15;
@@ -420,13 +419,13 @@ public class SwtUtils {
 		}
 		
 		/**
-		 * Opens a message dialog from withing a {@link Display#asyncExec(Runnable)}
+		 * Opens a message dialog from withing a {@link Display#syncExec(Runnable)}
 		 * @param title	the title of the dialog
 		 * @param msg	the message to be displayed on the dialog
 		 * @see MessageDialog#openInformation(org.eclipse.swt.widgets.Shell, String, String)
 		 */
 		public void openMessageDialog(final String title, final String msg) {
-			GmmlVision.getWindow().getShell().getDisplay().asyncExec(new Runnable() {
+			GmmlVision.getWindow().getShell().getDisplay().syncExec(new Runnable() {
 				public void run() {
 					MessageDialog.openInformation(GmmlVision.getWindow().getShell(), title, msg);
 				}

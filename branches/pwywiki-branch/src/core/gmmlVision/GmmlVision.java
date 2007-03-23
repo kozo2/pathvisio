@@ -75,13 +75,30 @@ public abstract class GmmlVision {
 	private static File DIR_APPLICATION;
 	private static File DIR_DATA;
 	static boolean USE_R;
-		
+			
 	/**
 	 * Get the {@link ApplicationWindow}, the UI of the program
 	 */
 	public static GmmlVisionWindow getWindow() {
 		if(window == null) window = new GmmlVisionWindow();
 		return window;
+	}
+	
+	/**
+	 * Checks whether the current thread is the SWT event loop thread
+	 * @return true if the current thread is the SWT event loop thread, false if not
+	 */
+	private static boolean checkThread() {
+		return checkThread(Display.getDefault());
+	}
+	
+	/**
+	 * Checks whether the current thread is the SWT event loop thread
+	 * @param display the display to check the event loop thread for
+	 * @return true if the current thread is the SWT event loop thread, false if not
+	 */
+	private static boolean checkThread(Display d) {
+		return d.getThread() == Thread.currentThread();
 	}
 	
 	/**
@@ -177,6 +194,54 @@ public abstract class GmmlVision {
 		return f;
 	}
 	
+	private static void doOpenPathway(String pwf) {
+		GmmlData _gmmlData = null;
+		GmmlDrawing _drawing = getWindow().createNewDrawing();
+
+		// initialize new JDOM gpml representation and read the file
+		try { 
+
+			_gmmlData = new GmmlData();
+			if (pwf.endsWith(".mapp"))
+			{
+				_gmmlData.readFromMapp(new File(pwf));
+			}
+			else
+			{
+				_gmmlData.readFromXml(new File(pwf), true);
+			}
+		} 
+		catch(ConverterException e) 
+		{		
+			if (e.getMessage().contains("Cannot find the declaration of element 'Pathway'"))
+			{
+				MessageDialog.openError(getWindow().getShell(), 
+						"Unable to open Gpml file", 
+						"Unable to open Gpml file.\n\n" +
+						"The most likely cause for this error is that you are trying to open an old Gpml file. " +
+						"Please note that the Gpml format has changed as of March 2007. " +
+						"The standard pathway set can be re-downloaded from http://pathvisio.org " +
+						"Non-standard pathways need to be recreated or upgraded. " +
+						"Please contact the authors at martijn.vaniersel@bigcat.unimaas.nl if you need help with this.\n" +
+						"\nSee error log for details");
+				log.error("Unable to open Gpml file", e);
+			}
+			else
+			{
+				MessageDialog.openError(getWindow().getShell(), 
+						"Unable to open Gpml file", e.getClass() + e.getMessage());
+				log.error("Unable to open Gpml file", e);
+			}
+		}
+
+		if(_gmmlData != null) //Only continue if the data is correctly loaded
+		{
+			drawing = _drawing;
+			gmmlData = _gmmlData;
+			drawing.fromGmmlData(_gmmlData);
+			fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.OPEN_PATHWAY));
+		}
+	}
 	/**
 	 * Open a pathway from a gpml file
 	 */
@@ -194,82 +259,59 @@ public abstract class GmmlVision {
 			log.error("Unable to open pathway: no display available");
 			return;
 		}
-		
-		display.asyncExec(new Runnable() {
-			public void run() {
-				GmmlData _gmmlData = null;
-				GmmlDrawing _drawing = getWindow().createNewDrawing();
 
-				// initialize new JDOM gpml representation and read the file
-				try { 
-
-					_gmmlData = new GmmlData();
-					if (pwf.endsWith(".mapp"))
-					{
-						_gmmlData.readFromMapp(new File(pwf));
-					}
-					else
-					{
-						_gmmlData.readFromXml(new File(pwf), true);
-					}
-				} 
-				catch(ConverterException e) 
-				{		
-					if (e.getMessage().contains("Cannot find the declaration of element 'Pathway'"))
-					{
-						MessageDialog.openError(getWindow().getShell(), 
-								"Unable to open Gpml file", 
-								"Unable to open Gpml file.\n\n" +
-								"The most likely cause for this error is that you are trying to open an old Gpml file. " +
-								"Please note that the Gpml format has changed as of March 2007. " +
-								"The standard pathway set can be re-downloaded from http://pathvisio.org " +
-								"Non-standard pathways need to be recreated or upgraded. " +
-								"Please contact the authors at martijn.vaniersel@bigcat.unimaas.nl if you need help with this.\n" +
-								"\nSee error log for details");
-						log.error("Unable to open Gpml file", e);
-					}
-					else
-					{
-						MessageDialog.openError(getWindow().getShell(), 
-								"Unable to open Gpml file", e.getClass() + e.getMessage());
-						log.error("Unable to open Gpml file", e);
-					}
-				}
-
-				if(_gmmlData != null) //Only continue if the data is correctly loaded
-				{
-					drawing = _drawing;
-					gmmlData = _gmmlData;
-					drawing.fromGmmlData(_gmmlData);
-					fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.OPEN_PATHWAY));
-				}
-			}	
-		});
+		if(checkThread()) {
+			doOpenPathway(pwf);
+		} else {
+			display.syncExec(new Runnable() {
+				public void run() {
+					doOpenPathway(pwf);
+				}	
+			});
+		}
 	}
 
 	/**
 	 * Exits PathVisio
 	 */
 	public static void exit() {
-		Display.getDefault().syncExec(new Runnable() {
-			public void run() {
-				ApplicationWindow w = getWindow();
-				if(w != null) w.close();
-			}
-		});
+		if(checkThread()) {
+			doExit();
+		} else {
+			Display.getDefault().syncExec(new Runnable() {
+				public void run() {
+					doExit();
+				}
+			});
+		}
 	}
-	
+		
+	private static void doExit() {
+		ApplicationWindow w = getWindow();
+		if(w != null) w.close();
+	}
 	/**
 	 * Create a new pathway (drawing + gpml data)
 	 */
 	public static void newPathway() {
+		if(checkThread()) {
+			doNewPathway();
+		} else {
+			Display.getDefault().syncExec(new Runnable() {
+				public void run() {
+					doNewPathway();
+				}
+			});
+		}
+	}
+
+	private static void doNewPathway() {
 		gmmlData = new GmmlData();
 		gmmlData.initMappInfo();
 		drawing = getWindow().createNewDrawing();
 		drawing.fromGmmlData(gmmlData);
 		fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.NEW_PATHWAY));
 	}
-
 	/**
 	 * Find out whether a drawing is currently open or not
 	 * @return true if a drawing is open, false if not

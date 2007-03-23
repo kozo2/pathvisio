@@ -1,4 +1,6 @@
 <?php
+
+error_reporting(E_ERROR); //Supress warnings etc...will disrupt the rpc response
 //Load XML-RCP libraries
 require("includes/xmlrpc.inc");
 require("includes/xmlrpcs.inc");
@@ -9,7 +11,7 @@ require("wpi.php");
 //Definition of functions
 $updatePathway_sig=array(array(
 							$xmlrpcBoolean, 
-							$xmlrpcString, $xmlrpcBase64
+							$xmlrpcString, $xmlrpcString, $xmlrpcBase64
 						));
 
 $updatePathway_doc='updatePathway';
@@ -28,15 +30,16 @@ $s->functions_parameters_type = 'phpvals';
 $s->service();
 
 //Functions
-function updatePathway($pwName, $gpmlData64) {
+function updatePathway($pwName, $pwSpecies, $gpmlData64) {
 	global $xmlrpcerruser;
 	
 	try {
-		$pathway = new Pathway($pwName);
+		$pathway = new Pathway($pwName, $pwSpecies);
 		$gpmlData = base64_decode($gpmlData64);
 		$pathway->updatePathway($gpmlData);
 	} catch(Exception $e) {
-		return new xmlrpcresp(0, $xmlrpcerruser, $e->getMessage());
+		$resp = new xmlrpcresp(0, $xmlrpcerruser, $e->getMessage());
+		return $resp;
 	}
 	return TRUE;
 }

@@ -40,6 +40,7 @@ function launchPathVisio($pwTitle) {
 	} 
 	//Add pathway name
 	$arg .= createJnlpArg("-pwName", $pathway->name());
+	$arg .= createJnlpArg("-pwSpecies", $pathway->species());
 	//Add pathway url
 	$arg .= createJnlpArg("-pwUrl", "http://" . $_SERVER['HTTP_HOST'] . $gpml->getURL());
 	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wpi/wpi_rpc.php");
@@ -56,6 +57,7 @@ function launchPathVisio($pwTitle) {
 		echo "LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH\n";
 		$wsFile = tempnam(getcwd() . "/tmp",$pathway->name());
 		writeFile($wsFile, $webstart);
+		//echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"'; #For local tests
 		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"';
 	} else { //return webstart file directly
 		header("Content-type: application/x-java-jnlp-file");
@@ -85,21 +87,27 @@ $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');//TODO: co
 
 class Pathway {
 	private static $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');//TODO: complete
-
 	private $file_ext = array(FILETYPE_IMG => 'svg', FILETYPE_GPML => 'gpml', FILETYPE_MAPP => 'mapp');
 
 	private $spCode2Name;
 	private $pwName;
+	private $pwSpecies;
 
-	function __construct($name) {
+	function __construct($name, $species) {
+		if(!$name) throw new Exception("name argument missing in constructor for Pathway");
+		if(!$species) throw new Exception("species argument missing in constructor for Pathway");
+
+		wfDebug("=== New pathway:\n\tpwName: $name\n\tpwSpecies: $species\n");
 		$this->pwName = $name;
+		$this->pwSpecies = $species;
 	}
 	
 	public static function newFromTitle($title) {
 		$name = Pathway::nameFromTitle($title);
-		$code = Pathway::$spName2Code[Pathway::speciesFromTitle($title)];
+		$species = Pathway::speciesFromTitle($title);
+		$code = Pathway::$spName2Code[$species]; //Check whether this is a valid species
 		if($name && $code) {
-			return new Pathway($code . "_" . $name);
+			return new Pathway($name, $species);
 		} else {
 			throw new Exception("Couldn't parse pathway article title: $title");
 		}
@@ -131,12 +139,23 @@ class Pathway {
 		return $this->pwName;
 	}
 	
+	public function species($species = NULL) {
+		if($species) {
+			$this->pwSpecies = $species;
+		}
+		return $this->pwSpecies;
+	}
+	
+	public function getSpeciesCode() {
+		return Pathway::$spName2Code[$this->pwSpecies];
+	}
+
 	public function getFileName($fileType) {
 		return $this->getFileTitle($fileType)->getDBKey();
 	}
 	
 	public function getFileTitle($fileType) {
-		$fileName = $this->pwName . "." . $this->file_ext[$fileType];
+		$fileName = $this->getSpeciesCode() . "_" . $this->pwName . "." . $this->file_ext[$fileType];
 		/*
 		 * Filter out illegal characters, and try to make a legible name
 		 * out of it. We'll strip some silently that Title would die on.
@@ -180,6 +199,7 @@ class Pathway {
 
 	public function saveGpml($gpmlData) {		
 		$file = $this->getFileName(FILETYPE_GPML);
+		wfDebug("Saving GPML file: $file\n");
 		$tmp = "tmp/" . $file;
 	
 		writeFile($tmp, $gpmlData);
@@ -243,7 +263,7 @@ class Pathway {
 		# Update the image page
 		$img = Image::newFromName( $saveName );
 		$success = $img->recordUpload( $oldVersion,
-			                           'Uploaded from wpi.php',
+			                           'PathVisio edit',
 			                           wfMsgHtml( 'license' ),
 			                           "", //Copyright
 			                           $fileName,
