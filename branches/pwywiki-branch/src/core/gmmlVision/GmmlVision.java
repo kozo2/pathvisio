@@ -248,6 +248,18 @@ public abstract class GmmlVision {
 	}
 
 	/**
+	 * Exits PathVisio
+	 */
+	public static void exit() {
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				ApplicationWindow w = getWindow();
+				if(w != null) w.close();
+			}
+		});
+	}
+	
+	/**
 	 * Create a new pathway (drawing + gpml data)
 	 */
 	public static void newPathway() {

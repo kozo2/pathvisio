@@ -27,6 +27,7 @@ import org.apache.xmlrpc.client.XmlRpcTransportFactory;
 import org.apache.xmlrpc.common.XmlRpcStreamRequestConfig;
 import org.apache.xmlrpc.util.HttpUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -50,7 +51,7 @@ public class WikiPathways {
 	{		
 		final GmmlVisionWindow window = GmmlVision.getWindow();
 		GmmlVisionMain.initiate();
-		
+				
 		final WikiPathways wiki = new WikiPathways();
 		
 		for(int i = 0; i < args.length - 1; i++) {
@@ -61,23 +62,23 @@ public class WikiPathways {
 					String c = args[i+1];
 					int sep = c.indexOf('=');
 					if(sep <= 0 || sep >= c.length() - 1) {
-						GmmlVision.log.error("Error in -c parameter");
+						error("Error in input parameters", new Exception("Error in -c parameter"));
 						System.exit(-1);
 					} else {
-						GmmlVision.log.info("Parsed -c argument" + c);
+						GmmlVision.log.trace("Parsed -c argument" + c);
 						wiki.setCookie(c.substring(0, sep), c.substring(sep + 1));
 					}
 				}
 				else if	(a.equalsIgnoreCase("-pwName")) {
-					GmmlVision.log.info("Parsed -pwName argument" + args[i+1]);
+					GmmlVision.log.trace("Parsed -pwName argument" + args[i+1]);
 					wiki.setPathwayName(args[i+1]);
 				}
 				else if	(a.equalsIgnoreCase("-pwUrl")) {
-					GmmlVision.log.info("Parsed -pwUrl argument" + args[i+1]);
+					GmmlVision.log.trace("Parsed -pwUrl argument" + args[i+1]);
 					wiki.setPathwayURL(args[i+1]);
 				}
 				else if	(a.equalsIgnoreCase("-rpcUrl")) {
-					GmmlVision.log.info("Parsed -rpcUrl argument" + args[i+1]);
+					GmmlVision.log.trace("Parsed -rpcUrl argument" + args[i+1]);
 					wiki.setRpcURL(args[i+1]);
 				}
 				i++; //Skip next, was value for this option
@@ -108,8 +109,8 @@ public class WikiPathways {
 		try {
 			gpmlFile = GmmlVision.openPathway(new URL(wiki.pwURL));
 		} catch(Exception e) {
-			GmmlVision.log.error("Malformed url", e);
-			e.printStackTrace();
+			error("Unable to open pathway", e);
+			GmmlVision.exit();
 			System.exit(-1);
 		}
 		
@@ -144,16 +145,32 @@ public class WikiPathways {
 				
 			} catch (InvocationTargetException e) {
 				// handle exception
-				GmmlVision.log.error("Unable to save pathway to wiki", e.getCause());
-				MessageDialog.openError(shell, "Unable to save pathway to wiki", e.getCause().getMessage());
+				error(shell, "Unable to save pathway to wiki", e.getCause());
 			} catch (InterruptedException ie) {
-				GmmlVision.log.error("Unable to save pathway to wiki", ie);
+				error(shell, "Unable to save pathway to wiki", ie);
 			}
 		}
 		//Close log stream
 		GmmlVision.log.getStream().close();
 	}
 
+
+	static void error(final String error, final Throwable e) {
+		Display d = Display.getDefault();
+		d.syncExec(new Runnable() {
+			public void run() {
+				Shell shell = new Shell();
+				error(shell, error, e);
+			}
+		});
+	}
+	
+	static void error(Shell shell, String error, Throwable e) {
+		GmmlVision.log.error(error, e);
+		if(e instanceof InvocationTargetException) e = e.getCause();
+		MessageDialog.openError(shell, error, e != null ? e.getMessage() : "No message specified");
+	}
+	
 	protected void setCookie(String key, String value) {
 		cookie.put(key, value);
 	}

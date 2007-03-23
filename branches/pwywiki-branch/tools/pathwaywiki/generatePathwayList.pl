@@ -26,7 +26,7 @@ sub wanted {
 			$last_dir = $dir;
 			chomp($dir);
 			print $categories{$dir};
-			print OUT '@'."[[Category:$categories{$dir}]]\n";		
+			print OUT '@'."[[Category:$categories{$dir}|{{PAGENAME}}]]\n";		
 		}
 		s/.mapp$//;
 		print OUT ">$_\n";
