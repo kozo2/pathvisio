@@ -166,7 +166,7 @@ public class WikiPathways {
 				ProgressMonitorDialog pd2 = new ProgressMonitorDialog(shell);
 				pd2.run(true, false, op);
 				MessageDialog.openInformation(shell, "Info", "Pathway saved to " + SITE_NAME + 
-						", please press 'refresh' or hit F5 in your browser to refresh the pathway image");
+						", please press 'refresh' in your browser or hit F5 to refresh the pathway image");
 				
 			} catch (InvocationTargetException e) {
 				// handle exception
