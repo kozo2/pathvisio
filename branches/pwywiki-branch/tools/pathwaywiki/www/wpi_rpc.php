@@ -11,7 +11,7 @@ require("wpi.php");
 //Definition of functions
 $updatePathway_sig=array(array(
 							$xmlrpcBoolean, 
-							$xmlrpcString, $xmlrpcString, $xmlrpcBase64
+							$xmlrpcString, $xmlrpcString, $xmlrpcString, $xmlrpcBase64
 						));
 
 $updatePathway_doc='updatePathway';
@@ -30,13 +30,13 @@ $s->functions_parameters_type = 'phpvals';
 $s->service();
 
 //Functions
-function updatePathway($pwName, $pwSpecies, $gpmlData64) {
+function updatePathway($pwName, $pwSpecies, $description, $gpmlData64) {
 	global $xmlrpcerruser;
 	
 	try {
 		$pathway = new Pathway($pwName, $pwSpecies);
 		$gpmlData = base64_decode($gpmlData64);
-		$pathway->updatePathway($gpmlData);
+		$pathway->updatePathway($gpmlData, $description);
 	} catch(Exception $e) {
 		$resp = new xmlrpcresp(0, $xmlrpcerruser, $e->getMessage());
 		return $resp;

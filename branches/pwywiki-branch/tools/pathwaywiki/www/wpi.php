@@ -43,7 +43,7 @@ function launchPathVisio($pwTitle) {
 	$arg .= createJnlpArg("-pwSpecies", $pathway->species());
 	//Add pathway url
 	$arg .= createJnlpArg("-pwUrl", "http://" . $_SERVER['HTTP_HOST'] . $gpml->getURL());
-	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wpi/wpi_rpc.php");
+	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wikipathways/wpi/wpi_rpc.php");
 	
 	//Add commandline arguments (replace <!--ARG-->)
 	$webstart = str_replace("<!--ARG-->", $arg, $webstart);
@@ -58,7 +58,7 @@ function launchPathVisio($pwTitle) {
 		$wsFile = tempnam(getcwd() . "/tmp",$pathway->name());
 		writeFile($wsFile, $webstart);
 		//echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"'; #For local tests
-		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"';
+		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wikipathways/wpi/tmp/' . basename($wsFile) . '"';
 	} else { //return webstart file directly
 		header("Content-type: application/x-java-jnlp-file");
 		header("Content-Disposition: attachment; filename=\"PathVisio.jnlp\"");
@@ -168,13 +168,13 @@ class Pathway {
 		return $title;
 	}
 
-	public function updatePathway($gpmlData) {
-		$gpmlFile = $this->saveGpml($gpmlData);
-		$this->saveImage($gpmlFile);
-		$this->saveMAPP($gpmlFile);
+	public function updatePathway($gpmlData, $description) {
+		$gpmlFile = $this->saveGpml($gpmlData, $description);
+		$this->saveImage($gpmlFile, "Converted from GPML");
+		$this->saveMAPP($gpmlFile, "Converted from GPML");
 	}
 
-	private function saveImage($gpmlFile) {
+	private function saveImage($gpmlFile, $description) {
 		# Convert gpml to svg
 		$gpmlFile = realpath($gpmlFile);
 		$imgName = $this->getFileName(FILETYPE_IMG);
@@ -190,26 +190,26 @@ class Pathway {
 			throw new Exception("Unable to convert to SVG:\nStatus:$status\nMessage:$msg");
 		}
 		# Upload svg file to wiki
-		return Pathway::saveFileToWiki($imgFile, $imgName);
+		return Pathway::saveFileToWiki($imgFile, $imgName, $description);
 	}
 
-	private function saveMAPP($gpmlFile) {
+	private function saveMAPP($gpmlFile, $description) {
 		//TODO: implement gpml->mapp conversion
 	}
 
-	public function saveGpml($gpmlData) {		
+	public function saveGpml($gpmlData, $description) {		
 		$file = $this->getFileName(FILETYPE_GPML);
 		wfDebug("Saving GPML file: $file\n");
 		$tmp = "tmp/" . $file;
 	
 		writeFile($tmp, $gpmlData);
-		return Pathway::saveFileToWiki($tmp, $file);
+		return Pathway::saveFileToWiki($tmp, $file, $description);
 	}
 	
 	## Based on SpecialUploadForm.php
 	## Assumes $saveName is already checked to be a valid Title
 	//TODO: run hooks
-	static function saveFileToWiki( $fileName, $saveName ) {
+	static function saveFileToWiki( $fileName, $saveName, $description ) {
 		global $wgLoadBalancer, $wgUser;
 				
 		# Check uploading enabled
@@ -263,7 +263,7 @@ class Pathway {
 		# Update the image page
 		$img = Image::newFromName( $saveName );
 		$success = $img->recordUpload( $oldVersion,
-			                           'PathVisio edit',
+			                           $description,
 			                           wfMsgHtml( 'license' ),
 			                           "", //Copyright
 			                           $fileName,
