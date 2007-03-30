@@ -3,6 +3,8 @@ package wikipathways;
 import gmmlVision.GmmlVision;
 import gmmlVision.GmmlVisionMain;
 import gmmlVision.GmmlVisionWindow;
+import gmmlVision.GmmlVision.ApplicationEvent;
+import gmmlVision.GmmlVision.ApplicationEventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,18 +30,28 @@ import org.apache.xmlrpc.client.XmlRpcTransportFactory;
 import org.apache.xmlrpc.common.XmlRpcStreamRequestConfig;
 import org.apache.xmlrpc.util.HttpUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.ToolBarContributionItem;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.xml.sax.SAXException;
 
 import util.SwtUtils.SimpleRunnableWithProgress;
+import data.ConverterException;
 import data.GmmlGdb;
 
-public class WikiPathways {
+public class WikiPathways implements ApplicationEventListener {
 	public static String SITE_NAME = "WikiPathways.org";
 	HashMap<String, String> cookie;
 	String rpcURL;
@@ -51,13 +63,25 @@ public class WikiPathways {
 	
 	public WikiPathways() {
 		cookie = new HashMap<String, String>();
+		GmmlVision.addApplicationEventListener(this);
 	}
-	
+
 	public static void main(String[] args)
-	{	
-		//Setup PathVisio
-		final GmmlVisionWindow window = GmmlVision.getWindow();
-		GmmlVisionMain.initiate();
+	{			
+		Display d = new Display();
+		ProgressMonitorDialog pdstart = new ProgressMonitorDialog(new Shell(d, SWT.ON_TOP));
+		try {
+			pdstart.run(true, false, new IRunnableWithProgress() {
+				public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
+					m.beginTask("Starting PathVisio", IProgressMonitor.UNKNOWN);
+					GmmlVisionMain.initiate();				
+					m.done();
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace(); //Log not started yet
+		}
+		d.dispose();
 				
 		//Parse comman-line arguments
 		final WikiPathways wiki = new WikiPathways();
@@ -96,19 +120,23 @@ public class WikiPathways {
 			}
 		}
 		
+		final GmmlVisionWindow window = GmmlVision.getWindow();
+		
 		//Start PathVisio in a seperate thread
 		Thread thr = new Thread() {
-			public void run() {
+			public void run() {				
 				window.setBlockOnOpen(true);
+				wiki.addSaveButton(window);
 				window.open();
-				
-				GmmlGdb.close();				
+			
 				Display.getCurrent().dispose();
+				GmmlGdb.close();
 			}
 		};
 		thr.start();
 		
 		//Wait for PathVisio to startup
+		GmmlVision.log.trace("\t> Waiting for window to open");
 		while(window.getShell() == null) {
 			try {
 				Thread.sleep(50);
@@ -118,20 +146,20 @@ public class WikiPathways {
 		}
 		
 		//Open the pathway
-		Shell wshell = GmmlVision.getWindow().getShell();
-		
+		GmmlVision.log.trace("Opening pathway " + wiki.pwURL);
+		final Shell wshell = GmmlVision.getWindow().getShell();
 		final SimpleRunnableWithProgress sp = new SimpleRunnableWithProgress(
 				WikiPathways.class, "openPathwayURL", new Class[] {}, new Object[] {}, wiki);
 		SimpleRunnableWithProgress.setMonitorInfo(
 				"Downloading patwhay from " + SITE_NAME, IProgressMonitor.UNKNOWN);
 		
-		final ProgressMonitorDialog pd1 = new ProgressMonitorDialog(wshell);
+		final ProgressMonitorDialog pd = new ProgressMonitorDialog(wshell);
 		wshell.getDisplay().syncExec(new Runnable() {
 			public void run() {
 				try {
-					pd1.run(true, false, sp);
+					pd.run(true, false, sp);
 				} catch (Exception e) {
-					//Exception handled by SimpleRunnableWithProgress
+					error(wshell, "Unable to open pathway", e);
 					GmmlVision.exit();
 					System.exit(-1);
 				}
@@ -139,42 +167,17 @@ public class WikiPathways {
 		});
 				
 		//Wait for user to finish editing
-		while(thr.isAlive()) {
+		while(window.getShell() != null && !window.getShell().isDisposed()) {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				break;
 			}
 		}
+		GmmlVision.log.trace("PathVisio window closed");
 		
-		//Save the pathway back to the wiki
-		if(wiki.getLocalFile() != null) {
-			final Shell shell = new Shell(SWT.ON_TOP);
-			final File fgpmlFile = wiki.getLocalFile();
-			try {
-				IRunnableWithProgress op = new IRunnableWithProgress() {
-					public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
-						try {
-							m.beginTask("Saving pathway to " + SITE_NAME, IProgressMonitor.UNKNOWN);
-							wiki.saveToWiki(fgpmlFile);
-							m.done();
-						} catch(Exception e) {
-							throw new InvocationTargetException(e);
-						}
-					}
-				};
-				ProgressMonitorDialog pd2 = new ProgressMonitorDialog(shell);
-				pd2.run(true, false, op);
-				MessageDialog.openInformation(shell, "Info", "Pathway saved to " + SITE_NAME + 
-						", please press 'refresh' in your browser or hit F5 to refresh the pathway image");
-				
-			} catch (InvocationTargetException e) {
-				// handle exception
-				error(shell, "Unable to save pathway to wiki", e.getCause());
-			} catch (InterruptedException ie) {
-				error(shell, "Unable to save pathway to wiki", ie);
-			}
-		}
+		//ApplicationEventListener will now save the pathway to the wiki
+		
 		//Close log stream
 		GmmlVision.log.getStream().close();
 	}
@@ -196,7 +199,7 @@ public class WikiPathways {
 			public void run() {
 				Throwable ex = e;
 				if(ex instanceof InvocationTargetException) ex = ex.getCause();
-				MessageDialog.openError(shell, error, e != null ? e.getMessage() : "No message specified");
+				MessageDialog.openError(shell, error, ex != null ? ex.getMessage() : "No message specified");
 			}
 		});
 	}
@@ -207,6 +210,7 @@ public class WikiPathways {
 	
 	public void openPathwayURL() throws MalformedURLException, IOException {
 		localFile = GmmlVision.openPathway(new URL(pwURL));
+		GmmlVision.switchEditMode(true);
 	}
 	
 	protected File getLocalFile() { return localFile; }
@@ -227,13 +231,55 @@ public class WikiPathways {
 		this.rpcURL = rpcURL;
 	}
 	
-	protected void saveToWiki(File gpmlFile) throws XmlRpcException, IOException {
+	void addSaveButton(GmmlVisionWindow w) {
+		ToolBarContributionItem tc = (ToolBarContributionItem)w.getCoolBarManager().find("CommonActions");
+		
+		tc.getToolBarManager().add(new ControlContribution("SaveToWiki") {
+			protected Control createControl(Composite parent) {
+				final Button b = new Button(parent, SWT.PUSH);
+				//b.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_GREEN));
+				b.setText("Save to " + SITE_NAME);
+				b.setToolTipText("Save current pathway as '" + pwName + "' on " + SITE_NAME);
+				b.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						saveUI();
+					}
+				});
+				return b;
+			}
+		});
+	}
+	
+	private class WikiAction extends Action {
+		public WikiAction() {
+			setText ("&Save to WikiPathways.org@Ctrl+W");
+			setToolTipText ("Save current pathway to WikiPathways.org as " + pwName);
+		}
+		public void run () {
+			saveUI();
+		}
+	}
+	
+	protected void saveToWiki(String description) throws XmlRpcException, IOException, ConverterException {		
+		//TODO: check if changed
+		if(GmmlVision.getGmmlData().isChanged()) {
+			File gpmlFile = getLocalFile();
+			//Save current pathway to local file
+			GmmlVision.savePathway(gpmlFile);
+			saveToWiki(description, gpmlFile);
+		} else {
+			GmmlVision.log.trace("No changes made, ignoring save");
+			//Do nothing, no changes made
+		}
+	}
+	
+	protected void saveToWiki(String description, File gpmlFile) throws XmlRpcException, IOException {	
 		XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 		config.setServerURL(new URL(rpcURL));
-		
+	
 		XmlRpcClient client = new XmlRpcClient();
 		XmlRpcCookieTransportFactory ctf = new XmlRpcCookieTransportFactory(client);
-		
+	
 		XmlRpcCookieHttpTransport ct = (XmlRpcCookieHttpTransport)ctf.getTransport();
 		for(String key : cookie.keySet()) {
 			ct.addCookie(key, cookie.get(key));
@@ -246,10 +292,67 @@ public class WikiPathways {
 		byte[] data = new byte[(int)raf.length()];
 		raf.readFully(data);
 		byte[] data64 = Base64.encodeBase64(data);
-		Object[] params = new Object[]{ pwName, pwSpecies, data64 };
+		Object[] params = new Object[]{ pwName, pwSpecies, description, data64 };
+				
 		client.execute("WikiPathways.updatePathway", params);
 	}
-	
+
+	protected void saveUI() {
+		if(getLocalFile() != null) {
+			Shell shell = GmmlVision.getWindow().getShell();
+			
+			//Dialog for modification description
+			InputDialog dialog = new InputDialog(shell, "Save to " + SITE_NAME, "Please specify an edit summary (description of changes)", "", null);
+			int status = dialog.open();
+			if(status == InputDialog.CANCEL) {
+				return;
+			}
+			final String descr = dialog.getValue();
+			
+			//Progressbar for saving pathway
+			try {
+				IRunnableWithProgress op = new IRunnableWithProgress() {
+					public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
+						try {
+							m.beginTask("Saving pathway to " + SITE_NAME, IProgressMonitor.UNKNOWN);
+							saveToWiki(descr);
+							m.done();
+						} catch(Exception e) {
+							throw new InvocationTargetException(e);
+						}
+					}
+				};
+				ProgressMonitorDialog pd2 = new ProgressMonitorDialog(shell);
+				
+				GmmlVision.log.trace("Saving to wiki: " + System.currentTimeMillis());
+				pd2.run(true, false, op);
+				GmmlVision.log.trace("Finished: " + System.currentTimeMillis());
+				
+				MessageDialog.openInformation(shell, "Info", "Pathway saved to " + SITE_NAME + 
+						", please press 'refresh' in your browser or hit F5 to refresh the pathway image");
+				
+			} catch (InvocationTargetException e) {
+				// handle exception
+				error(shell, "Unable to save pathway to wiki", e.getCause());
+			} catch (InterruptedException ie) {
+				error(shell, "Unable to save pathway to wiki", ie);
+			}
+		}
+	}
+
+	public void applicationEvent(ApplicationEvent e) {
+		switch(e.type) {
+		case ApplicationEvent.CLOSE_APPLICATION:
+			if(GmmlVision.getGmmlData().isChanged()) {
+				MessageDialog.openQuestion(GmmlVision.getWindow().getShell(), "Save pathway?", 
+						"Do you want to save the changes to " + pwName + " on " + SITE_NAME + "?");
+				saveUI();
+			} else {
+				//Silently close
+			}
+		}
+	}
+
 	static class XmlRpcCookieTransportFactory implements XmlRpcTransportFactory {
 		private final XmlRpcCookieHttpTransport TRANSPORT;
 

@@ -1050,26 +1050,15 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 			if(GmmlVision.isDrawingOpen())
 			{
 				GmmlDrawing drawing = GmmlVision.getDrawing();
-				if(isChecked())
-				{
-					//Switch to edit mode: show edit toolbar, show property table in sidebar
-					drawing.setEditMode(true);
-					showEditActionsCI(true);
-					rightPanel.getTabFolder().setSelection(1);
-				}
-				else
-				{
-					//Switch to view mode: hide edit toolbar, show backpage browser in sidebar
-					drawing.setEditMode(false);
-					showEditActionsCI(false);
-					rightPanel.getTabFolder().setSelection(0);
-				}
-			}
-			else //No gpml pathway loaded, deselect action and do nothing
-			{
+				//Switch to edit mode: show edit toolbar, show property table in sidebar
+				drawing.setEditMode(isChecked());
+				showEditActionsCI(isChecked());
+				rightPanel.getTabFolder().setSelection(isChecked() ? 1 : 0);
+				switchEditModeAction.setChecked(isChecked());
+				getCoolBarManager().update(true);
+			} else {//No gpml pathway loaded, deselect action and do nothing
 				setChecked(false);
 			}
-			getCoolBarManager().update(true);
 		}
 		
 		public void setChecked(boolean check) {
@@ -1077,12 +1066,6 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 			setToolTipText(check ? ttChecked : ttUnChecked);
 		}
 		
-		public void switchEditMode(boolean edit) {
-			setChecked(edit);
-			run();
-			
-		}
-
 		public void applicationEvent(ApplicationEvent e) {
 			if(e.type == ApplicationEvent.OPEN_PATHWAY) {
 				GmmlVision.getDrawing().setEditMode(isChecked());
@@ -1094,6 +1077,15 @@ public class GmmlVisionWindow extends ApplicationWindow implements
 	}
 	private SwitchEditModeAction switchEditModeAction = new SwitchEditModeAction(this);
 		
+	/**
+	 * Switch edit mode on or off. In edit mode the pathway drawing can be edited
+	 * @param edit if true, edit mode is switched on, if false edit mode is switched off
+	 */
+	public void switchEditMode(boolean edit) {
+		switchEditModeAction.setChecked(edit);
+		switchEditModeAction.run();
+	}
+	
 	/**
 	 * {@link Action} to show or hide the right sidepanel
 	 */

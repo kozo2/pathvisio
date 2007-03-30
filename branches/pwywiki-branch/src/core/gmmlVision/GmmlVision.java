@@ -77,7 +77,8 @@ public abstract class GmmlVision {
 	static boolean USE_R;
 			
 	/**
-	 * Get the {@link ApplicationWindow}, the UI of the program
+	 * Get the {@link ApplicationWindow}, the UI of the program. Will be created if
+	 * it doesn't exist yet
 	 */
 	public static GmmlVisionWindow getWindow() {
 		if(window == null) window = new GmmlVisionWindow();
@@ -162,6 +163,22 @@ public abstract class GmmlVision {
 		return drawing;
 	}
 		
+	/**
+	 * Switch edit mode on or off. In edit mode the pathway drawing can be edited
+	 * @param edit if true, edit mode is switched on, if false edit mode is switched off
+	 */
+	public static void switchEditMode(final boolean edit) {
+		if(checkThread()) {
+			getWindow().switchEditMode(edit);
+		} else {
+			Display.getDefault().syncExec(new Runnable() {
+				public void run() {
+					getWindow().switchEditMode(edit);
+				}
+			});
+		}
+	}
+	
 	/**
 	 * Returns the currently open GmmlData
 	 */
@@ -270,7 +287,16 @@ public abstract class GmmlVision {
 			});
 		}
 	}
-
+	
+	//Not from outside UI thread yet...TODO: find a way to handle exceptions in Runnable
+	public static void savePathway(final File toFile) throws ConverterException {
+		doSavePathway(toFile);
+	}
+	
+	private static void doSavePathway(File toFile) throws ConverterException {
+		getGmmlData().writeToXml(toFile, true);
+	}
+	
 	/**
 	 * Exits PathVisio
 	 */

@@ -93,8 +93,18 @@ public class GmmlData implements GmmlListener
 		return dataObjects;
 	}
 	
+	private boolean changed = false; //Is set to true when a change is made to the pathway
+	
 	private GmmlDataObject mappInfo = null;
 	private GmmlDataObject infoBox = null;
+	
+	/**
+	 * Find out whether changes have been made to the pathway since it's opened
+	 * @return true when changes are made, false if not
+	 */
+	public boolean isChanged() {
+		return changed;
+	}
 	
 	/**
 	 * get the one and only MappInfo object.
@@ -362,6 +372,8 @@ public class GmmlData implements GmmlListener
 		{
 			throw new ConverterException(ie);
 		}
+		//Reset changed flag
+		changed = false;
 	}
 	
 	public void readFromXml(File file, boolean validate) throws ConverterException
@@ -485,6 +497,10 @@ public class GmmlData implements GmmlListener
 		undoManager.undo();
 	}
 
+	public UndoManager getUndoManager() {
+		return undoManager;
+	}
+	
 	/**
 	 * register undo actions,
 	 * disabled for the moment.
@@ -504,6 +520,7 @@ public class GmmlData implements GmmlListener
 				undoManager.newRemoveAction(e.getAffectedData());
 				break;
 		}
+		if(!changed) changed = true;
 	}
 
 }
