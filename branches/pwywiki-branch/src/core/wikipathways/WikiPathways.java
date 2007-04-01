@@ -249,17 +249,7 @@ public class WikiPathways implements ApplicationEventListener {
 			}
 		});
 	}
-	
-	private class WikiAction extends Action {
-		public WikiAction() {
-			setText ("&Save to WikiPathways.org@Ctrl+W");
-			setToolTipText ("Save current pathway to WikiPathways.org as " + pwName);
-		}
-		public void run () {
-			saveUI();
-		}
-	}
-	
+		
 	protected void saveToWiki(String description) throws XmlRpcException, IOException, ConverterException {		
 		//TODO: check if changed
 		if(GmmlVision.getGmmlData().isChanged()) {
@@ -282,6 +272,7 @@ public class WikiPathways implements ApplicationEventListener {
 	
 		XmlRpcCookieHttpTransport ct = (XmlRpcCookieHttpTransport)ctf.getTransport();
 		for(String key : cookie.keySet()) {
+			GmmlVision.log.trace("Setting cookie: " + key + "=" + cookie.get(key));
 			ct.addCookie(key, cookie.get(key));
 		}
 		
@@ -367,7 +358,7 @@ public class WikiPathways implements ApplicationEventListener {
 	 * HTTP header, based on the {@link java.net.HttpURLConnection} class.
 	 */
 	public static class XmlRpcCookieHttpTransport extends XmlRpcHttpTransport {
-		private static final String userAgent = USER_AGENT + " (Sun HTTP Transport)";
+		private static final String userAgent = USER_AGENT + " (Sun HTTP Transport, mod Thomas)";
 		private static final String cookieHeader = "Cookie";
 		private URLConnection conn;
 		private HashMap<String, String> cookie;
@@ -384,7 +375,7 @@ public class WikiPathways implements ApplicationEventListener {
 		protected void setCookies() {
 			String cookieString = null;
 			for(String key : cookie.keySet()) {
-				cookieString = cookieString + "; " + key + "=" + cookie.get(key);
+				cookieString = (cookieString == null ? "" : cookieString + "; ") + key + "=" + cookie.get(key);
 			}
 			if(cookieString != null) {
 				conn.setRequestProperty(cookieHeader, cookieString);

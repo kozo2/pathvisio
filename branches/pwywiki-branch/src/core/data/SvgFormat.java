@@ -213,7 +213,7 @@ public class SvgFormat
 		Element e = new Element("text", nsSVG);
 		e.setAttribute("x", "" + toPixel(o.getMCenterX()));
 		e.setAttribute("y", "" + (toPixel(o.getMCenterY()) + toPixel(o.getMFontSize())));
-		e.setAttribute("font-family", o.getFontName() + ".ttf"); 
+		e.setAttribute("font-family", o.getFontName()); 
 		e.setAttribute("font-size",toPixel(o.getMFontSize()) + "pt");
 		e.setAttribute("text-anchor", "middle");
 		//e.setAttribute("alignment-baseline", "middle"); //Not supported by firefox
