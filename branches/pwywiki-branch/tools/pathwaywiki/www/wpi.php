@@ -2,19 +2,16 @@
 define("FILETYPE_IMG", "img");
 define("FILETYPE_GPML", "gpml");
 define("FILETYPE_MAPP", "mapp");
+define("NS_PATHWAY", 100);
+define("NS_PATHWAY_TALK", 101);
 
 //Initialize MediaWiki
-#define( 'MEDIAWIKI', true );
-#require_once( '../includes/Defines.php' );
-#require_once( '../LocalSettings.php' );
+set_include_path(get_include_path().PATH_SEPARATOR.realpath('../includes').PATH_SEPARATOR.realpath('../').PATH_SEPARATOR);
 $dir = getcwd();
-chdir("../");
-#require_once( '.StartProfiler.php' );
-require_once ( 'includes/WebStart.php');
-require_once( 'includes/Wiki.php' );
+chdir("../"); //Ugly, but we need to change to the MediaWiki install dir to include these files, otherwise we'll get an error
+require_once ( 'WebStart.php');
+require_once( 'Wiki.php' );
 chdir($dir);
-
-$wgDebugLogFile = 'debug.txt';
 
 //Parse HTTP request
 $action = $_GET['action'];
@@ -43,7 +40,7 @@ function launchPathVisio($pwTitle) {
 	$arg .= createJnlpArg("-pwSpecies", $pathway->species());
 	//Add pathway url
 	$arg .= createJnlpArg("-pwUrl", "http://" . $_SERVER['HTTP_HOST'] . $gpml->getURL());
-	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wikipathways/wpi/wpi_rpc.php");
+	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wpi/wpi_rpc.php");
 	
 	//Add commandline arguments (replace <!--ARG-->)
 	$webstart = str_replace("<!--ARG-->", $arg, $webstart);
@@ -102,15 +99,24 @@ class Pathway {
 		$this->pwSpecies = $species;
 	}
 	
-	public static function newFromTitle($title) {
+	public function newFromTitle($title) {
+		if($title instanceof Title) {
+			$title = $title->getFullText();
+		}
+		
 		$name = Pathway::nameFromTitle($title);
 		$species = Pathway::speciesFromTitle($title);
 		$code = Pathway::$spName2Code[$species]; //Check whether this is a valid species
 		if($name && $code) {
 			return new Pathway($name, $species);
 		} else {
-			throw new Exception("Couldn't parse pathway article title: $title");
+			throw new Exception("Couldn't parse pathway article title: $title->getText()");
 		}
+	}
+	
+	public function getTitleObject() {
+		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
+		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
 	
 	private static function nameFromTitle($title) {
@@ -168,6 +174,10 @@ class Pathway {
 		return $title;
 	}
 
+	public function getImageTitle() {
+		return $this->getFileTitle(FILETYPE_IMG);
+	}
+	
 	public function updatePathway($gpmlData, $description) {
 		$gpmlFile = $this->saveGpml($gpmlData, $description);
 		$this->saveImage($gpmlFile, "Converted from GPML");
@@ -178,7 +188,7 @@ class Pathway {
 		# Convert gpml to svg
 		$gpmlFile = realpath($gpmlFile);
 		$imgName = $this->getFileName(FILETYPE_IMG);
-		$imgFile = realpath(".") . "/" . $imgName;
+		$imgFile = realpath('tmp') . '/' . $imgName;
 
 		exec("java -jar bin/pathvisio_convert.jar $gpmlFile $imgFile", $output, $status);
 		
@@ -212,6 +222,7 @@ class Pathway {
 	static function saveFileToWiki( $fileName, $saveName, $description ) {
 		global $wgLoadBalancer, $wgUser;
 				
+		wfDebug("========= UPLOADING FILE FOR WIKIPATHWAYS ==========\n");
 		# Check uploading enabled
 		#if( !$wgEnableUploads ) {
 		#	return "Uploading is disabled";
@@ -224,7 +235,7 @@ class Pathway {
 			}
 		} else {
 			//Print out http headers (for debugging)
-			$hds = apache_request_headers();
+			$hds = $_SERVER;
 			wfDebug("REQUEST HEADERS\n");
 			foreach (array_keys($hds) as $key) {
 				wfDebug($key . "=" . $hds[$key] . "\n");

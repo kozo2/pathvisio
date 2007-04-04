@@ -1,6 +1,7 @@
 <?php
 
 error_reporting(E_ERROR); //Supress warnings etc...will disrupt the rpc response
+
 //Load XML-RCP libraries
 require("includes/xmlrpc.inc");
 require("includes/xmlrpcs.inc");
