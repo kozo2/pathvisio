@@ -119,6 +119,10 @@ class Pathway {
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
 	
+	public static function getAvailableSpecies() {
+		return array_keys(Pathway::$spName2Code);
+	}
+	
 	private static function nameFromTitle($title) {
 		$parts = explode(':', $title);
 
