@@ -43,9 +43,9 @@ function getPathwayInfo( &$parser, $pathway, $type ) {
 	switch($type) {
 		case 'comments':
 			foreach($gpml->Comment as $comment) {
-				$output .= "; " . $comment['Source'] . " : " . $comment . "<br>";
+				$output .= "; " . $comment['Source'] . " : " . $comment . "\n";
 			}
-			return '<nowiki>' . $output . '</nowiki>';
+			return $output;
 		case 'datanodes':
 		default: //DataNode list
 			$table = <<<TABLE
