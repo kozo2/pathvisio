@@ -183,7 +183,13 @@ class Pathway {
 		$this->saveImage($gpmlFile, "Converted from GPML");
 		$this->saveMAPP($gpmlFile, "Converted from GPML");
 	}
-
+	
+	public function updateSVG() {
+		$file = $this->getFileName(FILETYPE_GPML);
+		$gpml = wfImageDir($file) . "/$file";
+		$this->saveImage($gpml, "Updated from GPML");
+	}
+	
 	private function saveImage($gpmlFile, $description) {
 		# Convert gpml to svg
 		$gpmlFile = realpath($gpmlFile);
