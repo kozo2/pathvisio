@@ -164,6 +164,11 @@ class Pathway {
 		return $this->getFileTitle($fileType)->getDBKey();
 	}
 	
+	public function getFileLocation($fileType) {
+		$fn = $this->getFileName($fileType);
+		return wfImageDir( $fn ) . "/$fn";
+	}
+	
 	public function getFileTitle($fileType) {
 		$fileName = $this->getSpeciesCode() . "_" . $this->pwName . "." . $this->file_ext[$fileType];
 		/*
