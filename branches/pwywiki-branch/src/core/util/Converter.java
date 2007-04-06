@@ -99,7 +99,7 @@ public class Converter {
         // Handle command line arguments
         // Check for custom output path
         Logger log = new Logger();
-		log.setStream (System.err);		
+		log.setStream (System.out);		
 						//debug, trace, info, warn, error, fatal
 		log.setLogLevel (false, false, true, true, true, true);
 		
