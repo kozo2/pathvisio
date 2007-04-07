@@ -43,7 +43,13 @@ function getPathwayInfo( &$parser, $pathway, $type ) {
 	switch($type) {
 		case 'comments':
 			foreach($gpml->Comment as $comment) {
-				$output .= "; " . $comment['Source'] . " : " . $comment . "\n";
+				$text = (string)$comment;
+				$text = htmlentities($text);
+				$text = nl2br($text);
+				$text = formatPubMed($text);
+				//$text = str_replace('&#xD','<br>',$text);
+				if(!$text) continue;
+				$output .= "; " . $comment['Source'] . " : " . $text . "\n";
 			}
 			return $output;
 		case 'datanodes':
@@ -73,6 +79,18 @@ TABLE;
 	}
 }
 
+function formatPubMed($text) {
+	//PMID: 10982831
+	$link = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=pubmed&cmd=Retrieve&dopt=AbstractPlus&list_uids=";
+	if(ereg("PMID ([0-9]+) ", $text, $ids)) {
+		wfDebug("MATCHED PMID");
+		foreach($ids as $id) {
+			$text = str_replace($id, "[$link $id]", $text);
+		}
+	}
+	return $text;
+}
+
 function getUniqueDataNodes($gpml, $uniqueAttribute) {
 	$unique = array();
 	foreach($gpml->DataNode as $node) {
@@ -89,7 +107,9 @@ function getXrefLink($xref) {
 	case 'Ensembl':
 		return "http://www.ensembl.org/Homo_sapiens/searchview?species=all&idx=Gene&q=" . $id;
 	case 'Entrez Gene':
-		return "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=gene&cmd=Retrieve&dopt=full_report&list_uids=" . $id; 
+		return "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=gene&cmd=Retrieve&dopt=full_report&list_uids=" . $id;
+	default:
+		return $id;
 	}
 }
 
