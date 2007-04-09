@@ -1,5 +1,5 @@
 <?php
-define("FILETYPE_IMG", "img");
+define("FILETYPE_IMG", "svg");
 define("FILETYPE_GPML", "gpml");
 define("FILETYPE_MAPP", "mapp");
 define("FILETYPE_PNG", "png");
