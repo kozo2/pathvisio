@@ -82,10 +82,9 @@ TABLE;
 function formatPubMed($text) {
 	//PMID: 10982831
 	$link = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=pubmed&cmd=Retrieve&dopt=AbstractPlus&list_uids=";
-	if(ereg("PMID ([0-9]+) ", $text, $ids)) {
-		wfDebug("MATCHED PMID");
-		foreach($ids as $id) {
-			$text = str_replace($id, "[$link $id]", $text);
+	if(preg_match_all("/PMID: ([0-9]+)/", $text, $ids)) {
+		foreach($ids[1] as $id) {
+			$text = str_replace($id, "[$link$id $id]", $text);
 		}
 	}
 	return $text;
