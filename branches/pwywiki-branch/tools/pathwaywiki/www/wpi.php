@@ -249,13 +249,14 @@ class Pathway {
 		return Pathway::saveFileToWiki($tmp, $file, $description);
 	}
 	
-	private function savePng() {
+	private function savePng($width) {
 		global $wgSVGConverters, $wgSVGConverter, $wgSVGConverterPath;
 		
 		$input = $this->getFileLocation(FILETYPE_IMG);
 		$output = $this->getFileLocation(FILETYPE_PNG);
 		
-		$width = 1000;
+		if(!$width) $width = 2000;
+
 		$retval = 0;
 		if(isset($wgSVGConverters[$wgSVGConverter])) {
 			$cmd = str_replace( //TODO: calculate proper height for rsvg
