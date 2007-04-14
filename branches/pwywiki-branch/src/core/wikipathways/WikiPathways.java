@@ -335,9 +335,11 @@ public class WikiPathways implements ApplicationEventListener {
 		switch(e.type) {
 		case ApplicationEvent.CLOSE_APPLICATION:
 			if(GmmlVision.getGmmlData().isChanged()) {
-				MessageDialog.openQuestion(GmmlVision.getWindow().getShell(), "Save pathway?", 
+				boolean doit = MessageDialog.openQuestion(GmmlVision.getWindow().getShell(), "Save pathway?", 
 						"Do you want to save the changes to " + pwName + " on " + SITE_NAME + "?");
-				saveUI();
+				if(doit) {
+					saveUI();
+				}
 			} else {
 				//Silently close
 			}
