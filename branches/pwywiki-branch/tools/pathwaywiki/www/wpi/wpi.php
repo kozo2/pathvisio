@@ -1,9 +1,15 @@
 <?php
-define("FILETYPE_IMG", "img");
+define("FILETYPE_IMG", "svg");
 define("FILETYPE_GPML", "gpml");
 define("FILETYPE_MAPP", "mapp");
+define("FILETYPE_PNG", "png");
 define("NS_PATHWAY", 100);
 define("NS_PATHWAY_TALK", 101);
+
+//Constants
+$wpiScriptPath = 'wpi';
+$wpiScriptFile = 'wpi.php';
+$wpiScript = "$wpiScriptPath/$wpiScriptFile"; //TODO: use this variable
 
 //Initialize MediaWiki
 set_include_path(get_include_path().PATH_SEPARATOR.realpath('../includes').PATH_SEPARATOR.realpath('../').PATH_SEPARATOR);
@@ -18,6 +24,9 @@ $action = $_GET['action'];
 switch($action) {
 case 'launchPathVisio':
 	launchPathVisio($_GET['pwTitle']);
+	break;
+case 'downloadFile':
+	downloadFile($_GET['type'], $_GET['pwTitle']);
 	break;
 }
 
@@ -55,12 +64,20 @@ function launchPathVisio($pwTitle) {
 		$wsFile = tempnam(getcwd() . "/tmp",$pathway->name());
 		writeFile($wsFile, $webstart);
 		//echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"'; #For local tests
-		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wikipathways/wpi/tmp/' . basename($wsFile) . '"';
+		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"';
 	} else { //return webstart file directly
 		header("Content-type: application/x-java-jnlp-file");
 		header("Content-Disposition: attachment; filename=\"PathVisio.jnlp\"");
 		echo $webstart;
 	}
+	exit;
+}
+
+function downloadFile($fileType, $pwTitle) {
+	$pathway = Pathway::newFromTitle($pwTitle);
+	$url = $pathway->getFileURL($fileType);
+	header("Location: $url");
+	//echo("{$pathway->name()} | Type: $fileType | URL: $url");
 	exit;
 }
 
@@ -82,9 +99,16 @@ function createJnlpArg($flag, $value) {
 
 $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');//TODO: complete
 
+function toGlobalLink($localLink) {
+	if($wgScriptPath && $wgScriptPath != '') {
+		$wgScriptPath = "$wgScriptPath/";
+	}
+	return urlencode("http://" . $_SERVER['HTTP_HOST'] . "$wgScriptPath$localLink");
+}
+
 class Pathway {
 	private static $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');//TODO: complete
-	private $file_ext = array(FILETYPE_IMG => 'svg', FILETYPE_GPML => 'gpml', FILETYPE_MAPP => 'mapp');
+	private $file_ext = array(FILETYPE_IMG => 'svg', FILETYPE_GPML => 'gpml', FILETYPE_MAPP => 'mapp', FILETYPE_PNG => 'png');
 
 	private $spCode2Name;
 	private $pwName;
@@ -169,6 +193,13 @@ class Pathway {
 		return wfImageDir( $fn ) . "/$fn";
 	}
 	
+	public function getFileUrl($fileType) {
+		if($fileType == FILETYPE_PNG || $fileType == FILETYPE_MAPP) {
+			$this->updateCache($fileType);
+		}
+		return "http://" . $_SERVER['HTTP_HOST'] . Image::imageURL($this->getFileName($fileType));
+	}
+	
 	public function getFileTitle($fileType) {
 		$fileName = $this->getSpeciesCode() . "_" . $this->pwName . "." . $this->file_ext[$fileType];
 		/*
@@ -190,10 +221,9 @@ class Pathway {
 	public function updatePathway($gpmlData, $description) {
 		$gpmlFile = $this->saveGpml($gpmlData, $description);
 		$this->saveImage($gpmlFile, "Converted from GPML");
-		$this->saveMAPP($gpmlFile, "Converted from GPML");
 	}
 	
-	public function updateSVG() {
+	public function updateImage() {
 		$file = $this->getFileName(FILETYPE_GPML);
 		$gpml = wfImageDir($file) . "/$file";
 		$this->saveImage($gpml, "Updated from GPML");
@@ -205,7 +235,7 @@ class Pathway {
 		$imgName = $this->getFileName(FILETYPE_IMG);
 		$imgFile = realpath('tmp') . '/' . $imgName;
 
-		exec("java -jar bin/pathvisio_convert.jar $gpmlFile $imgFile", $output, $status);
+		exec("java -jar bin/pathvisio_convert.jar $gpmlFile $imgFile 2>&1", $output, $status);
 		
 		foreach ($output as $line) {
 			$msg .= $line . "\n";
@@ -218,17 +248,75 @@ class Pathway {
 		return Pathway::saveFileToWiki($imgFile, $imgName, $description);
 	}
 
-	private function saveMAPP($gpmlFile, $description) {
+	private function saveMAPP() {
 		//TODO: implement gpml->mapp conversion
 	}
 
-	public function saveGpml($gpmlData, $description) {		
+	private function saveGpml($gpmlData, $description) {		
 		$file = $this->getFileName(FILETYPE_GPML);
 		wfDebug("Saving GPML file: $file\n");
 		$tmp = "tmp/" . $file;
 	
 		writeFile($tmp, $gpmlData);
+		
+		//Update the description page (contains the xml code)
+		$article = new Article($this->getFileTitle(FILETYPE_GPML));
+		$article->doEdit("<xml>$gpmlData</xml>", "updated GPML data", EDIT_UPDATE | EDIT_FORCE_BOT);
 		return Pathway::saveFileToWiki($tmp, $file, $description);
+	}
+	
+	private function savePng() {
+		global $wgSVGConverters, $wgSVGConverter, $wgSVGConverterPath;
+		
+		$input = $this->getFileLocation(FILETYPE_IMG);
+		$output = $this->getFileLocation(FILETYPE_PNG);
+		
+		$width = 1000;
+		$retval = 0;
+		if(isset($wgSVGConverters[$wgSVGConverter])) {
+			$cmd = str_replace( //TODO: calculate proper height for rsvg
+				array( '$path/', '$width', '$input', '$output' ),
+				array( $wgSVGConverterPath ? wfEscapeShellArg( "$wgSVGConverterPath/" ) : "",
+				intval( $width ),
+				wfEscapeShellArg( $input ),
+				wfEscapeShellArg( $output ) ),
+				$wgSVGConverters[$wgSVGConverter] ) . " 2>&1";
+			$err = wfShellExec( $cmd, $retval );
+			if($retval != 0 || !file_exists($output)) {
+				throw new Exception("Unable to convert to png: $err\nCommand: $cmd");
+			}
+		} else {
+			throw new Exception("Unable to convert to png, no SVG rasterizer found");
+		}
+	}
+	
+	private function updateCache($fileType) {
+		if($this->isOutOfDate($fileType)) {
+			wfDebug("Updating cached file for $fileType");
+			switch($fileType) {
+			case FILETYPE_PNG:
+				$this->savePng();
+				break;
+			case FILETYPE_MAPP:
+				$this->saveMapp();
+				break;
+			}	
+		}
+	}
+	
+	//Check if the cached version of the GPML derived file is out of date
+	//valid for FILETYPE_MAPP and FILETYPE_PNG
+	private function isOutOfDate($fileType) {
+		if($fileType == FILETYPE_GPML || $fileType == FILETYPE_IMG) {
+			return false; //These files are handled by MediaWiki
+		}
+		$gpml = $this->getFileLocation(FILETYPE_GPML);
+		$file = $this->getFileLocation($fileType);
+		if(file_exists($file)) {
+			return filemtime($file) < filemtime($gpml);
+		} else { //No cached version yet, so definitely out of date
+			return true;
+		}
 	}
 	
 	## Based on SpecialUploadForm.php
