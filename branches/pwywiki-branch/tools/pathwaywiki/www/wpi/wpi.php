@@ -201,17 +201,26 @@ class Pathway {
 	}
 	
 	public function getFileTitle($fileType) {
-		$fileName = $this->getSpeciesCode() . "_" . $this->pwName . "." . $this->file_ext[$fileType];
-		/*
-		 * Filter out illegal characters, and try to make a legible name
-		 * out of it. We'll strip some silently that Title would die on.
-		 */
-		$filtered = preg_replace ( "/[^".Title::legalChars()."]|:/", '-', $fileName );
-		$title = Title::newFromText( $filtered, NS_IMAGE );
+		$prefix = $this->getFilePrefix();
+		$title = Title::newFromText( "$prefix." . $this->file_ext[$fileType], NS_IMAGE );
 		if(!$title) {
 			throw new Exception("Invalid file title for pathway " + $fileName);
 		}
 		return $title;
+	}
+
+	public function getFilePrefix() {
+		$prefix = $this->getSpeciesCode() . "_" . $this->pwName;
+		/*
+		 * Filter out illegal characters, and try to make a legible name
+		 * out of it. We'll strip some silently that Title would die on.
+		 */
+		$filtered = preg_replace ( "/[^".Title::legalChars()."]|:/", '-', $prefix );
+		$title = Title::newFromText( $filtered, NS_IMAGE );
+		if(!$title) {
+			throw new Exception("Invalid file title for pathway " + $fileName);
+		}
+		return $title->getDBKey();
 	}
 
 	public function getImageTitle() {
