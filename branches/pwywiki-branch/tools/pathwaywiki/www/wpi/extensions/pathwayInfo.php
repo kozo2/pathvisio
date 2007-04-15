@@ -32,6 +32,7 @@ function wfPathwayInfo_Magic( &$magicWords, $langCode ) {
 }
 
 function getPathwayInfo( &$parser, $pathway, $type ) {
+	$parser->disableCache();
 	try {
 		$pathway = Pathway::newFromTitle($pathway);
 		$gpmlFile = $pathway->getFileLocation(FILETYPE_GPML);
@@ -72,7 +73,11 @@ TABLE;
 				$table .= '|' . $datanode['Type'] . "\n";
 				$table .= '|' . $datanode['BackpageHead'] . "\n";
 				$xref = $datanode->Xref;
-				$table .= '|[' . getXrefLink($xref) . " $xref[ID] ($xref[Database])]\n";
+				if(!$xref['ID']) {
+					$table .= '| \n';
+				} else {
+					$table .= '|[' . getXrefLink($xref) . " $xref[ID] ($xref[Database])]\n";
+				}
 			}
 			$table .= '|}';
 			return $table;
@@ -102,11 +107,16 @@ function getUniqueDataNodes($gpml, $uniqueAttribute) {
 function getXrefLink($xref) {
 	$db = $xref['Database'];
 	$id = $xref['ID'];
+
 	switch($db) {
 	case 'Ensembl':
 		return "http://www.ensembl.org/Homo_sapiens/searchview?species=all&idx=Gene&q=" . $id;
 	case 'Entrez Gene':
 		return "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=gene&cmd=Retrieve&dopt=full_report&list_uids=" . $id;
+	case 'SwissProt':
+		return "http://www.expasy.org/uniprot/" . $id;
+	case 'GenBank':
+		return "http://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&id=" . $id;
 	default:
 		return $id;
 	}
