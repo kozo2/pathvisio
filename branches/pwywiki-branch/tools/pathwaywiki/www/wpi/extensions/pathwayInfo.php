@@ -74,7 +74,7 @@ TABLE;
 				$table .= '|' . $datanode['BackpageHead'] . "\n";
 				$xref = $datanode->Xref;
 				if(!$xref['ID']) {
-					$table .= '| \n';
+					$table .= '|-\n';
 				} else {
 					$table .= '|[' . getXrefLink($xref) . " $xref[ID] ($xref[Database])]\n";
 				}
