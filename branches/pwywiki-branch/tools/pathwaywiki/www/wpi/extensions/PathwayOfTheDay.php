@@ -57,10 +57,14 @@ class PathwayOfTheDay {
 	
 	var $todaysPw; //Todays pathway
 	var $today; //Day todaysPw was marked as today's
-	
+		
 	function __construct($date) {
 		PathwayOfTheDay::setupDB(); //TODO: remove this after first use
-		$this->today = $date;
+		if($date) {
+			$this->today = $date;
+		} else {
+			$this->today = date("l j F Y");
+		}
 		$this->todaysPw = $this->fetchTodaysPathway();
 	}
 	
@@ -69,7 +73,7 @@ class PathwayOfTheDay {
 			$pw = "TemplatePathway";
 			$date = "TemplateDate";
 		} else {
-			$pw = $this->todaysPathway($today);
+			$pw = $this->todaysPathway();
 			$name = $pw->name();
 			$species = $pw->species();
 			$article = $pw->getTitleObject()->getFullText();
@@ -88,7 +92,7 @@ class PathwayOfTheDay {
 	}
 	
 	//Get the pathway for today
-	private function todaysPathway($date) {
+	public function todaysPathway() {
 		if(!$this->todaysPw) { //No pathway in history yet
 			$this->brandNewDay();
 		}
@@ -136,6 +140,7 @@ class PathwayOfTheDay {
 				wfDebug("\tTried too often, clearing history\n");
 				//However, if we tried too often, just pick a pathway and reset the pathway list
 				//TODO: 'too often' needs to be the number of pathways...
+				$this->clearHistory();
 				$this->clearHistory();
 				$tried = 0;
 			}

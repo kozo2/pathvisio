@@ -1,9 +1,11 @@
 <?php
 
 require_once("wpi/wpi.php");
+require_once("PathwayOfTheDay.php");
 
 $wgCustomVariables = array(	'PATHWAYNAME','PATHWAYSPECIES', 
-							'PATHWAYIMAGEPAGE', 'PATHWAYGPMLPAGE'
+							'PATHWAYIMAGEPAGE', 'PATHWAYGPMLPAGE',
+							'PATHWAYOFTHEDAY'
 					);
 
 $wgHooks['MagicWordMagicWords'][]          = 'wfAddCustomVariable';
@@ -31,6 +33,11 @@ function wfAddCustomVariableLang(&$langMagic, $langCode = 0) {
 
 function wfGetCustomVariable(&$parser,&$cache,&$index,&$ret) {
         switch ($index) {
+				case MAG_PATHWAYOFTHEDAY:
+						$pwd = new PathwayOfTheDay(null);
+						$pw = $pwd->todaysPathway();
+						$ret = $pw->getTitleObject()->getFullText();
+						break;
                 case MAG_PATHWAYNAME:
 				case MAG_PATHWAYSPECIES:
 				case MAG_PATHWAYIMAGEPAGE:
