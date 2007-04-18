@@ -107,20 +107,34 @@ function toGlobalLink($localLink) {
 }
 
 class Pathway {
-	private static $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');//TODO: complete
+	private static $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');
+	private static $spCode2Name; //TODO: complete species
+	
 	private $file_ext = array(FILETYPE_IMG => 'svg', FILETYPE_GPML => 'gpml', FILETYPE_MAPP => 'mapp', FILETYPE_PNG => 'png');
-
-	private $spCode2Name;
+	
 	private $pwName;
 	private $pwSpecies;
 
 	function __construct($name, $species) {
 		if(!$name) throw new Exception("name argument missing in constructor for Pathway");
 		if(!$species) throw new Exception("species argument missing in constructor for Pathway");
-
+		
 		wfDebug("=== New pathway:\n\tpwName: $name\n\tpwSpecies: $species\n");
 		$this->pwName = $name;
 		$this->pwSpecies = $species;
+	}
+		
+	public static function speciesFromCode($code) {
+		if(!Pathway::$spCode2Name) {
+			foreach(array_keys(Pathway::$spName2Code) as $name) {
+				Pathway::$spCode2Name[Pathway::$spName2Code[$name]] = $name;
+			}
+		}
+		return Pathway::$spCode2Name[$code];
+	}
+	
+	public static function codeFromSpecies($species) {
+		return Pathway::$spName2Code[$species];
 	}
 	
 	public function newFromTitle($title) {
@@ -134,8 +148,21 @@ class Pathway {
 		if($name && $code) {
 			return new Pathway($name, $species);
 		} else {
-			throw new Exception("Couldn't parse pathway article title: $title->getText()");
+			throw new Exception("Couldn't parse pathway article title: $title");
 		}
+	}
+	
+	public function newFromFileTitle($title) {
+		if($title instanceof Title) {
+			$title = $title->getText();
+		}
+		//"Hs_testpathway.ext"
+		if(ereg("^([A-Z][a-z])_(.+)\.[A-Za-z]{3,4}$", $title, $regs)) {
+			$species = Pathway::speciesFromCode($regs[1]);
+			$name = $regs[2];
+		}
+		if(!$name || !$species) throw new Exception("Couldn't parse file title: $title");
+		return new Pathway($name, $species);
 	}
 	
 	public function getTitleObject() {
