@@ -129,10 +129,11 @@ class MEGPMLQueryPage extends QueryPage {
 		$text = $wgContLang->convert( $nt->getPrefixedText() );
 
 		$plink = $skin->makeKnownLinkObj( $nt, $text );
-
+		/* No link to history for now, lateron link to our own pathway history
 		$nl = wfMsgExt( 'nrevisions', array( 'parsemag', 'escape'),
 			$wgLang->formatNum( $result->value ) );
 		$nlink = $skin->makeKnownLinkObj( $nt, $nl, 'action=history' );
+		*/
 
 		return wfSpecialList($plink, $nlink);
 	}
