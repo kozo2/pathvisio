@@ -26,9 +26,9 @@ class SkinWikiPathways extends SkinTemplate {
 	/** Using monobook. */
 	function initPage( &$out ) {
 		SkinTemplate::initPage( $out );
-		$this->skinname  = 'wikiPathways';
-		$this->stylename = 'wikiPathways';
-		$this->template  = 'WikiPathwaysTemplate';
+		$this->skinname  = 'wikipathways';
+		$this->stylename = 'wikipathways';
+		$this->template  = 'WikipathwaysTemplate';
 	}
 }
 

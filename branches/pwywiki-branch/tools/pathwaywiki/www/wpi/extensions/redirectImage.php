@@ -18,8 +18,8 @@ function redirectOnImagePage($out, $text) {
 	$ns = Namespace::getCanonicalName($wgTitle->getNamespace());
 	if($ns == 'Image') {
 		$image = new Image($wgTitle);
-		$url = $image->getURL();
-		$out->redirect($url);
+                $url = $image->getURL();
+                $out->redirect($url);
 		return false;
 	} else {
 		return true;

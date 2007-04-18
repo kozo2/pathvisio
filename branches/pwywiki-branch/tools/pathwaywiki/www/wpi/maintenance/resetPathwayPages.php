@@ -5,6 +5,8 @@ chdir("../"); //Ugly, but we need to change to the MediaWiki install dir to incl
 require_once('wpi.php');
 chdir($dir);
 
+set_time_limit(0);
+
 //Init
 $cats = readCategories("maintenance/pathways.txt");
 
@@ -22,14 +24,16 @@ while( $row = $dbr->fetchRow( $res )) {
 	$gpmlPage = $pathway->getFileTitle(FILETYPE_GPML)->getFullText();
 	$categories = findCategories($pathway, $cats);
 	
-	$text = "{{subst:Template:NewPathwayPage|imagePage=$imagePage|gpmlPage=$gpmlPage|pathwayPage={{FULLPAGENAMEE}}|categories=$categories}}";
+	$text = "{{subst:Template:NewPathwayPage|pathwayPage={{FULLPAGENAMEE}}|categories=$categories}}";
 	
 	if($article->doEdit($text, 'reset', EDIT_UPDATE | EDIT_FORCE_BOT)) {
 		echo "Reset to: $text<br>";
 	} else {
 		echo "UPDATE FAILED";
-	}
-	$wgLoadBalancer->commitAll();
+	}	$wgLoadBalancer->commitAll();
+
+	flush();
+	ob_flush();
 	
 }
 

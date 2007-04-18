@@ -3,8 +3,6 @@ define("FILETYPE_IMG", "svg");
 define("FILETYPE_GPML", "gpml");
 define("FILETYPE_MAPP", "mapp");
 define("FILETYPE_PNG", "png");
-define("NS_PATHWAY", 100);
-define("NS_PATHWAY_TALK", 101);
 
 //Constants
 $wpiScriptPath = 'wpi';
