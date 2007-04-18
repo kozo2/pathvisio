@@ -126,7 +126,7 @@ class MEGPMLQueryPage extends QueryPage {
 		$pathway = Pathway::newFromFileTitle($result->title);
 		
 		$nt = $pathway->getTitleObject();
-		$text = $wgContLang->convert( $nt->getPrefixedText() );
+		$text = $wgContLang->convert( $nt->getPrefixedText() ) . " ($result->value revisions) ";
 
 		$plink = $skin->makeKnownLinkObj( $nt, $text );
 		/* No link to history for now, lateron link to our own pathway history
