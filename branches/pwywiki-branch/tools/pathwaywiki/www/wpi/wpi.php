@@ -26,6 +26,18 @@ case 'launchPathVisio':
 case 'downloadFile':
 	downloadFile($_GET['type'], $_GET['pwTitle']);
 	break;
+case 'revert':
+	revert($_GET['toFile'], $_GET['toDate'], $_GET['pwTitle']);
+	break;
+}
+
+function revert($oi_archive_name, $oi_timestamp, $pwTitle) {
+	$pathway = Pathway::newFromTitle($pwTitle);
+	$pathway->revert($oi_archive_name, $oi_timestamp);
+	//Redirect to old page
+	$url = $pathway->getTitleObject()->getFullURL();
+	header("Location: $url");
+	exit;
 }
 
 function launchPathVisio($pwTitle) {
@@ -114,10 +126,10 @@ class Pathway {
 	private $pwSpecies;
 
 	function __construct($name, $species) {
+		wfDebug("Creating pathway: $name, $species\n");
 		if(!$name) throw new Exception("name argument missing in constructor for Pathway");
 		if(!$species) throw new Exception("species argument missing in constructor for Pathway");
 		
-		wfDebug("=== New pathway:\n\tpwName: $name\n\tpwSpecies: $species\n");
 		$this->pwName = $name;
 		$this->pwSpecies = $species;
 	}
@@ -167,7 +179,7 @@ class Pathway {
 		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
-	
+		
 	public static function getAvailableSpecies() {
 		return array_keys(Pathway::$spName2Code);
 	}
@@ -261,6 +273,20 @@ class Pathway {
 		$file = $this->getFileName(FILETYPE_GPML);
 		$gpml = wfImageDir($file) . "/$file";
 		$this->saveImage($gpml, "Updated from GPML");
+	}
+	
+	public function revert($old_gpml, $old_date) {
+		global $wgUser, $wgLang, $wgUploadDirectory;
+		//Re-upload the old image
+		$old_file = wfImageArchiveDir($this->getFileName(FILETYPE_GPML)) . '/' . $old_gpml;
+		$gpml = file_get_contents($old_file);
+		if($gpml) {
+			$usr = $wgUser->getSkin()->userLink($wgUser->getId(), $wgUser->getName());
+			$date = $wgLang->timeanddate( $old_date, true );
+			$this->updatePathway($gpml, "Reverted to version '$date' by $usr");
+		} else {
+			throw new Exception("Unable to read file $old_file");
+		}
 	}
 	
 	private function saveImage($gpmlFile, $description) {

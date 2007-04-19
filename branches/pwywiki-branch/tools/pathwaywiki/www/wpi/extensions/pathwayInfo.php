@@ -1,6 +1,8 @@
 <?php
 
 require_once("wpi/wpi.php");
+require_once("Article.php");
+require_once("ImagePage.php");
 
 /*
 Statistics for pathway page
@@ -22,6 +24,17 @@ function wfPathwayInfo() {
         $wgParser->setFunctionHook( 'pathwayInfo', 'getPathwayInfo' );
 }
 
+function getPathwayInfo( &$parser, $pathway, $type ) {
+	$parser->disableCache();
+	try {
+		$pathway = Pathway::newFromTitle($pathway);
+		$info = new PathwayInfo($parser, $pathway);
+		return $info->$type();
+	} catch(Exception $e) {
+		return "Error: $e";
+	}
+}
+
 function wfPathwayInfo_Magic( &$magicWords, $langCode ) {
         # Add the magic word
         # The first array element is case sensitive, in this case it is not case sensitive
@@ -31,31 +44,33 @@ function wfPathwayInfo_Magic( &$magicWords, $langCode ) {
         return true;
 }
 
-function getPathwayInfo( &$parser, $pathway, $type ) {
-	$parser->disableCache();
-	try {
-		$pathway = Pathway::newFromTitle($pathway);
-		$gpmlFile = $pathway->getFileLocation(FILETYPE_GPML);
-		$gpml = simplexml_load_file($gpmlFile);
-	} catch(Exception $e) {
-		return "Invalid pathway: $e";
+class PathwayInfo {
+	private $parser;
+	private $pathway;
+	private $gpml;
+	
+	function __construct($parser, $pathway) {
+		$this->parser = $parser;
+		$this->pathway = $pathway;
+	}
+		
+	function comments() {
+		$this->loadGpml();
+		foreach($this->gpml->Comment as $comment) {
+			$text = (string)$comment;
+			$text = htmlentities($text);
+			$text = nl2br($text);
+			$text = formatPubMed($text);
+			//$text = str_replace('&#xD','<br>',$text);
+			if(!$text) continue;
+			$output .= "; " . $comment['Source'] . " : " . $text . "\n";
+		}
+		return $output;
 	}
 	
-	switch($type) {
-		case 'comments':
-			foreach($gpml->Comment as $comment) {
-				$text = (string)$comment;
-				$text = htmlentities($text);
-				$text = nl2br($text);
-				$text = formatPubMed($text);
-				//$text = str_replace('&#xD','<br>',$text);
-				if(!$text) continue;
-				$output .= "; " . $comment['Source'] . " : " . $text . "\n";
-			}
-			return $output;
-		case 'datanodes':
-		default: //DataNode list
-			$table = <<<TABLE
+	function datanodes() {
+		$this->loadGpml();
+					$table = <<<TABLE
 {|class="wikitable"
 |-
 !Name
@@ -65,7 +80,7 @@ function getPathwayInfo( &$parser, $pathway, $type ) {
 
 TABLE;
 //style="border:1px #AAA solid;margin:1em 1em 0;background:#F9F9F9"
-			$nodes = getUniqueDataNodes($gpml, 'TextLabel');
+			$nodes = getUniqueDataNodes($this->gpml, 'TextLabel');
 			sort($nodes);
 			foreach($nodes as $datanode) {
 				$table .= "|-\n";
@@ -82,10 +97,14 @@ TABLE;
 			$table .= '|}';
 			return $table;
 	}
+	
+	private function loadGpml() {
+		$gpmlFile = $this->pathway->getFileLocation(FILETYPE_GPML);
+		$this->gpml = simplexml_load_file($gpmlFile);
+	}
 }
 
 function formatPubMed($text) {
-	//PMID: 10982831
 	$link = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=pubmed&cmd=Retrieve&dopt=AbstractPlus&list_uids=";
 	if(preg_match_all("/PMID: ([0-9]+)/", $text, $ids)) {
 		foreach($ids[1] as $id) {
@@ -122,7 +141,7 @@ function getXrefLink($xref) {
 	}
 }
 
-/*
+/* TODO: put in switch
 if(c.equalsIgnoreCase("En"))
 			return "http://www.ensembl.org/Homo_sapiens/searchview?species=all&idx=Gene&q=" + id;
 		if(c.equalsIgnoreCase("P"))
