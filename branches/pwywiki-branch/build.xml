@@ -161,12 +161,12 @@ class Revision
 	
 	<target name="wiki" depends="jar,resources-jar,webstart" description="Create resources for WikiPathways">
 		<!-- Copy webstart files -->
-		<copy toDir="${wiki.dir}/www/bin" overwrite="true">
+		<copy toDir="${wiki.dir}/www/wpi/bin" overwrite="true">
 			<fileset dir="${webstart.dir}/www" includes="**/*.jar"/>
 		</copy>
 		<!-- Copy converter -->
-		<copy file="pathvisio_convert.jar" toDir="${wiki.dir}/www/bin" overwrite="true" />
-		<copy file="GPML.xsd" toDir="${wiki.dir}/www/bin" overwrite="true" />
+		<copy file="pathvisio_convert.jar" toDir="${wiki.dir}/www/wpi/bin" overwrite="true" />
+		<copy file="GPML.xsd" toDir="${wiki.dir}/www/wpi/bin" overwrite="true" />
 	</target>
 	
 	<target name="webstart" depends="jar,resources-jar" description="Sign jars and upload webstart files">

@@ -15,6 +15,8 @@
  */
 package org.apache.xmlrpc.client;
 
+import gmmlVision.GmmlVision;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -168,22 +170,24 @@ public abstract class XmlRpcStreamTransport extends XmlRpcTransportImpl {
 	}
 
 	protected Object readResponse(XmlRpcStreamRequestConfig pConfig, InputStream pStream) throws XmlRpcException {
-		InputSource isource = new InputSource(pStream);
 		//DEBUG
-		if(false) {
+		if(true) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(pStream));
-			String xml = null;
+			String xml = "";
 			try {
 				String line = in.readLine();
 				while(line != null) {
 					xml += line + "\n";
 					line = in.readLine();
 				}
-			} catch(IOException e) {
+				GmmlVision.log.info(xml);
+				pStream = new java.io.ByteArrayInputStream(xml.getBytes("UTF-8"));
+			} catch(Exception e) {
 				e.printStackTrace();
-			}
-			System.err.println(xml);
+			}			
 		}
+		InputSource isource = new InputSource(pStream);
+		isource.setEncoding("UTF-8");
 		//DEBUG
 		XMLReader xr = newXMLReader();
 		XmlRpcResponseParser xp;
