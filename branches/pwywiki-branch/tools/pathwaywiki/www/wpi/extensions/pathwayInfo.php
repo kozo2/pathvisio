@@ -61,6 +61,7 @@ class PathwayInfo {
 			$text = htmlentities($text);
 			$text = nl2br($text);
 			$text = formatPubMed($text);
+			$text = uni2ascii($text);
 			//$text = str_replace('&#xD','<br>',$text);
 			if(!$text) continue;
 			$output .= "; " . $comment['Source'] . " : " . $text . "\n";
@@ -102,6 +103,27 @@ TABLE;
 		$gpmlFile = $this->pathway->getFileLocation(FILETYPE_GPML);
 		$this->gpml = simplexml_load_file($gpmlFile);
 	}
+}
+
+$unicode_array = array(
+        "&#8211;" => "-",
+        "&#8212;" => "-",
+        "?" => "-",
+        "&#8216;" => "'",
+        "?" => "'",
+        "&#8217;" => "'",
+        "?" => "'",
+        "&#8230;" => "...",
+        "?" => "...",
+        "?" => "\"",
+        "&#8220;" => "\"",
+        "?" => "\"",
+        "&#8221;" => "\"",
+);
+	
+function uni2ascii($str) {
+	global $unicode_array;
+	return strtr($str, $unicode_array);
 }
 
 function formatPubMed($text) {
