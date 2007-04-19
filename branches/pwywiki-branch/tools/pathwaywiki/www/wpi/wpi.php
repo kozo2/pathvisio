@@ -320,7 +320,8 @@ class Pathway {
 		writeFile($tmp, $gpmlData);
 		
 		//Update the description page (contains the xml code)
-		$article = new Article($this->getFileTitle(FILETYPE_GPML));
+		$title = $this->getFileTitle(FILETYPE_GPML);
+		$article = new Article($title);
 		$article->doEdit("<xml>$gpmlData</xml>", "updated GPML data", EDIT_UPDATE | EDIT_FORCE_BOT);
 		return Pathway::saveFileToWiki($tmp, $file, $description);
 	}
