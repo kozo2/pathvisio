@@ -27,7 +27,7 @@ function getHistory($pathway) {
 		$nrShow = 4;
 		$buttonStyle = 'color:#0000FF';
 		$expand = "<B>View all</B>";
-		$collapse = "<B>View first " . ($nrShow - 1) . "</B>";
+		$collapse = "<B>View last " . ($nrShow - 1) . "</B>";
 		if ( $line ) {
 			$table = "<TABLE  id='historyTable' class='wikitable'><TR><TH><TH>Time<TH>User<TH>Comment";
 			$table .= historyRow(historyLine(true, $line, $pathway), '');
