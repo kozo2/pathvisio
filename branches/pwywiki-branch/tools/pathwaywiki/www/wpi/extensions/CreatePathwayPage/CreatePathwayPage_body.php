@@ -1,10 +1,10 @@
 <?php
 require_once("wpi/wpi.php");
 
-class NewPathwayPage extends SpecialPage
+class CreatePathwayPage extends SpecialPage
 {		
-        function NewPathwayPage() {
-                SpecialPage::SpecialPage("NewPathwayPage");
+        function CreatePathwayPage() {
+                SpecialPage::SpecialPage("CreatePathwayPage");
                 self::loadMessages();
         }
 
@@ -39,7 +39,7 @@ class NewPathwayPage extends SpecialPage
                 if ( $messagesLoaded ) return;
                 $messagesLoaded = true;
 
-                require( dirname( __FILE__ ) . '/NewPathwayPage.i18n.php' );
+                require( dirname( __FILE__ ) . '/CreatePathwayPage.i18n.php' );
                 foreach ( $allMessages as $lang => $langMessages ) {
                         $wgMessageCache->addMessages( $langMessages, $lang );
                 }

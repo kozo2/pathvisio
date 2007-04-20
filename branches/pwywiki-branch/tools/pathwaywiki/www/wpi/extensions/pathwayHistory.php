@@ -18,7 +18,7 @@ function history( $input, $argv, &$parser ) {
 }
 
 function getHistory($pathway) {
-		global $wgUser;
+		global $wgUser, $wpiScriptURL;
 		$sk = $wgUser->getSkin();
 		
 		$imgTitle = $pathway->getFileTitle(FILETYPE_GPML);
@@ -44,6 +44,11 @@ function getHistory($pathway) {
 			$button = "<p onClick='toggleRows(\"historyTable\", this, \"$expand\", 
 				\"$collapse\", $nrShow, true)' style='cursor:pointer;color:#0000FF'>$expand</p>";
 			$table = $button . $table;
+		}
+		if($wgUser->isAllowed('delete')) {
+			$pwTitle = $pathway->getTitleObject()->getDBKey();
+			$delete = "<p><a href=$wpiScriptURL?action=delete&pwTitle=$pwTitle>Delete this pathway</a></p>";
+			$table = $delete . $table;
 		}
 		return $table;
 }

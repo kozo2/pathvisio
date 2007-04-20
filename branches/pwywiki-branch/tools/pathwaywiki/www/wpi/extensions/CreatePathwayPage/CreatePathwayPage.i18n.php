@@ -1,7 +1,7 @@
 <?php
 $allMessages = array(
         'en' => array( 
-                'newpathwaypage' => 'New pathway'
+                'createpathwaypage' => 'Create new pathway'
         )
 );
 ?>

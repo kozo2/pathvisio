@@ -35,6 +35,25 @@ case 'new':
 	$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies']);
 	launchPathVisio($pathway, true);
 	break;
+case 'delete':
+	delete($_GET['pwTitle']);
+	break;
+}
+
+function delete($title) {
+	global $wgUser;
+	$pathway = Pathway::newFromTitle($_GET['pwTitle']);
+	if($wgUser->isAllowed('delete')) {
+		$pathway = Pathway::newFromTitle($_GET['pwTitle']);
+		$pathway->delete();
+		echo "<h1>Deleted</h1>";
+		echo "<p>Pathway $title was deleted, go back to <a href=http://{$_SERVER['HTTP_HOST']}>wikipathways</a>";
+	} else {
+		echo "<h1>Error</h1>";
+		echo "<p>Pathway $title is not deleted, you have no delete permissions</a>";
+		$wgOut->permissionRequired( 'delete' );
+	}
+	exit;
 }
 
 function revert($oi_archive_name, $oi_timestamp, $pwTitle) {
@@ -329,6 +348,27 @@ class Pathway {
 		return $article->doEdit("{{subst:Template:NewPathwayPage}}", "Created new pathway");
 	}
 
+	public function delete() {
+		$title = $this->getTitleObject();
+		Pathway::deleteArticle($title);
+		//Clean up GPML and SVG pages
+		$title = $this->getFileTitle(FILETYPE_GPML);
+		Pathway::deleteArticle($title);
+		$title = $this->getFileTitle(FILETYPE_IMG);
+		Pathway::deleteArticle($title);
+	}
+	
+	private static function deleteArticle($title, $reason='not specified') {
+		global $wgUser, $wgLoadBalancer;
+		
+		$article = new Article($title);
+		
+		if (wfRunHooks('ArticleDelete', array(&$this, &$wgUser, &$reason))) {
+			$article->doDeleteArticle($reason);
+			$wgLoadBalancer->commitAll();
+			wfRunHooks('ArticleDeleteComplete', array(&$this, &$wgUser, $reason));
+		}
+	}
 	private function saveGpml($gpmlData, $description) {
 		$file = $this->getFileName(FILETYPE_GPML);
 		wfDebug("Saving GPML file: $file\n");
