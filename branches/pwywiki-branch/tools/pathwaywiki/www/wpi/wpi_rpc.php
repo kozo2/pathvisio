@@ -39,6 +39,7 @@ function updatePathway($pwName, $pwSpecies, $description, $gpmlData64) {
 		$gpmlData = base64_decode($gpmlData64);
 		$pathway->updatePathway($gpmlData, $description);
 	} catch(Exception $e) {
+		wfDebug("XML-RPC ERROR: $e");
 		$resp = new xmlrpcresp(0, $xmlrpcerruser, $e->getMessage());
 		return $resp;
 	}

@@ -7,7 +7,8 @@ define("FILETYPE_PNG", "png");
 //Constants
 $wpiScriptPath = 'wpi';
 $wpiScriptFile = 'wpi.php';
-$wpiScript = "$wpiScriptPath/$wpiScriptFile"; //TODO: use this variable
+$wpiScript = "$wpiScriptPath/$wpiScriptFile"; 
+$wpiScriptURL =  "http://" . $_SERVER['HTTP_HOST'] . '/' . $wpiScript; //TODO: use these variables
 
 //Initialize MediaWiki
 set_include_path(get_include_path().PATH_SEPARATOR.realpath('../includes').PATH_SEPARATOR.realpath('../').PATH_SEPARATOR);
@@ -21,13 +22,18 @@ chdir($dir);
 $action = $_GET['action'];
 switch($action) {
 case 'launchPathVisio':
-	launchPathVisio($_GET['pwTitle']);
+	$pathway = Pathway::newFromTitle($_GET['pwTitle']);
+	launchPathVisio($pathway);
 	break;
 case 'downloadFile':
 	downloadFile($_GET['type'], $_GET['pwTitle']);
 	break;
 case 'revert':
 	revert($_GET['toFile'], $_GET['toDate'], $_GET['pwTitle']);
+	break;
+case 'new':
+	$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies']);
+	launchPathVisio($pathway, true);
 	break;
 }
 
@@ -40,30 +46,39 @@ function revert($oi_archive_name, $oi_timestamp, $pwTitle) {
 	exit;
 }
 
-function launchPathVisio($pwTitle) {
-	$pathway = Pathway::newFromTitle($pwTitle);
-	$gpml = Image::newFromName( $pathway->getFileName(FILETYPE_GPML) );
-	if(!$gpml->exists()) {
-		echo "Image does not exist<BR>";
-		exit;
+function launchPathVisio($pathway, $new = false) {
+	global $wgUser;
+	if(!$new) {
+		$gpml = Image::newFromName( $pathway->getFileName(FILETYPE_GPML) );
+		if(!$gpml->exists()) {
+			throw new Exception("Image does not exist");
+		}
 	}
 	
 	$webstart = file_get_contents("bin/pathvisio_wikipathways.jnlp");
-	
-	//Add cookies
+	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wpi/wpi_rpc.php");
+	$arg .= createJnlpArg("-pwName", $pathway->name());
+	$arg .= createJnlpArg("-pwSpecies", $pathway->species());
+	if($new) {
+		$arg .= createJnlpArg("-pwUrl", $pathway->getTitleObject()->getFullURL());
+	} else {
+		$arg .= createJnlpArg("-pwUrl", $pathway->getFileURL(FILETYPE_GPML));
+	}
 	foreach (array_keys($_COOKIE) as $key) {
 		$arg .= createJnlpArg("-c", $key . "=" . $_COOKIE[$key]);
 	} 
-	//Add pathway name
-	$arg .= createJnlpArg("-pwName", $pathway->name());
-	$arg .= createJnlpArg("-pwSpecies", $pathway->species());
-	//Add pathway url
-	$arg .= createJnlpArg("-pwUrl", "http://" . $_SERVER['HTTP_HOST'] . $gpml->getURL());
-	$arg .= createJnlpArg("-rpcUrl", "http://" . $_SERVER['HTTP_HOST'] . "/wpi/wpi_rpc.php");
-	
-	//Add commandline arguments (replace <!--ARG-->)
+	if($wgUser) {
+		$arg .= createJnlpArg("-user", $wgUser->getRealName());
+	}
+	if($new) {
+		$arg .= createJnlpArg("-new", "1");
+	}
 	$webstart = str_replace("<!--ARG-->", $arg, $webstart);
 
+	sendWebstart($webstart, $pathway->name());//This exits script
+}
+
+function sendWebstart($webstart, $tmpname) {
 	$os = getClientOs();
 	if($os == 'linux') { //return shell script that sets MOZILLA_FIVE_HOME and opens webstart
 		header("Content-type: application/x-shellscript");
@@ -71,7 +86,7 @@ function launchPathVisio($pwTitle) {
 		echo "#!/bin/sh\n";
 		echo "export MOZILLA_FIVE_HOME=/usr/lib/firefox\n";
 		echo "LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH\n";
-		$wsFile = tempnam(getcwd() . "/tmp",$pathway->name());
+		$wsFile = tempnam(getcwd() . "/tmp",$tmpname);
 		writeFile($wsFile, $webstart);
 		//echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"'; #For local tests
 		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"';
@@ -81,6 +96,11 @@ function launchPathVisio($pwTitle) {
 		echo $webstart;
 	}
 	exit;
+}
+
+function createJnlpArg($flag, $value = false) {
+	//return "<argument>" . $flag . ' "' . $value . '"' . "</argument>\n";
+	return "<argument>" . $flag . "</argument>\n<argument>" . $value . "</argument>\n";
 }
 
 function downloadFile($fileType, $pwTitle) {
@@ -102,11 +122,6 @@ function getClientOs() {
 	}	
 }
  
-function createJnlpArg($flag, $value) {
-	//return "<argument>" . $flag . ' "' . $value . '"' . "</argument>\n";
-	return "<argument>" . $flag . "</argument>\n<argument>" . $value . "</argument>\n";
-}
-
 $spName2Code = array('Human' => 'Hs', 'Rat' => 'Rn', 'Mouse' => 'Mm');//TODO: complete
 
 function toGlobalLink($localLink) {
@@ -308,22 +323,32 @@ class Pathway {
 		return Pathway::saveFileToWiki($imgFile, $imgName, $description);
 	}
 
-	private function saveMAPP() {
-		//TODO: implement gpml->mapp conversion
+	private function newPathwayArticle($gpmlData) {
+		$article = new Article($this->getTitleObject());
+		return $article->doEdit("{{subst:Template:NewPathwayPage}}", "Created new pathway");
 	}
 
-	private function saveGpml($gpmlData, $description) {		
+	private function saveGpml($gpmlData, $description) {
 		$file = $this->getFileName(FILETYPE_GPML);
 		wfDebug("Saving GPML file: $file\n");
 		$tmp = "tmp/" . $file;
-	
-		writeFile($tmp, $gpmlData);
 		
+		$succ = true;
+		if(!file_exists($this->getFileLocation(FILETYPE_GPML))) {
+			//This is a new pathway, create article first, then upload gpml
+			$succ = $this->newPathwayArticle();
+		}
+		if($succ) {
+			writeFile($tmp, $gpmlData);
+			$succ = Pathway::saveFileToWiki($tmp, $file, $description);
+		}
+		return $succ;
 		//Update the description page (contains the xml code)
-		$title = $this->getFileTitle(FILETYPE_GPML);
-		$article = new Article($title);
+		/* No use for that, the idea was that we could search in the GPML code using the
+		* MediaWiki search this way, but that doesn't work
+		$article = new Article($this->getFileTitle(FILETYPE_GPML));
 		$article->doEdit("<xml>$gpmlData</xml>", "updated GPML data", EDIT_UPDATE | EDIT_FORCE_BOT);
-		return Pathway::saveFileToWiki($tmp, $file, $description);
+		*/
 	}
 	
 	private function savePng() {
@@ -386,12 +411,7 @@ class Pathway {
 	static function saveFileToWiki( $fileName, $saveName, $description ) {
 		global $wgLoadBalancer, $wgUser;
 				
-		wfDebug("========= UPLOADING FILE FOR WIKIPATHWAYS ==========\n");
-		# Check uploading enabled
-		#if( !$wgEnableUploads ) {
-		#	return "Uploading is disabled";
-		#}
-		
+		wfDebug("========= UPLOADING FILE FOR WIKIPATHWAYS ==========\n");		
 		# Check permissions
 		if( $wgUser->isLoggedIn() ) {
 			if( !$wgUser->isAllowed( 'upload' ) ) {
@@ -419,7 +439,9 @@ class Pathway {
 		# Move the file to the proper directory
 		$dest = wfImageDir( $saveName );
 		$archive = wfImageArchiveDir( $saveName );
-		
+		if ( !is_dir( $dest ) ) wfMkdirParents( $dest );
+		if ( !is_dir( $archive ) ) wfMkdirParents( $archive );
+
 		$toFile = "{$dest}/{$saveName}";
 		if( is_file( $toFile) ) {
 			$oldVersion = gmdate( 'YmdHis' ) . "!{$saveName}";
@@ -429,7 +451,7 @@ class Pathway {
 					"Unable to rename file $olddVersion to {$archive}/{$oldVersion}" );
 			}
 		}
-		rename($fileName, $toFile);
+		$success = rename($fileName, $toFile);
 		if(!$success) {
 			throw new Exception( "Unable to rename file $fileName to $toFile" );
 		}
