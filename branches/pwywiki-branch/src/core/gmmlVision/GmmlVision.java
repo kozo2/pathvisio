@@ -20,12 +20,15 @@ import graphics.GmmlDrawing;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.window.ApplicationWindow;
@@ -37,11 +40,16 @@ import org.eclipse.swt.widgets.Shell;
 import preferences.GmmlPreferences;
 import util.FileUtils;
 import util.Utils;
+import util.SwtUtils.SimpleRunnableWithProgress;
 import data.ConverterException;
 import data.DBConnector;
 import data.GmmlData;
 import data.GmmlDataObject;
 import debug.Logger;
+import edu.stanford.ejalbert.BrowserLauncher;
+import edu.stanford.ejalbert.exception.BrowserLaunchingExecutionException;
+import edu.stanford.ejalbert.exception.BrowserLaunchingInitializingException;
+import edu.stanford.ejalbert.exception.UnsupportedOperatingSystemException;
 
 /**
  * This class contains the essential parts of the program: the window, drawing and gpml data
@@ -385,7 +393,34 @@ public abstract class GmmlVision {
 	
 		return connector;
 	}
+	
+	public static boolean openWebPage(String url, String progressMsg, String errMsg) {
+		Shell shell = GmmlVision.getWindow().getShell();
+		if(shell == null || shell.isDisposed()) return false;
 		
+		SimpleRunnableWithProgress rwp = new SimpleRunnableWithProgress(
+				GmmlVision.class, "doOpenWebPage", new Class[] { String.class }, new Object[] { url }, null);
+		SimpleRunnableWithProgress.setMonitorInfo(progressMsg, IProgressMonitor.UNKNOWN);
+		ProgressMonitorDialog dialog = new ProgressMonitorDialog(shell);
+		try {
+			dialog.run(true, true, rwp);
+			return true;
+		} catch (InvocationTargetException e) {
+			Throwable cause = e.getCause();
+			String msg = cause == null ? null : cause.getMessage();
+			MessageDialog.openError(shell, "Error",
+			"Unable to open web browser" +
+			(msg == null ? "" : ": " + msg) +
+			"\n" + errMsg);
+			return false;
+		} catch (InterruptedException ignore) { return false; }
+	}
+	
+	public static void doOpenWebPage(String url) throws BrowserLaunchingInitializingException, BrowserLaunchingExecutionException, UnsupportedOperatingSystemException {
+		BrowserLauncher bl = new BrowserLauncher(null);
+		bl.openURLinBrowser(url);
+	}
+	
 	public static boolean isUseR() { return USE_R; }
 	
 	

@@ -171,9 +171,9 @@ public abstract class XmlRpcStreamTransport extends XmlRpcTransportImpl {
 
 	protected Object readResponse(XmlRpcStreamRequestConfig pConfig, InputStream pStream) throws XmlRpcException {
 		//DEBUG
+		String xml = "";
 		if(true) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(pStream));
-			String xml = "";
 			try {
 				String line = in.readLine();
 				while(line != null) {
@@ -183,7 +183,7 @@ public abstract class XmlRpcStreamTransport extends XmlRpcTransportImpl {
 				GmmlVision.log.info(xml);
 				pStream = new java.io.ByteArrayInputStream(xml.getBytes("UTF-8"));
 			} catch(Exception e) {
-				e.printStackTrace();
+				GmmlVision.log.error("Unable to open XML response", e);
 			}			
 		}
 		InputSource isource = new InputSource(pStream);
