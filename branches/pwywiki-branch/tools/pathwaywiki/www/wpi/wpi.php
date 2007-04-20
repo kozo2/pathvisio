@@ -67,7 +67,7 @@ function launchPathVisio($pathway, $new = false) {
 	foreach (array_keys($_COOKIE) as $key) {
 		$arg .= createJnlpArg("-c", $key . "=" . $_COOKIE[$key]);
 	} 
-	if($wgUser) {
+	if($wgUser && $wgUser->isLoggedIn()) {
 		$arg .= createJnlpArg("-user", $wgUser->getRealName());
 	}
 	if($new) {
@@ -324,7 +324,8 @@ class Pathway {
 	}
 
 	private function newPathwayArticle($gpmlData) {
-		$article = new Article($this->getTitleObject());
+		$title = $this->getTitleObject();
+		$article = new Article($title);
 		return $article->doEdit("{{subst:Template:NewPathwayPage}}", "Created new pathway");
 	}
 

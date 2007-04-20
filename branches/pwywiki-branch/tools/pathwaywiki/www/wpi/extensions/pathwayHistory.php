@@ -58,7 +58,7 @@ function historyLine($cur, $line, $pathway) {
 				$pathway->getTitleObject()->getPartialURL() .
 				"&toFile=$line->oi_archive_name&toDate=$line->img_timestamp";
 	
-	if($wgUser->getID() != 0 && $wgTitle->userCanEdit()) {
+	if($wgUser->getID() != 0 && $wgTitle && $wgTitle->userCanEdit()) {
 		$rev = $cur ? "" : "(<A href=$revUrl>revert</A>), ";
 	}
 	$viewUrl = $cur ? $pathway->getFileURL(FILETYPE_IMG) : wfImageArchiveUrl( $line->oi_archive_name );
