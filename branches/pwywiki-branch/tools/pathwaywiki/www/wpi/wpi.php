@@ -463,9 +463,9 @@ class Pathway {
 			$hds = $_SERVER;
 			wfDebug("REQUEST HEADERS\n");
 			foreach (array_keys($hds) as $key) {
-				wfDebug($key . "=" . $hds[$key] . "\n");
+				$out .= $key . "=" . $hds[$key] . "\n";
 			}
-			throw new Exception( "User not logged on" );
+			throw new Exception( "User not logged on: $out" );
 		}
 
 		# Check blocks

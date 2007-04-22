@@ -50,8 +50,8 @@ class WikiPathwaysTemplate extends QuickTemplate {
 		global $wgTitle;
 		// Suppress warnings to prevent notices about missing indexes in $this->data
 		wfSuppressWarnings();
-		//Remove edit tab for pathways
-		if($wgTitle->getNameSpace() == 100) {
+		//Remove edit tab for pathway and main namespace pages, including Home
+		if($wgTitle->getNameSpace() == 100 || $wgTitle->getNameSpace() == 102 || preg_match('/WikiPathways/', $wgTitle->getText()) ) {
 			$actions = $this->data['content_actions'];
 			unset($actions['edit']);
 			$this->data['content_actions'] = $actions;
