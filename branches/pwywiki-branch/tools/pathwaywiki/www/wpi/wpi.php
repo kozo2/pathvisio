@@ -465,7 +465,7 @@ class Pathway {
 			foreach (array_keys($hds) as $key) {
 				$out .= $key . "=" . $hds[$key] . "\n";
 			}
-			throw new Exception( "User not logged on: $out" );
+			throw new Exception( "You are not logged on, please log in or create an account first" );
 		}
 
 		# Check blocks
@@ -515,12 +515,13 @@ class Pathway {
 	}
 }
 
-function writeFile($filename, $data) {
+function writeFile($filename, $data, $permissions = '0777') {
 	$handle = fopen($filename, 'w');
 	if(!$handle) {
 		throw new Exception ("Couldn't open file $filename");
 	}
 	fwrite($handle, $data);
 	fclose($handle);
+	chmod($filename, $permissions);
 }
 ?>

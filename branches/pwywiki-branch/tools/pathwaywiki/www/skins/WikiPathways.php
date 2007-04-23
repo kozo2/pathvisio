@@ -47,14 +47,28 @@ class WikiPathwaysTemplate extends QuickTemplate {
 	 * @access private
 	 */
 	function execute() {
-		global $wgTitle;
+		global $wgTitle, $wgUser;
 		// Suppress warnings to prevent notices about missing indexes in $this->data
 		wfSuppressWarnings();
-		//Remove edit tab for pathway and main namespace pages, including Home
-		if($wgTitle->getNameSpace() == 100 || $wgTitle->getNameSpace() == 102 || preg_match('/WikiPathways/', $wgTitle->getText()) ) {
-			$actions = $this->data['content_actions'];
-			unset($actions['edit']);
-			$this->data['content_actions'] = $actions;
+
+/** AP20070421
+ *		//Remove edit tab for pathways
+ *		if($wgTitle->getNameSpace() == 100) {
+ *			$actions = $this->data['content_actions'];
+ *			unset($actions['edit']);
+ *			$this->data['content_actions'] = $actions;
+ *		}
+ */
+              //Remove edit tab on all pages except User(2), User_talk(3), and Pathway_talk(101)
+//AP20070423 Don't remove edit buttons for sysops (sysops can protect)
+		if(!array_search('sysop', $wgUser->getGroups())) {
+			if($wgTitle->getNameSpace() != NS_USER
+				&& $wgTitle->getNameSpace() != NS_USER_TALK
+				&&  $wgTitle->getNameSpace() != NS_PATHWAY_TALK) {
+	                        $actions = $this->data['content_actions'];
+	                        unset($actions['edit']);
+	                        $this->data['content_actions'] = $actions;
+			}
 		}
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="<?php $this->text('xhtmldefaultnamespace') ?>" <?php 
