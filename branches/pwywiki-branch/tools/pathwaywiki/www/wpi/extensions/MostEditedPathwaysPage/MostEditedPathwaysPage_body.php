@@ -70,6 +70,7 @@ class MEPQueryPage extends QueryPage {
 			FROM $revision
 			JOIN $page ON page_id = rev_page
 			WHERE page_namespace = " . NS_PATHWAY . "
+			AND page_title NOT LIKE '%Sandbox%'
 			GROUP BY 1,2,3
 			HAVING COUNT(*) > 1
 			";
@@ -116,6 +117,7 @@ class MEGPMLQueryPage extends QueryPage {
 			FROM oldimage
 			JOIN page ON page_title = oi_name
 			WHERE page_title LIKE '%.gpml'
+			AND page_title NOT LIKE '%Sandbox%'
 			GROUP BY 1,2,3
 			";
 	}
@@ -123,19 +125,24 @@ class MEGPMLQueryPage extends QueryPage {
 	function formatResult( $skin, $result ) {
 		global $wgLang, $wgContLang;
 		
+		try {
+
 		$pathway = Pathway::newFromFileTitle($result->title);
 		
 		$nt = $pathway->getTitleObject();
-		$text = $wgContLang->convert( $nt->getPrefixedText() ) . " ($result->value revisions) ";
+		$text = $wgContLang->convert("$result->value revisions");
 
-		$plink = $skin->makeKnownLinkObj( $nt, $text );
+		$plink = $skin->makeKnownLinkObj( $nt);
 		/* No link to history for now, lateron link to our own pathway history
 		$nl = wfMsgExt( 'nrevisions', array( 'parsemag', 'escape'),
 			$wgLang->formatNum( $result->value ) );
 		$nlink = $skin->makeKnownLinkObj( $nt, $nl, 'action=history' );
 		*/
-
-		return wfSpecialList($plink, $nlink);
+		
+		return wfSpecialList($plink, $text, $nlink);
+		} catch(Exception $e) {
+			return '';
+		}
 	}
 }
 

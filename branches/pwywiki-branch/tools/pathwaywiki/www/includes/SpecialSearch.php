@@ -38,7 +38,11 @@ function wfSpecialSearch( $par = '' ) {
 		!is_null ($wgRequest->getVal( 'searchx' ) ) ) {
 		$searchPage->showResults( $search );
 	} else {
-		$searchPage->goResult( $search );
+		
+/** Don't call 'Go' results; only 'Search' results 
+		
+		$searchPage->goResult( $search );  */
+		$searchPage->showResults( $search);
 	}
 }
 
@@ -321,7 +325,6 @@ class SpecialSearch {
 			return "<!-- Broken link in search result -->\n";
 		}
 		$sk =& $wgUser->getSkin();
-
 		$contextlines = $wgUser->getOption( 'contextlines',  5 );
 		$contextchars = $wgUser->getOption( 'contextchars', 50 );
 

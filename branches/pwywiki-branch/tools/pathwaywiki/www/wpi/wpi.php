@@ -349,13 +349,18 @@ class Pathway {
 	}
 
 	public function delete() {
+		$reason = 'Deleted pathway';
 		$title = $this->getTitleObject();
-		Pathway::deleteArticle($title);
+		Pathway::deleteArticle($title, $reason);
 		//Clean up GPML and SVG pages
 		$title = $this->getFileTitle(FILETYPE_GPML);
-		Pathway::deleteArticle($title);
+		Pathway::deleteArticle($title, $reason);
+		$img = new Image($title);
+		$img->delete($reason);
 		$title = $this->getFileTitle(FILETYPE_IMG);
-		Pathway::deleteArticle($title);
+		Pathway::deleteArticle($title, $reason);
+		$img = new Image($title);
+		$img->delete($reason);
 	}
 	
 	private static function deleteArticle($title, $reason='not specified') {
@@ -515,13 +520,13 @@ class Pathway {
 	}
 }
 
-function writeFile($filename, $data, $permissions = '0777') {
+function writeFile($filename, $data) {
 	$handle = fopen($filename, 'w');
 	if(!$handle) {
 		throw new Exception ("Couldn't open file $filename");
 	}
 	fwrite($handle, $data);
 	fclose($handle);
-	chmod($filename, $permissions);
+
 }
 ?>
