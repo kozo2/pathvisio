@@ -224,8 +224,9 @@ class WikiPathwaysTemplate extends QuickTemplate {
 					echo htmlspecialchars($feed['href']) ?>"><?php echo htmlspecialchars($feed['text'])?></a>&nbsp;</span>
 					<?php } ?></li><?php
 		}
-
-		foreach( array('contributions', 'blockip', 'emailuser', 'upload', 'specialpages') as $special ) {
+		
+		//APR20072504 -> removed 'upload' element from array
+		foreach( array('contributions', 'blockip', 'emailuser', 'specialpages') as $special ) {
 
 			if($this->data['nav_urls'][$special]) {
 				?><li id="t-<?php echo $special ?>"><a href="<?php echo htmlspecialchars($this->data['nav_urls'][$special]['href'])
