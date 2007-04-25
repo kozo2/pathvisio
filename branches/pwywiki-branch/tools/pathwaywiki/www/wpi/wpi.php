@@ -345,7 +345,8 @@ class Pathway {
 	private function newPathwayArticle($gpmlData) {
 		$title = $this->getTitleObject();
 		$article = new Article($title);
-		return $article->doEdit("{{subst:Template:NewPathwayPage}}", "Created new pathway");
+		$species = $this->species();
+		return $article->doEdit('{{subst:Template:NewPathwayPage|categories=[[Category:'.$species.'|{{PATHWAYNAME}}]]}}', "Created new pathway");
 	}
 
 	public function delete() {
@@ -527,6 +528,5 @@ function writeFile($filename, $data) {
 	}
 	fwrite($handle, $data);
 	fclose($handle);
-
 }
 ?>
