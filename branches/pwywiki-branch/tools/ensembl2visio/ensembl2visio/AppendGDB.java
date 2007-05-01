@@ -16,7 +16,7 @@
 //
 package ensembl2visio;
 
-import debug.StopWatch;
+import org.pathvisio.debug.StopWatch;
 
 /**
  * Provides a main for importing data into existing database

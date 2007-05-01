@@ -15,8 +15,6 @@
  */
 package org.apache.xmlrpc.client;
 
-import gmmlVision.GmmlVision;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +30,7 @@ import org.apache.xmlrpc.common.XmlRpcStreamRequestConfig;
 import org.apache.xmlrpc.parser.XmlRpcResponseParser;
 import org.apache.xmlrpc.serializer.XmlRpcWriter;
 import org.apache.xmlrpc.util.SAXParsers;
+import org.pathvisio.gui.Engine;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -180,10 +179,10 @@ public abstract class XmlRpcStreamTransport extends XmlRpcTransportImpl {
 					xml += line + "\n";
 					line = in.readLine();
 				}
-				GmmlVision.log.info(xml);
+				Engine.log.info(xml);
 				pStream = new java.io.ByteArrayInputStream(xml.getBytes("UTF-8"));
 			} catch(Exception e) {
-				GmmlVision.log.error("Unable to open XML response", e);
+				Engine.log.error("Unable to open XML response", e);
 			}			
 		}
 		InputSource isource = new InputSource(pStream);
