@@ -158,6 +158,10 @@ function getXrefLink($xref) {
 		return "http://www.expasy.org/uniprot/" . $id;
 	case 'GenBank':
 		return "http://www.ebi.ac.uk/cgi-bin/emblfetch?style=html&id=" . $id;
+	case 'RefSeq':
+		$ret = "http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?";
+		if(substr($id,0,2) == 'NM') return $ret . "db=Nucleotide&cmd=Search&term=" . $id;
+		else return $ret . "db=Protein&cmd=search&term=" . $id;		
 	default:
 		return $id;
 	}
