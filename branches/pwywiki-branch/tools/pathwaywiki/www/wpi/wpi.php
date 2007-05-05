@@ -16,11 +16,10 @@ $dir = getcwd();
 chdir("../"); //Ugly, but we need to change to the MediaWiki install dir to include these files, otherwise we'll get an error
 require_once ( 'WebStart.php');
 require_once( 'Wiki.php' );
-require_once( 'Title.php' );
 chdir($dir);
 
 //Parse HTTP request
-$action = $_GET['action'];//TODO: only if this script is called directly
+$action = $_GET['action'];
 switch($action) {
 case 'launchPathVisio':
 	$pathway = Pathway::newFromTitle($_GET['pwTitle']);
@@ -125,9 +124,23 @@ function createJnlpArg($flag, $value = false) {
 
 function downloadFile($fileType, $pwTitle) {
 	$pathway = Pathway::newFromTitle($pwTitle);
-	$url = $pathway->getFileURL($fileType);
-	header("Location: $url");
-	//echo("{$pathway->name()} | Type: $fileType | URL: $url");
+	$file = $pathway->getFileLocation($fileType);
+	$content = file_get_contents($file);
+	
+	switch($fileType) {
+		case FILETYPE_GPML:
+			header("Content-type: text/xml");
+			break;
+		case FILETYPE_IMG:
+			header("Content-type: image/svg+xml");
+			break;
+		case FILETYPE_PNG:
+			header("Content-type: image/png");
+			break;
+	}
+	$fn = $pathway->getFileName($fileType);
+	header("Content-Disposition: attachment; filename=\"$fn\"");
+	echo $content;
 	exit;
 }
 
@@ -167,6 +180,7 @@ class Pathway {
 		
 		$this->pwName = $name;
 		$this->pwSpecies = $species;
+		$this->updateCache();
 	}
 		
 	public static function speciesFromCode($code) {
@@ -184,7 +198,7 @@ class Pathway {
 	
 	public function newFromTitle($title) {
 		if($title instanceof Title) {
-				$title = $title->getFullText();
+			$title = $title->getFullText();
 		}
 		
 		$name = Pathway::nameFromTitle($title);
@@ -214,12 +228,6 @@ class Pathway {
 		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
-       
-	//AP20070502: Return title without "Pathway:" prefix for MostEditedPathwaysPage 
-        public function getTrimTitleObject() {
-                //wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
-                return Title::newFromText($this->species() . ':' . $this->name());
-        }       
 		
 	public static function getAvailableSpecies() {
 		return array_keys(Pathway::$spName2Code);
@@ -383,7 +391,6 @@ class Pathway {
 		}
 	}
 	private function saveGpml($gpmlData, $description) {
-		global $wgLoadBalancer;
 		$file = $this->getFileName(FILETYPE_GPML);
 		wfDebug("Saving GPML file: $file\n");
 		$tmp = "tmp/" . $file;
@@ -397,12 +404,13 @@ class Pathway {
 			writeFile($tmp, $gpmlData);
 			$succ = Pathway::saveFileToWiki($tmp, $file, $description);
 		}
-		//Update the description page to trigger watches
-		$title = $this->getFileTitle(FILETYPE_GPML);
-		$article = new Article($title);
-		$article->doEdit(date('dmY') . $description, $description, EDIT_UPDATE);
-		$wgLoadBalancer->commitAll();
 		return $succ;
+		//Update the description page (contains the xml code)
+		/* No use for that, the idea was that we could search in the GPML code using the
+		* MediaWiki search this way, but that doesn't work
+		$article = new Article($this->getFileTitle(FILETYPE_GPML));
+		$article->doEdit("<xml>$gpmlData</xml>", "updated GPML data", EDIT_UPDATE | EDIT_FORCE_BOT);
+		*/
 	}
 	
 	private function savePng() {
@@ -429,18 +437,18 @@ class Pathway {
 			throw new Exception("Unable to convert to png, no SVG rasterizer found");
 		}
 	}
-	
-	private function updateCache($fileType) {
+		
+	private function updateCache($fileType = null) {
+		if(!$fileType) {
+			$this->updateCache(FILETYPE_PNG);
+		}
 		if($this->isOutOfDate($fileType)) {
 			wfDebug("Updating cached file for $fileType");
 			switch($fileType) {
 			case FILETYPE_PNG:
 				$this->savePng();
 				break;
-			case FILETYPE_MAPP:
-				$this->saveMapp();
-				break;
-			}	
+			}
 		}
 	}
 	
