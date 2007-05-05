@@ -80,7 +80,7 @@ class MEPQueryPage extends QueryPage {
 		global $wgLang, $wgContLang;
 
 		$nt = Title::makeTitle( $result->namespace, $result->title );
-		$text = $wgContLang->convert( $nt->getPrefixedText() );
+		$text = $wgContLang->convert( $nt->getBaseText() );
 
 		$plink = $skin->makeKnownLinkObj( $nt, $text );
 
@@ -129,17 +129,19 @@ class MEGPMLQueryPage extends QueryPage {
 
 		$pathway = Pathway::newFromFileTitle($result->title);
 		
-		$nt = $pathway->getTitleObject();
+/** AP20070502 */
+		$nt = $pathway->getTrimTitleObject();
+		$plink = $skin->makeKnownLinkObj( $nt);
+
 		$text = $wgContLang->convert("$result->value revisions");
 
-		$plink = $skin->makeKnownLinkObj( $nt);
-		/* No link to history for now, lateron link to our own pathway history
+		/* No link to history for now, later on link to our own pathway history
 		$nl = wfMsgExt( 'nrevisions', array( 'parsemag', 'escape'),
 			$wgLang->formatNum( $result->value ) );
 		$nlink = $skin->makeKnownLinkObj( $nt, $nl, 'action=history' );
 		*/
 		
-		return wfSpecialList($plink, $text, $nlink);
+		return wfSpecialList($plink, $text);
 		} catch(Exception $e) {
 			return '';
 		}

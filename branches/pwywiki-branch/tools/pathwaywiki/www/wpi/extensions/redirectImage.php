@@ -13,6 +13,8 @@ function redirectOnImagePage($out, $text) {
 	#if so, return
 	if($_GET['showPage']) {
 		return true;
+	} else {
+                return false;
 	}
 	#If this is an Image Page, redirect to file
 	$ns = Namespace::getCanonicalName($wgTitle->getNamespace());

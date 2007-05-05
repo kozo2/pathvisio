@@ -63,7 +63,7 @@ class PPQueryPage extends QueryPage {
 	function formatResult( $skin, $result ) {
 		global $wgLang, $wgContLang;
 		$title = Title::makeTitle( $result->namespace, $result->title );
-		$link = $skin->makeKnownLinkObj( $title, htmlspecialchars( $wgContLang->convert( $title->getPrefixedText() ) ) );
+		$link = $skin->makeKnownLinkObj( $title, htmlspecialchars( $wgContLang->convert( $title->getBaseText() ) ) );
 		$nv = wfMsgExt( 'nviews', array( 'parsemag', 'escape'),
 			$wgLang->formatNum( $result->value ) );
 		return wfSpecialList($link, $nv);

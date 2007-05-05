@@ -16,10 +16,11 @@ $dir = getcwd();
 chdir("../"); //Ugly, but we need to change to the MediaWiki install dir to include these files, otherwise we'll get an error
 require_once ( 'WebStart.php');
 require_once( 'Wiki.php' );
+require_once( 'Title.php' );
 chdir($dir);
 
 //Parse HTTP request
-$action = $_GET['action'];
+$action = $_GET['action'];//TODO: only if this script is called directly
 switch($action) {
 case 'launchPathVisio':
 	$pathway = Pathway::newFromTitle($_GET['pwTitle']);
@@ -183,7 +184,7 @@ class Pathway {
 	
 	public function newFromTitle($title) {
 		if($title instanceof Title) {
-			$title = $title->getFullText();
+				$title = $title->getFullText();
 		}
 		
 		$name = Pathway::nameFromTitle($title);
@@ -213,6 +214,12 @@ class Pathway {
 		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
+       
+	//AP20070502: Return title without "Pathway:" prefix for MostEditedPathwaysPage 
+        public function getTrimTitleObject() {
+                //wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
+                return Title::newFromText($this->species() . ':' . $this->name());
+        }       
 		
 	public static function getAvailableSpecies() {
 		return array_keys(Pathway::$spName2Code);
@@ -376,6 +383,7 @@ class Pathway {
 		}
 	}
 	private function saveGpml($gpmlData, $description) {
+		global $wgLoadBalancer;
 		$file = $this->getFileName(FILETYPE_GPML);
 		wfDebug("Saving GPML file: $file\n");
 		$tmp = "tmp/" . $file;
@@ -389,13 +397,12 @@ class Pathway {
 			writeFile($tmp, $gpmlData);
 			$succ = Pathway::saveFileToWiki($tmp, $file, $description);
 		}
+		//Update the description page to trigger watches
+		$title = $this->getFileTitle(FILETYPE_GPML);
+		$article = new Article($title);
+		$article->doEdit(date('dmY') . $description, $description, EDIT_UPDATE);
+		$wgLoadBalancer->commitAll();
 		return $succ;
-		//Update the description page (contains the xml code)
-		/* No use for that, the idea was that we could search in the GPML code using the
-		* MediaWiki search this way, but that doesn't work
-		$article = new Article($this->getFileTitle(FILETYPE_GPML));
-		$article->doEdit("<xml>$gpmlData</xml>", "updated GPML data", EDIT_UPDATE | EDIT_FORCE_BOT);
-		*/
 	}
 	
 	private function savePng() {

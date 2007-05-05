@@ -61,6 +61,7 @@ class WikiPathwaysTemplate extends QuickTemplate {
  */
               //Remove edit tab on all pages except User(2), User_talk(3), and Pathway_talk(101)
 //AP20070423 Don't remove edit buttons for sysops (sysops can protect)
+//MAY20070502 Also remove move button for now on pathway pages
 		if(!array_search('sysop', $wgUser->getGroups())) {
 			if($wgTitle->getNameSpace() != NS_USER
 				&& $wgTitle->getNameSpace() != NS_USER_TALK
@@ -70,6 +71,11 @@ class WikiPathwaysTemplate extends QuickTemplate {
 	                        $this->data['content_actions'] = $actions;
 			}
 		}
+			if($wgTitle->getNameSpace() == NS_PATHWAY || NS_PATHWAY_TALK || NS_IMAGE) {
+				$actions = $this->data['content_actions'];
+				unset($actions['move']);
+				$this->data['content_actions'] = $actions;
+			}
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="<?php $this->text('xhtmldefaultnamespace') ?>" <?php 
 	foreach($this->data['xhtmlnamespaces'] as $tag => $ns) {
@@ -192,7 +198,6 @@ class WikiPathwaysTemplate extends QuickTemplate {
 						?>accesskey="<?php $this->msg('accesskey-search') ?>"<?php }
 					if( isset( $this->data['search'] ) ) {
 						?> value="<?php $this->text('search') ?>"<?php } ?> />
-				<input type='submit' name="go" class="searchButton" id="searchGoButton"	value="<?php $this->msg('searcharticle') ?>" />&nbsp;
 				<input type='submit' name="fulltext" class="searchButton" id="mw-searchButton" value="<?php $this->msg('searchbutton') ?>" />
 			</div></form>
 		</div>

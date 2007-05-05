@@ -281,30 +281,37 @@ function showChunk( $namespace = NS_PATHWAY, $from, $including = false ) {
 			)
 		);
 
-		$out = '<table style="background: inherit;" border="0" width="100%">';
+		$out = '<table style="background: inherit;" border="0" width="100%"><tr><td valign="top"><table>';
 
 		while( ($n < $this->maxPerPage) && ($s = $dbr->fetchObject( $res )) ) {
 			$t = Title::makeTitle( $s->page_namespace, $s->page_title );
 /** AP20070419
  *  Added species match if-loop around what is shown.
  *  The default "from" strategy wasn't sufficient.
+ *  And organize into columns instead of rows for clarity
  */
 			$parts = explode(':', $s->page_title);
                 	if(count($parts) < 1) {
                         		 throw new Exception("Invalid pathway article title: $s->page_title");
                 	}
                 	$species = array_shift($parts);
+                        $title_only = array_shift($parts);
 
 			if ($species == $from) {
 
 			if( $t ) {
 				$link = ($s->page_is_redirect ? '<div class="allpagesredirect">' : '' ) .
-					$sk->makeKnownLinkObj( $t, htmlspecialchars( $t->getText() ), false, false ) .
+					$sk->makeKnownLinkObj( $t, htmlspecialchars( $title_only ), false, false ) .
 					($s->page_is_redirect ? '</div>' : '' );
 			} else {
 				$link = '[[' . htmlspecialchars( $s->page_title ) . ']]';
 			}
-			if( $n % 3 == 0 ) {
+			if( $n % 40 == 0 ) {
+                                $out .= '</table></td><td valign="top"><table>';
+                        }
+                        $out .= "<tr><td>$link</td></tr>";
+                        $n++;
+/**			if( $n % 3 == 0 ) {
 				$out .= '<tr>';
 			}
 			$out .= "<td>$link</td>";
@@ -312,12 +319,12 @@ function showChunk( $namespace = NS_PATHWAY, $from, $including = false ) {
 			if( $n % 3 == 0 ) {
 				$out .= '</tr>';
 			}
-			}			
+*/			}			
 		}
-		if( ($n % 3) != 0 ) {
+/**		if( ($n % 3) != 0 ) {
 			$out .= '</tr>';
 		}
-		$out .= '</table>';
+*/		$out .= '</table></td></tr></table>';
 	}
 
 	if ( $including ) {
