@@ -94,8 +94,7 @@ function namespaceForm ( $namespace = NS_PATHWAY, $from = '' ) {
 
                 $speciesselect = "\n<select id='nsfrom' name='from' class='namespaceselector'>\n";
 
-		$pathwayObj = new Pathway('test', 'Human');
-		$arr = $pathwayObj->getAvailableSpecies();
+		$arr = Pathway::getAvailableSpecies();
 		asort($arr);
 		$selected = $from;
 

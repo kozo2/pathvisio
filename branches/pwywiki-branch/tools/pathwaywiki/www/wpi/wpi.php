@@ -228,6 +228,12 @@ class Pathway {
 		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
+
+	/*AP20070507  Added method to return object without 'Pathway:' namespace */
+	public function getTrimTitleObject() {
+		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
+		return Title::newFromText($this->species() . ':' . $this->name());
+	}
 		
 	public static function getAvailableSpecies() {
 		return array_keys(Pathway::$spName2Code);
