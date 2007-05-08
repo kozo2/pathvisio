@@ -17,13 +17,13 @@ class MostEditedPathwaysPage extends SpecialPage
                 list( $limit, $offset ) = wfCheckLimits();
 				
 				//Most revisioned pathway images
-				$wgOut->addWikiText("== Most edited pathway files ==");
+				$wgOut->addWikiText("== Pathways Changed  ==");
 				$ppp = new MEGPMLQueryPage();
 
 				$ppp->doQuery( $offset, $limit );
 				
 				//Most edited pathway articles
-				$wgOut->addWikiText("== Most edited pathway pages ==");
+				$wgOut->addWikiText("== Descriptions & Bibliographies Changed ==");
 				$ppp = new MEPQueryPage();
 
 				$ppp->doQuery( $offset, $limit );
@@ -79,16 +79,19 @@ class MEPQueryPage extends QueryPage {
 	function formatResult( $skin, $result ) {
 		global $wgLang, $wgContLang;
 
-		$nt = Title::makeTitle( $result->namespace, $result->title );
-		$text = $wgContLang->convert( $nt->getBaseText() );
+/**AP20070508 */
+		$title = Title::makeTitle( $result->namespace, $result->title ); 
+		$text = $wgContLang->convert("$result->value revisions");
 
-		$plink = $skin->makeKnownLinkObj( $nt, $text );
+		$plink = $skin->makeKnownLinkObj( $title, htmlspecialchars( $wgContLang->convert($title->getBaseText())) );
 
+		/* Not link to history for now, later on link to our own pathway history
 		$nl = wfMsgExt( 'nrevisions', array( 'parsemag', 'escape'),
 			$wgLang->formatNum( $result->value ) );
 		$nlink = $skin->makeKnownLinkObj( $nt, $nl, 'action=history' );
+		*/
 
-		return wfSpecialList($plink, $nlink);
+		return wfSpecialList($plink, $text);
 	}
 }
 
