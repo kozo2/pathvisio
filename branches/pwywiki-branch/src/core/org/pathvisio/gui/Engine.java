@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,6 +42,7 @@ import org.pathvisio.debug.Sleak;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayExporter;
 import org.pathvisio.preferences.Preferences;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.util.Utils;
@@ -74,8 +76,8 @@ public abstract class Engine {
 	 */
 	
 	static MainWindow window;
-	static VPathway drawing;
-	static Pathway gmmlData;
+	static VPathway vPathway;
+	static Pathway pathway;
 	
 	private static ImageRegistry imageRegistry;
 	private static Preferences preferences;
@@ -167,8 +169,8 @@ public abstract class Engine {
 	/**
 	 * Gets the currently open drawing
 	 */
-	public static VPathway getDrawing() {
-		return drawing;
+	public static VPathway getVPathway() {
+		return vPathway;
 	}
 		
 		/**
@@ -190,8 +192,8 @@ public abstract class Engine {
 	/**
 	 * Returns the currently open Pathway
 	 */
-	public static Pathway getGmmlData() {
-		return gmmlData;
+	public static Pathway getPathway() {
+		return pathway;
 	}
 	
 	/**
@@ -261,10 +263,10 @@ public abstract class Engine {
 
 		if(_pathway != null) //Only continue if the data is correctly loaded
 		{
-			drawing = _vpathway;
-			gmmlData = _pathway;
-			drawing.fromGmmlData(_pathway);
-			fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.OPEN_PATHWAY));
+			vPathway = _vpathway;
+			pathway = _pathway;
+			vPathway.fromGmmlData(_pathway);
+			fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.OPEN_PATHWAY));
 		}
 	}
 	/**
@@ -302,7 +304,7 @@ public abstract class Engine {
 	}
 	
 	private static void doSavePathway(File toFile) throws ConverterException {
-		getGmmlData().writeToXml(toFile, true);
+		getPathway().writeToXml(toFile, true);
 	}
 	
 	/**
@@ -340,19 +342,40 @@ public abstract class Engine {
 	}
 
 	private static void doNewPathway() {
-		gmmlData = new Pathway();
-		gmmlData.initMappInfo();
-		drawing = getWindow().createNewDrawing();
-		drawing.fromGmmlData(gmmlData);
-		fireApplicationEvent(new ApplicationEvent(drawing, ApplicationEvent.NEW_PATHWAY));
+		pathway = new Pathway();
+		pathway.initMappInfo();
+		vPathway = getWindow().createNewDrawing();
+		vPathway.fromGmmlData(pathway);
+		fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.NEW_PATHWAY));
 	}
 	
 	/**
 	 * Find out whether a drawing is currently open or not
 	 * @return true if a drawing is open, false if not
 	 */
-	public static boolean isDrawingOpen() { return drawing != null; }
-			
+	public static boolean isDrawingOpen() { return vPathway != null; }
+
+
+	private static HashMap<String, PathwayExporter> exporters = new HashMap<String, PathwayExporter>();
+	
+	/**
+	 * Add a {@link PathwayImporterExporter} that handles export of GPML to another file format
+	 * @param export
+	 */
+	public static void addGpmlExporter(PathwayExporter export) {
+		for(String ext : export.getExtensions()) {
+			exporters.put(ext, export);
+		}
+	}
+	
+	public static PathwayExporter getGpmlExporter(String ext) {
+		return exporters.get(ext);
+	}
+	
+	public static HashMap<String, PathwayExporter> getGpmlExporters() {
+		return exporters;
+	}
+	
 	/**
 	 * Get the working directory of this application
 	 */

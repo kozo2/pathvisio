@@ -74,7 +74,6 @@ public class MainWindow extends ApplicationWindow implements
 	
 	private CommonActions.UndoAction undoAction = new CommonActions.UndoAction(this);	
 	private CommonActions.NewAction newAction = new CommonActions.NewAction (this);
-	private CommonActions.SvgExportAction svgExportAction = new CommonActions.SvgExportAction (this);
 	private CommonActions.OpenAction openAction = new CommonActions.OpenAction (this);	
 	private CommonActions.ImportAction importAction = new CommonActions.ImportAction (this);	
 	private CommonActions.SaveAction saveAction = new CommonActions.SaveAction(this);	
@@ -129,7 +128,7 @@ public class MainWindow extends ApplicationWindow implements
 	{
 		if(Engine.isDrawingOpen())
 		{
-			VPathway drawing = Engine.getDrawing();
+			VPathway drawing = Engine.getVPathway();
 			//Check for neccesary connections
 			if(Gex.isConnected() && Gdb.isConnected())
 			{
@@ -169,7 +168,7 @@ public class MainWindow extends ApplicationWindow implements
 				public void run () {
 			if(Engine.isDrawingOpen())
 			{
-				VPathway drawing = Engine.getDrawing();
+				VPathway drawing = Engine.getVPathway();
 				//Switch to edit mode: show edit toolbar, show property table in sidebar
 				drawing.setEditMode(isChecked());
 				showEditActionsCI(isChecked());
@@ -194,7 +193,7 @@ public class MainWindow extends ApplicationWindow implements
 
 		public void applicationEvent(ApplicationEvent e) {
 			if(e.type == ApplicationEvent.OPEN_PATHWAY) {
-				Engine.getDrawing().setEditMode(isChecked());
+				Engine.getVPathway().setEditMode(isChecked());
 			}
 			else if(e.type == ApplicationEvent.NEW_PATHWAY) {
 				switchEditMode(true);
@@ -347,11 +346,11 @@ public class MainWindow extends ApplicationWindow implements
 			{
 				deselectNewItemActions();
 				setChecked(true);
-				Engine.getDrawing().setNewGraphics(element);
+				Engine.getVPathway().setNewGraphics(element);
 			}
 			else
 			{	
-				Engine.getDrawing().setNewGraphics(VPathway.NEWNONE);
+				Engine.getVPathway().setNewGraphics(VPathway.NEWNONE);
 			}
 		}
 		
@@ -436,7 +435,7 @@ public class MainWindow extends ApplicationWindow implements
 				((ActionContributionItem)items[i]).getAction().setChecked(false);
 			}
 		}
-		Engine.getDrawing().setNewGraphics(VPathway.NEWNONE);
+		Engine.getVPathway().setNewGraphics(VPathway.NEWNONE);
 	}
 	
 	// Elements of the coolbar
@@ -702,11 +701,11 @@ public class MainWindow extends ApplicationWindow implements
 		VPathway drawing = null;
 		switch(e.type) {
 		case ApplicationEvent.NEW_PATHWAY:
-			drawing = Engine.getDrawing();
+			drawing = Engine.getVPathway();
 			sc.setContent(drawing);
 			break;
 		case ApplicationEvent.OPEN_PATHWAY:
-			drawing = Engine.getDrawing();
+			drawing = Engine.getVPathway();
 			sc.setContent(drawing);
 			if(Gex.isConnected()) cacheExpressionData();
 			break;	

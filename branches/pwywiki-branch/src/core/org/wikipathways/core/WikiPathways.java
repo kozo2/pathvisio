@@ -161,7 +161,7 @@ public class WikiPathways implements ApplicationEventListener {
 			Engine.newPathway();
 			window.getShell().getDisplay().asyncExec(new Runnable() {
 				public void run() {
-					Pathway data = Engine.getGmmlData();
+					Pathway data = Engine.getPathway();
 					PathwayElement info = data.getMappInfo();
 					if(wiki.user != null) info.setAuthor(wiki.user);
 					info.setMapInfoName(wiki.pwName);
@@ -296,7 +296,7 @@ public class WikiPathways implements ApplicationEventListener {
 	
 	protected void saveToWiki(String description) throws XmlRpcException, IOException, ConverterException {		
 		//TODO: check if changed
-		if(ovrChanged || Engine.getGmmlData().isChanged()) {
+		if(ovrChanged || Engine.getPathway().isChanged()) {
 			ovrChanged = true; //In case we get an error, save changes next time
 			File gpmlFile = getLocalFile();
 			//Save current pathway to local file
@@ -386,7 +386,7 @@ public class WikiPathways implements ApplicationEventListener {
 	public void applicationEvent(ApplicationEvent e) {
 		switch(e.type) {
 		case ApplicationEvent.CLOSE_APPLICATION:
-			if(Engine.getGmmlData().isChanged()) {
+			if(Engine.getPathway().isChanged()) {
 				boolean doit = MessageDialog.openQuestion(Engine.getWindow().getShell(), "Save pathway?", 
 						"Do you want to save the changes to " + pwName + " on " + SITE_NAME + "?");
 				if(doit) {
