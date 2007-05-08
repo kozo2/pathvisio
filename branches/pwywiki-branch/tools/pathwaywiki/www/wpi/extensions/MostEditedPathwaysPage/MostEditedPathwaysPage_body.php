@@ -130,8 +130,8 @@ class MEGPMLQueryPage extends QueryPage {
 		$pathway = Pathway::newFromFileTitle($result->title);
 		
 /** AP20070502 */
-		$nt = $pathway->getTrimTitleObject();
-		$plink = $skin->makeKnownLinkObj( $nt);
+		$title = $pathway->getTitleObject();
+		$plink = $skin->makeKnownLinkObj( $title, htmlspecialchars( $wgContLang->convert( $title->getBaseText() ) ) );
 
 		$text = $wgContLang->convert("$result->value revisions");
 
