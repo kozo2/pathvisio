@@ -18,26 +18,30 @@ require_once ( 'WebStart.php');
 require_once( 'Wiki.php' );
 chdir($dir);
 
-//Parse HTTP request
+//Parse HTTP request (only if script is directly called!)
+if(realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
 $action = $_GET['action'];
 switch($action) {
-case 'launchPathVisio':
-	$pathway = Pathway::newFromTitle($_GET['pwTitle']);
-	launchPathVisio($pathway);
-	break;
-case 'downloadFile':
-	downloadFile($_GET['type'], $_GET['pwTitle']);
-	break;
-case 'revert':
-	revert($_GET['toFile'], $_GET['toDate'], $_GET['pwTitle']);
-	break;
-case 'new':
-	$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies']);
-	launchPathVisio($pathway, true);
-	break;
-case 'delete':
-	delete($_GET['pwTitle']);
-	break;
+	case 'launchPathVisio':
+		$pathway = Pathway::newFromTitle($_GET['pwTitle']);
+		$ignore = $_GET['ignoreWarning'];
+		launchPathVisio($pathway, $ignore);
+		break;
+	case 'downloadFile':
+		downloadFile($_GET['type'], $_GET['pwTitle']);
+		break;
+	case 'revert':
+		revert($_GET['toFile'], $_GET['toDate'], $_GET['pwTitle']);
+		break;
+	case 'new':
+		$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies']);
+		$ignore = $_GET['ignoreWarning'];
+		launchPathVisio($pathway, $ignore, true);
+		break;
+	case 'delete':
+		delete($_GET['pwTitle']);
+		break;
+	}
 }
 
 function delete($title) {
@@ -65,8 +69,9 @@ function revert($oi_archive_name, $oi_timestamp, $pwTitle) {
 	exit;
 }
 
-function launchPathVisio($pathway, $new = false) {
+function launchPathVisio($pathway, $ignore = null, $new = false) {
 	global $wgUser;
+	
 	if(!$new) {
 		$gpml = Image::newFromName( $pathway->getFileName(FILETYPE_GPML) );
 		if(!$gpml->exists()) {
@@ -94,6 +99,38 @@ function launchPathVisio($pathway, $new = false) {
 	}
 	$webstart = str_replace("<!--ARG-->", $arg, $webstart);
 
+	$msg = null;
+	if( $wgUser->isLoggedIn() ) {
+		if( $wgUser->isBlocked() ) {
+			$msg = "Warning: your user account is blocked!";
+		}
+	} else {
+		$msg = "Warning: you are not logged in! You will not be able to save modifications to WikiPathways.org.";
+	}
+	if($msg && !$ignore) { //If $msg is not null, then we have an error
+		$name = $pathway->name();
+		$url = $pathway->getFullURL();
+		$title = $pathway->getTitleObject()->getPartialURL();
+		$jnlp = $wpiScript . "?action=launchPathVisio&pwTitle=$title&ignoreWarning=1";
+		$script = 
+<<<JS
+<html>
+<body>
+<p>Back to <a href={$url}>{$name}</a></p>
+<script type="text/javascript">
+var view = confirm("{$msg} You will not be able to save modifications to WikiPathways.org.\\n\\nDo you still want to open the pathway?");
+if(view) {
+window.location="{$jnlp}";
+} else {
+history.go(-1);
+}
+</script>
+</body>
+</html>
+JS;
+		echo $script;
+		exit;
+	}
 	sendWebstart($webstart, $pathway->name());//This exits script
 }
 
@@ -105,16 +142,19 @@ function sendWebstart($webstart, $tmpname) {
 		echo "#!/bin/sh\n";
 		echo "export MOZILLA_FIVE_HOME=/usr/lib/firefox\n";
 		echo "LD_LIBRARY_PATH=/usr/lib/firefox:$LD_LIBRARY_PATH\n";
-		$wsFile = tempnam(getcwd() . "/tmp",$tmpname);
-		writeFile($wsFile, $webstart);
-		//echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"'; #For local tests
-		echo 'javaws "http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile) . '"';
+		echo 'javaws "'. getJnlpURL($webstart, $tmpname) . '"';
 	} else { //return webstart file directly
 		header("Content-type: application/x-java-jnlp-file");
 		header("Content-Disposition: attachment; filename=\"PathVisio.jnlp\"");
 		echo $webstart;
 	}
 	exit;
+}
+
+function getJnlpURL($webstart, $tmpname) {
+	$wsFile = tempnam(getcwd() . "/tmp",$tmpname);
+	writeFile($wsFile, $webstart);
+	return 'http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile);
 }
 
 function createJnlpArg($flag, $value = false) {
@@ -224,6 +264,10 @@ class Pathway {
 		return new Pathway($name, $species);
 	}
 	
+	public function getFullURL() {
+		return $this->getTitleObject()->getFullURL();
+	}
+	
 	public function getTitleObject() {
 		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
@@ -285,7 +329,7 @@ class Pathway {
 		return wfImageDir( $fn ) . "/$fn";
 	}
 	
-	public function getFileUrl($fileType) {
+	public function getFileURL($fileType) {
 		if($fileType == FILETYPE_PNG || $fileType == FILETYPE_MAPP) {
 			$this->updateCache($fileType);
 		}
