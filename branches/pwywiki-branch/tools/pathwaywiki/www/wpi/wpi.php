@@ -34,7 +34,7 @@ switch($action) {
 		revert($_GET['toFile'], $_GET['toDate'], $_GET['pwTitle']);
 		break;
 	case 'new':
-		$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies']);
+		$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies'], false);
 		$ignore = $_GET['ignoreWarning'];
 		launchPathVisio($pathway, $ignore, true);
 		break;
@@ -164,6 +164,7 @@ function createJnlpArg($flag, $value = false) {
 
 function downloadFile($fileType, $pwTitle) {
 	$pathway = Pathway::newFromTitle($pwTitle);
+	$pathway->updateCache();
 	$file = $pathway->getFileLocation($fileType);
 	$content = file_get_contents($file);
 	
@@ -213,14 +214,14 @@ class Pathway {
 	private $pwName;
 	private $pwSpecies;
 
-	function __construct($name, $species) {
+	function __construct($name, $species, $updateCache = false) {
 		wfDebug("Creating pathway: $name, $species\n");
 		if(!$name) throw new Exception("name argument missing in constructor for Pathway");
 		if(!$species) throw new Exception("species argument missing in constructor for Pathway");
 		
 		$this->pwName = $name;
 		$this->pwSpecies = $species;
-		$this->updateCache();
+		if($updateCache) $this->updateCache();
 	}
 		
 	public static function speciesFromCode($code) {
@@ -411,7 +412,7 @@ class Pathway {
 		$title = $this->getTitleObject();
 		$article = new Article($title);
 		$species = $this->species();
-		return $article->doEdit('{{subst:Template:NewPathwayPage|categories=[[Category:'.$species.'|{{PATHWAYNAME}}]]}}', "Created new pathway");
+		return $article->doEdit('{{subst:Template:NewPathwayPage|categories=[[Category:'.$species.']]}}', "Created new pathway");
 	}
 
 	public function delete() {
@@ -489,7 +490,7 @@ class Pathway {
 	}
 		
 	private function updateCache($fileType = null) {
-		if(!$fileType) {
+		if(!$fileType) { //Update all
 			$this->updateCache(FILETYPE_PNG);
 		}
 		if($this->isOutOfDate($fileType)) {
