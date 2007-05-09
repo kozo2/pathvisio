@@ -5,6 +5,8 @@ chdir("../"); //Ugly, but we need to change to the MediaWiki install dir to incl
 require_once('wpi.php');
 chdir($dir);
 
+set_time_limit(0);
+
 $dbr =& wfGetDB(DB_SLAVE);
 $res = $dbr->select( "page", array("page_title"), array("page_namespace" => NS_PATHWAY));
 $np = $dbr->numRows( $res );
@@ -12,7 +14,7 @@ $np = $dbr->numRows( $res );
 while( $row = $dbr->fetchRow( $res )) {
 	// TESTER
 	//if(!ereg("Human:Sandbox", $row[0])) continue;
-	if($i++ > 3) exit;
+	//if($i++ > 3) exit;
 	// END TESTER
 	
 	echo "Updating $row[0]<br>";
@@ -22,15 +24,15 @@ while( $row = $dbr->fetchRow( $res )) {
 	$article = new Article($title);
 	$text = $revision->getText();
 	
-	$regex = "\{\{Template:PathwayCategories.+section=3}}<!-- PLEASE DO NOT MODIFY THIS LINE -->";
+	$regex = "/\[\[Category:(.+?)\|\{\{.+?\}\}\]\]/";
 	
 	$imagePage = $pathway->getFileTitle(FILETYPE_IMG)->getFullText();
 	$gpmlPage = $pathway->getFileTitle(FILETYPE_GPML)->getFullText();
 	
 	echo '<I>' . $text . '</I><BR>';
-	$text = ereg_replace($regex, "{{Template:PathwayCategories|page={{{pathwayPage|{{FULLPAGENAMEE}}}}}|section=3}}{{DEFAULTSORT:{{PATHWAYNAME}}}}<!-- PLEASE DO NOT MODIFY THIS LINE -->", $text);
+	$text = preg_replace($regex, "[[Category:\\1]]", $text);
 
-	if(true) {
+	if(!$_GET['doit']) {
 		echo $text . '<BR>';
 	} else {
 		if($article->doEdit($text, 'Updated template', EDIT_UPDATE | EDIT_FORCE_BOT)) {
