@@ -23,27 +23,57 @@ package org.pathvisio.util;
  */
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.pathvisio.debug.Logger;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Pathway;
-import org.pathvisio.debug.Logger;
 
 /**
  * @author Thomas Kelder (t.a.j.kelder@student.tue.nl)
  */
 public class Converter {  
+    public enum FileType {
+    	GPML (new String[] { "gpml", "xml" }),
+    	MAPP (new String[] { "mapp" }),
+    	SVG (new String[] { "svg" });
+    	
+    	private String[] ext;
+       	private static List<FileType> types;
+       	
+    	FileType(String[] _extensions) {
+    		ext = _extensions;
+    		if(FileType.types == null) FileType.types = new ArrayList<FileType>();
+    		FileType.types.add(this);
+    	}
+    	public String[] getExtensions() { return ext; }
+    	
+    	public static FileType fromExtension(String extension) {
+    		for(FileType type : FileType.types) {
+    			for(String ext : type.getExtensions()) {
+    				if(ext.equalsIgnoreCase(extension)) return type;
+    			}
+    		}
+    		return null;
+    	}
+    	public String toString() {
+    		return getExtensions()[0];
+    	}
+    }
     
 	public static void printUsage()
 	{
-		System.out.println ("GenMAPP <-> GPML Converter\n" +
+		System.out.println ("GPML Converter\n" +
 				"Usage:\n" +
-				"\tjava Converter <input filename> [<output filename>]\n" +
+				"\tjava Converter <input filename><.extension> [<output filename>]<.extension>\n" +
 				"\n" +
-				"Converts between GenMAPP mapp format and PathVisio GPML format.\n" +
-				"The conversion direction is determined from the extension of the input file.\n" +
+				"Converts between PathVisio GPML format and GenMAPP MAPP or SVG.\n" +
+				"The conversion direction is determined from the extensions of the in/output file.\n" +
 				"Valid extensions are:\n" +
 				"\t.mapp for GenMAPP mapp format,\n" +
 				"\t.xml or .gpml for PathVisio GPML format\n." +
+				"\t.svg for SVG format\n" +
 				"\n" +
 				"Return codes:\n" +
 				"\t 0: OK\n" +
@@ -63,12 +93,13 @@ public class Converter {
         String inputString = "";
         File inputFile = null;
         File outputFile = null;
-        boolean fromMappToGmml = true;
+        FileType from = null;
+        FileType to = null;
         
         // Handle command line arguments
         // Check for custom output path
         Logger log = new Logger();
-		log.setStream (System.err);		
+		log.setStream (System.out);		
 						//debug, trace, info, warn, error, fatal
 		log.setLogLevel (false, false, true, true, true, true);
 		
@@ -87,42 +118,36 @@ public class Converter {
 		{
 			inputFile = new File(args[0]);
 			inputString = args[0];
+			outputString = args[1];
 		}		
 		
-		if (!error)
-		{
-			if(inputString.endsWith(".mapp")) 
-			{
-				fromMappToGmml = true;
+		if (!error) {
+			//Find input filetype
+			int pos = inputString.lastIndexOf('.');
+			if (pos >= 0) {
+				from = FileType.fromExtension(inputString.substring(pos + 1));
+				inputFile = new File(inputString);
 			}
-			else if (inputString.endsWith(".xml"))
-			{
-				fromMappToGmml = false;
+			//Find output filetype
+			pos = outputString.lastIndexOf('.');
+			if (pos >= 0) {
+				to = FileType.fromExtension(outputString.substring(pos + 1));
 			}
-			else if (inputString.endsWith(".gpml"))
-			{
-				fromMappToGmml = false;
+			if(from == null) {
+				log.error("Wrong extension for input file");
+				error = true;
 			}
-			else
-			{
-				log.error ("Wrong extension for input file: must be .mapp, .xml or .gpml");
+			if(to == null) {
+				log.error("Wrong extension for output file");
 				error = true;
 			}
 		}
 
 		if (!error)
 		{
-			if (args.length == 2)
-			{
-				outputString = args[1];
-			}
-			else
-			{
-				outputString = inputString;
-				int pos = outputString.lastIndexOf('.');
-				if (pos >= 0)
-					outputString = outputString.substring(0, pos);
-				outputString = outputString + (fromMappToGmml ? ".gpml" : ".mapp");
+			if(outputString.lastIndexOf('.') == 0) { //No output filename specified, take input name
+				int pos = inputString.lastIndexOf('.');
+				outputString = inputString.substring(0, pos) + outputString;
 			}
 			outputFile = new File (outputString);
 		}
@@ -143,24 +168,32 @@ public class Converter {
 		{
 			log.info("Source: " + inputString);
 			log.info("Dest:   " + outputString);
-			log.info("Going from " + 
-					(fromMappToGmml ? "mapp to gpml " : "gpml to mapp"));
+			log.info("Going from " + from + " to " + to);
 
 			boolean valid = true;
 			
 			try
 			{
-				if (fromMappToGmml)
+				if (from == FileType.MAPP && to == FileType.GPML)
 				{
 					Pathway gmmlData = new Pathway();
 					gmmlData.readFromMapp(inputFile);
 					gmmlData.writeToXml(outputFile, true);					
 				}
-				else
+				else if (from == FileType.GPML && to == FileType.MAPP)
 				{
 					Pathway gmmlData = new Pathway();
 					gmmlData.readFromXml(inputFile, true);					
 					gmmlData.writeToMapp(outputFile);
+				}
+				else if (from == FileType.GPML && to == FileType.SVG) {
+					Pathway gmmlData = new Pathway();
+					gmmlData.readFromXml(inputFile, true);
+					gmmlData.writeToSvg(outputFile);
+				}
+				else {
+					log.error("Conversion from " + from + " to " + to + " not supported");
+					System.exit(-1);
 				}
 			}
 			catch (ConverterException e)

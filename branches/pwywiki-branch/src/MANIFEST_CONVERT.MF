@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: util.Converter
+Main-Class: org.pathvisio.util.Converter
 Class-Path: . resources.jar derby.jar R-resources.jar swt-win32.jar swt-linux.jar org.eclipse.core.commands.jar org.eclipse.equinox.common.jar org.eclipse.jface.jar hsqldb.jar jdom.jar JRI.jar BrowserLauncher.jar plugins.jar
