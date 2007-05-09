@@ -202,6 +202,20 @@ class WikiPathwaysTemplate extends QuickTemplate {
 			</div></form>
 		</div>
 	</div>
+	<div id="p-search" class="portlet">
+		<h5><label for="searchInput">Google search</label></h5>
+		<div id="googleSearch" class="pBody">
+			<!-- Google CSE Search Box Begins -->
+		  <form id="searchbox_002915365922082279465:6qd0wwvwtwu" action="http://www.wikipathways.org/index.php/WikiPathways:GoogleSearch"><div>
+		    <input type="hidden" name="cx" value="002915365922082279465:6qd0wwvwtwu" />
+		    <input type="hidden" name="cof" value="FORID:11" />
+		    <input name="q" type="text" size="17%"/>
+		    <input type="submit" name="sa" value="Search" />
+		  </div></form>
+		  <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=searchbox_002915365922082279465%3A6qd0wwvwtwu"></script>
+<!-- Google CSE Search Box Ends -->
+		</div>
+	</div>
 	<div class="portlet" id="p-tb">
 		<h5><?php $this->msg('toolbox') ?></h5>
 		<div class="pBody">
