@@ -310,6 +310,10 @@ class Pathway {
 		return $this->pwName;
 	}
 	
+	public function getName($textForm = true) {
+		return Pathway::nameFromTitle($this->getTitleObject()->getText());
+	}
+	
 	public function species($species = NULL) {
 		if($species) {
 			$this->pwSpecies = $species;
