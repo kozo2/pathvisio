@@ -10,7 +10,8 @@ set_time_limit(0);
 $dbr =& wfGetDB(DB_SLAVE);
 $res = $dbr->select( "page", array("page_title"), array("page_namespace" => NS_PATHWAY));
 $np = $dbr->numRows( $res );
-
+echo 'nrow: ' . $np . '<br>';
+$i = 0;
 while( $row = $dbr->fetchRow( $res )) {
 	// TESTER
 	//if(!ereg("Human:Sandbox", $row[0])) continue;

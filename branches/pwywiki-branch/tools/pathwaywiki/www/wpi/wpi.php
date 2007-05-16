@@ -493,7 +493,7 @@ class Pathway {
 		}
 	}
 		
-	private function updateCache($fileType = null) {
+	public function updateCache($fileType = null) {
 		if(!$fileType) { //Update all
 			$this->updateCache(FILETYPE_PNG);
 		}
