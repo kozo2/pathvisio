@@ -72,7 +72,7 @@ while( $row = $dbr->fetchRow( $res )) {
 	}
 	//Transfer the current version
 	transferGpmlFile($article, $img, $img, $img_description, false);
-
+	cleanup($img);
 }
 
 function transferGpmlFile($toArticle, $img, $fileName, $description, $archive = false) {
@@ -89,8 +89,6 @@ function transferGpmlFile($toArticle, $img, $fileName, $description, $archive = 
 	//Update article
 	$succ =  $toArticle->doEdit($gpml, $description);
 	if(!$succ) throw new Exception("Unable to create new GPML page for $fileName");
-	
-	cleanup($img);
 }
 
 //Do this after succesful transfer
