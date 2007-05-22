@@ -36,7 +36,8 @@ while( $row = $dbr->fetchRow( $res )) {
 	//Test if pathway exists for this file
 	try {
 		$pathway = Pathway::newFromFileTitle($img);
-		$article = new Article($pathway->getTitleObject());
+		$title = $pathway->getTitleObject();
+		$article = new Article($title);
 		if( !$article->exists()) throw new Exception("Description page does not exist");
 	} catch(Exception $e) {
 		echo "Not a pathway: $e";
