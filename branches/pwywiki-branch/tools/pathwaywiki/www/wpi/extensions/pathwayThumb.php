@@ -96,7 +96,7 @@ function renderPathwayImage( &$parser, $pwTitle, $width = 0, $align = '', $capti
 			$s .= htmlspecialchars( $error );
 			$zoomicon = '';
 		} elseif( !$img->exists() ) {
-			$s .= $this->makeBrokenImageLinkObj( $img->getTitle() );
+			$s .= "Image does not exist";
 			$zoomicon = '';
 		} else {
 			$s .= '<a href="'.$href.'" class="internal" title="'.$alt.'">'.

@@ -31,7 +31,7 @@ switch($action) {
 		downloadFile($_GET['type'], $_GET['pwTitle']);
 		break;
 	case 'revert':
-		revert($_GET['toFile'], $_GET['toDate'], $_GET['pwTitle']);
+		revert($_GET['pwTitle'], $_GET['oldId']);
 		break;
 	case 'new':
 		$pathway = new Pathway($_GET['pwName'], $_GET['pwSpecies'], false);
@@ -60,9 +60,9 @@ function delete($title) {
 	exit;
 }
 
-function revert($oi_archive_name, $oi_timestamp, $pwTitle) {
+function revert($pwTitle, $oldId) {
 	$pathway = Pathway::newFromTitle($pwTitle);
-	$pathway->revert($oi_archive_name, $oi_timestamp);
+	$pathway->revert($oldId);
 	//Redirect to old page
 	$url = $pathway->getTitleObject()->getFullURL();
 	header("Location: $url");
@@ -73,9 +73,9 @@ function launchPathVisio($pathway, $ignore = null, $new = false) {
 	global $wgUser;
 	
 	if(!$new) {
-		$gpml = Image::newFromName( $pathway->getFileName(FILETYPE_GPML) );
-		if(!$gpml->exists()) {
-			throw new Exception("Image does not exist");
+		$gpml = $pathway->getGpml();
+		if(!$gpml) {
+			throw new Exception("GPML does not exist");
 		}
 	}
 	
@@ -164,8 +164,7 @@ function createJnlpArg($flag, $value = false) {
 
 function downloadFile($fileType, $pwTitle) {
 	$pathway = Pathway::newFromTitle($pwTitle);
-	$pathway->updateCache();
-	$file = $pathway->getFileLocation($fileType);
+	$file = $pathway->	getFileLocation($fileType);
 	$content = file_get_contents($file);
 	
 	switch($fileType) {
@@ -273,13 +272,7 @@ class Pathway {
 		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
 		return Title::newFromText($this->species() . ':' . $this->name(), NS_PATHWAY);
 	}
-
-	/*AP20070507  Added method to return object without 'Pathway:' namespace */
-	public function getTrimTitleObject() {
-		//wfDebug("TITLE OBJECT: $this->species():$this->name()\n");
-		return Title::newFromText($this->species() . ':' . $this->name());
-	}
-		
+	
 	public static function getAvailableSpecies() {
 		return array_keys(Pathway::$spName2Code);
 	}
@@ -325,27 +318,46 @@ class Pathway {
 		return Pathway::$spName2Code[$this->pwSpecies];
 	}
 
+	public function getGpml() {
+		$gpmlRef = Revision::newFromTitle($this->getFileTitle(FILETYPE_GPML));
+		return $gpmlRef->getText();
+	}
+
 	public function getFileName($fileType) {
-		return $this->getFileTitle($fileType)->getDBKey();
+		if($fileType == FILETYPE_GPML) {
+			return $this->getFilePrefix() . '.' . $this->file_ext[$fileType];
+		} else {
+			return $this->getFileTitle($fileType)->getDBKey();
+		}
 	}
 	
-	public function getFileLocation($fileType) {
+	public function getFileLocation($fileType, $updateCache = true) {
+		if($updateCache) { //Make sure to have up to date version
+			$this->updateCache($fileType);	
+		}
 		$fn = $this->getFileName($fileType);
 		return wfImageDir( $fn ) . "/$fn";
 	}
 	
-	public function getFileURL($fileType) {
-		if($fileType == FILETYPE_PNG || $fileType == FILETYPE_MAPP) {
+	public function getFileURL($fileType, $updateCache = true) {
+		if($updateCache) {
 			$this->updateCache($fileType);
 		}
 		return "http://" . $_SERVER['HTTP_HOST'] . Image::imageURL($this->getFileName($fileType));
 	}
 	
 	public function getFileTitle($fileType) {
-		$prefix = $this->getFilePrefix();
-		$title = Title::newFromText( "$prefix." . $this->file_ext[$fileType], NS_IMAGE );
-		if(!$title) {
-			throw new Exception("Invalid file title for pathway " + $fileName);
+		switch($fileType) {
+			case FILETYPE_GPML:
+				$title = Title::newFromText($this->getTitleObject()->getText(), NS_GPML);			
+				break;
+			default:
+				$prefix = $this->getFilePrefix();
+				$title = Title::newFromText( "$prefix." . $this->file_ext[$fileType], NS_IMAGE );
+				if(!$title) {
+					throw new Exception("Invalid file title for pathway " + $fileName);
+				}
+				break;
 		}
 		return $title;
 	}
@@ -367,29 +379,21 @@ class Pathway {
 	public function getImageTitle() {
 		return $this->getFileTitle(FILETYPE_IMG);
 	}
-	
+
 	public function updatePathway($gpmlData, $description) {
-		$gpmlFile = $this->saveGpml($gpmlData, $description);
-		$this->saveImage($gpmlFile, "Converted from GPML");
+		$this->saveGpml($gpmlData, $description);
 	}
-	
-	public function updateImage() {
-		$file = $this->getFileName(FILETYPE_GPML);
-		$gpml = wfImageDir($file) . "/$file";
-		$this->saveImage($gpml, "Updated from GPML");
-	}
-	
-	public function revert($old_gpml, $old_date) {
-		global $wgUser, $wgLang, $wgUploadDirectory;
-		//Re-upload the old image
-		$old_file = wfImageArchiveDir($this->getFileName(FILETYPE_GPML)) . '/' . $old_gpml;
-		$gpml = file_get_contents($old_file);
+
+	public function revert($oldId) {
+		global $wgUser, $wgLang;
+		$rev = Revision::newFromId($oldId);
+		$gpml = $rev->getText();
 		if($gpml) {
 			$usr = $wgUser->getSkin()->userLink($wgUser->getId(), $wgUser->getName());
-			$date = $wgLang->timeanddate( $old_date, true );
+			$date = $wgLang->timeanddate( $rev->getTimestamp(), true );
 			$this->updatePathway($gpml, "Reverted to version '$date' by $usr");
 		} else {
-			throw new Exception("Unable to read file $old_file");
+			throw new Exception("Unable to get gpml content");
 		}
 	}
 	
@@ -412,29 +416,32 @@ class Pathway {
 		return Pathway::saveFileToWiki($imgFile, $imgName, $description);
 	}
 
-	private function newPathwayArticle($gpmlData) {
+	private function newPathwayArticle($gpmlData) {		
+		//Create description page
 		$title = $this->getTitleObject();
 		$article = new Article($title);
 		$species = $this->species();
-		return $article->doEdit('{{subst:Template:NewPathwayPage|categories=[[Category:'.$species.']]}}', "Created new pathway");
+		return $article->doEdit('{{subst:Template:NewPathwayPage|categories=[[Category:'.$species.']]}}', "Created new pathway", EDIT_NEW);
 	}
 
 	public function delete() {
+		global $wgLoadBalancer;
 		$reason = 'Deleted pathway';
 		$title = $this->getTitleObject();
 		Pathway::deleteArticle($title, $reason);
 		//Clean up GPML and SVG pages
 		$title = $this->getFileTitle(FILETYPE_GPML);
 		Pathway::deleteArticle($title, $reason);
-		$img = new Image($title);
-		$img->delete($reason);
+		$this->clearCache();
+
 		$title = $this->getFileTitle(FILETYPE_IMG);
 		Pathway::deleteArticle($title, $reason);
 		$img = new Image($title);
 		$img->delete($reason);
+		$wgLoadBalancer->commitAll();
 	}
 	
-	private static function deleteArticle($title, $reason='not specified') {
+	public static function deleteArticle($title, $reason='not specified') {
 		global $wgUser, $wgLoadBalancer;
 		
 		$article = new Article($title);
@@ -445,34 +452,39 @@ class Pathway {
 			wfRunHooks('ArticleDeleteComplete', array(&$this, &$wgUser, $reason));
 		}
 	}
+
 	private function saveGpml($gpmlData, $description) {
-		$file = $this->getFileName(FILETYPE_GPML);
-		wfDebug("Saving GPML file: $file\n");
-		$tmp = "tmp/" . $file;
+		global $wgLoadBalancer;
+		$gpmlArticle = new Article($this->getFileTitle(FILETYPE_GPML));		
+		
+		$new = $gpmlArticle->exists();
 		
 		$succ = true;
-		if(!file_exists($this->getFileLocation(FILETYPE_GPML))) {
-			//This is a new pathway, create article first, then upload gpml
-			$succ = $this->newPathwayArticle();
-		}
-		if($succ) {
-			writeFile($tmp, $gpmlData);
-			$succ = Pathway::saveFileToWiki($tmp, $file, $description);
-		}
+		$succ =  $gpmlArticle->doEdit($gpmlData, $description);
+		$wgLoadBalancer->commitAll();
+		$this->updateCache();
+				
+		if($succ) $succ = $this->newPathwayArticle();
+		
 		return $succ;
-		//Update the description page (contains the xml code)
-		/* No use for that, the idea was that we could search in the GPML code using the
-		* MediaWiki search this way, but that doesn't work
-		$article = new Article($this->getFileTitle(FILETYPE_GPML));
-		$article->doEdit("<xml>$gpmlData</xml>", "updated GPML data", EDIT_UPDATE | EDIT_FORCE_BOT);
-		*/
 	}
 	
-	private function savePng() {
+	private function saveImageCache() {
+		$file = $this->getFileLocation(FILETYPE_GPML);
+		$this->saveImage($file, "Updated from GPML");
+	}
+	
+	private function saveGpmlCache() {
+		$gpml = $this->getGpml();
+		$file = $this->getFileLocation(FILETYPE_GPML, false);
+		writeFile($file, $gpml);
+	}
+	
+	private function savePngCache() {
 		global $wgSVGConverters, $wgSVGConverter, $wgSVGConverterPath;
 		
 		$input = $this->getFileLocation(FILETYPE_IMG);
-		$output = $this->getFileLocation(FILETYPE_PNG);
+		$output = $this->getFileLocation(FILETYPE_PNG, false);
 		
 		$width = 1000;
 		$retval = 0;
@@ -491,33 +503,65 @@ class Pathway {
 		} else {
 			throw new Exception("Unable to convert to png, no SVG rasterizer found");
 		}
+		$ex = file_exists($output);
+		wfDebug("PNG CACHE SAVED: $output, $ex;\n");
 	}
 		
 	public function updateCache($fileType = null) {
+		wfDebug("updateCache called for filetype $fileType\n");
 		if(!$fileType) { //Update all
+			$this->updateCache(FILETYPE_GPML);
 			$this->updateCache(FILETYPE_PNG);
+			$this->updateCache(FILETYPE_IMG);
+			return;
 		}
 		if($this->isOutOfDate($fileType)) {
-			wfDebug("Updating cached file for $fileType");
+			wfDebug("\t->Updating cached file for $fileType\n");
 			switch($fileType) {
 			case FILETYPE_PNG:
-				$this->savePng();
+				$this->savePngCache();
 				break;
+			case FILETYPE_GPML:
+				$this->saveGpmlCache();
+				break;
+			case FILETYPE_IMG:
+
+				$this->saveImageCache();
 			}
 		}
 	}
 	
-	//Check if the cached version of the GPML derived file is out of date
-	//valid for FILETYPE_MAPP and FILETYPE_PNG
-	private function isOutOfDate($fileType) {
-		if($fileType == FILETYPE_GPML || $fileType == FILETYPE_IMG) {
-			return false; //These files are handled by MediaWiki
+	public function clearCache($fileType = null) {
+		if($fileType == FILETYPE_IMG) return; //Never delete the image file!
+
+		if(!$fileType) { //Update all
+			$this->clearCache(FILETYPE_PNG);
+			$this->clearCache(FILETYPE_GPML);
+		} else {
+			unlink($this->getFileLocation($fileType, false)); //Delete the cached file
 		}
-		$gpml = $this->getFileLocation(FILETYPE_GPML);
-		$file = $this->getFileLocation($fileType);
+	}
+
+	//Check if the cached version of the GPML data derived file is out of date
+	private function isOutOfDate($fileType) {		
+		wfDebug("isOutOfDate for $fileType\n");
+		
+		$gpmlTitle = $this->getFileTitle(FILETYPE_GPML);
+		$gpmlRev = Revision::newFromTitle($gpmlTitle);
+		if($gpmlRev) {
+			$gpmlDate = $gpmlRev->getTimestamp();
+		} else {
+			$gpmlDate = -1;
+		}
+		
+		$file = $this->getFileLocation($fileType, false);
+
 		if(file_exists($file)) {
-			return filemtime($file) < filemtime($gpml);
+			$fmt = wfTimestamp(TS_MW, filemtime($file));
+			wfDebug("\tFile exists, cache: $fmt, gpml: $gpmlDate\n");
+			return  $fmt < $gpmlDate;
 		} else { //No cached version yet, so definitely out of date
+			wfDebug("\tFile doesn't exist\n");
 			return true;
 		}
 	}
@@ -528,7 +572,8 @@ class Pathway {
 	static function saveFileToWiki( $fileName, $saveName, $description ) {
 		global $wgLoadBalancer, $wgUser;
 				
-		wfDebug("========= UPLOADING FILE FOR WIKIPATHWAYS ==========\n");		
+		wfDebug("========= UPLOADING FILE FOR WIKIPATHWAYS ==========\n");
+		wfDebug("=== IN: $fileName\n=== OUT: $saveName\n");		
 		# Check permissions
 		if( $wgUser->isLoggedIn() ) {
 			if( !$wgUser->isAllowed( 'upload' ) ) {

@@ -155,12 +155,17 @@ $wgSVGConverters['inkscape'] = '$path/inkscape -z -b white -w $width -f $input -
 ##Pathway namespace
 define("NS_PATHWAY", 100);
 define("NS_PATHWAY_TALK", 101);
+define("NS_GPML", 102);
+define("NS_GPML_TALK", 103);
 
 $wgExtraNamespaces =
-	array(NS_PATHWAY => "Pathway", NS_PATHWAY_TALK => "Pathway_Talk");
+	array(	NS_PATHWAY => "Pathway", NS_PATHWAY_TALK => "Pathway_Talk",
+			NS_GPML => "GPML", NS_GPML_TALK => "GPML_Talk");
 $wgNamespacesToBeSearchedDefault += 
-	array( NS_PATHWAY => true, NS_PATHWAY_TALK => true );
-$wgContentNamespaces += array(NS_PATHWAY, NS_PATHWAY_TALK);
+	array( 	NS_PATHWAY => true, NS_PATHWAY_TALK => true,
+			NS_GPML => true, NS_GPML_TALK => false);
+$wgContentNamespaces += array(NS_PATHWAY, NS_PATHWAY_TALK, NS_GPML, NS_GPML_TALK);
+
 ##Debug
 $wgDebugLogFile = '/tmp/wikipathwaysdebug.txt';
 $wgProfiling = true; //Set to true for debugging info
@@ -221,5 +226,8 @@ require_once('extensions/PPP/PageProtectionPlus.php');
 
 ##Cascading Style Sheets
 #Default is {$wgScriptPath}/skins
+
+//$wgShowExceptionDetails = true;
+//$wgShowSQLErrors = true;
 
 ?>

@@ -18,13 +18,13 @@ class MostEditedPathwaysPage extends SpecialPage
 				
 				//Most revisioned pathway images
 				$wgOut->addWikiText("== Pathways Changed  ==");
-				$ppp = new MEGPMLQueryPage();
+				$ppp = new PathwayQueryPage(102);
 
 				$ppp->doQuery( $offset, $limit );
 				
 				//Most edited pathway articles
 				$wgOut->addWikiText("== Descriptions & Bibliographies Changed ==");
-				$ppp = new MEPQueryPage();
+				$ppp = new PathwayQueryPage(100);
 
 				$ppp->doQuery( $offset, $limit );
 							
@@ -45,8 +45,13 @@ class MostEditedPathwaysPage extends SpecialPage
 		
 }
 
-class MEPQueryPage extends QueryPage {
-
+class PathwayQueryPage extends QueryPage {
+	private $namespace;
+	
+	function __construct($namespace) {
+		$this->namespace = $namespace;
+	}
+	
 	function getName() {
 		return "MostEditedPathwaysPage";
 	}
@@ -69,7 +74,7 @@ class MEPQueryPage extends QueryPage {
 				COUNT(*) as value
 			FROM $revision
 			JOIN $page ON page_id = rev_page
-			WHERE page_namespace = " . NS_PATHWAY . "
+			WHERE page_namespace = " . $this->namespace . "
 			AND page_title NOT LIKE '%Sandbox%'
 			GROUP BY 1,2,3
 			HAVING COUNT(*) > 1
@@ -80,7 +85,8 @@ class MEPQueryPage extends QueryPage {
 		global $wgLang, $wgContLang;
 
 /**AP20070508 */
-		$title = Title::makeTitle( $result->namespace, $result->title ); 
+		$title = Title::makeTitle( NS_PATHWAY, $result->title ); 
+		
 		$text = $wgContLang->convert("$result->value revisions");
 
 		$plink = $skin->makeKnownLinkObj( $title, htmlspecialchars( $wgContLang->convert($title->getBaseText())) );

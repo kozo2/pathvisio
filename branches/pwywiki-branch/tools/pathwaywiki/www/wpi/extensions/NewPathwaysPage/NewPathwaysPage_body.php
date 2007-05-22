@@ -55,8 +55,8 @@ class RCQueryPage extends QueryPage {
 			        page_namespace as namespace,
 			        page_title as title,
 				rc_user as user_id,
-				rc_user_text as value,
-				rc_timestamp as time
+				rc_user_text as utext,
+				rc_timestamp as value
 			FROM $page, $recentchanges
 			WHERE page_title=rc_title AND rc_new=1 AND page_namespace=".NS_PATHWAY." AND page_is_redirect=0";
 	}
@@ -65,7 +65,7 @@ class RCQueryPage extends QueryPage {
 		global $wgLang, $wgContLang, $wgUser;
 		$title = Title::makeTitle( $result->namespace, $result->title );
 		$link = $skin->makeKnownLinkObj( $title, htmlspecialchars( $wgContLang->convert( $title->getBaseText() ) ) );
-		$nv = "created ". $wgLang->timeanddate($result->time) . " by " . $wgUser->getSkin()->userlink($result->user_id, $result->value);
+		$nv = "created ". $wgLang->timeanddate($result->value) . " by " . $wgUser->getSkin()->userlink($result->user_id, $result->utext);
 		return wfSpecialList($link, $nv);
 	}
 }

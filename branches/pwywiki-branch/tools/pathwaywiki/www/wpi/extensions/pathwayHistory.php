@@ -1,5 +1,8 @@
 <?php
 require_once('wpi/wpi.php');
+require_once('Pager.php');
+require_once('PageHistory.php');
+
 
 $wgExtensionFunctions[] = "wfPathwayHistory";
 
@@ -19,6 +22,21 @@ function history( $input, $argv, &$parser ) {
 
 function getHistory($pathway) {
 		global $wgUser, $wpiScriptURL;
+		
+		$gpmlArticle = new Article($pathway->getFileTitle(FILETYPE_GPML));
+		$hist = new PageHistory($gpmlArticle);
+
+		$pager = new GpmlHistoryPager( $pathway, $hist );
+
+		$s = $pager->getBody();
+		
+		if($wgUser->isAllowed('delete')) {
+			$pwTitle = $pathway->getTitleObject()->getDBKey();
+			$delete = "<p><a href=$wpiScriptURL?action=delete&pwTitle=$pwTitle>Delete this pathway</a></p>";
+			$s = $delete . $s;
+		}
+		return $s;
+		/*global $wgUser, $wpiScriptURL;
 		$sk = $wgUser->getSkin();
 		
 		$imgTitle = $pathway->getFileTitle(FILETYPE_GPML);
@@ -51,26 +69,82 @@ function getHistory($pathway) {
 			$table = $delete . $table;
 		}
 		return $table;
+		*/
 }
 
 function historyRow($h, $style) {
 	return "<TR $style><TD>$h[rev]$h[view]<TD>$h[date]<TD>$h[user]<TD>$h[descr]";
 }
 
-function historyLine($cur, $line, $pathway) {
+function historyLine($pathway, $row, $cur = false) {
 	global $wpiScript, $wgLang, $wgUser, $wgTitle;
+	
+	$rev = new Revision( $row );
+	$rev->setTitle( $pathway->getFileTitle(FILETYPE_GPML) );
+
 	$revUrl = 'http://'.$_SERVER['HTTP_HOST'] . '/' .$wpiScript . '?action=revert&pwTitle=' .
 				$pathway->getTitleObject()->getPartialURL() .
-				"&toFile=$line->oi_archive_name&toDate=$line->img_timestamp";
+				"&oldId={$rev->getId()}";
 	
 	if($wgUser->getID() != 0 && $wgTitle && $wgTitle->userCanEdit()) {
-		$rev = $cur ? "" : "(<A href=$revUrl>revert</A>), ";
+		$revert = $cur ? "" : "(<A href=$revUrl>revert</A>), ";
 	}
-	$viewUrl = $cur ? $pathway->getFileURL(FILETYPE_IMG) : wfImageArchiveUrl( $line->oi_archive_name );
-	$view = '(<A href="' . $viewUrl . '" target="blank">view</A>)';
-	$date = $wgLang->timeanddate( $line->img_timestamp, true );
-	$user = $wgUser->getSkin()->userLink( $line->img_user, $line->img_user_text );
-	$descr = $line->img_description;
-	return array('rev'=>$rev, 'view'=>$view, 'date'=>$date, 'user'=>$user, 'descr'=>$descr);
+	
+	$dt = $wgLang->timeanddate( wfTimestamp(TS_MW, $rev->getTimestamp()), true );
+	$view = $wgUser->getSkin()->makeKnownLinkObj($pathway->getFileTitle(FILETYPE_GPML), 'view', "oldid=" . $rev->getId() );
+
+	$date = $wgLang->timeanddate( $rev->getTimestamp(), true );
+	$user = $wgUser->getSkin()->userLink( $rev->getUser(), $rev->getUserText() );
+	$descr = $rev->getComment();
+	return array('rev'=>$revert, 'view'=>$view, 'date'=>$date, 'user'=>$user, 'descr'=>$descr);
 }
+
+class GpmlHistoryPager extends PageHistoryPager {
+	private $pathway;
+	private $nrShow = 4;
+
+	function __construct( $pathway, $pageHistory ) {
+		parent::__construct( $pageHistory );
+		$this->pathway = $pathway;
+	}
+
+	function formatRow( $row ) {
+		$latest = $this->mCounter == 1;
+		$style = ($this->mCounter <= $this->nrShow) ? '' : 'style="display:none"';
+		
+		$s = historyRow(historyLine($this->pathway, $row, $latest), $style);
+		
+		$this->mLastRow = $row;
+		$this->mCounter++;
+		return $s;
+	}
+
+	function getStartBody() {
+		$this->mLastRow = false;
+		$this->mCounter = 1;
+		
+		$nr = $this->getNumRows();
+		
+		if($nr < 1) {
+			$table = '';
+		} else {
+			$table = "<TABLE  id='historyTable' class='wikitable'><TR><TH><TH>Time<TH>User<TH>Comment";
+		}
+
+		if($nr >= $this->nrShow) {
+			$expand = "<B>View all</B>";
+			$collapse = "<B>View last " . ($this->nrShow - 1) . "</B>";
+			$button = "<p onClick='toggleRows(\"historyTable\", this, \"$expand\", 
+				\"$collapse\", {$this->nrShow}, true)' style='cursor:pointer;color:#0000FF'>$expand</p>";
+			$table = $button . $table;
+		}
+
+		return $table;
+	}
+
+	function getEndBody() {
+		return "</TABLE>";
+	}
+}
+
 ?>
