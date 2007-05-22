@@ -23,7 +23,8 @@ function history( $input, $argv, &$parser ) {
 function getHistory($pathway) {
 		global $wgUser, $wpiScriptURL;
 		
-		$gpmlArticle = new Article($pathway->getFileTitle(FILETYPE_GPML));
+		$gpmlTitle = $pathway->getFileTitle(FILETYPE_GPML);
+		$gpmlArticle = new Article($gpmlTitle);
 		$hist = new PageHistory($gpmlArticle);
 
 		$pager = new GpmlHistoryPager( $pathway, $hist );

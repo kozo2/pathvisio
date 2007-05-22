@@ -319,7 +319,8 @@ class Pathway {
 	}
 
 	public function getGpml() {
-		$gpmlRef = Revision::newFromTitle($this->getFileTitle(FILETYPE_GPML));
+		$gpmlTitle = $this->getFileTitle(FILETYPE_GPML);
+		$gpmlRef = Revision::newFromTitle($gpmlTitle);
 		return $gpmlRef->getText();
 	}
 
