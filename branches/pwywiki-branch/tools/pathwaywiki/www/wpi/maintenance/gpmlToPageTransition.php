@@ -64,7 +64,11 @@ while( $row = $dbr->fetchRow( $res )) {
 		echo "->$oi_archive_name; $oi_description<BR>";
 		
 		echo "->-> transfer to {$title->getFullURL()}<BR>";
-		transferGpmlFile($article, $img, $oi_archive_name, $oi_description, true);
+		try {
+			transferGpmlFile($article, $img, $oi_archive_name, $oi_description, true);
+		} catch (Exception $e) {
+			echo "Exception: $e\n";
+		}	
 	}
 	//Transfer the current version
 	transferGpmlFile($article, $img, $img, $img_description, false);
