@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<project name="PathVisio" default="compile-v2" basedir=".">
+	
+	<property name="src.dir" value="src"/>
+        
+	<property name="build.v1.dir" value="build/v1"/>
+	<property name="build.v2.dir" value="build/v2"/>
+	<property name="build.plugins.dir" value="build/plugins"/>
+
+    <property name="apidoc.dir" value="apidoc"/>
+	<!-- <property name="dist.dir" value="dist"/> -->
+	<property name="webstart.dir" value="webstart"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="exec.perl" value="perl"/>
+	<property name="svn.exec.svnversion" value="svnversion"/>
+	<property name="exec.inno.setup" value="iscc"/>
+	
+	<path id="project.v1.class.path">
+		<pathelement location="${build.v1.dir}"/>
+		<fileset dir="lib">
+		        <include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="project.v2.class.path">
+		<pathelement location="${build.v2.dir}"/>
+		<fileset dir="lib">
+		        <include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="svnversion">
+		<exec executable="${svn.exec.svnversion}" outputproperty="subversion_revision" failifexecutionfails="false">
+			<arg line="-n ."/>
+		</exec>
+	</target>
+	
+	<target name="prepare" depends="svnversion">
+		<mkdir dir="${build.v1.dir}"/>
+		<mkdir dir="${build.v2.dir}"/>
+		<mkdir dir="${build.plugins.dir}"/>
+		<mkdir dir="${apidoc.dir}"/>
+		
+		<echo file="${src.dir}/core/org/pathvisio/Revision.java">
+package org.pathvisio;
+
+public class Revision 
+{
+	public static final String REVISION = "${subversion_revision}";
+};
+</echo>
+		
+	</target>
+	
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${build.v1.dir}"/>
+		<delete dir="${build.v2.dir}"/>
+		<delete dir="${build.core.dir}"/>
+		<delete dir="${build.plugins.dir}"/>
+		<delete dir="${build.test.dir}"/>
+		<delete dir="${apidoc.dir}"/>
+		<delete dir="${webstart.dir}/www"/>
+	</target>
+	
+	<target name="compile-v1" depends="prepare,resources-jar" description="Compile all sources">
+		<javac srcdir="src" debug="true"
+			includes="v1/**,core/**"
+			destdir="${build.v1.dir}">
+			<classpath refid="project.v1.class.path"/>
+		</javac>
+	</target>
+
+	<target name="compile-v2" depends="prepare,resources-jar" description="Compile all sources">
+		<javac srcdir="src" 
+                    includes="v2/**,core/**"
+                    destdir="${build.v2.dir}">
+                    <classpath refid="project.v2.class.path"/>
+		</javac>
+		<javac srcdir="src" 
+                    includes="plugins/**"
+                    destdir="${build.plugins.dir}">
+                    <classpath refid="project.v2.class.path"/>
+		</javac>
+	</target>
+
+	<target name="resources-jar" depends="prepare" description="Generates jar with resources">
+		<jar jarfile="lib/resources.jar">
+			<fileset dir="." includes="backpage/*"/>
+			<fileset dir="." includes="icons/*"/>
+			<fileset dir="." includes="images/*"/>
+			<fileset dir="." includes="GPML.xsd"/>
+			<fileset dir="." includes="MAPPTmpl.gtp"/>
+			<fileset dir="." includes="biopax-level2.owl"/>
+		</jar>
+		<jar jarfile="lib/R-resources.jar">
+			<fileset dir="lib" includes="R/**/*"/>
+			<fileset dir="lib" includes="JRI-lib/*"/>
+		</jar>
+		<jar jarfile="lib/swt-win32-lib.jar">
+			<fileset dir="lib/swt-win32-lib" includes="*.dll"/>
+		</jar>
+		<jar jarfile="lib/swt-linux-lib.jar">
+			<fileset dir="lib/swt-linux-lib" includes="*.so"/>
+		</jar>
+		<jar jarfile="lib/swt-mac-lib.jar">
+			<fileset dir="lib/swt-mac-lib" includes="*.jnilib"/>
+		</jar>
+	</target>
+	
+	<target name="jar" depends="compile-v1,compile-v2" description="Generates executable jar file">
+		<jar jarfile="pathvisio_v2.jar" manifest="src/MANIFEST.MF">
+			<fileset dir="${build.v2.dir}" includes="**/*.class"/>			
+		</jar>
+		<jar jarfile="pathvisio_v1.jar" manifest="src/MANIFEST.MF">
+			<fileset dir="${build.v1.dir}" includes="**/*.class"/>			
+		</jar>
+		<jar jarfile="lib/plugins.jar">
+			<fileset dir="${build.plugins.dir}" includes="**/*.class"/>			
+		</jar>
+    </target>
+
+	<target name="run-v1" depends="compile-v1">
+		<java classname="gmmlVision.GmmlVisionMain" fork="true">
+			<classpath refid="project.v1.class.path"/>
+			<jvmarg value='-Djava.library.path=lib/swt-linux-lib'/>
+		</java>
+	</target>
+
+	<target name="run-v2" depends="compile-v2">
+		<java classname="gmmlVision.GmmlVisionMain" fork="true">
+			<classpath refid="project.v2.class.path"/>
+			<jvmarg value='-Djava.library.path=lib/swt-linux-lib'/>
+		</java>
+	</target>
+
+	<target name="prepare-webstart" depends="jar,resources-jar" description="sign jars for webstart">
+		<!-- Copy files needed for webstart !-->
+		<copy file="pathvisio_v1.jar" toDir="${webstart.dir}/www"/>
+		<copy file="pathvisio_v2.jar" toDir="${webstart.dir}/www"/>
+		<signjar jar="pathvisio_v1.jar" lazy="true" 
+			alias="PathVisio" storepass="PathVisio" keystore="${lib.dir}/visioKeyStore"/>
+		<signjar jar="pathvisio_v2.jar" lazy="true" 
+			alias="PathVisio" storepass="PathVisio" keystore="${lib.dir}/visioKeyStore"/>
+                
+		<copy toDir="${webstart.dir}/www" overwrite="true">
+			<fileset dir="${lib.dir}" includes="**/*.jar"/>
+		</copy>
+		<signjar alias="PathVisio" lazy = "true" 
+			storepass="PathVisio" keystore="${lib.dir}/visioKeyStore">
+			<fileset dir="${webstart.dir}/www" includes="**/*.jar"/>
+		</signjar>
+		<copy file="${webstart.dir}/pathvisio_v1.jnlp" toDir="${webstart.dir}/www"/>
+		<copy file="${webstart.dir}/pathvisio_v2.jnlp" toDir="${webstart.dir}/www"/>
+	</target>
+	
+	<target name="webstart" depends="prepare-webstart" description="Upload webstart files">
+                <!-- Run perl script to upload to server !-->
+		<exec executable="${exec.perl}" dir="${webstart.dir}" failifexecutionfails="true">
+			<arg line="autoftp.pl"/>
+		</exec>
+	</target>
+	
+	<target name="docs" depends="prepare" description="generate api-docs">
+		<tstamp /> <!-- set ${TODAY} -->
+		<javadoc destdir="${apidoc.dir}" 
+			doctitle="PathVisio"
+			header="Revision ${subversion_revision}"
+			footer="Generated ${TODAY}">
+			<classpath refid="project.v2.class.path"/>
+			<package name="org.pathvisio.gui"/>
+			<package name="org.pathvisio.view"/>
+			<package name="org.pathvisio.model"/>
+			<package name="org.pathvisio.util"/>
+			<package name="org.pathvisio.util.tableviewer"/>
+			<package name="org.pathvisio.data"/>
+			<package name="org.pathvisio.search"/>
+			<package name="org.pathvisio.R"/>
+			<package name="org.pathvisio.R.wizard"/>
+			<package name="org.pathvisio.visualization"/>
+			<package name="org.pathvisio.visualization.colorset"/>
+			<package name="org.pathvisio.visualization.plugins"/>
+			<package name="org.pathvisio.preferences"/>
+			<package name="org.pathvisio.debug"/>
+			<sourcepath>			
+				<pathelement location="${src.dir}/core"/>
+				<pathelement location="${src.dir}/v2"/>
+				<pathelement location="${src.dir}/plugins"/>
+			</sourcepath>
+		</javadoc>		
+	</target>
+
+        <!--
+	<target name="dist" depends="jar-v1, jar-v2" description="Creates distribution zip and installer">
+
+		--><!-- query the repository for the revision nr. !--><!--
+		<exec executable="${svn.exec.svnversion}" outputproperty="subversion_revision" failifexecutionfails="false">
+			<arg line="-n ."/>
+		</exec>
+		<echo>Current Revision ${subversion_revision}</echo>
+
+		--><!-- create a windows installer using inno-setup and pathvisio.iss!--><!--
+		<exec executable="${exec.inno.setup}">
+			<arg line="pathvisio.iss"/>
+		</exec>		
+		<move file="${dist.dir}/PathVisio-Setup.exe" 
+			tofile="${dist.dir}/PathVisio-Setup.${subversion_revision}.exe" 
+			overwrite="true"/>			
+	</target> -->
+		
+	<target name="test" depends="compile-v2">
+		<javac srcdir="src" 
+					includes="test/**"
+					destdir="${build.v2.dir}">
+					<classpath refid="project.v2.class.path"/>
+		</javac>
+		<junit printsummary="on" haltonfailure="true" fork="true">
+			<formatter type="brief" usefile="false"/>
+			<classpath refid="project.v2.class.path"/>
+			<jvmarg value='-Djava.library.path=lib/swt-linux-lib'/>
+			<batchtest>
+				<fileset dir="src/test">
+					<include name="**/Test.java"/>
+					<exclude name="**/view/Test.java"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+</project>
