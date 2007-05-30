@@ -16,13 +16,11 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
 
 public abstract class VPathwayElement implements Comparable<VPathwayElement>
 {	
@@ -38,14 +36,8 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	
 	private boolean isSelected;
 		
-	protected abstract void draw(PaintEvent e);
-	
-	/**
-	 * Draws the VPathwayElement object on the VPathway
-	 * it is part of
-	 */
-	public abstract void draw(PaintEvent e, GC buffer);
-	
+	protected abstract void draw(Graphics2D g2d);
+		
 	/** 
 	 * mark both the area currently and previously occupied by this object for redraw 
 	 */
@@ -107,7 +99,7 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	 * @param r - the rectangle to check
 	 * @return True if the object intersects the rectangle, false otherwise
 	 */
-	protected boolean vIntersects(Rectangle2D.Double r)
+	protected boolean vIntersects(Rectangle2D r)
 	{
 		return getVOutline().intersects(r);
 	}

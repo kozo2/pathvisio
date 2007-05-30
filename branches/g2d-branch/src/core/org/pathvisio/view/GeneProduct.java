@@ -16,18 +16,9 @@
 //
 package org.pathvisio.view;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Region;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
-import org.pathvisio.util.SwtUtils;
 import org.pathvisio.data.DataSources;
 import org.pathvisio.model.PathwayElement;
 
@@ -38,10 +29,10 @@ import org.pathvisio.model.PathwayElement;
 public class GeneProduct extends GraphicsShape
 {
 	private static final long serialVersionUID = 1L;
-	public static final RGB INITIAL_FILL_COLOR = new RGB(255, 255, 255);
+	//public static final RGB INITIAL_FILL_COLOR = new RGB(255, 255, 255);
 	
 	// note: not the same as color!
-	RGB fillColor = INITIAL_FILL_COLOR;
+	//RGB fillColor = INITIAL_FILL_COLOR;
 		
 	public GeneProduct (VPathway canvas, PathwayElement o) {
 		super(canvas, o);		
@@ -133,72 +124,72 @@ public class GeneProduct extends GraphicsShape
 		return (int)(vFromM (gdata.getMFontSize()));
 	}
 
-	public void draw(PaintEvent e, GC buffer)
+	public void draw(Graphics2D g2d)
 	{
-		Color c = null;
-		Color b = SwtUtils.changeColor(c, new RGB(255, 255, 255), e.display);
-		Font f = null;
-		
-		if(isSelected())
-		{
-			c = SwtUtils.changeColor(c, selectColor, e.display);
-		}
-		else 
-		{
-			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
-		}
-		
-		buffer.setForeground(c);
-		buffer.setBackground(b);
-		buffer.setLineStyle (SWT.LINE_SOLID);
-		buffer.setLineWidth (1);		
-		
 		Rectangle area = new Rectangle(
 				getVLeft(), getVTop(), getVWidth(), getVHeight());
 		
-		buffer.fillRectangle (area); // white background
-		buffer.drawRectangle (area);
+		g2d.draw(area);
 		
-		buffer.setClipping ( area.x - 1, area.y - 1, area.width + 1, area.height + 1);
-		
-		f = SwtUtils.changeFont(f, new FontData(gdata.getFontName(), getVFontSize(), SWT.NONE), e.display);
-		buffer.setFont(f);
-		
-		String label = gdata.getTextLabel();
-		Point textSize = buffer.textExtent (label);
-		buffer.drawString (label, 
-				area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
-				area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
-				
-				
-		Region r = null;
-		buffer.setClipping(r);
-		
-		c.dispose();
-		b.dispose();
-		f.dispose();
+//		Color c = null;
+//		Color b = SwtUtils.changeColor(c, new RGB(255, 255, 255), e.display);
+//		Font f = null;
+//		
+//		if(isSelected())
+//		{
+//			c = SwtUtils.changeColor(c, selectColor, e.display);
+//		}
+//		else 
+//		{
+//			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
+//		}
+//		
+//		buffer.setForeground(c);
+//		buffer.setBackground(b);
+//		buffer.setLineStyle (SWT.LINE_SOLID);
+//		buffer.setLineWidth (1);		
+//		
+//		Rectangle area = new Rectangle(
+//				getVLeft(), getVTop(), getVWidth(), getVHeight());
+//		
+//		buffer.fillRectangle (area); // white background
+//		buffer.drawRectangle (area);
+//		
+//		buffer.setClipping ( area.x - 1, area.y - 1, area.width + 1, area.height + 1);
+//		
+//		f = SwtUtils.changeFont(f, new FontData(gdata.getFontName(), getVFontSize(), SWT.NONE), e.display);
+//		buffer.setFont(f);
+//		
+//		String label = gdata.getTextLabel();
+//		Point textSize = buffer.textExtent (label);
+//		buffer.drawString (label, 
+//				area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
+//				area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
+//				
+//				
+//		Region r = null;
+//		buffer.setClipping(r);
+//		
+//		c.dispose();
+//		b.dispose();
+//		f.dispose();
 	}
 	
-	protected void draw(PaintEvent e)
+	public void drawHighlight(Graphics2D g2d)
 	{
-		draw(e, e.gc);
-	}
-	
-	public void drawHighlight(PaintEvent e, GC buffer)
-	{
-		if(isHighlighted())
-		{
-			Color c = null;
-			c = SwtUtils.changeColor(c, highlightColor, e.display);
-			buffer.setForeground(c);
-			buffer.setLineWidth(2);
-			buffer.drawRectangle (
-					getVLeft() - 1,
-					getVTop() - 1,
-					getVWidth() + 3,
-					getVHeight() + 3
-				);
-			if(c != null) c.dispose();
-		}
+//		if(isHighlighted())
+//		{
+//			Color c = null;
+//			c = SwtUtils.changeColor(c, highlightColor, e.display);
+//			buffer.setForeground(c);
+//			buffer.setLineWidth(2);
+//			buffer.drawRectangle (
+//					getVLeft() - 1,
+//					getVTop() - 1,
+//					getVWidth() + 3,
+//					getVHeight() + 3
+//				);
+//			if(c != null) c.dispose();
+//		}
 	}
 }

@@ -41,6 +41,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -58,6 +59,7 @@ import org.pathvisio.preferences.Preferences;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.VPathway;
+import org.pathvisio.view.swt.VPathwaySWT;
 import org.pathvisio.visualization.LegendPanel;
 import org.pathvisio.visualization.VisualizationManager;
 
@@ -695,8 +697,11 @@ public class MainWindow extends ApplicationWindow implements
 	 * @return the empty {@link VPathway}
 	 */
 	public VPathway createNewDrawing()
-	{		
-		return new VPathway(sc, SWT.NO_BACKGROUND);
+	{	
+		VPathwaySWT pswt = new VPathwaySWT(sc, SWT.NO_BACKGROUND);
+		VPathway p = new VPathway(pswt);
+		pswt.setChild(p);
+		return p;
 	}
 	
 	public void applicationEvent(ApplicationEvent e) {
@@ -704,11 +709,11 @@ public class MainWindow extends ApplicationWindow implements
 		switch(e.type) {
 		case ApplicationEvent.NEW_PATHWAY:
 			drawing = Engine.getVPathway();
-			sc.setContent(drawing);
+			sc.setContent((Canvas)drawing.getWrapper());
 			break;
 		case ApplicationEvent.OPEN_PATHWAY:
 			drawing = Engine.getVPathway();
-			sc.setContent(drawing);
+			sc.setContent((Canvas)drawing.getWrapper());
 			if(Gex.isConnected()) cacheExpressionData();
 			break;	
 		}

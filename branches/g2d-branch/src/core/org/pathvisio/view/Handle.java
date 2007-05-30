@@ -16,13 +16,11 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
 import org.pathvisio.view.LinAlg.Point;
 
 /**
@@ -151,49 +149,53 @@ class Handle extends VPathwayElement
 	 * draws itself, but only if isVisible() is true, there is 
 	 * no need for a check for isVisible() before calling draw().
 	 */
-	public void draw(PaintEvent e, GC buffer)
+	public void draw(Graphics2D g2d)
 	{
-		if (!isVisible) return;
+		if(!isVisible) return;
 		double vCenterx = vFromM (mCenterx);
 		double vCentery = vFromM (mCentery);
+		g2d.drawRect(
+				(int)(vCenterx - WIDTH/2), 
+				(int)(vCentery - HEIGHT/2), 
+				(int)WIDTH, 
+				(int)HEIGHT);
 		
-		if(direction == DIRECTION_ROT) {
-			buffer.setLineWidth (1);
-			buffer.setLineStyle(SWT.LINE_SOLID);
-			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_GREEN));
-			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
-			buffer.fillOval(
-					(int)(vCenterx - WIDTH/2), 
-					(int)(vCentery - HEIGHT/2), 
-					(int)WIDTH, 
-					(int)HEIGHT);
-			buffer.drawOval(
-					(int)(vCenterx - WIDTH/2), 
-					(int)(vCentery - HEIGHT/2), 
-					(int)WIDTH, 
-					(int)HEIGHT);
-		} else {			
-			buffer.setLineWidth (1);
-			buffer.setLineStyle(SWT.LINE_SOLID);
-			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_YELLOW));
-			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
-			buffer.fillRectangle (
-					(int)(vCenterx - WIDTH/2), 
-					(int)(vCentery - HEIGHT/2), 
-					(int)WIDTH, 
-					(int)HEIGHT);	
-			buffer.drawRectangle (
-					(int)(vCenterx - WIDTH/2), 
-					(int)(vCentery - HEIGHT/2), 
-					(int)WIDTH, 
-					(int)HEIGHT);	
-		}
+//		if (!isVisible) return;
+//		double vCenterx = vFromM (mCenterx);
+//		double vCentery = vFromM (mCentery);
+//		
+//		if(direction == DIRECTION_ROT) {
+//			buffer.setLineWidth (1);
+//			buffer.setLineStyle(SWT.LINE_SOLID);
+//			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_GREEN));
+//			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
+//			buffer.fillOval(
+//					(int)(vCenterx - WIDTH/2), 
+//					(int)(vCentery - HEIGHT/2), 
+//					(int)WIDTH, 
+//					(int)HEIGHT);
+//			buffer.drawOval(
+//					(int)(vCenterx - WIDTH/2), 
+//					(int)(vCentery - HEIGHT/2), 
+//					(int)WIDTH, 
+//					(int)HEIGHT);
+//		} else {			
+//			buffer.setLineWidth (1);
+//			buffer.setLineStyle(SWT.LINE_SOLID);
+//			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_YELLOW));
+//			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
+//			buffer.fillRectangle (
+//					(int)(vCenterx - WIDTH/2), 
+//					(int)(vCentery - HEIGHT/2), 
+//					(int)WIDTH, 
+//					(int)HEIGHT);	
+//			buffer.drawRectangle (
+//					(int)(vCenterx - WIDTH/2), 
+//					(int)(vCentery - HEIGHT/2), 
+//					(int)WIDTH, 
+//					(int)HEIGHT);	
+//		}
 		
-	}
-	
-	protected void draw(PaintEvent e)
-	{
-		draw(e, e.gc);
 	}
 		
 	/**

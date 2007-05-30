@@ -16,14 +16,9 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 
 import org.pathvisio.model.PathwayElement;
 
@@ -46,7 +41,7 @@ public class InfoBox extends Graphics {
 		return VPathway.DRAW_ORDER_MAPPINFO;
 	}
 	
-	public Point getBoardSize() { return new Point((int)gdata.getMBoardWidth(), (int)gdata.getMBoardHeight()); }
+	//public Point getBoardSize() { return new Point((int)gdata.getMBoardWidth(), (int)gdata.getMBoardHeight()); }
 	
 	int getVFontSize()
 	{
@@ -61,55 +56,50 @@ public class InfoBox extends Graphics {
 //		markDirty();
 	}
 	
-	public void draw(PaintEvent e) 
-	{
-		draw(e, e.gc);
-	}
-	
-	public void draw(PaintEvent e, GC buffer) 
+	public void draw(Graphics2D g2d) 
 	{		
-		sizeX = 1; //Reset sizeX
-		
-		Font fBold = new Font(e.display, fontName, getVFontSize(), SWT.BOLD);
-		Font fNormal = new Font(e.display, fontName, getVFontSize(), SWT.NONE);
-		
-		if (isSelected())
-		{
-			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_RED));
-		}
-		else 
-		{
-			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
-		}
-				
-		//Draw Name, Organism, Data-Source, Version, Author, Maintained-by, Email, Availability and last modified
-		String[][] text = new String[][] {
-				{"Name: ", gdata.getMapInfoName()},
-				{"Maintained by: ", gdata.getMaintainer()},
-				{"Email: ", gdata.getEmail()},
-				{"Availability: ", gdata.getCopyright()},
-				{"Last modified: ", gdata.getLastModified()},
-				{"Organism: ", gdata.getOrganism()},
-				{"Data Source: ", gdata.getDataSource()}};
-		int shift = 0;
-		int vLeft = (int)vFromM(gdata.getMLeft());
-		int vTop = (int)vFromM(gdata.getMTop());
-		for(String[] s : text)
-		{
-			if(s[1] == null || s[1].equals("")) continue; //Skip empty labels
-			buffer.setFont(fBold);
-			Point labelSize = buffer.textExtent(s[0], SWT.DRAW_TRANSPARENT);
-			buffer.drawString(s[0], vLeft, vTop + shift, true);
-			buffer.setFont(fNormal);
-			Point infoSize = buffer.textExtent(s[1], SWT.DRAW_TRANSPARENT);
-			buffer.drawString(s[1], vLeft + labelSize.x, vTop + shift, true);
-			shift += Math.max(infoSize.y, labelSize.y);
-			sizeX = Math.max(sizeX, infoSize.x + labelSize.x);
-		}
-		sizeY = shift;
-		
-		fBold.dispose();
-		fNormal.dispose();
+//		sizeX = 1; //Reset sizeX
+//		
+//		Font fBold = new Font(e.display, fontName, getVFontSize(), SWT.BOLD);
+//		Font fNormal = new Font(e.display, fontName, getVFontSize(), SWT.NONE);
+//		
+//		if (isSelected())
+//		{
+//			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_RED));
+//		}
+//		else 
+//		{
+//			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
+//		}
+//				
+//		//Draw Name, Organism, Data-Source, Version, Author, Maintained-by, Email, Availability and last modified
+//		String[][] text = new String[][] {
+//				{"Name: ", gdata.getMapInfoName()},
+//				{"Maintained by: ", gdata.getMaintainer()},
+//				{"Email: ", gdata.getEmail()},
+//				{"Availability: ", gdata.getCopyright()},
+//				{"Last modified: ", gdata.getLastModified()},
+//				{"Organism: ", gdata.getOrganism()},
+//				{"Data Source: ", gdata.getDataSource()}};
+//		int shift = 0;
+//		int vLeft = (int)vFromM(gdata.getMLeft());
+//		int vTop = (int)vFromM(gdata.getMTop());
+//		for(String[] s : text)
+//		{
+//			if(s[1] == null || s[1].equals("")) continue; //Skip empty labels
+//			buffer.setFont(fBold);
+//			Point labelSize = buffer.textExtent(s[0], SWT.DRAW_TRANSPARENT);
+//			buffer.drawString(s[0], vLeft, vTop + shift, true);
+//			buffer.setFont(fNormal);
+//			Point infoSize = buffer.textExtent(s[1], SWT.DRAW_TRANSPARENT);
+//			buffer.drawString(s[1], vLeft + labelSize.x, vTop + shift, true);
+//			shift += Math.max(infoSize.y, labelSize.y);
+//			sizeX = Math.max(sizeX, infoSize.x + labelSize.x);
+//		}
+//		sizeY = shift;
+//		
+//		fBold.dispose();
+//		fNormal.dispose();
 	}
 
 	protected Shape getVOutline() {

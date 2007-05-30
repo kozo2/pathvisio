@@ -1,13 +1,12 @@
 package org.pathvisio.view;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D.Double;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
 import org.pathvisio.model.PathwayElement;
 
 public class Group extends Graphics {
@@ -41,7 +40,7 @@ public class Group extends Graphics {
 	}
 
 	@Override
-	protected boolean vIntersects(Double r) {
+	protected boolean vIntersects(Rectangle2D r) {
 		for (VPathwayElement vpe : canvas.getDrawingObjects()) {
 			if (vpe != this && vpe.vIntersects(r)) {
 				if (vpe instanceof Graphics) {
@@ -97,17 +96,11 @@ public class Group extends Graphics {
 	}
 
 	@Override
-	protected void draw(PaintEvent e) {
+	protected void draw(Graphics2D g2d) {
 		// TODO make unique selection box for groups
 		
 	}
-
-	@Override
-	public void draw(PaintEvent e, GC buffer) {
-		// TODO make unique selection box for groups
-		
-	}
-
+	
 	@Override
 	protected Shape getVOutline() {
 		// TODO Return outline of the Group members, distinct from global selection box

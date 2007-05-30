@@ -22,10 +22,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Transform;
-
-import org.pathvisio.util.SwtUtils;
 import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
@@ -250,15 +246,15 @@ public abstract class GraphicsShape extends Graphics {
 		else gdata.setRotation(angle);
 	}
 	
-	/**
-	 * Rotates the {@link GC} around the objects center
-	 * @param gc	the {@link GC} to rotate
-	 * @param tr	a {@link Transform} that can be used for rotation
-	 */
-	protected void rotateGC(GC gc, Transform tr) {		
-		SwtUtils.rotateGC(gc, tr, (float)Math.toDegrees(gdata.getRotation()), 
-				getVCenterX(), getVCenterY());
-	}
+//	/**
+//	 * Rotates the {@link GC} around the objects center
+//	 * @param gc	the {@link GC} to rotate
+//	 * @param tr	a {@link Transform} that can be used for rotation
+//	 */
+//	protected void rotateGC(GC gc, Transform tr) {		
+//		SwtUtils.rotateGC(gc, tr, (float)Math.toDegrees(gdata.getRotation()), 
+//				getVCenterX(), getVCenterY());
+//	}
 	
 	public void adjustToHandle(Handle h) {
 		//Rotation

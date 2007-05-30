@@ -16,6 +16,7 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -25,9 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
 import org.pathvisio.model.ObjectType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
@@ -383,24 +381,20 @@ public class SelectionBox extends GraphicsShape
 		}
 	}
 	
-	public void draw(PaintEvent e, GC buffer)
+	public void draw(Graphics2D g2d)
 	{
-		if(isVisible) {
-			buffer.setAntialias(SWT.OFF);
-			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
-			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_BLACK));
-			buffer.setLineStyle (SWT.LINE_DOT);
-			buffer.setLineWidth (1);
-			buffer.drawRectangle (getVLeft(), getVTop(), getVWidth(), getVHeight());
-			buffer.setAntialias(SWT.ON);
-		}
+//		if(isVisible) {
+//			buffer.setAntialias(SWT.OFF);
+//			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
+//			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_BLACK));
+//			buffer.setLineStyle (SWT.LINE_DOT);
+//			buffer.setLineWidth (1);
+//			buffer.drawRectangle (getVLeft(), getVTop(), getVWidth(), getVHeight());
+//			buffer.setAntialias(SWT.ON);
+//		}
+		g2d.drawRect(getVLeft(), getVTop(), getVWidth(), getVHeight());
 	}
-	
-	protected void draw(PaintEvent e)
-	{
-		draw(e, e.gc);
-	}
-	
+		
 	public void adjustToZoom(double factor) { fitToSelection(); }
 	
 	static List<SelectionListener> listeners;

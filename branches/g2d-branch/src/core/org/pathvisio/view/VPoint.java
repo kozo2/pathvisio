@@ -16,12 +16,11 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.GC;
 import org.pathvisio.model.PathwayElement.MPoint;
 
 public class VPoint extends VPathwayElement {
@@ -125,11 +124,7 @@ public class VPoint extends VPathwayElement {
 		return new Handle[] { handle };
 	}
 	
-	protected void draw(PaintEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	public void draw(PaintEvent e, GC buffer) {
+	protected void draw(Graphics2D g2d) {
 		// TODO Auto-generated method stub
 	}
 

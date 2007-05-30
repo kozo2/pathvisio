@@ -16,6 +16,7 @@
 //
 package org.pathvisio.gui;
 
+import java.awt.Point;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.FileDialog;
 import org.pathvisio.Globals;
 import org.pathvisio.biopax.gui.BiopaxDialog;
@@ -512,8 +512,8 @@ public class CommonActions
 				double newPctZoomFactor = pctZoomFactor;
 				if(pctZoomFactor == MainWindow.ZOOM_TO_FIT) 
 				{
-					Point shellSize = window.sc.getSize();
-					Point drawingSize = drawing.getSize();
+					org.eclipse.swt.graphics.Point shellSize = window.sc.getSize();
+					Point drawingSize = drawing.getWrapper().getVSize();
 					newPctZoomFactor = (int)Math.min(
 							drawing.getPctZoom() * (double)shellSize.x / drawingSize.x,
 							drawing.getPctZoom() * (double)shellSize.y / drawingSize.y

@@ -16,11 +16,10 @@
 //
 package org.pathvisio.view;
 
-import org.pathvisio.gui.Engine;
-
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,21 +35,23 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-
+import org.pathvisio.gui.Engine;
+import org.pathvisio.model.Color;
+import org.pathvisio.model.GroupStyle;
+import org.pathvisio.model.LineStyle;
+import org.pathvisio.model.LineType;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.OrientationType;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayEvent;
+import org.pathvisio.model.PathwayListener;
+import org.pathvisio.model.ShapeType;
+import org.pathvisio.model.PathwayElement.MPoint;
 import org.pathvisio.visualization.Visualization;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
-import org.pathvisio.model.*;
-import org.pathvisio.model.PathwayElement.MPoint;
 
 /**
  * This class implements and handles a drawing.
@@ -58,18 +59,21 @@ import org.pathvisio.model.PathwayElement.MPoint;
  * visualized. The class also provides methods for mouse  and key
  * event handling.
  */
-public class VPathway extends Canvas implements MouseListener, MouseMoveListener, 
-PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationListener
+public class VPathway implements MouseListener, MouseMoveListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationListener
 {	
 	private static final long serialVersionUID = 1L;
 	static final double M_PASTE_OFFSET = 10 * 15;
+	
+	private VPathwayWrapper parent;
 	
 	/**
 	 * All objects that are visible on this mapp, including the handles
 	 * but excluding the legend, mappInfo and selectionBox objects
 	 */
 	private ArrayList<VPathwayElement> drawingObjects;
-	public ArrayList<VPathwayElement> getDrawingObjects() { return drawingObjects; }
+	public ArrayList<VPathwayElement> getDrawingObjects() { 
+		return drawingObjects; 
+	}
 	
 	/**
 	 * The {@link VPathwayElement} that is pressed last mouseDown event}
@@ -89,6 +93,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	 */
 	InfoBox infoBox;
 	private Pathway data;
+	
 	public Pathway getGmmlData()
 	{
 		return data;
@@ -102,6 +107,28 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	 * @return false if in edit mode, true if not
 	 */
 	public boolean isEditMode() { return editMode; }
+	
+	/**
+	 *Constructor for this class
+	 */	
+	public VPathway(VPathwayWrapper parent)
+	{
+		this.parent = parent;
+		
+		drawingObjects	= new ArrayList<VPathwayElement>();
+		
+		s = new SelectionBox(this);
+		
+		VisualizationManager.addListener(this);
+	}
+	
+	public void redraw() {
+		parent.redraw();
+	}
+	
+	public VPathwayWrapper getWrapper() {
+		return parent;
+	}
 	
 	/**
 	 * Map the contents of a single data object to this VPathway
@@ -139,7 +166,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 		}
 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
-		setSize(width, height); 
+		parent.setVSize(width, height); 
 		data.fireObjectModifiedEvent(new PathwayEvent(null, PathwayEvent.MODIFIED_GENERAL));
 		data.addListener(this);
 	}
@@ -159,8 +186,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	public void addDirtyRect(Rectangle r)
 	{
 		if(r == null) { //In case r is null, add whole drawing
-			org.eclipse.swt.graphics.Rectangle b = getBounds();
-			r = new Rectangle(b.x, b.y, b.width, b.height);
+			r = parent.getVBounds();
 		}
 		if(dirtyRect == null)
 			dirtyRect = r;
@@ -175,29 +201,10 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	public void redrawDirtyRect()
 	{
 		if (dirtyRect != null)
-			redraw (dirtyRect.x, dirtyRect.y, dirtyRect.width + 1, dirtyRect.height + 1, false);
+			parent.redraw (dirtyRect);
 		dirtyRect = null;
 	}
-	
-	/**
-	 *Constructor for this class
-	 */	
-	public VPathway(Composite parent, int style)
-	{
-		super (parent, style);
-		
-		drawingObjects	= new ArrayList<VPathwayElement>();
-		
-		s = new SelectionBox(this);
-		
-		addMouseListener(this);
-		addMouseMoveListener(this);
-		addPaintListener (this);
-		addMouseTrackListener(this);
-		addKeyListener(this);
-		VisualizationManager.addListener(this);
-	}
-		
+			
 	/**
 	 * Sets the MappInfo containing information on the pathway
 	 * @param mappInfo
@@ -300,7 +307,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			clearSelection();
 		}
 		Engine.getWindow().showLegend(!editMode);	
-		redraw();
+		parent.redraw();
 	}
 	
 	private double zoomFactor = 1.0/15.0;
@@ -345,8 +352,8 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 		zoomFactor = pctZoomFactor / 100.0 / 15.0;
 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
-		setSize(width, height); 				
-		redraw();
+		parent.setVSize(width, height); 				
+		parent.redraw();
 	}
 
 	public void setPressedObject(VPathwayElement o) {
@@ -411,7 +418,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	 */
 	public void mouseDown(MouseEvent e)
 	{		
-		setFocus();
+		//setFocus();
 		if (editMode)
 		{
 			if (newGraphics != NEWNONE)
@@ -461,59 +468,66 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	 */
 	public void mouseDoubleClick(MouseEvent e) {	}
 
+	public void draw(Graphics2D g2d) {
+		draw(g2d, null);
+	}
+	
 	/**
 	 * Paints all components in the drawing.
 	 * This method is called automatically in the 
 	 * painting process
 	 */
-	public void paintControl (PaintEvent e)
+	public void draw (Graphics2D g2d, Rectangle area)
 	{		
-		Image image = (Image)getData("double-buffer-image");
-		// create an image for double-buffering, if it doesn't exist 
-		// or the component has been resized
-		if(image == null
-				|| image.getBounds().width != getSize().x
-				|| image.getBounds().height != getSize().y)
-		{
-			Engine.log.trace("Creating image of size " + getSize().x + ", " + getSize().y);
-			image = new Image(getDisplay(), getSize().x, getSize().y);
-			setData("double-buffer-image", image);
-		}
+//		Image image = (Image)getData("double-buffer-image");
+//		// create an image for double-buffering, if it doesn't exist 
+//		// or the component has been resized
+//		if(image == null
+//				|| image.getBounds().width != getSize().x
+//				|| image.getBounds().height != getSize().y)
+//		{
+//			Engine.log.trace("Creating image of size " + getSize().x + ", " + getSize().y);
+//			image = new Image(getDisplay(), getSize().x, getSize().y);
+//			setData("double-buffer-image", image);
+//		}
+//
+//		GC buffer = new GC(image);
+//		buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
+//		buffer.fillRectangle(e.x, e.y, e.width, e.height);
+//		
+//		buffer.setAntialias(SWT.ON);
+//		
+//		Rectangle2D.Double r = new Rectangle.Double(e.x, e.y, e.width, e.height);
 
-		GC buffer = new GC(image);
-		buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
-		buffer.fillRectangle(e.x, e.y, e.width, e.height);
-		
-		buffer.setAntialias(SWT.ON);
-		
-		Rectangle2D.Double r = new Rectangle.Double(e.x, e.y, e.width, e.height);
-		    	
+		g2d.setColor(java.awt.Color.WHITE);
+		g2d.fillRect(area.x, area.y, area.width, area.height);
+		g2d.setColor(java.awt.Color.BLACK);
 		Collections.sort(drawingObjects);
 		
 		Visualization v = VisualizationManager.getCurrent();
 		for(VPathwayElement o : drawingObjects)
 		{
-			if(o.vIntersects(r))
+			if(o.vIntersects(area))
 			{
 				if(checkDrawAllowed(o)) {
-					o.draw (e, buffer);
+					o.draw (g2d);
 				}
 				
-				if(v != null && o instanceof Graphics) {
-						try {
-							v.visualizeDrawing((Graphics) o, e, buffer);
-						} catch(Exception ex) {
-							Engine.log.error(
-									"Unable to apply visualization " + v + " on " + o, ex);
-							ex.printStackTrace();
-						}
-				}
-				if(o instanceof GeneProduct) ((GeneProduct)o).drawHighlight(e, buffer);
+//				if(v != null && o instanceof Graphics) {
+//						try {
+//							v.visualizeDrawing((Graphics) o, g2d);
+//						} catch(Exception ex) {
+//							Engine.log.error(
+//									"Unable to apply visualization " + v + " on " + o, ex);
+//							ex.printStackTrace();
+//						}
+//				}
+				//if(o instanceof GeneProduct) ((GeneProduct)o).drawHighlight(g2d);
 			}
 		}
 		
-		e.gc.drawImage(image, 0, 0);
-		buffer.dispose();
+//		e.gc.drawImage(image, 0, 0);
+//		buffer.dispose();
 	}
 
 	boolean checkDrawAllowed(VPathwayElement o) {
@@ -572,7 +586,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	public void resetHighlight() 
 	{
 		for(VPathwayElement o : drawingObjects) o.unhighlight();
-		redraw();
+		parent.redraw();
 	}
 	
 	/**
@@ -796,7 +810,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			gdata.setMFontSize (Label.M_INITIAL_FONTSIZE);
 			gdata.setGraphId(data.getUniqueId());
 			data.add (gdata); // will cause lastAdded to be set
-			((Label)lastAdded).createTextControl();
+			//((Label)lastAdded).createTextControl();
 			h = null;
 			break;
 		case NEWARC:
@@ -973,11 +987,11 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			
 			VPathwayElement o = getObjectAt(p);
 			if(o != null && o instanceof Graphics) {
-				Shell tip = v.visualizeToolTip(getShell(), this, (Graphics)o);
-				if(tip == null) return;
-				Point mp = toDisplay(e.x + 15, e.y + 15);
-				tip.setLocation(mp.x, mp.y);
-	            tip.setVisible(true);
+//				Shell tip = v.visualizeToolTip(getShell(), this, (Graphics)o);
+//				if(tip == null) return;
+//				Point mp = toDisplay(e.x + 15, e.y + 15);
+//				tip.setLocation(mp.x, mp.y);
+//	            tip.setVisible(true);
 			}
 		}
 	}
@@ -1047,7 +1061,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 		if(e.keyCode == 100) //CTRL-D to select all gene-products
 			if((e.stateMask & SWT.CTRL) != 0) {
 				selectGeneProducts();
-				redraw();
+				parent.redraw();
 			}
 		if(e.keyCode == 103) //CTRL-G to select all gene-products
 			if((e.stateMask & SWT.CTRL) != 0) {
@@ -1107,7 +1121,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			case PathwayEvent.WINDOW:
 				int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 				int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
-				setSize(width, height); 
+				parent.setVSize(width, height); 
 				break;
 		}
 		redrawDirtyRect();
@@ -1267,11 +1281,11 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 		case(VisualizationEvent.VISUALIZATION_SELECTED):
 		case(VisualizationEvent.VISUALIZATION_MODIFIED):
 		case(VisualizationEvent.PLUGIN_MODIFIED):
-			getDisplay().syncExec(new Runnable() {
-				public void run() {
-					redraw();
-				}
-			});
+			//getDisplay().syncExec(new Runnable() {
+			//	public void run() {
+					parent.redraw();
+			//	}
+			//});
 		}
 	}	
 	

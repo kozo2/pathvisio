@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="PathVisio" default="compile-v2" basedir=".">
+<project name="PathVisio-g2d" default="compile-v2" basedir=".">
 	
 	<property name="src.dir" value="src"/>
         
