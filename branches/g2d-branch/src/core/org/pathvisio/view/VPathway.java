@@ -35,7 +35,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackListener;
-import org.pathvisio.gui.Engine;
+import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.model.Color;
 import org.pathvisio.model.GroupStyle;
 import org.pathvisio.model.LineStyle;
@@ -499,6 +499,9 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 //		
 //		Rectangle2D.Double r = new Rectangle.Double(e.x, e.y, e.width, e.height);
 
+		if(area == null) {
+			area = g2d.getClipBounds();
+		}
 		g2d.setColor(java.awt.Color.WHITE);
 		g2d.fillRect(area.x, area.y, area.width, area.height);
 		g2d.setColor(java.awt.Color.BLACK);

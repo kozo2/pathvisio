@@ -102,11 +102,11 @@ public abstract class GraphicsShape extends Graphics {
 		for(VPoint p : toMove) p.vMoveBy(vdx, vdy);
 	}
 
-	public void setVScaleRectangle(Rectangle2D.Double r) {
-		setVShape(r.x, r.y, r.width, r.height);
+	public void setVScaleRectangle(Rectangle2D r) {
+		setVShape(r.getX(), r.getY(), r.getWidth(), r.getHeight());
 	}
 	
-	protected Rectangle2D.Double getVScaleRectangle() {
+	protected Rectangle2D getVScaleRectangle() {
 		return new Rectangle2D.Double(getVLeftDouble(), getVTopDouble(), getVWidthDouble(), getVHeightDouble());
 	}
 	

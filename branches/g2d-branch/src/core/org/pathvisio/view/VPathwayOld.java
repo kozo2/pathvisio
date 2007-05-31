@@ -16,7 +16,7 @@
 //
 package org.pathvisio.view;
 
-import org.pathvisio.gui.Engine;
+import org.pathvisio.gui.swt.Engine;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;

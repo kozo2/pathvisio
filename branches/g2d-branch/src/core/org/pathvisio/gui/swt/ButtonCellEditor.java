@@ -1,4 +1,4 @@
-package org.pathvisio.gui;
+package org.pathvisio.gui.swt;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;

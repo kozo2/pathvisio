@@ -290,11 +290,11 @@ public class Line extends Graphics
 		getEnd().setVLocation(vx2, vy2);
 	}
 
-	public void setVScaleRectangle(Rectangle2D.Double r) {
-		setVLine(r.x, r.y, r.x + r.width, r.y + r.height);
+	public void setVScaleRectangle(Rectangle2D r) {
+		setVLine(r.getX(), r.getY(), r.getX() + r.getWidth(), r.getY() + r.getHeight());
 	}
 	
-	protected Rectangle2D.Double getVScaleRectangle() {
+	protected Rectangle2D getVScaleRectangle() {
 		return new Rectangle2D.Double(getVStartXDouble(), getVStartYDouble(), getVEndXDouble()
 				- getVStartXDouble(), getVEndYDouble() - getVStartYDouble());
 	}

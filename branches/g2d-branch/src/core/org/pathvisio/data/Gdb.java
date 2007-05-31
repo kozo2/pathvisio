@@ -35,8 +35,10 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.pathvisio.debug.StopWatch;
-import org.pathvisio.gui.Engine;
-import org.pathvisio.preferences.Preferences;
+import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 /**
  * This class handles everything related to the Gene Database. It contains the database connection,
@@ -74,14 +76,14 @@ public abstract class Gdb {
 	 */
 	public static void init()
 	{
-		String currGdb = Engine.getPreferences().getString(Preferences.PREF_CURR_GDB);
-		if(!currGdb.equals("") && !Engine.getPreferences().isDefault(Preferences.PREF_CURR_GDB))
+		String currGdb = SwtPreference.SWT_CURR_GDB.getValue();
+		if(!currGdb.equals("") && !GlobalPreference.isDefault(SwtPreference.SWT_CURR_GDB))
 		{
 			dbName = currGdb;
 			try {
 				connect(null);
 			} catch(Exception e) {
-				setCurrentGdb(Engine.getPreferences().getDefaultString(Preferences.PREF_CURR_GDB));
+				setCurrentGdb(SwtPreference.SWT_CURR_GDB.getValue());
 			}
 		}
 	}
@@ -92,7 +94,7 @@ public abstract class Gdb {
 	 */
 	public static void setCurrentGdb(String dbNm) {
 		dbName = dbNm;
-		Engine.getPreferences().setValue(Preferences.PREF_CURR_GDB, dbNm);
+		SwtPreference.SWT_CURR_GDB.setValue(dbNm);
 		try { Engine.getPreferences().save(); } 
 		catch(Exception e) { Engine.log.error("Unable to save preferences", e); } 
 	}

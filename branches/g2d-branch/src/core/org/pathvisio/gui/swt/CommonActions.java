@@ -14,9 +14,9 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.gui;
+package org.pathvisio.gui.swt;
 
-import java.awt.Point;
+import java.awt.Dimension;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -37,8 +37,9 @@ import org.pathvisio.biopax.gui.BiopaxDialog;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayExporter;
-import org.pathvisio.preferences.PreferenceDlg;
-import org.pathvisio.preferences.Preferences;
+import org.pathvisio.preferences.swt.PreferenceDlg;
+import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
 import org.pathvisio.view.VPathway;
 
@@ -127,7 +128,7 @@ public class CommonActions
 					fd.setFileName(name);
 					fd.setFilterPath(xmlFile.getPath());
 				} else {
-					fd.setFileName(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
+					fd.setFileName(SwtPreference.SWT_DIR_PWFILES.getValue());
 				}
 				String fileName = fd.open();
 				// Only proceed if user selected a file
@@ -188,7 +189,7 @@ public class CommonActions
 		{
 			FileDialog fd = new FileDialog(window.getShell(), SWT.OPEN);
 			fd.setText("Open");
-			String pwpath = Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES);
+			String pwpath = SwtPreference.SWT_DIR_PWFILES.getValue();
 			fd.setFilterPath(pwpath);
 			fd.setFilterExtensions(new String[] {"*." + Engine.PATHWAY_FILE_EXTENSION, "*.*"});
 			fd.setFilterNames(new String[] {Engine.PATHWAY_FILTER_NAME, "All files (*.*)"});
@@ -217,7 +218,7 @@ public class CommonActions
 		{
 			FileDialog fd = new FileDialog(window.getShell(), SWT.OPEN);
 			fd.setText("Open");
-			fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
+			fd.setFilterPath(SwtPreference.SWT_DIR_PWFILES.getValue());
 			fd.setFilterExtensions(new String[] {"*." + Engine.GENMAPP_FILE_EXTENSION, "*.*"});
 			fd.setFilterNames(new String[] {Engine.GENMAPP_FILTER_NAME, "All files (*.*)"});
 	        String fnMapp = fd.open();
@@ -259,7 +260,7 @@ public class CommonActions
 					fd.setFileName(xmlFile.getName());
 					fd.setFilterPath(xmlFile.getPath());
 				} else {
-					fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
+					fd.setFilterPath(SwtPreference.SWT_DIR_PWFILES.getValue());
 				}
 				String fileName = fd.open();
 				// Only proceed if user selected a file
@@ -374,7 +375,7 @@ public class CommonActions
 					fd.setFileName(name);
 					fd.setFilterPath(xmlFile.getPath());
 				} else {
-					fd.setFileName(Engine.getPreferences().getString(Preferences.PREF_DIR_PWFILES));
+					fd.setFileName(SwtPreference.SWT_DIR_PWFILES.getValue());
 				}
 				String fileName = fd.open();
 				// Only proceed if user selected a file
@@ -472,7 +473,7 @@ public class CommonActions
 		public void run () {
 			PreferenceManager pg = new PreferenceDlg();
 			PreferenceDialog pd = new PreferenceDialog(window.getShell(), pg);
-			pd.setPreferenceStore(Engine.getPreferences());
+			pd.setPreferenceStore((SwtPreferences)Engine.getPreferences());
 			pd.open();
 		}
 	}
@@ -513,10 +514,10 @@ public class CommonActions
 				if(pctZoomFactor == MainWindow.ZOOM_TO_FIT) 
 				{
 					org.eclipse.swt.graphics.Point shellSize = window.sc.getSize();
-					Point drawingSize = drawing.getWrapper().getVSize();
+					Dimension drawingSize = drawing.getWrapper().getVSize();
 					newPctZoomFactor = (int)Math.min(
-							drawing.getPctZoom() * (double)shellSize.x / drawingSize.x,
-							drawing.getPctZoom() * (double)shellSize.y / drawingSize.y
+							drawing.getPctZoom() * (double)shellSize.x / drawingSize.width,
+							drawing.getPctZoom() * (double)shellSize.y / drawingSize.height
 					);
 				} 
 				drawing.setPctZoom(newPctZoomFactor);

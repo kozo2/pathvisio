@@ -186,12 +186,12 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	 * Scales the object to the given rectangle
 	 * @param r
 	 */
-	protected void setVScaleRectangle(Rectangle2D.Double r) { }
+	protected void setVScaleRectangle(Rectangle2D r) { }
 	
 	/**
 	 * Gets the rectangle used to scale the object
 	 */
-	protected Rectangle2D.Double getVScaleRectangle() { return new Rectangle2D.Double(); }
+	protected Rectangle2D getVScaleRectangle() { return new Rectangle2D.Double(); }
 
 	public int getDrawingOrder() {
 		return VPathway.DRAW_ORDER_DEFAULT;

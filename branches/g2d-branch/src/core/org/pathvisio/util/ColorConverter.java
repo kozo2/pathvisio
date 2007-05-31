@@ -16,9 +16,10 @@
 //
 package org.pathvisio.util;
 
+import org.biopax.paxtools.util.IllegalRDFIDException;
 import org.eclipse.swt.graphics.RGB;
 import org.jdom.Element;
-import org.pathvisio.gui.Engine;
+import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.model.Color;
 
 public abstract class ColorConverter
@@ -31,6 +32,10 @@ public abstract class ColorConverter
 	public static String getRgbString(RGB rgb)
 	{
 		return rgb.red + "," + rgb.green + "," + rgb.blue;
+	}
+	
+	public static String getRgbString(java.awt.Color c) {
+		return c.getRed() + "," + c.getGreen() + "," + c.getBlue();
 	}
 	
 	public static RGB toRGB(Color c) {
@@ -61,6 +66,22 @@ public abstract class ColorConverter
 			Engine.log.error("Unable to parse color '" + rgbString + 
 					"'stored in expression database", e);
 			return new RGB(0,0,0);
+		}
+	}
+	
+	public static java.awt.Color parseColorString(String colorString)
+	{
+		String[] s = colorString.split(",");
+		try 
+		{
+			return new java.awt.Color(
+					Integer.parseInt(s[0]), 
+					Integer.parseInt(s[1]), 
+					Integer.parseInt(s[2]));
+		}
+		catch(Exception e)
+		{
+			throw new IllegalArgumentException("Unable to parse color from '" + colorString + "'", e);
 		}
 	}
 	    

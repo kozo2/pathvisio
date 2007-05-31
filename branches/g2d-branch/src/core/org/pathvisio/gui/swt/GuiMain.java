@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.gui;
+package org.pathvisio.gui.swt;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -30,7 +30,10 @@ import org.pathvisio.model.ImageExporter;
 import org.pathvisio.model.MappFormat;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.SvgFormat;
-import org.pathvisio.preferences.Preferences;
+import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.Preference;
+import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.plugins.PluginManager;
 
@@ -84,8 +87,7 @@ public class GuiMain {
 	public static void initiate() {
 		//initiate logger
 		try { 
-			Engine.log.setStream(new PrintStream(
-					Engine.getPreferences().getString(Preferences.PREF_FILES_LOG))); 
+			Engine.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
 		} catch(Exception e) {}
 		Engine.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
 		Pathway.setLogger(Engine.log);
@@ -112,14 +114,14 @@ public class GuiMain {
 	 * Creates data directories stored in preferences (if not exist)
 	 */
 	static void createDataDirectories() {
-		String[] dirPrefs = new String[] {
-				Preferences.PREF_DIR_EXPR,
-				Preferences.PREF_DIR_GDB,
-				Preferences.PREF_DIR_PWFILES,
-				Preferences.PREF_DIR_RDATA,
+		Preference[] dirPrefs = new Preference[] {
+				SwtPreference.SWT_DIR_EXPR,
+				SwtPreference.SWT_DIR_GDB,
+				SwtPreference.SWT_DIR_PWFILES,
+				SwtPreference.SWT_DIR_RDATA,
 		};
-		for(String pref : dirPrefs) {
-			File dir = new File(Engine.getPreferences().getString(pref));
+		for(Preference p : dirPrefs) {
+			File dir = new File(p.getValue());
 			if(!dir.exists()) dir.mkdir();
 		}
 	}

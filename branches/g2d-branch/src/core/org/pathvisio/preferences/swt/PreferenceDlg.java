@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.preferences;
+package org.pathvisio.preferences.swt;
 
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
@@ -24,8 +24,9 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.preference.StringFieldEditor;
-
-import org.pathvisio.gui.Engine;
+import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 public class PreferenceDlg extends PreferenceManager {
 	
@@ -51,7 +52,7 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			FileFieldEditor f1 = new FileFieldEditor(Preferences.PREF_FILES_LOG, "Log file:", getFieldEditorParent());
+			FileFieldEditor f1 = new FileFieldEditor(GlobalPreference.FILE_LOG.name(), "Log file:", getFieldEditorParent());
 			addField(f1);
 		}
 	}
@@ -63,20 +64,20 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			DirectoryFieldEditor d1 = new DirectoryFieldEditor(Preferences.PREF_DIR_PWFILES,
+			DirectoryFieldEditor d1 = new DirectoryFieldEditor(SwtPreference.SWT_DIR_PWFILES.name(),
 					"Gpml pathways:", getFieldEditorParent());
 			addField(d1);
 			
-			DirectoryFieldEditor d2 = new DirectoryFieldEditor(Preferences.PREF_DIR_GDB,
+			DirectoryFieldEditor d2 = new DirectoryFieldEditor(SwtPreference.SWT_DIR_GDB.name(),
 					"Gene databases:", getFieldEditorParent());
 			addField(d2);
 			
-			DirectoryFieldEditor d3 = new DirectoryFieldEditor(Preferences.PREF_DIR_EXPR,
+			DirectoryFieldEditor d3 = new DirectoryFieldEditor(SwtPreference.SWT_DIR_EXPR.name(),
 					"Expression datasets:", getFieldEditorParent());
 			addField(d3);
 
 			if(Engine.isUseR()) {
-				DirectoryFieldEditor d4 = new DirectoryFieldEditor(Preferences.PREF_DIR_RDATA,
+				DirectoryFieldEditor d4 = new DirectoryFieldEditor(SwtPreference.SWT_DIR_RDATA.name(),
 						"Results from pathway statistics:", getFieldEditorParent());
 				addField(d4);
 			}
@@ -89,7 +90,7 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			IntegerFieldEditor f = new IntegerFieldEditor(Preferences.PREF_SIDEPANEL_SIZE,
+			IntegerFieldEditor f = new IntegerFieldEditor(SwtPreference.SWT_SIDEPANEL_SIZE.name(),
 					"Initial side panel size (percent of window size):", getFieldEditorParent());
 			f.setValidRange(0, 100);
 			addField(f);
@@ -102,24 +103,21 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			ColorFieldEditor f1 = new ColorFieldEditor(Preferences.PREF_COL_NO_CRIT_MET, 
+			ColorFieldEditor f1 = new ColorFieldEditor(GlobalPreference.COLOR_NO_CRIT_MET.name(), 
 					"Default color for 'no criteria met':", getFieldEditorParent());
 			addField(f1);
-			ColorFieldEditor f2 = new ColorFieldEditor(Preferences.PREF_COL_NO_GENE_FOUND, 
+			ColorFieldEditor f2 = new ColorFieldEditor(GlobalPreference.COLOR_NO_GENE_FOUND.name(), 
 					"Default color for 'gene not found':", getFieldEditorParent());
 			addField(f2);
-			ColorFieldEditor f3 = new ColorFieldEditor(Preferences.PREF_COL_NO_DATA_FOUND, 
+			ColorFieldEditor f3 = new ColorFieldEditor(GlobalPreference.COLOR_NO_DATA_FOUND.name(), 
 					"Default color for 'no data found':", getFieldEditorParent());
 			addField(f3);
-			ColorFieldEditor f4 = new ColorFieldEditor(Preferences.PREF_COL_SELECTED, 
+			ColorFieldEditor f4 = new ColorFieldEditor(GlobalPreference.COLOR_SELECTED.name(), 
 					"Line color for selected objects:", getFieldEditorParent());
 			addField(f4);
-			ColorFieldEditor f5 = new ColorFieldEditor(Preferences.PREF_COL_HIGHLIGHTED, 
+			ColorFieldEditor f5 = new ColorFieldEditor(GlobalPreference.COLOR_HIGHLIGHTED.name(), 
 					"Line color for highlighted objects:", getFieldEditorParent());
 			addField(f5);
-//			ColorFieldEditor f6 = new ColorFieldEditor(Preferences.PREF_COL_AMBIGIOUS_REP, 
-//					"Color for marking gene products with ambigious reporter:", getFieldEditorParent());
-//			addField(f6);
 			
 		}
 	}
@@ -130,10 +128,10 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			StringFieldEditor f1 = new StringFieldEditor(Preferences.PREF_DB_ENGINE_GDB,
+			StringFieldEditor f1 = new StringFieldEditor(SwtPreference.SWT_DB_ENGINE_GDB.name(),
 					"Database connector class for gene database:", getFieldEditorParent());
 			addField(f1);
-			StringFieldEditor f2 = new StringFieldEditor(Preferences.PREF_DB_ENGINE_EXPR,
+			StringFieldEditor f2 = new StringFieldEditor(SwtPreference.SWT_DB_ENGINE_EXPR.name(),
 					"Database connector class for expression dataset:", getFieldEditorParent());
 			addField(f2);
 		}

@@ -324,11 +324,11 @@ public class SelectionBox extends GraphicsShape
 				if(o instanceof Line) {
 					points.addAll(((Line)o).getPoints());
 				} else { 
-					Rectangle2D.Double vr = o.getVScaleRectangle();
-					double newObjectWidth = vr.width * widthRatio;
-					double newObjectHeight = vr.height * heightRatio;
-					double objectFromCenterX = (vr.x - vCenterXOld) * widthRatio;
-					double objectFromCenterY = (vr.y - vCenterYOld) * heightRatio;
+					Rectangle2D vr = o.getVScaleRectangle();
+					double newObjectWidth = vr.getWidth() * widthRatio;
+					double newObjectHeight = vr.getHeight() * heightRatio;
+					double objectFromCenterX = (vr.getX() - vCenterXOld) * widthRatio;
+					double objectFromCenterY = (vr.getY() - vCenterYOld) * heightRatio;
 					o.setVScaleRectangle(new Rectangle2D.Double(
 							getVCenterXDouble() + objectFromCenterX, 
 							getVCenterYDouble() + objectFromCenterY, 

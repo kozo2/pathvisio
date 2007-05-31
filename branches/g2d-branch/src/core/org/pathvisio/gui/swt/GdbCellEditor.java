@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.gui;
+package org.pathvisio.gui.swt;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,7 +44,7 @@ import org.pathvisio.data.Gdb;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.MappFormat;
 import org.pathvisio.model.PropertyType;
-import org.pathvisio.gui.PropertyPanel.AutoFillData;
+import org.pathvisio.gui.swt.PropertyPanel.AutoFillData;
 
 public class GdbCellEditor extends SuggestCellEditor implements SuggestionProvider, SuggestionListener {
 	public static final int TYPE_IDENTIFIER = 0;

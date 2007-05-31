@@ -16,14 +16,15 @@
 //
 package org.pathvisio.view;
 
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Region;
+import java.awt.Color;
 
-import org.pathvisio.preferences.Preferences;
+import org.eclipse.swt.graphics.Region;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayListener;
+import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences;
 
 
 /**
@@ -32,8 +33,8 @@ import org.pathvisio.model.PathwayListener;
  */
 public abstract class Graphics extends VPathwayElement implements PathwayListener
 {
-	public static RGB selectColor = Preferences.getColorProperty(Preferences.PREF_COL_SELECTED);
-	public static RGB highlightColor = Preferences.getColorProperty(Preferences.PREF_COL_HIGHLIGHTED);
+	public static Color selectColor = GlobalPreference.getValueColor(GlobalPreference.COLOR_SELECTED);
+	public static Color highlightColor = GlobalPreference.getValueColor(GlobalPreference.COLOR_HIGHLIGHTED);
 	
 	protected PathwayElement gdata = null;
 	

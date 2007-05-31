@@ -1,6 +1,7 @@
 package org.pathvisio.view.swt;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -35,17 +36,17 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 		redraw(r.x, r.y, r.width, r.height, false);
 	}
 
-	public void setVSize(Point size) {
-		setVSize(size.x, size.y);
+	public void setVSize(Dimension size) {
+		setVSize(size.width, size.height);
 	}
 
 	public void setVSize(int w, int h) {
 		setSize(w, h);
 	}
 	
-	public Point getVSize() {
+	public Dimension getVSize() {
 		org.eclipse.swt.graphics.Point p = getSize();
-		return new Point(p.x, p.y);
+		return new Dimension(p.x, p.y);
 	}
 	
 	public Rectangle getVBounds() {

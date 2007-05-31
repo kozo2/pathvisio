@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.gui;
+package org.pathvisio.gui.swt;
 
 import java.io.File;
 import java.net.URL;
@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.graphics.DeviceData;
@@ -39,7 +38,9 @@ import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayExporter;
-import org.pathvisio.preferences.Preferences;
+import org.pathvisio.preferences.PreferenceCollection;
+import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.VPathway;
 
@@ -69,7 +70,7 @@ public abstract class Engine {
 	static Pathway pathway;
 	
 	private static ImageRegistry imageRegistry;
-	private static Preferences preferences;
+	private static SwtPreferences preferences;
 	public static final Logger log = new Logger();
 	
 	private static File DIR_APPLICATION;
@@ -105,10 +106,10 @@ public abstract class Engine {
 	}
 	
 	/**
-	 * Get the {@link Preferences} containing the user preferences
+	 * Get the {@link SwtPreferences} containing the user preferences
 	 */
-	public static PreferenceStore getPreferences() { 
-		if(preferences == null) preferences = new Preferences();
+	public static PreferenceCollection getPreferences() { 
+		if(preferences == null) preferences = new SwtPreferences();
 		return preferences; 
 	}
 	
@@ -271,10 +272,10 @@ public abstract class Engine {
 		String className = null;
 		switch(type) {
 		case DBConnector.TYPE_GDB:
-			className = getPreferences().getString(Preferences.PREF_DB_ENGINE_GDB);
+			className = SwtPreference.SWT_DB_ENGINE_GDB.getValue();
 			break;
 		case DBConnector.TYPE_GEX:
-			className = getPreferences().getString(Preferences.PREF_DB_ENGINE_EXPR);
+			className = SwtPreference.SWT_DB_ENGINE_GDB.getValue();
 			break;
 		}
 		if(className == null) return null;

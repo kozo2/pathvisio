@@ -25,4 +25,7 @@ public class Color
 		green = g;
 		blue = b;
 	}
+	public java.awt.Color toAwt() {
+		return new java.awt.Color(red, green, blue);
+	}
 }
