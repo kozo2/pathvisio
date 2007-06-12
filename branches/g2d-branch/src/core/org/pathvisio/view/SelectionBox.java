@@ -399,14 +399,18 @@ public class SelectionBox extends GraphicsShape
 	
 	static List<SelectionListener> listeners;
 
+	private static List<SelectionListener> getListeners() {
+		if(listeners == null)
+			listeners = new ArrayList<SelectionListener>();
+		return listeners;
+	}
+	
 	/**
 	 * Add a {@link SelectionListener}, that will be notified if a selection event occurs
 	 * @param l The {@link SelectionListener} to add
 	 */
 	public static void addListener(SelectionListener l) {
-		if(listeners == null)
-			listeners = new ArrayList<SelectionListener>();
-		listeners.add(l);
+		getListeners().add(l);
 	}
 
 	/**
@@ -415,7 +419,7 @@ public class SelectionBox extends GraphicsShape
 	 * @param e
 	 */
 	public static void fireSelectionEvent(SelectionEvent e) {
-		for(SelectionListener l : listeners) {
+		for(SelectionListener l : getListeners()) {
 			l.drawingEvent(e);
 		}
 	}

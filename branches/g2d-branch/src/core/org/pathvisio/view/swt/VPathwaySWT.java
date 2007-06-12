@@ -3,18 +3,26 @@ package org.pathvisio.view.swt;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.pathvisio.view.InputEvent;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
-public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListener {
+public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListener, 
+				MouseListener, KeyListener, MouseMoveListener, MouseTrackListener {
 	final SWTGraphics2DRenderer renderer = new SWTGraphics2DRenderer();
 	
 	private VPathway child;
@@ -26,10 +34,10 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 	public void setChild(VPathway c) {
 		child = c;
 		addPaintListener(this);
-		addMouseListener(child);
-		addMouseMoveListener(child);
-		addMouseTrackListener(child);
-		addKeyListener(child);
+		addMouseListener(this);
+		addMouseMoveListener(this);
+		addMouseTrackListener(this);
+		addKeyListener(this);
 	}
 	
 	public void redraw(Rectangle r) {
@@ -69,47 +77,72 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 		
 		renderer.render(gc);
 	}
+
+	public static int convertStateMask(int swtMask) {
+		int newMask = 0;
+		newMask = addModifier(swtMask, SWT.CTRL, newMask, InputEvent.M_CTRL);
+		newMask = addModifier(swtMask, SWT.ALT, newMask, InputEvent.M_ALT);
+		//newMask = addModifier(stateMask, SWT.)//TODO: find SWT mapping for M_META
+		newMask = addModifier(swtMask, SWT.SHIFT, newMask, InputEvent.M_SHIFT);
+		return newMask;
+	}
+
+	private static int addModifier(int swtMask, int swtModifier, int pvMask, int pvModifier) {
+		if((swtMask & swtModifier) != 0) {
+			pvMask |= pvModifier;
+		}
+		return pvMask;
+	}
+	
+	public void mouseDoubleClick(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_CLICK, 2);
+		child.mouseDoubleClick(pve);
+	}
+
+	public void mouseDown(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_DOWN, 0);
+		child.mouseDown(pve);
+	}
+
+	public void mouseUp(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_UP, 0);
+		child.mouseUp(pve);
+	}
+
+	public void keyPressed(KeyEvent e) {
+		SwtKeyEvent pve = new SwtKeyEvent(e, org.pathvisio.view.KeyEvent.KEY_PRESSED);
+		child.keyPressed(pve);
+	}
+
+	public void keyReleased(KeyEvent e) {
+		SwtKeyEvent pve = new SwtKeyEvent(e, org.pathvisio.view.KeyEvent.KEY_RELEASED);
+		child.keyReleased(pve);
+	}
+
+	public void mouseMove(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_MOVE, 0);
+		child.mouseMove(pve);
+	}
+
+	public void mouseEnter(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_ENTER, 0);
+		child.mouseEnter(pve);
+	}
+
+	public void mouseExit(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_ENTER, 0);
+		child.mouseExit(pve);
+	}
+
+	public void mouseHover(MouseEvent e) {
+		SwtMouseEvent pve = new SwtMouseEvent(
+				e, org.pathvisio.view.MouseEvent.MOUSE_HOVER, 0);
+		child.mouseHover(pve);	
+	}
 }
-
-/*
-Canvas canvas = new Canvas(shell, SWT.NO_BACKGROUND);
-final Graphics2DRenderer renderer = new Graphics2DRenderer();
-
-canvas.addPaintListener(new PaintListener() {
-  public void paintControl(PaintEvent e) {
-    Point controlSize = ((Control) e.getSource()).getSize();
-
-    GC gc = e.gc; // gets the SWT graphics context from the event
-
-    renderer.prepareRendering(gc); // prepares the Graphics2D renderer
-
-    // gets the Graphics2D context and switch on the antialiasing
-    Graphics2D g2d = renderer.getGraphics2D();
-    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-      RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-    // paints the background with a color gradient
-    g2d.setPaint(new GradientPaint(0.0f, 0.0f, java.awt.Color.yellow,
-      (float) controlSize.x, (float) controlSize.y, java.awt.Color.white));
-    g2d.fillRect(0, 0, controlSize.x, controlSize.y);
-
-    // draws rotated text
-    g2d.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 16));
-    g2d.setColor(java.awt.Color.blue);
-
-    g2d.translate(controlSize.x / 2, controlSize.y / 2);
-    int nbOfSlices = 18;
-    for (int i = 0; i < nbOfSlices; i++) {
-      g2d.drawString("Angle = " + (i * 360 / nbOfSlices) + "\u00B0", 30, 0);
-      g2d.rotate(-2 * Math.PI / nbOfSlices);
-    }
-
-    // now that we are done with Java 2D, renders Graphics2D operation
-    // on the SWT graphics context
-    renderer.render(gc);
-
-    // now we can continue with pure SWT paint operations
-    gc.drawOval(0, 0, controlSize.x, controlSize.y);
-  }
-});
-*/

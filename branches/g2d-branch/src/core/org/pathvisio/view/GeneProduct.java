@@ -16,6 +16,7 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
@@ -126,10 +127,12 @@ public class GeneProduct extends GraphicsShape
 
 	public void draw(Graphics2D g2d)
 	{
+		Graphics2D g = (Graphics2D)g2d.create();
+		if(isSelected()) g.setColor(Color.RED);
 		Rectangle area = new Rectangle(
 				getVLeft(), getVTop(), getVWidth(), getVHeight());
 		
-		g2d.draw(area);
+		g.draw(area);
 		
 //		Color c = null;
 //		Color b = SwtUtils.changeColor(c, new RGB(255, 255, 255), e.display);

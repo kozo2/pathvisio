@@ -28,13 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.MouseTrackListener;
 import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.model.Color;
 import org.pathvisio.model.GroupStyle;
@@ -59,7 +52,7 @@ import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
  * visualized. The class also provides methods for mouse  and key
  * event handling.
  */
-public class VPathway implements MouseListener, MouseMoveListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationListener
+public class VPathway implements PathwayListener, VisualizationListener
 {	
 	private static final long serialVersionUID = 1L;
 	static final double M_PASTE_OFFSET = 10 * 15;
@@ -368,22 +361,22 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 	 */
 	public void mouseMove(MouseEvent ve)
 	{
-		boolean altPressed = (ve.stateMask & SWT.ALT) != 0;
+		boolean altPressed = ve.isKeyDown(MouseEvent.M_ALT);
 		// If draggin, drag the pressed object
 		if (pressedObject != null && isDragging)
 		{
-			double vdx = ve.x - vPreviousX;
-			double vdy = ve.y - vPreviousY;
+			double vdx = ve.getX() - vPreviousX;
+			double vdy = ve.getY() - vPreviousY;
 			pressedObject.vMoveBy(vdx, vdy);
 				
-			vPreviousX = ve.x;
-			vPreviousY = ve.y;
+			vPreviousX = ve.getX();
+			vPreviousY = ve.getY();
 			
 			if (pressedObject instanceof Handle && altPressed && newGraphics == NEWNONE &&
 					((Handle)pressedObject).parent instanceof VPoint)
 			{
 				resetHighlight();
-				Point2D p2d = new Point2D.Double(ve.x, ve.y);
+				Point2D p2d = new Point2D.Double(ve.getX(), ve.getY());
 				List<VPathwayElement> objects = getObjectsAt (p2d);
 				Collections.sort(objects);
 				Handle g = (Handle)pressedObject;
@@ -423,12 +416,12 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 		{
 			if (newGraphics != NEWNONE)
 			{
-				newObject(new Point(e.x, e.y));
+				newObject(new Point(e.getX(), e.getY()));
 				Engine.getWindow().deselectNewItemActions();
 			}
 			else
 			{
-				editObject(new Point(e.x, e.y), e);
+				editObject(new Point(e.getX(), e.getY()), e);
 			}
 		}
 		else
@@ -452,8 +445,8 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 			// check if we placed a new object by clicking or dragging
 			// if it was a click, give object the initial size.
 			else if (newObject != null && 
-					Math.abs(newObjectDragStart.x - e.x) <= MIN_DRAG_LENGTH &&
-					Math.abs(newObjectDragStart.y - e.y) <= MIN_DRAG_LENGTH)
+					Math.abs(newObjectDragStart.x - e.getX()) <= MIN_DRAG_LENGTH &&
+					Math.abs(newObjectDragStart.y - e.getY()) <= MIN_DRAG_LENGTH)
 			{
 				newObject.setInitialSize();
 			}
@@ -556,7 +549,7 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 	 */
 	private void mouseDownViewMode(MouseEvent e) 
 	{
-		Point2D p2d = new Point2D.Double(e.x, e.y);
+		Point2D p2d = new Point2D.Double(e.getX(), e.getY());
 
 		pressedObject = getObjectAt(p2d);
 		
@@ -632,6 +625,7 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 	 * if you want to get more than one @see #getObjectsAt(Point2D)
 	 */
 	VPathwayElement getObjectAt(Point2D p2d) {
+		System.out.println(p2d);
 		Collections.sort(drawingObjects);
 		VPathwayElement probj = null;
 		for (VPathwayElement o : drawingObjects)
@@ -672,7 +666,7 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 	
 	void doClickSelect(Point2D p2d, MouseEvent e) {
 		//Ctrl pressed, add/remove from selection
-		boolean ctrlPressed =  (e.stateMask & SWT.CTRL) != 0;
+		boolean ctrlPressed =  e.isKeyDown(MouseEvent.M_CTRL);
 		if(ctrlPressed) 
 		{
 			if(pressedObject instanceof SelectionBox) {
@@ -986,7 +980,7 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 	public void mouseHover(MouseEvent e) {
 		Visualization v = VisualizationManager.getCurrent();
 		if(v != null && v.usesToolTip()) {
-			Point2D p = new Point2D.Double(e.x, e.y);
+			Point2D p = new Point2D.Double(e.getX(), e.getY());
 			
 			VPathwayElement o = getObjectAt(p);
 			if(o != null && o instanceof Graphics) {
@@ -1058,27 +1052,25 @@ public class VPathway implements MouseListener, MouseMoveListener, MouseTrackLis
 	}
 
 	public void keyPressed(KeyEvent e) { 
-		//if(e.keyCode == SWT.CTRL) ctrlPressed();
-		//if(e.keyCode == SWT.ALT) altPressed();
-		if(e.keyCode == SWT.INSERT) insertPressed();
-		if(e.keyCode == 100) //CTRL-D to select all gene-products
-			if((e.stateMask & SWT.CTRL) != 0) {
-				selectGeneProducts();
-				parent.redraw();
-			}
-		if(e.keyCode == 103) //CTRL-G to select all gene-products
-			if((e.stateMask & SWT.CTRL) != 0) {
-				//do group thing
-				createGroup();
-			}
+		if(e.isKey(KeyEvent.INSERT)) insertPressed();
+		if(e.isKey('d') && e.isKeyDown(KeyEvent.M_CTRL)) //CTRL-D to select all gene-products 
+		{
+			selectGeneProducts();
+			parent.redraw();
+		}
+//		System.out.println(e.getKeyCode());
+//		System.out.println("is g? " + e.isKey('g'));
+//		System.out.println("is CTRL down? " + e.isKeyDown(KeyEvent.CTRL));
+		if(e.isKey('g') && e.isKeyDown(KeyEvent.M_CTRL)) //CTRL-G to select all gene-products
+		{
+			createGroup();
+		}
 	}
 
 	
 	
 	public void keyReleased(KeyEvent e) {		
-		//if(e.keyCode == SWT.CTRL) ctrlReleased();
-		//if(e.keyCode == SWT.ALT) altReleased();
-		if(e.keyCode == SWT.DEL) {
+		if(e.isKey(KeyEvent.DEL)) {
 			ArrayList<VPathwayElement> toRemove = new ArrayList<VPathwayElement>();
 			for(VPathwayElement o : drawingObjects)
 			{
