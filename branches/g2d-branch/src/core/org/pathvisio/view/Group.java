@@ -96,7 +96,7 @@ public class Group extends Graphics {
 	}
 
 	@Override
-	protected void draw(Graphics2D g2d) {
+	protected void doDraw(Graphics2D g2d) {
 		// TODO make unique selection box for groups
 		
 	}

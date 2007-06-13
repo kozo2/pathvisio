@@ -17,6 +17,7 @@
 package org.pathvisio.view;
 
 import java.awt.Color;
+import java.awt.Font;
 
 import org.eclipse.swt.graphics.Region;
 import org.pathvisio.model.Pathway;
@@ -24,7 +25,6 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayListener;
 import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.preferences.swt.SwtPreferences;
 
 
 /**
@@ -121,6 +121,23 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 	public double getVWidthDouble() { return vFromM(gdata.getMWidth());  }
 	public double getVTopDouble() { return vFromM(gdata.getMTop()); }
 	public double getVHeightDouble() { return vFromM(gdata.getMHeight()); }
+	
+	/**
+	 * Returns the fontstyle to create a java.awt.Font
+	 * @return the fontstyle, or Font.PLAIN if no font is available
+	 */
+	public int getVFontStyle() {
+		int style = Font.PLAIN;
+		if(gdata.getFontName() != null) {
+			if(gdata.isBold()) {
+				style &= Font.BOLD;
+			}
+			if(gdata.isItalic()) {
+				style &= Font.ITALIC;
+			}//TODO: underline / strikethrough
+		}
+		return style;
+	}
 	
 	protected void destroy() {
 		super.destroy();

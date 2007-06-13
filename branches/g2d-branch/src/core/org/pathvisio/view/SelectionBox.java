@@ -16,6 +16,7 @@
 //
 package org.pathvisio.view;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -381,18 +382,14 @@ public class SelectionBox extends GraphicsShape
 		}
 	}
 	
-	public void draw(Graphics2D g2d)
+	public void doDraw(Graphics2D g)
 	{
-//		if(isVisible) {
-//			buffer.setAntialias(SWT.OFF);
-//			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
-//			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_BLACK));
-//			buffer.setLineStyle (SWT.LINE_DOT);
-//			buffer.setLineWidth (1);
-//			buffer.drawRectangle (getVLeft(), getVTop(), getVWidth(), getVHeight());
-//			buffer.setAntialias(SWT.ON);
-//		}
-		g2d.drawRect(getVLeft(), getVTop(), getVWidth(), getVHeight());
+		if(isVisible) {
+			g.setStroke(new BasicStroke(1, 
+					BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 
+					1, new float[] {1, 2}, 0));
+			g.drawRect(getVLeft(), getVTop(), getVWidth(), getVHeight());
+		}
 	}
 		
 	public void adjustToZoom(double factor) { fitToSelection(); }

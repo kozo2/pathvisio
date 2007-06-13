@@ -16,6 +16,7 @@
 //
 package org.pathvisio.visualization.colorset;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,9 +46,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.jdom.Element;
-
 import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.util.ColorConverter;
+import org.pathvisio.util.SwtUtils;
 import org.pathvisio.util.TableColumnResizer;
 
 /**
@@ -81,9 +82,9 @@ public class ColorGradient extends ColorSetObject {
 	{ 
 		if(colorValuePairs == null) {//Not initialized yet, use defaults
 			colorValuePairs = new ArrayList<ColorValuePair>();
-			colorValuePairs.add(new ColorValuePair(new RGB(0,255,0), -1));
-			colorValuePairs.add(new ColorValuePair(new RGB(255,255,0), 0));
-			colorValuePairs.add(new ColorValuePair(new RGB(255,0,0), 1));
+			colorValuePairs.add(new ColorValuePair(new Color(0,255,0), -1));
+			colorValuePairs.add(new ColorValuePair(new Color(255,255,0), 0));
+			colorValuePairs.add(new ColorValuePair(new Color(255,0,0), 1));
 		}
 		return colorValuePairs;
 	}
@@ -114,13 +115,13 @@ public class ColorGradient extends ColorSetObject {
 	 * @return	{@link RGB} containing the color information for the corresponding value
 	 * or null if the value does not have a valid color for this gradient
 	 */
-	public RGB getColor(double value)
+	public Color getColor(double value)
 	{
 		double[] minmax = getMinMax(); //Get the minimum and maximum values of the gradient
 		double valueStart = 0;
 		double valueEnd = 0;
-		RGB colorStart = null;
-		RGB colorEnd = null;
+		Color colorStart = null;
+		Color colorEnd = null;
 		Collections.sort(colorValuePairs);
 		//If value is larger/smaller than max/min then set the value to max/min
 		//TODO: make this optional
@@ -142,15 +143,15 @@ public class ColorGradient extends ColorSetObject {
 		if(colorStart == null || colorEnd == null) return null; //Check if the values/colors are found
 		// Interpolate to find the color belonging to the given value
 		double alpha = (value - valueStart) / (valueEnd - valueStart);
-		double red = colorStart.red + alpha*(colorEnd.red - colorStart.red);
-		double green = colorStart.green + alpha*(colorEnd.green - colorStart.green);
-		double blue = colorStart.blue + alpha*(colorEnd.blue - colorStart.blue);
-		RGB rgb = null;
+		double red = colorStart.getRed() + alpha*(colorEnd.getRed() - colorStart.getRed());
+		double green = colorStart.getGreen() + alpha*(colorEnd.getGreen() - colorStart.getGreen());
+		double blue = colorStart.getBlue() + alpha*(colorEnd.getBlue() - colorStart.getBlue());
+		Color rgb = null;
 		
 		//Try to create an RGB, if the color values are not valid (outside 0 to 255)
 		//This method returns null
 		try {
-			rgb = new RGB((int)red, (int)green, (int)blue);
+			rgb = new Color((int)red, (int)green, (int)blue);
 		} catch (Exception e) { 
 			Engine.log.error("GmmlColorGradient:getColor: " + 
 					red + "," + green + "," +blue + ", for value " + value, e);
@@ -158,7 +159,7 @@ public class ColorGradient extends ColorSetObject {
 		return rgb;
 	}
 	
-	public RGB getColor(HashMap<Integer, Object> data, int idSample) throws NumberFormatException
+	public Color getColor(HashMap<Integer, Object> data, int idSample) throws NumberFormatException
 	{
 		double value = (Double)data.get(idSample);
 		return getColor(value);
@@ -204,10 +205,10 @@ public class ColorGradient extends ColorSetObject {
 		static final String XML_ELEMENT = "color-value";
 		static final String XML_ATTR_VALUE = "value";
 		static final String XML_ELM_COLOR = "color";
-		private RGB color;
+		private Color color;
 		private double value;
 		
-		public ColorValuePair(RGB color, double value)
+		public ColorValuePair(Color color, double value)
 		{
 			this.color = color;
 			this.value = value;
@@ -219,8 +220,8 @@ public class ColorGradient extends ColorSetObject {
 			value = Double.parseDouble(xml.getAttributeValue(XML_ATTR_VALUE));
 		}
 		
-		public RGB getColor() { return color; }
-		public void setColor(RGB rgb) {
+		public Color getColor() { return color; }
+		public void setColor(Color rgb) {
 			color = rgb;
 			fireModifiedEvent();
 		}
@@ -262,7 +263,7 @@ public class ColorGradient extends ColorSetObject {
 		}
 				
 		void addColor() {
-			getInput().addColorValuePair(getInput().new ColorValuePair(new RGB(255, 0, 0), 0));
+			getInput().addColorValuePair(getInput().new ColorValuePair(Color.RED, 0));
     		colorTable.refresh();
 		}
 		
@@ -358,7 +359,7 @@ public class ColorGradient extends ColorSetObject {
 				
 				public Image getColumnImage(Object element, int columnIndex) { 
 					if(columnIndex == 0) {
-						RGB rgb = ((ColorValuePair)element).color;
+						RGB rgb = SwtUtils.color2rgb(((ColorValuePair)element).color);
 						colorImage = new Image(null, ColorSetComposite.createColorImage(rgb));
 						return colorImage;
 					}
@@ -401,7 +402,7 @@ public class ColorGradient extends ColorSetObject {
 					}
 					ColorValuePair cvp = (ColorValuePair)element;
 					if(property.equals(tableColumns[0])) {
-						cvp.setColor((RGB)value);
+						cvp.setColor(SwtUtils.rgb2color((RGB)value));
 					} else {
 						cvp.setValue(Double.parseDouble((String)value));
 					}

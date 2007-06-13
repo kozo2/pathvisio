@@ -20,13 +20,13 @@ import java.util.HashMap;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jdom.Element;
+import java.awt.Color;
 
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
@@ -86,7 +86,7 @@ public abstract class ColorSetObject {
 	 * null if the input data doesn't result in a valid color
 	 * @throws Exception 
 	 */
-	abstract RGB getColor(HashMap<Integer, Object> data, int idSample) throws Exception;
+	abstract Color getColor(HashMap<Integer, Object> data, int idSample) throws Exception;
 	
 	/**
 	 * Returns the parent colorset

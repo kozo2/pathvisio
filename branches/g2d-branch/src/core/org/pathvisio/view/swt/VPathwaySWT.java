@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -62,6 +63,7 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 		return new Rectangle(b.x, b.y, b.width, b.height);
 	}
 	
+	//Method 1: transfer from BufferedImage
 	public void paintControl(PaintEvent e) {
 		GC gc = e.gc; // gets the SWT graphics context from the event
 
@@ -70,14 +72,21 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 		renderer.prepareRendering(gc); // prepares the Graphics2D renderer
 
 		Graphics2D g2d = renderer.getGraphics2D();
-		g2d.setBackground(new Color(255, 255, 255));
-		g2d.setColor(new Color(0, 0, 0));
-		
+			
 		child.draw(g2d, new Rectangle(e.x, e.y, e.width, e.height));
 		
 		renderer.render(gc);
 	}
 
+	//Method 2: use Graphics2D extension
+//	public void paintControl(PaintEvent e) {
+//		GC gc = e.gc; // gets the SWT graphics context from the event
+//		
+//		Graphics2D g2d = new SWTGraphics2D(gc, gc.getDevice());
+//		child.draw(g2d, new Rectangle(e.x, e.y, e.width, e.height));
+//		
+//	}
+	
 	public static int convertStateMask(int swtMask) {
 		int newMask = 0;
 		newMask = addModifier(swtMask, SWT.CTRL, newMask, InputEvent.M_CTRL);

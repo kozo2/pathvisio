@@ -16,6 +16,7 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 
 import org.pathvisio.model.PathwayElement;
@@ -47,97 +48,55 @@ public class Shape extends GraphicsShape
 		}
 	}
 	
-	public void draw(Graphics2D g2d)
-	{	
-//		Color c = null;
-//		Color b = null;
-//		if (isSelected())
-//		{
-//			c = SwtUtils.changeColor(c, selectColor, e.display);
-//		}
-//		else if (isHighlighted())
-//		{
-//			RGB rgb = Preferences.getColorProperty(Preferences.PREF_COL_HIGHLIGHTED);
-//			c = SwtUtils.changeColor(c, rgb, e.display);
-//		}
-//		else 
-//		{
-//			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
-//		}
-//		buffer.setForeground (c);
-//		buffer.setLineStyle (SWT.LINE_SOLID);
-//		b = SwtUtils.changeColor(c, gdata.getFillColor(), e.display);
-//		buffer.setBackground (b);
-//		
-//		Transform tr = new Transform(e.display);
-//		rotateGC(buffer, tr);
-//		
-//		int vStartX = getVLeft();
-//		int vStartY = getVTop();
-//		int vWidth = getVWidth();
-//		int vHeight = getVHeight();
-//		
-//		switch (gdata.getShapeType())
-//		{
-//			case RECTANGLE: 
-//				buffer.setLineWidth (1);
-//				if (!gdata.isTransparent())
-//					buffer.fillRectangle (
-//						vStartX,	vStartY,	vWidth, vHeight);
-//				buffer.drawRectangle (
-//					vStartX,	vStartY,	vWidth, vHeight);				
-//				break;
-//			case OVAL:				
-//				buffer.setLineWidth (1);
-//				if (!gdata.isTransparent())
-//					buffer.fillOval (
-//						vStartX, vStartY,	vWidth, vHeight);
-//				buffer.drawOval (
-//					vStartX, vStartY,	vWidth, vHeight);
-//				break;
-//			case ARC:
-//				buffer.setLineWidth (1);
-//				/**
-//				 * Arcs are different from Oval and Rect, in that
-//				 * they are not filled in GenMAPP, and that the
-//				 * color column is used for the line color.
-//				 * Likewise, we don't fill them in PathVisio.
-//				 */
-////				if (!gdata.isTransparent())
-////					buffer.fillArc(
-////							startX, startY,	width, height, 0, 180);					
-//				buffer.drawArc(
-//						vStartX, vStartY,	vWidth, vHeight, 0, -180);
-//				break;
-//			case BRACE:
-//				buffer.setLineWidth (2);
-//								
-//				int cx = getVCenterX();
-//				int cy = getVCenterY();
-//				int w = getVWidth();
-//				int d = getVHeight();
-//				
-//				buffer.drawLine (cx + d/2, cy, cx + w/2 - d/2, cy); //line on the right
-//				buffer.drawLine (cx - d/2, cy, cx - w/2 + d/2, cy); //line on the left
-//				buffer.drawArc (cx - w/2, cy, d, d, -180, -90); //arc on the left
-//				buffer.drawArc (cx - d, cy - d,	d, d, -90, 90); //left arc in the middle
-//				buffer.drawArc (cx, cy - d, d, d, -90, -90); //right arc in the middle
-//				buffer.drawArc (cx + w/2 - d, cy, d, d, 0, 90); //arc on the right
-//				break;
-//		}
-//
-//		buffer.setTransform(null);
-//		
-//		c.dispose();
-//		b.dispose();
-//		tr.dispose();
+	public void doDraw(Graphics2D g)
+	{					
+		Color fillcolor = gdata.getFillColor();
+		Color linecolor = gdata.getColor();
+		if(isSelected()) {
+			linecolor = selectColor;
+		} else if (isHighlighted()) {
+			linecolor = highlightColor;
+		}
 		
-		int vStartX = getVLeft();
-		int vStartY = getVTop();
-		int vWidth = getVWidth();
-		int vHeight = getVHeight();
-		g2d.rotate(gdata.getRotation(), getVCenterX(), getVCenterY());
-		g2d.drawRect(vStartX,	vStartY,	vWidth, vHeight);
-		g2d.rotate(-gdata.getRotation(), getVCenterX(), getVCenterY());
+		int x = getVLeft();
+		int y = getVTop();
+		int w = getVWidth();
+		int h = getVHeight();
+		int cx = getVCenterX();
+		int cy = getVCenterY();
+						
+		g.rotate(gdata.getRotation(), cx, cy);
+		
+		switch(gdata.getShapeType()) {
+		case OVAL:
+			g.setColor(linecolor);
+			g.drawOval(x, y, w, h);
+			if(!gdata.isTransparent()) {
+				g.setColor(fillcolor);
+				g.fillOval(x, y, w, h);
+			}
+			break;
+		case ARC:
+			g.setColor(linecolor);
+			g.drawArc(x, y, w, h, 0, -180);
+			break;
+		case BRACE:
+			g.setColor(linecolor);
+			g.drawLine (cx + h/2, cy, cx + w/2 - h/2, cy); //line on the right
+			g.drawLine (cx - h/2, cy, cx - w/2 + h/2, cy); //line on the left
+			g.drawArc (cx - w/2, cy, h, h, -180, -90); //arc on the left
+			g.drawArc (cx - h, cy - h,	h, h, -90, 90); //left arc in the middle
+			g.drawArc (cx, cy - h, h, h, -90, -90); //right arc in the middle
+			g.drawArc (cx + w/2 - h, cy, h, h, 0, 90); //arc on the right
+			break;
+		default:
+			g.setColor(linecolor);
+			g.drawRect(x, y, w, h);
+			if(!gdata.isTransparent()) {
+				g.setColor(fillcolor);
+				g.fillRect(x, y, w, h);
+			}
+			break;
+		}
 	}	
 }

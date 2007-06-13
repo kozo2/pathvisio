@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.graphics.Color;
+import java.awt.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.jdom.Element;
-
 import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.util.SwtUtils;
@@ -42,14 +41,14 @@ public class ColorCriterion extends ColorSetObject {
 	
 	Criterion criterion;
 	
-	public static final RGB INITIAL_COLOR = new RGB(255, 255, 255);
-	private RGB color;
-	public void setColor(RGB color) { 
+	public static final Color INITIAL_COLOR = Color.WHITE;
+	private Color color;
+	public void setColor(Color color) { 
 		this.color = color;
 		fireModifiedEvent();
 	}
 	
-	public RGB getColor() { return color == null ? INITIAL_COLOR : color; }
+	public Color getColor() { return color == null ? INITIAL_COLOR : color; }
 	
 	public Criterion getCriterion() { return criterion; }
 	
@@ -62,7 +61,7 @@ public class ColorCriterion extends ColorSetObject {
 		super(parent, xml);
 	}
 	
-	RGB getColor(HashMap<Integer, Object> data, int idSample) throws Exception {
+	Color getColor(HashMap<Integer, Object> data, int idSample) throws Exception {
 		if(criterion.evaluate(data, idSample)) return color;
 		return null;
 	}
@@ -100,7 +99,7 @@ public class ColorCriterion extends ColorSetObject {
 		CriterionComposite critComp;
 		Text exprText;
 		CLabel colorLabel;
-		Color color;
+		org.eclipse.swt.graphics.Color color;
 		
 		public ColorCriterionComposite(Composite parent, int style) {
 			super(parent, style);
@@ -109,7 +108,7 @@ public class ColorCriterion extends ColorSetObject {
 		void refresh() {
 			super.refresh();
 			critComp.refresh();
-			changeColorLabel(getInput() == null ? null : getInput().getColor());
+			changeColorLabel(getInput() == null ? null : SwtUtils.color2rgb(getInput().getColor()));
 		}
 		
 		ColorCriterion getInput() {
@@ -134,14 +133,14 @@ public class ColorCriterion extends ColorSetObject {
 		
 		RGB askColor() {
 			ColorDialog dg = new ColorDialog(getShell());
-			dg.setRGB(getInput().getColor());
+			dg.setRGB(SwtUtils.color2rgb(getInput().getColor()));
 			return dg.open();
 		}
 		
 		void changeColor(RGB rgb) {
 			if(rgb != null) {
 				ColorCriterion c = getInput();
-				if(c != null) c.setColor(rgb);
+				if(c != null) c.setColor(SwtUtils.rgb2color(rgb));
 				changeColorLabel(rgb);
 			}
 		}

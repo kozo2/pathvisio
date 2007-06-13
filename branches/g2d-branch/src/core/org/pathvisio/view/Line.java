@@ -17,15 +17,21 @@
 package org.pathvisio.view;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
@@ -36,7 +42,17 @@ import org.pathvisio.model.PathwayElement.MPoint;
  */
 public class Line extends Graphics
 {
-
+	private static final int ARROWHEIGHT = 65;
+	private static final int ARROWWIDTH = 140;
+	private static final int TBARHEIGHT = 225;
+	private static final int TBARWIDTH = 15;
+	private static final int LRDIAM = 175;
+	private static final int RRDIAM = LRDIAM + 50;
+	private static final int LIGANDWIDTH = 125;
+	private static final int LIGANDHEIGHT = 175;
+	private static final int RECEPWIDTH = LIGANDWIDTH + 30;
+	private static final int RECEPHEIGHT = LIGANDHEIGHT + 30;
+	
 	private static final long serialVersionUID = 1L;
 	
 	private List<VPoint> points;
@@ -72,153 +88,163 @@ public class Line extends Graphics
 		}
 	}
 			
-	public void draw(Graphics2D g2d)
+	public void doDraw(Graphics2D g)
 	{
-		double vEndx = getVEndX();
-		double vEndy = getVEndY();
-		double vStartx = getVStartX();
-		double vStarty = getVStartY();
+		Color c = gdata.getColor();
+		if(isSelected()) {
+			c = selectColor;
+		} else if (isHighlighted()) {
+			c = highlightColor;
+		}
+		g.setColor(c);
+				
+		int ls = gdata.getLineStyle();
+		if (ls == LineStyle.SOLID) {
+			g.setStroke(new BasicStroke());
+		}
+		else if (ls == LineStyle.DASHED) { 
+			g.setStroke(new BasicStroke(1, 
+									BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 
+									10, new float[] {4, 4}, 0));
+		}			
 
-		g2d.drawLine((int)vStartx, (int)vStarty, (int)vEndx, (int)vEndy);
+		Line2D l = getVLine();
+		Point2D start = l.getP1();
+		Point2D end = l.getP2();
 		
-//		Color c = null;
-//		if (isSelected())
-//		{
-//			c = SwtUtils.changeColor(c, selectColor, e.display);
-//		}
-//		else if (isHighlighted())
-//		{
-//			RGB rgb = Preferences.getColorProperty(Preferences.PREF_COL_HIGHLIGHTED);
-//			c = SwtUtils.changeColor(c, rgb, e.display);
-//		}
-//		else 
-//		{
-//			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
-//		}
-//		buffer.setForeground (c);
-//		buffer.setBackground (c);
-//		
-//		buffer.setLineWidth (1);
-//		int ls = gdata.getLineStyle();
-//		if (ls == LineStyle.SOLID)
-//		{
-//			buffer.setLineStyle (SWT.LINE_SOLID);
-//		}
-//		else if (ls == LineStyle.DASHED)
-//		{ 
-//			// TODO: This works well on windows. I wonder if this is the same on all platforms
-//			buffer.setLineDash (new int[] {4, 4});
-//		}			
-//
-//		double s = Math.sqrt(((vEndx-vStartx)*(vEndx-vStartx)) + ((vEndy - vStarty)*(vEndy - vStarty)));
-//		
-//		switch (gdata.getLineType())
-//		{
-//		
-//			case LINE:
-//				buffer.drawLine ((int)vStartx, (int)vStarty, (int)vEndx, (int)vEndy);
-//				break;
-//			case ARROW:				
-//				buffer.drawLine ((int)vStartx, (int)vStarty, (int)vEndx, (int)vEndy);
-//				drawArrowhead(buffer);
-//				break;
-//			case TBAR:
-//			{
-//				s /= 8;
-//	
-//				double capx1 = ((-vEndy + vStarty)/s) + vEndx;
-//				double capy1 = (( vEndx - vStartx)/s) + vEndy;
-//				double capx2 = (( vEndy - vStarty)/s) + vEndx;
-//				double capy2 = ((-vEndx + vStartx)/s) + vEndy;
-//	
-//				buffer.drawLine ((int)vStartx, (int)vStarty, (int)vEndx, (int)vEndy);
-//				buffer.drawLine ((int)capx1, (int)capy1, (int)capx2, (int)capy2);
-//			}
-//				break;
-//			case LIGAND_ROUND:
-//			{
-//				if (vEndx != vStartx || vEndy != vStarty)
-//				{
-//					double dx = (vEndx - vStartx)/s;
-//					double dy = (vEndy - vStarty)/s;
-//								
-//					buffer.drawLine ((int)vStartx, (int)vStarty, (int)(vEndx - 6 * dx), (int)(vEndy - 6 * dy));
-//					buffer.drawOval ((int)vEndx - 5, (int)vEndy - 5, 10, 10);
-//					buffer.fillOval ((int)vEndx - 5, (int)vEndy - 5, 10, 10);
-//				}
-//			}
-//				break;
-//			case RECEPTOR_ROUND:
-//			{
-//				if (vEndx != vStartx || vEndy != vStarty)
-//				{
-//					double theta 	= Math.toDegrees(Math.atan2((vEndx - vStartx),(vEndy - vStarty)));
-//					double dx 		= (vEndx - vStartx)/s;
-//					double dy 		= (vEndy - vStarty)/s;	
-//					
-//					buffer.drawLine ((int)vStartx, (int)vStarty, (int)(vEndx - (8*dx)), (int)(vEndy - (8*dy)));
-//					buffer.drawArc ((int)vEndx - 8, (int)vEndy - 8, 16, 16, (int)theta + 180, -180);
-//				}
-//			}
-//				break;
-//			case RECEPTOR: //TODO: implement receptor
-//			case RECEPTOR_SQUARE:
-//			{
-//				if (vEndx != vStartx || vEndy != vStarty)
-//				{
-//					s /= 8;
-//					
-//					double x3 		= vEndx - ((vEndx - vStartx)/s);
-//					double y3 		= vEndy - ((vEndy - vStarty)/s);
-//					double capx1 	= ((-vEndy + vStarty)/s) + x3;
-//					double capy1 	= (( vEndx - vStartx)/s) + y3;
-//					double capx2 	= (( vEndy - vStarty)/s) + x3;
-//					double capy2 	= ((-vEndx + vStartx)/s) + y3;			
-//					double rx1		= capx1 + 1.5*(vEndx - vStartx)/s;
-//					double ry1 		= capy1 + 1.5*(vEndy - vStarty)/s;
-//					double rx2 		= capx2 + 1.5*(vEndx - vStartx)/s;
-//					double ry2 		= capy2 + 1.5*(vEndy - vStarty)/s;
-//				
-//					buffer.drawLine ((int)vStartx, (int)vStarty, (int)x3, (int)y3);
-//					buffer.drawLine ((int)capx1, (int)capy1, (int)capx2, (int)capy2);
-//					buffer.drawLine ((int)capx1, (int)capy1, (int)rx1, (int)ry1);
-//					buffer.drawLine ((int)capx2, (int)capy2, (int)rx2, (int)ry2);
-//				}
-//			}
-//				break;
-//			case LIGAND_SQUARE:
-//			{
-//				if (vEndx != vStartx || vEndy != vStarty)
-//				{
-//					s /= 6;
-//					double x3 		= vEndx - ((vEndx - vStartx)/s);
-//					double y3 		= vEndy - ((vEndy - vStarty)/s);
-//		
-//					int[] points = new int[4 * 2];
-//					
-//					points[0] = (int) (((-vEndy + vStarty)/s) + x3);
-//					points[1] = (int) ((( vEndx - vStartx)/s) + y3);
-//					points[2] = (int) ((( vEndy - vStarty)/s) + x3);
-//					points[3] = (int) (((-vEndx + vStartx)/s) + y3);
-//		
-//					points[4] = (int) (points[2] + 1.5*(vEndx - vStartx)/s);
-//					points[5] = (int) (points[3] + 1.5*(vEndy - vStarty)/s);
-//					points[6] = (int) (points[0] + 1.5*(vEndx - vStartx)/s);
-//					points[7] = (int) (points[1] + 1.5*(vEndy - vStarty)/s);
-//					
-//					buffer.drawLine ((int)vStartx, (int)vStarty, (int)x3, (int)y3);
-//					buffer.drawPolygon(points);
-//					buffer.fillPolygon(points);
-//				}
-//			}
-//				break;
-//		}
-//		
-//		c.dispose();
-
+		g.draw(l);
 		
+		double xs = start.getX();
+		double ys = start.getY();
+		double xe = end.getX();
+		double ye = end.getY();
+		
+		switch (gdata.getLineType()) {
+			case ARROW:				
+				paintArrowHead(g, xs, ys, xe, ye, vFromM(ARROWWIDTH), vFromM(ARROWHEIGHT));
+				break;
+			case TBAR:	
+				paintTBar(g, xs, ys, xe, ye, vFromM(TBARWIDTH), vFromM(TBARHEIGHT));
+				break;
+			case LIGAND_ROUND:	
+				paintLRound(g, xe, ye, vFromM(LRDIAM));
+				break;
+			case RECEPTOR_ROUND:
+				paintRRound(g, xs, ys, xe, ye, vFromM(RRDIAM));
+				break;
+			case RECEPTOR: //TODO: implement receptor
+			case RECEPTOR_SQUARE:
+				paintReceptor(g, xs, ys, xe, ye, vFromM(RECEPWIDTH), vFromM(RECEPHEIGHT));
+				break;
+			case LIGAND_SQUARE:
+			{
+				paintLigand(g, xs, ys, xe, ye, vFromM(LIGANDWIDTH), vFromM(LIGANDHEIGHT));
+			}
+			break;
 	}
-			
+	}
+	
+	private double getAngle(double xs, double ys, double xe, double ye) {
+		if(xs == xe && ys == ye) return 0; //Unable to determine direction
+		Point2D ps = new Point2D.Double(xe - xs, ye - ys);
+		Point2D pe = new Point2D.Double(1, 0);
+		
+		return LinAlg.angle(new LinAlg.Point(ps.getX(), ps.getY()), new LinAlg.Point(pe.getX(), pe.getY()));
+	}
+	
+	private void paintArrowHead(Graphics2D g2d, double xs, double ys, double xe, double ye, double w, double h) {			
+		double angle = getAngle(xs, ys, xe, ye);
+		int[] xpoints = new int[] { (int)xe, (int)(xe - w), (int)(xe - w) };
+		int[] ypoints = new int[] { (int)ye, (int)(ye - h), (int)(ye + h) };
+		
+		Polygon arrow = new Polygon(xpoints, ypoints, 3);
+		AffineTransform f = new AffineTransform();
+		f.rotate(-angle, xe, ye);
+		Shape rotArrow = f.createTransformedShape(arrow);
+		g2d.fill(rotArrow);
+	}
+	
+	private void paintTBar(Graphics2D g2d, double xs, double ys, double xe, double ye, double w, double h) {
+		double angle = getAngle(xs, ys, xe, ye);
+	
+		Rectangle2D bar = new Rectangle2D.Double(xe - w, ye - h/2, w, h);
+		AffineTransform f = new AffineTransform();
+		f.rotate(-angle, xe, ye);
+		Shape rotBar = f.createTransformedShape(bar);
+		g2d.fill(rotBar);
+	}
+	
+	private void paintLRound(Graphics2D g2d, double xe, double ye, double d) {	
+		g2d.fillOval ((int)(xe - d/2), (int)(ye - d/2), (int)d, (int)d);
+	}
+	
+	private void paintRRound(Graphics2D g2d, double xs, double ys, double xe, double ye, double d) {
+		double angle = getAngle(xs, ys, xe, ye);
+		AffineTransform f = new AffineTransform();
+		f.rotate(-angle, xe, ye);
+		
+		Rectangle2D hideRect = new Rectangle2D.Double(xe - d/2, ye - 2, d/2 + 1, 4);
+		Shape hide = f.createTransformedShape(hideRect);
+		
+		Arc2D arc = new Arc2D.Double((int)(xe - d/2), (int)(ye - d/2), d, d, 90, 180, Arc2D.OPEN);
+		Shape rotArc = f.createTransformedShape(arc);
+		
+		//Hide top of line
+		Color cOld = g2d.getColor();
+		g2d.setColor(Color.WHITE);
+		g2d.fill(hide);
+		g2d.setColor(cOld);
+		g2d.draw(rotArc);		
+	}
+	
+	private void paintReceptor(Graphics2D g2d, double xs, double ys, double xe, double ye, double w, double h) {					
+		/* Path2D Only in Java 1.6....
+		Path2D rec = new Path2D.Double();
+		rec.moveTo(xe + w, ye + h/2);
+		rec.lineTo(xe, ye + h/2);
+		rec.lineTo(xe, ye - h/2);
+		rec.lineTo(xe + w, ye - h/2);
+		AffineTransform f = new AffineTransform();
+		f.rotate(-angle, xe, ye);
+		Shape rotRec = f.createTransformedShape(rec);
+		g2d.draw(rotRec);
+		*/
+		
+		double angle = getAngle(xs, ys, xe, ye);
+		AffineTransform f = new AffineTransform();
+		f.rotate(-angle, xe, ye);
+		
+		Rectangle2D hideRect = new Rectangle2D.Double(xe - w, ye - 2, w + 1, 4);
+		Shape hide = f.createTransformedShape(hideRect);
+		
+		//Hide top of line
+		Color cOld = g2d.getColor();
+		g2d.setColor(Color.WHITE);
+		g2d.fill(hide);
+		g2d.setColor(cOld);
+		
+		Shape l = new Line2D.Double(xe, ye + h/2, xe - w, ye + h/2);
+		Shape r = f.createTransformedShape(l);
+		g2d.draw(r);
+		l = new Line2D.Double(xe - w, ye + h/2, xe - w, ye - h/2);
+		r = f.createTransformedShape(l);
+		g2d.draw(r);
+		l = new Line2D.Double(xe - w, ye - h/2, xe, ye - h/2);
+		r = f.createTransformedShape(l);
+		g2d.draw(r);
+	}
+	
+	private void paintLigand(Graphics2D g2d, double xs, double ys, double xe, double ye, double w, double h) {
+		double angle = getAngle(xs, ys, xe, ye);
+	
+		Rectangle2D bar = new Rectangle2D.Double(xe - w, ye - h/2, w, h);
+		AffineTransform f = new AffineTransform();
+		f.rotate(-angle, xe, ye);
+		Shape rotBar = f.createTransformedShape(bar);
+		g2d.fill(rotBar);
+		g2d.draw(rotBar);
+	}
+	
 	protected Shape getVOutline()
 	{
 		//TODO: bigger than necessary, just to include the arrowhead / shape at the end

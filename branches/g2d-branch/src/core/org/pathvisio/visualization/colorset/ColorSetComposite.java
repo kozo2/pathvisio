@@ -124,9 +124,9 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 	}
 	
 	void initColorLabels() {
-		changeColorLabel(labelColorNCM, colorSet.getColor(ColorSet.ID_COLOR_NO_CRITERIA_MET));
-		changeColorLabel(labelColorNGF, colorSet.getColor(ColorSet.ID_COLOR_NO_GENE_FOUND));
-		changeColorLabel(labelColorNDF, colorSet.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND));
+		changeColorLabel(labelColorNCM, SwtUtils.color2rgb(colorSet.getColor(ColorSet.ID_COLOR_NO_CRITERIA_MET)));
+		changeColorLabel(labelColorNGF, SwtUtils.color2rgb(colorSet.getColor(ColorSet.ID_COLOR_NO_GENE_FOUND)));
+		changeColorLabel(labelColorNDF, SwtUtils.color2rgb(colorSet.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND)));
 	}
 		
 	public void refreshCombo() {
@@ -197,7 +197,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 				if(element instanceof ColorCriterion) {
 					disposeImage(img);
 					img = new Image(null, createColorImage(
-							((ColorCriterion)element).getColor()));
+							SwtUtils.color2rgb(((ColorCriterion)element).getColor())));
 					images.put(element, img);
 					return img;
 				}
@@ -289,7 +289,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 
 		if(id >= 0) {
 			if(rgb != null) {
-				colorSet.setColor(id, rgb);
+				colorSet.setColor(id, SwtUtils.rgb2color(rgb));
 				changeColorLabel(label, rgb);
 			}
 		}
@@ -574,7 +574,7 @@ public class ColorSetComposite extends Composite implements VisualizationListene
 		double[] minmax = cg.getMinMax();
 		for(int i = 0; i < 16; i++)
 		{
-			RGB rgb = cg.getColor(minmax[0] + (i * (minmax[1]- minmax[0])) / 16 );
+			RGB rgb = SwtUtils.color2rgb(cg.getColor(minmax[0] + (i * (minmax[1]- minmax[0])) / 16 ));
 			if(rgb == null)
 				rgb = new RGB(255,255,255);
 			for(int j = 0; j < 16; j++)

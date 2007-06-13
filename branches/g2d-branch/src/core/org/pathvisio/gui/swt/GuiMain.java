@@ -87,6 +87,7 @@ public class GuiMain {
 	public static void initiate() {
 		//initiate logger
 		try { 
+			GlobalPreference.FILE_LOG.setDefault(new File(Engine.getApplicationDir(), ".PathVisioLog").toString());
 			Engine.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
 		} catch(Exception e) {}
 		Engine.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level

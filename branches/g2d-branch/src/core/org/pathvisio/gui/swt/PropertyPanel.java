@@ -16,6 +16,7 @@
 //
 package org.pathvisio.gui.swt;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,7 +44,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.pathvisio.biopax.gui.BiopaxCellEditor;
 import org.pathvisio.data.DataSources;
-import org.pathvisio.model.Color;
 import org.pathvisio.model.DataNodeType;
 import org.pathvisio.model.LineType;
 import org.pathvisio.model.MappFormat;

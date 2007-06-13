@@ -16,7 +16,14 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.PathwayElement;
 
@@ -113,18 +120,16 @@ public class Label extends GraphicsShape
 //		textComposite.pack();
 //	}
 	
-//	Point mComputeTextSize() {
-//		GC gc = new GC(canvas.getDisplay());
-//		Font f = new Font(canvas.getDisplay(), 
-//				gdata.getFontName(), 
-//				(int)gdata.getMFontSize(), getFontStyle());
-//		gc.setFont (f);
-//		Point ts = gc.textExtent(gdata.getTextLabel());
-//		f.dispose();
-//		gc.dispose();
-//		
-//		return ts;
-//	}
+	Dimension mComputeTextSize(Graphics2D g) {
+		Rectangle2D tb = null;
+		if(g != null) {
+			TextLayout tl = new TextLayout(gdata.getTextLabel(), g.getFont(), g.getFontRenderContext());
+			tb = tl.getBounds();
+		} else { //No graphics context, we can only guess...
+			tb = new Rectangle2D.Double(0, 0, getVWidthDouble(), getVHeightDouble()); 
+		}
+		return new Dimension((int)tb.getWidth(), (int)tb.getHeight());
+	}
 	
 //	protected void disposeTextControl()
 //	{
@@ -138,59 +143,27 @@ public class Label extends GraphicsShape
 	{
 		return vFromM(gdata.getMFontSize());
 	}
-
-//	private int getFontStyle() {
-//		int style = SWT.NONE;
-//		
-//		if (gdata.isBold())
-//		{
-//			style |= SWT.BOLD;
-//		}
-//		
-//		if (gdata.isItalic())
-//		{
-//			style |= SWT.ITALIC;
-//		}
-//		return style;
-//	}
 	
-	public void draw(Graphics2D g2d)
-	{
-		g2d.drawString (gdata.getTextLabel(), 
-		(int) getVCenterX(), 
-		(int) getVCenterY());
+	Graphics2D g2d = null; //last Graphics2D for determining text size
+	public void doDraw(Graphics2D g)
+	{		
+		g2d = g;
 		
-//		int style = getFontStyle();
-//		
-//		Font f = new Font(e.display, gdata.getFontName(), (int)getVFontSize(), style);
-//		
-//		buffer.setFont (f);
-//		
-//		Point textSize = buffer.textExtent (gdata.getTextLabel());
-//		
-//		Color c = null;
-//		if (isSelected())
-//		{
-//			c = SwtUtils.changeColor(c, selectColor, e.display);
-//		}
-//		else if (isHighlighted())
-//		{
-//			RGB rgb = Preferences.getColorProperty(Preferences.PREF_COL_HIGHLIGHTED);
-//			c = SwtUtils.changeColor(c, rgb, e.display);
-//		}
-//		else 
-//		{
-//			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
-//		}
-//		buffer.setForeground (c);
-//		
-//		buffer.drawString (gdata.getTextLabel(), 
-//			(int) getVCenterX() - (textSize.x / 2) , 
-//			(int) getVCenterY() - (textSize.y / 2), true);
-//		
-//		f.dispose();
-//		c.dispose();
+		if(isSelected()) {
+			g.setColor(selectColor);
+		} else {
+			g.setColor(gdata.getColor());
+		}
+						
+		g.setFont(new Font(gdata.getFontName(), getVFontStyle(), (int)getVFontSize()));
 		
+		Rectangle area = getVOutline().getBounds();
+		
+		String label = gdata.getTextLabel();
+		TextLayout tl = new TextLayout(label, g.getFont(), g.getFontRenderContext());
+		Rectangle2D tb = tl.getBounds();
+		tl.draw(g, 	area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2), 
+					area.y + (int)(area.height / 2) + (int)(tb.getHeight() / 2));		
 	}
 		
 //	public void gmmlObjectModified(PathwayEvent e) {
@@ -200,37 +173,37 @@ public class Label extends GraphicsShape
 //		}
 //	}
 	
-//	/**
-//	 * Outline of a label is determined by
-//	 * - position of the handles
-//	 * - size of the text
-//	 * Because the text can sometimes be larger than the handles
-//	 */
-//	protected Shape getVOutline()
-//	{
-//		int[] vx = new int[4];
-//		int[] vy = new int[4];
-//		
-//		int[] p = getVHandleLocation(handleNE).asIntArray();
-//		vx[0] = p[0]; vy[0] = p[1];
-//		p = getVHandleLocation(handleSE).asIntArray();
-//		vx[1] = p[0]; vy[1] = p[1];
-//		p = getVHandleLocation(handleSW).asIntArray();
-//		vx[2] = p[0]; vy[2] = p[1];
-//		p = getVHandleLocation(handleNW).asIntArray();
-//		vx[3] = p[0]; vy[3] = p[1];
-//		
-//		Polygon pol = new Polygon(vx, vy, 4);		
-//		Rectangle bounds = pol.getBounds();
-//		
-//		Point mq = mComputeTextSize();
-//		double vqx = vFromM(mq.x);
-//		double vqy = vFromM(mq.y);
-//		
-//		LinAlg.Point c = getVCenter();
-//		bounds.add(new Rectangle2D.Double(c.x - vqx / 2, c.y - vqy / 2, vqx, vqy)); 
-//		
-//		return bounds;
-//	}
+	/**
+	 * Outline of a label is determined by
+	 * - position of the handles
+	 * - size of the text
+	 * Because the text can sometimes be larger than the handles
+	 */
+	protected Shape getVOutline()
+	{
+		int[] vx = new int[4];
+		int[] vy = new int[4];
+		
+		int[] p = getVHandleLocation(handleNE).asIntArray();
+		vx[0] = p[0]; vy[0] = p[1];
+		p = getVHandleLocation(handleSE).asIntArray();
+		vx[1] = p[0]; vy[1] = p[1];
+		p = getVHandleLocation(handleSW).asIntArray();
+		vx[2] = p[0]; vy[2] = p[1];
+		p = getVHandleLocation(handleNW).asIntArray();
+		vx[3] = p[0]; vy[3] = p[1];
+		
+		Polygon pol = new Polygon(vx, vy, 4);		
+		Rectangle bounds = pol.getBounds();
+		
+		Dimension mq = mComputeTextSize(g2d);
+		double vqx = vFromM(mq.getWidth());
+		double vqy = vFromM(mq.getHeight());
+		
+		LinAlg.Point c = getVCenter();
+		bounds.add(new Rectangle2D.Double(c.x - vqx / 2, c.y - vqy / 2, vqx, vqy)); 
+		
+		return bounds;
+	}
 	
 }

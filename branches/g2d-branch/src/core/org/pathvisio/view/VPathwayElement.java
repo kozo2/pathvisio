@@ -36,8 +36,21 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	
 	private boolean isSelected;
 		
-	protected abstract void draw(Graphics2D g2d);
+	protected final void draw(Graphics2D g2d) {
+		//Create a copy to ensure that the state of this Graphics2D will be intact
+		//see: http://java.sun.com/docs/books/tutorial/uiswing/painting/concepts2.html
 		
+		Graphics2D g = (Graphics2D)g2d.create();
+				
+		//Perform the drawing
+		doDraw(g);
+		
+		//Free resources from the copied Graphics2D
+		g.dispose();
+	}
+		
+	protected abstract void doDraw(Graphics2D g2d);
+	
 	/** 
 	 * mark both the area currently and previously occupied by this object for redraw 
 	 */
@@ -179,8 +192,12 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 		return getVOutline().getBounds();
 	}
 	
+	/**
+	 * Get the outline of this element. The outline is used to check 
+	 * whether a point is contained in this element or not
+	 * @return the outline of this element
+	 */
 	abstract protected Shape getVOutline();
-
 
 	/**
 	 * Scales the object to the given rectangle

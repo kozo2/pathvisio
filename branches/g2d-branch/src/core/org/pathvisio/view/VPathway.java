@@ -16,9 +16,11 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.model.Color;
 import org.pathvisio.model.GroupStyle;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
@@ -495,6 +496,10 @@ public class VPathway implements PathwayListener, VisualizationListener
 		if(area == null) {
 			area = g2d.getClipBounds();
 		}
+		
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
 		g2d.setColor(java.awt.Color.WHITE);
 		g2d.fillRect(area.x, area.y, area.width, area.height);
 		g2d.setColor(java.awt.Color.BLACK);
@@ -806,8 +811,8 @@ public class VPathway implements PathwayListener, VisualizationListener
 			gdata.setMHeight(Label.M_INITIAL_HEIGHT);
 			gdata.setMFontSize (Label.M_INITIAL_FONTSIZE);
 			gdata.setGraphId(data.getUniqueId());
+			gdata.setTextLabel("Label");
 			data.add (gdata); // will cause lastAdded to be set
-			//((Label)lastAdded).createTextControl();
 			h = null;
 			break;
 		case NEWARC:

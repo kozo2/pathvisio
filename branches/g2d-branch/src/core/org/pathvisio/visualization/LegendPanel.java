@@ -434,9 +434,9 @@ public class LegendPanel extends ScrolledComposite implements VisualizationListe
 			//Draw label for special criteria ('no gene found', 'no criteria met')
 			String[] specialLabels = {"No criteria met", "Gene not found", "No data found"};
 			RGB[] specialColors = {
-					colorSet.getColor(ColorSet.ID_COLOR_NO_CRITERIA_MET), 
-					colorSet.getColor(ColorSet.ID_COLOR_NO_GENE_FOUND),
-					colorSet.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND) };
+					SwtUtils.color2rgb(colorSet.getColor(ColorSet.ID_COLOR_NO_CRITERIA_MET)), 
+					SwtUtils.color2rgb(colorSet.getColor(ColorSet.ID_COLOR_NO_GENE_FOUND)),
+					SwtUtils.color2rgb(colorSet.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND)) };
 
 			for(int i = 0; i < specialColors.length; i++)
 			{
@@ -579,7 +579,7 @@ public class LegendPanel extends ScrolledComposite implements VisualizationListe
 			// Fill squares with color cg.getColor()
 			for(int i = start; i < end; i++) {
 				double colorValue = min + (i-start) * (max - min) / n;
-				RGB rgb = cg.getColor(colorValue);
+				RGB rgb = SwtUtils.color2rgb(cg.getColor(colorValue));
 				if(rgb != null) {
 					c = SwtUtils.changeColor(c, rgb, e.display);
 					e.gc.setBackground(c);

@@ -16,8 +16,11 @@ public class GuiMain {
 		JFrame frame = new JFrame("PathVisio...swing it baby!");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		frame.add(testcase());
+		VPathwaySwing test = testcase();
+		frame.add(test);
 
+		test.setSize(400, 400);
+		
 		//Display the window.
 		frame.pack();
 		frame.setVisible(true);

@@ -16,6 +16,7 @@
 //
 package org.pathvisio.visualization.colorset;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,9 +25,8 @@ import java.util.List;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.RGB;
 import org.jdom.Element;
-
 import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
@@ -40,9 +40,9 @@ public class ColorSet {
 	public static final int ID_COLOR_NO_GENE_FOUND = 2;
 	public static final int ID_COLOR_NO_DATA_FOUND = 3;
 	
-	RGB color_no_criteria_met = SwtPreferences.getColorProperty(SwtPreferences.PREF_COL_NO_CRIT_MET);
-	RGB color_no_gene_found = SwtPreferences.getColorProperty(SwtPreferences.PREF_COL_NO_GENE_FOUND);
-	RGB color_no_data_found = SwtPreferences.getColorProperty(SwtPreferences.PREF_COL_NO_DATA_FOUND);
+	Color color_no_criteria_met = GlobalPreference.getValueColor(GlobalPreference.COLOR_NO_CRIT_MET);
+	Color color_no_gene_found = GlobalPreference.getValueColor(GlobalPreference.COLOR_NO_GENE_FOUND);
+	Color color_no_data_found = GlobalPreference.getValueColor(GlobalPreference.COLOR_NO_DATA_FOUND);
 		
 	String name;
 	
@@ -65,7 +65,7 @@ public class ColorSet {
 		fireModifiedEvent();
 	}
 	
-	public void setColor(int id, RGB rgb) {
+	public void setColor(int id, Color rgb) {
 		switch(id) {
 		case ID_COLOR_NO_CRITERIA_MET:
 			color_no_criteria_met = rgb;
@@ -80,7 +80,7 @@ public class ColorSet {
 		fireModifiedEvent();
 	}
 	
-	public RGB getColor(int id) {
+	public Color getColor(int id) {
 		switch(id) {
 		case ID_COLOR_NO_CRITERIA_MET:
 			return color_no_criteria_met;
@@ -143,20 +143,20 @@ public class ColorSet {
 	 * @param sampleId	the id of the sample that will be visualized
 	 * @return	an {@link RGB} object representing the color for the given data
 	 */
-	public RGB getColor(HashMap<Integer, Object> data, int sampleId)
+	public Color getColor(HashMap<Integer, Object> data, int sampleId)
 	{
 		if(data == null) return color_no_data_found;
 		Object value = data.get(sampleId);
 		if(value == null || value.equals(Double.NaN)) return color_no_data_found;
 		
-		RGB rgb = color_no_criteria_met; //The color to return
+		Color rgb = color_no_criteria_met; //The color to return
 		Iterator it = colorSetObjects.iterator();
 		//Evaluate all colorset objects, return when a valid color is found
 		while(it.hasNext())
 		{
 			ColorSetObject gc = (ColorSetObject)it.next();
 			try{ 
-				RGB gcRgb = gc.getColor(data, sampleId);
+				Color gcRgb = gc.getColor(data, sampleId);
 				if(gcRgb != null) {
 					return gcRgb;
 				}

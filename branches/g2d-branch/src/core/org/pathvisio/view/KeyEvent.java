@@ -1,6 +1,5 @@
 package org.pathvisio.view;
 
-import java.util.EventObject;
 
 public class KeyEvent extends InputEvent {
 	//Types

@@ -16,6 +16,7 @@
 //
 package org.pathvisio.model;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -964,9 +965,9 @@ public class GpmlFormat
 	 */
 	public static String color2HexBin(Color color)
 	{
-		String red = padding(Integer.toBinaryString(color.red), 8, '0');
-		String green = padding(Integer.toBinaryString(color.green), 8, '0');
-		String blue = padding(Integer.toBinaryString(color.blue), 8, '0');
+		String red = padding(Integer.toBinaryString(color.getRed()), 8, '0');
+		String green = padding(Integer.toBinaryString(color.getGreen()), 8, '0');
+		String blue = padding(Integer.toBinaryString(color.getBlue()), 8, '0');
 		String hexBinary = Integer.toHexString(Integer.valueOf(red + green + blue, 2));
 		return padding(hexBinary, 6, '0');
 	}

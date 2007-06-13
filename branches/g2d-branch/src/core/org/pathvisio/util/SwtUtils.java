@@ -43,10 +43,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
-
 import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.view.VPathway;
 import org.pathvisio.model.Pathway;
+import org.pathvisio.view.VPathway;
 
 public class SwtUtils {
 
@@ -74,6 +73,13 @@ public class SwtUtils {
 		return new Color(display, rgbNew);
 	}
 	
+	public static RGB color2rgb(java.awt.Color c) {
+		return new RGB(c.getRed(), c.getGreen(), c.getBlue());
+	}
+	
+	public static java.awt.Color rgb2color(RGB rgb) {
+		return new java.awt.Color(rgb.red, rgb.green, rgb.blue);
+	}
 	/**
 	 * Change the given {@link Color}; this method disposes the old color for you
 	 * @param cOld	the old {@link Color}
@@ -81,14 +87,14 @@ public class SwtUtils {
 	 * @param display	the display to assign the color to
 	 * @return	a brand new {@link Color}
 	 */
-	public static Color changeColor(Color cOld, org.pathvisio.model.Color rgbNew, Display display)
+	public static Color changeColor(Color cOld, java.awt.Color rgbNew, Display display)
 	{
 		if(cOld != null && !cOld.isDisposed())
 		{
 			cOld.dispose();
 			cOld = null;
 		}
-		if(rgbNew == null) rgbNew = new org.pathvisio.model.Color(0,0,0);
+		if(rgbNew == null) rgbNew = new java.awt.Color(0,0,0);
 		return new Color(display, ColorConverter.toRGB(rgbNew));
 	}
 	

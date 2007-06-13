@@ -22,11 +22,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
-import org.pathvisio.model.PathwayElement.MPoint;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
+import org.pathvisio.model.PathwayElement.MPoint;
+import org.pathvisio.view.LinAlg.Point;
 
 /**
  * This is an {@link Graphics} class representing shapelike forms,

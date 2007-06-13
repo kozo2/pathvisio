@@ -16,9 +16,13 @@
 //
 package org.pathvisio.view;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.data.DataSources;
 import org.pathvisio.model.PathwayElement;
@@ -30,10 +34,10 @@ import org.pathvisio.model.PathwayElement;
 public class GeneProduct extends GraphicsShape
 {
 	private static final long serialVersionUID = 1L;
-	//public static final RGB INITIAL_FILL_COLOR = new RGB(255, 255, 255);
+	public static final Color INITIAL_FILL_COLOR = Color.WHITE;
 	
-	// note: not the same as color!
-	//RGB fillColor = INITIAL_FILL_COLOR;
+	//note: not the same as color!
+	Color fillColor = INITIAL_FILL_COLOR;
 		
 	public GeneProduct (VPathway canvas, PathwayElement o) {
 		super(canvas, o);		
@@ -67,55 +71,6 @@ public class GeneProduct extends GraphicsShape
 			systemCode = DataSources.sysName2Code.get(gdata.getDataSource());
 		return systemCode;
 	}
-	
-//	private Text t;
-//	public void createTextControl()
-//	{		
-//		Color background = canvas.getShell().getDisplay()
-//		.getSystemColor(SWT.COLOR_INFO_BACKGROUND);
-//		
-//		Composite textComposite = new Composite(canvas, SWT.NONE);
-//		textComposite.setLayout(new GridLayout());
-//		textComposite.setLocation(getCenterX(), getCenterY() - 10);
-//		textComposite.setBackground(background);
-//		
-//		Label label = new Label(textComposite, SWT.CENTER);
-//		label.setText("Specify gene name:");
-//		label.setBackground(background);
-//		t = new Text(textComposite, SWT.SINGLE | SWT.BORDER);
-//				
-//		t.addSelectionListener(new SelectionAdapter() {
-//			public void widgetDefaultSelected(SelectionEvent e) {
-//				disposeTextControl();
-//			}
-//		});
-//				
-//		t.setFocus();
-//		
-//		Button b = new Button(textComposite, SWT.PUSH);
-//		b.setText("OK");
-//		b.addSelectionListener(new SelectionAdapter() {
-//			public void widgetSelected(SelectionEvent e) {
-//				disposeTextControl();
-//			}
-//		});
-//		
-//		textComposite.pack();
-//	}
-	
-//	protected void disposeTextControl()
-//	{	
-//		markDirty();
-//		gdata.setGeneID (t.getText());
-//		markDirty();
-//		//TODO: implement listener. 
-//		//canvas.updatePropertyTable(this);
-//		Composite c = t.getParent();
-//		c.setVisible(false);
-//		c.dispose();
-//		
-//		canvas.redrawDirtyRect();
-//	}
 			
 	/**
 	 * Calculate the font size adjusted to the canvas zoom factor.
@@ -125,74 +80,44 @@ public class GeneProduct extends GraphicsShape
 		return (int)(vFromM (gdata.getMFontSize()));
 	}
 
-	public void draw(Graphics2D g2d)
+	public void doDraw(Graphics2D g)
 	{
-		Graphics2D g = (Graphics2D)g2d.create();
-		if(isSelected()) g.setColor(Color.RED);
+		//Color
+		if(isSelected()) {
+			g.setColor(selectColor);
+		} else {
+			g.setColor(gdata.getColor());
+		}
+		
+		//Gene box
+		g.setStroke(new BasicStroke());
+		
 		Rectangle area = new Rectangle(
 				getVLeft(), getVTop(), getVWidth(), getVHeight());
 		
 		g.draw(area);
 		
-//		Color c = null;
-//		Color b = SwtUtils.changeColor(c, new RGB(255, 255, 255), e.display);
-//		Font f = null;
-//		
-//		if(isSelected())
-//		{
-//			c = SwtUtils.changeColor(c, selectColor, e.display);
-//		}
-//		else 
-//		{
-//			c = SwtUtils.changeColor(c, gdata.getColor(), e.display);
-//		}
-//		
-//		buffer.setForeground(c);
-//		buffer.setBackground(b);
-//		buffer.setLineStyle (SWT.LINE_SOLID);
-//		buffer.setLineWidth (1);		
-//		
-//		Rectangle area = new Rectangle(
-//				getVLeft(), getVTop(), getVWidth(), getVHeight());
-//		
-//		buffer.fillRectangle (area); // white background
-//		buffer.drawRectangle (area);
-//		
-//		buffer.setClipping ( area.x - 1, area.y - 1, area.width + 1, area.height + 1);
-//		
-//		f = SwtUtils.changeFont(f, new FontData(gdata.getFontName(), getVFontSize(), SWT.NONE), e.display);
-//		buffer.setFont(f);
-//		
-//		String label = gdata.getTextLabel();
-//		Point textSize = buffer.textExtent (label);
-//		buffer.drawString (label, 
-//				area.x + (int)(area.width / 2) - (int)(textSize.x / 2),
-//				area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
-//				
-//				
-//		Region r = null;
-//		buffer.setClipping(r);
-//		
-//		c.dispose();
-//		b.dispose();
-//		f.dispose();
+		//Label
+		//Don't draw label outside gene box
+		g.setClip ( area.x - 1, area.y - 1, area.width + 1, area.height + 1);
+	
+		g.setFont(new Font(gdata.getFontName(), getVFontStyle(), getVFontSize()));
+		
+		String label = gdata.getTextLabel();
+		TextLayout tl = new TextLayout(label, g.getFont(), g.getFontRenderContext());
+		Rectangle2D tb = tl.getBounds();
+		tl.draw(g, 	area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2), 
+					area.y + (int)(area.height / 2) + (int)(tb.getHeight() / 2));
+		
+		drawHighlight(g);
 	}
 	
-	public void drawHighlight(Graphics2D g2d)
+	public void drawHighlight(Graphics2D g)
 	{
-//		if(isHighlighted())
-//		{
-//			Color c = null;
-//			c = SwtUtils.changeColor(c, highlightColor, e.display);
-//			buffer.setForeground(c);
-//			buffer.setLineWidth(2);
-//			buffer.drawRectangle (
-//					getVLeft() - 1,
-//					getVTop() - 1,
-//					getVWidth() + 3,
-//					getVHeight() + 3
-//				);
-//			if(c != null) c.dispose();
-//		}
+		if(isHighlighted()) {
+			int os = 1;
+			g.setColor(highlightColor);
+			g.drawRect(getVLeft() - os, getVTop() - os, getVWidth() + 2*os, getVHeight() + 2*os);
+		}
 	}
 }

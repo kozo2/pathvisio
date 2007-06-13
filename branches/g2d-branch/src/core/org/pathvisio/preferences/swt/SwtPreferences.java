@@ -153,6 +153,10 @@ public class SwtPreferences extends PreferenceStore implements PreferenceCollect
 			return defaultValue;
 		}
 		
+		public void setDefault(String defValue) {
+			defaultValue = defValue;
+		}
+		
 		public void setValue(String newValue) {
 			value = newValue;
 		}

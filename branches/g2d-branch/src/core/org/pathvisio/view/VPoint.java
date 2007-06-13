@@ -124,7 +124,7 @@ public class VPoint extends VPathwayElement {
 		return new Handle[] { handle };
 	}
 	
-	protected void draw(Graphics2D g2d) {
+	protected void doDraw(Graphics2D g2d) {
 		// TODO Auto-generated method stub
 	}
 

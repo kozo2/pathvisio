@@ -16,9 +16,11 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.view.LinAlg.Point;
@@ -149,53 +151,23 @@ class Handle extends VPathwayElement
 	 * draws itself, but only if isVisible() is true, there is 
 	 * no need for a check for isVisible() before calling draw().
 	 */
-	public void draw(Graphics2D g2d)
+	public void doDraw(Graphics2D g)
 	{
 		if(!isVisible) return;
-		double vCenterx = vFromM (mCenterx);
-		double vCentery = vFromM (mCentery);
-		g2d.drawRect(
-				(int)(vCenterx - WIDTH/2), 
-				(int)(vCentery - HEIGHT/2), 
-				(int)WIDTH, 
-				(int)HEIGHT);
 		
-//		if (!isVisible) return;
-//		double vCenterx = vFromM (mCenterx);
-//		double vCentery = vFromM (mCentery);
-//		
-//		if(direction == DIRECTION_ROT) {
-//			buffer.setLineWidth (1);
-//			buffer.setLineStyle(SWT.LINE_SOLID);
-//			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_GREEN));
-//			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
-//			buffer.fillOval(
-//					(int)(vCenterx - WIDTH/2), 
-//					(int)(vCentery - HEIGHT/2), 
-//					(int)WIDTH, 
-//					(int)HEIGHT);
-//			buffer.drawOval(
-//					(int)(vCenterx - WIDTH/2), 
-//					(int)(vCentery - HEIGHT/2), 
-//					(int)WIDTH, 
-//					(int)HEIGHT);
-//		} else {			
-//			buffer.setLineWidth (1);
-//			buffer.setLineStyle(SWT.LINE_SOLID);
-//			buffer.setBackground (e.display.getSystemColor (SWT.COLOR_YELLOW));
-//			buffer.setForeground (e.display.getSystemColor (SWT.COLOR_BLACK));
-//			buffer.fillRectangle (
-//					(int)(vCenterx - WIDTH/2), 
-//					(int)(vCentery - HEIGHT/2), 
-//					(int)WIDTH, 
-//					(int)HEIGHT);	
-//			buffer.drawRectangle (
-//					(int)(vCenterx - WIDTH/2), 
-//					(int)(vCentery - HEIGHT/2), 
-//					(int)WIDTH, 
-//					(int)HEIGHT);	
-//		}
+		Shape outline = getVOutline();
 		
+		if(direction == DIRECTION_ROT) {
+			g.setColor(Color.GREEN);
+		} else {
+			g.setColor(Color.YELLOW);
+		}
+		
+		g.fill(outline);
+		
+		g.setColor(Color.BLACK);
+		
+		g.draw(outline);		
 	}
 		
 	/**
@@ -237,8 +209,18 @@ class Handle extends VPathwayElement
 	}
 			
 	public Shape getVOutline() {
-		return new Rectangle2D.Double(vFromM(mCenterx) - WIDTH/2, vFromM(mCentery) - HEIGHT/2, 
-				WIDTH, HEIGHT);
+		Shape s = null;
+		switch(direction) {
+		case DIRECTION_ROT:
+			s = new Ellipse2D.Double(getVCenterX() - WIDTH/2, getVCenterY() - HEIGHT/2, 
+					WIDTH, HEIGHT);
+			break;
+		default:
+			s = new Rectangle2D.Double(getVCenterX() - WIDTH/2, getVCenterY() - HEIGHT/2, 
+					WIDTH, HEIGHT);
+			break;
+		}
+		return s;
 	}
 		
 	public String toString() { 

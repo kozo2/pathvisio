@@ -16,13 +16,19 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 
 import org.pathvisio.model.PathwayElement;
 
 public class InfoBox extends Graphics {
+	static final int V_SPACING = 5;
+	static final int H_SPACING = 10;
 	
 	//Elements not stored in gpml
 	String fontName			= "Times New Roman";
@@ -56,50 +62,44 @@ public class InfoBox extends Graphics {
 //		markDirty();
 	}
 	
-	public void draw(Graphics2D g2d) 
+	public void doDraw(Graphics2D g) 
 	{		
-//		sizeX = 1; //Reset sizeX
-//		
-//		Font fBold = new Font(e.display, fontName, getVFontSize(), SWT.BOLD);
-//		Font fNormal = new Font(e.display, fontName, getVFontSize(), SWT.NONE);
-//		
-//		if (isSelected())
-//		{
-//			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_RED));
-//		}
-//		else 
-//		{
-//			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
-//		}
-//				
-//		//Draw Name, Organism, Data-Source, Version, Author, Maintained-by, Email, Availability and last modified
-//		String[][] text = new String[][] {
-//				{"Name: ", gdata.getMapInfoName()},
-//				{"Maintained by: ", gdata.getMaintainer()},
-//				{"Email: ", gdata.getEmail()},
-//				{"Availability: ", gdata.getCopyright()},
-//				{"Last modified: ", gdata.getLastModified()},
-//				{"Organism: ", gdata.getOrganism()},
-//				{"Data Source: ", gdata.getDataSource()}};
-//		int shift = 0;
-//		int vLeft = (int)vFromM(gdata.getMLeft());
-//		int vTop = (int)vFromM(gdata.getMTop());
-//		for(String[] s : text)
-//		{
-//			if(s[1] == null || s[1].equals("")) continue; //Skip empty labels
-//			buffer.setFont(fBold);
-//			Point labelSize = buffer.textExtent(s[0], SWT.DRAW_TRANSPARENT);
-//			buffer.drawString(s[0], vLeft, vTop + shift, true);
-//			buffer.setFont(fNormal);
-//			Point infoSize = buffer.textExtent(s[1], SWT.DRAW_TRANSPARENT);
-//			buffer.drawString(s[1], vLeft + labelSize.x, vTop + shift, true);
-//			shift += Math.max(infoSize.y, labelSize.y);
-//			sizeX = Math.max(sizeX, infoSize.x + labelSize.x);
-//		}
-//		sizeY = shift;
-//		
-//		fBold.dispose();
-//		fNormal.dispose();
+		Font f = new Font(fontName, Font.PLAIN, getVFontSize());
+		Font fb = new Font(f.getFontName(), Font.BOLD, f.getSize());
+		
+		if(isSelected()) {
+			g.setColor(selectColor);
+		}
+		
+		//Draw Name, Organism, Data-Source, Version, Author, Maintained-by, Email, Availability and last modified
+		String[][] text = new String[][] {
+				{"Name: ", gdata.getMapInfoName()},
+				{"Maintained by: ", gdata.getMaintainer()},
+				{"Email: ", gdata.getEmail()},
+				{"Availability: ", gdata.getCopyright()},
+				{"Last modified: ", gdata.getLastModified()},
+				{"Organism: ", gdata.getOrganism()},
+				{"Data Source: ", gdata.getDataSource()}};
+		int shift = 0;
+		int vLeft = (int)vFromM(gdata.getMLeft());
+		int vTop = (int)vFromM(gdata.getMTop());
+		
+		FontRenderContext frc = g.getFontRenderContext();
+		for(String[] s : text) {
+			if(s[1] == null || s[1].equals("")) continue; //Skip empty labels
+			TextLayout tl0 = new TextLayout(s[0], fb, frc);
+			TextLayout tl1 = new TextLayout(s[1], f, frc);
+			Rectangle2D b0 = tl0.getBounds();
+			Rectangle2D b1 = tl1.getBounds();
+			shift += (int)Math.max(b0.getHeight(), b1.getHeight()) + V_SPACING;
+			g.setFont(fb);
+			tl0.draw(g, vLeft, vTop + shift);
+			g.setFont(f);
+			tl1.draw(g, vLeft + (int)b0.getWidth() + H_SPACING, vTop + shift);
+			
+			sizeX = Math.max(sizeX, (int)b0.getWidth() + (int)b1.getWidth() + H_SPACING);
+		}
+		sizeY = shift;
 	}
 
 	protected Shape getVOutline() {

@@ -29,6 +29,10 @@ public enum GlobalPreference implements Preference {
 		return defaultValue;
 	}
 	
+	public void setDefault(String defValue) {
+		defaultValue = defValue;
+	}
+	
 	public void setValue(String newValue) {
 		value = newValue;
 	}

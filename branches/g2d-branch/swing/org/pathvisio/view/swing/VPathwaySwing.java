@@ -4,19 +4,24 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.JComponent;
 
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
-public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseListener {
+public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseMotionListener, MouseListener, KeyListener {
 	VPathway child;
 	
 	public VPathwaySwing() {
-		
+		addMouseListener(this);
+		addMouseMotionListener(this);
+		addKeyListener(this);
 	}
 	
 	public void setChild(VPathway c) {
@@ -52,27 +57,43 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseL
 	}
 
 	public void mouseClicked(MouseEvent arg0) {
-		
+		//TODO: find out how to handle this one
 	}
 
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		child.mouseEnter(new SwingMouseEvent(e));		
 	}
 
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
+		child.mouseExit(new SwingMouseEvent(e));
 		
 	}
 
 	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		child.mouseDown(new SwingMouseEvent(e));
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		child.mouseUp(new SwingMouseEvent(e));
 	}
 
+	public void keyPressed(KeyEvent e) {
+		child.keyPressed(new SwingKeyEvent(e));
+	}
+
+	public void keyReleased(KeyEvent e) {
+		child.keyReleased(new SwingKeyEvent(e));		
+	}
+
+	public void keyTyped(KeyEvent e) {
+		// TODO: find out how to handle this one	
+	}
+
+	public void mouseDragged(MouseEvent e) {
+		// TODO: find out how to handle this one, as mouseMove?
+	}
+
+	public void mouseMoved(MouseEvent e) {
+		child.mouseMove(new SwingMouseEvent(e));
+	}
 }

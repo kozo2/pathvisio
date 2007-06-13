@@ -50,7 +50,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.pathvisio.Globals;
 import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.TableColumnResizer;
 
 /**
@@ -160,7 +160,7 @@ public class GexImportWizard extends Wizard {
 							"*.*" });
 					fileDialog.setFilterNames(new String[] { "Text file",
 							"All files" });
-					fileDialog.setFilterPath(Engine.getPreferences().getString(SwtPreferences.PREF_DIR_EXPR));
+					fileDialog.setFilterPath(SwtPreference.SWT_DIR_EXPR.getValue());
 					String file = fileDialog.open();
 					if (file != null) {
 						txtText.setText(file);
