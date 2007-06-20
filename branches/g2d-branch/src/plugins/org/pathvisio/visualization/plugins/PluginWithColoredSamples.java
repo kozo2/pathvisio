@@ -16,6 +16,10 @@
 //
 package org.pathvisio.visualization.plugins;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,13 +45,9 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -62,20 +62,19 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.jdom.Element;
-
-import org.pathvisio.gui.Engine;
-import org.pathvisio.view.GeneProduct;
-import org.pathvisio.view.Graphics;
-import org.pathvisio.util.ColorConverter;
-import org.pathvisio.util.SwtUtils;
-import org.pathvisio.util.TableColumnResizer;
-import org.pathvisio.visualization.Visualization;
-import org.pathvisio.visualization.colorset.ColorSet;
-import org.pathvisio.visualization.colorset.ColorSetManager;
 import org.pathvisio.data.CachedData;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
+import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.util.SwtUtils;
+import org.pathvisio.util.TableColumnResizer;
+import org.pathvisio.view.GeneProduct;
+import org.pathvisio.view.Graphics;
+import org.pathvisio.view.swt.SWTGraphics2D;
+import org.pathvisio.visualization.Visualization;
+import org.pathvisio.visualization.colorset.ColorSet;
+import org.pathvisio.visualization.colorset.ColorSetManager;
 
 /**
  * Extend this class if you want to create a visualization plug-in where the user
@@ -87,7 +86,7 @@ import org.pathvisio.data.Gex.Sample;
  */
 public abstract class PluginWithColoredSamples extends VisualizationPlugin {	
 	static final String[] useSampleColumns = { "sample", "color set" };
-	static final RGB LINE_COLOR_DEFAULT = new RGB(0, 0, 0);
+	static final Color LINE_COLOR_DEFAULT = Color.BLACK;
 	
 	private List<ConfiguredSample> useSamples = new ArrayList<ConfiguredSample>();
 	private Canvas sidePanel;
@@ -109,23 +108,21 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	 * {@link #drawNoDataFound(visualization.plugins.PluginWithColoredSamples.ConfiguredSample, Rectangle, PaintEvent, GC)}.
 	 * @see VisualizationPlugin#visualizeOnDrawing(GmmlGraphics, PaintEvent, GC)
 	 */
-	public void visualizeOnDrawing(Graphics g, PaintEvent e, GC gc) {
+	public void visualizeOnDrawing(Graphics g, Graphics2D g2d) {
 		if(!(g instanceof GeneProduct)) return;
 		if(useSamples.size() == 0) return; //Nothing to draw
 		
 		GeneProduct gp = (GeneProduct) g;
 		
-		Region region = getVisualization().provideDrawArea(this, g);
-		Rectangle area = region.getBounds();
+		Shape da = getVisualization().provideDrawArea(this, g);
+		Rectangle area = da.getBounds();
 		
-		drawArea(gp, area, e, gc);
+		drawArea(gp, area, g2d);
 		
-		Color c = SwtUtils.changeColor(null, ColorConverter.toRGB(gp.getGmmlData().getColor()), e.display);
-		gc.setForeground(c);
-		gc.drawRectangle(area);
+		Color c = gp.getGmmlData().getColor();
+		g2d.setColor(c);
+		g2d.draw(area);
 		
-		c.dispose();
-		region.dispose();
 	}
 	
 	/**
@@ -136,10 +133,9 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	 * (when no data is available).
 	 * @param gp The gene-product to visualize the data for
 	 * @param area The area in which to draw
-	 * @param e
-	 * @param gc
+	 * @param g2d The graphics context on which to draw
 	 */
-	void drawArea(GeneProduct gp, Rectangle area, PaintEvent e, GC gc) {
+	void drawArea(GeneProduct gp, Rectangle area, Graphics2D g2d) {
 		int nr = useSamples.size();
 		int left = area.width % nr; //Space left after dividing, give to last rectangle
 		int w = area.width / nr;
@@ -155,9 +151,9 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 			
 			if(s.getColorSet() == null) continue; //No colorset for this sample
 			if(cache.hasData(idc)) 
-				drawSample(s, idc, r, e, gc);
+				drawSample(s, idc, r, g2d);
 			else 
-				drawNoDataFound(s, area, e, gc);
+				drawNoDataFound(s, area, g2d);
 		}
 	}
 	
@@ -170,7 +166,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	 * @param e	{@link PaintEvent} containing information about the paint
 	 * @param gc Graphical context on which drawing operations can be performed
 	 */
-	abstract void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC gc);
+	abstract void drawNoDataFound(ConfiguredSample s, Rectangle area, Graphics2D g2d);
 	
 	/**
 	 * Implement this method to perform the drawing operation for a single sample when data is
@@ -183,7 +179,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	 * @param e	{@link PaintEvent} containing information about the paint
 	 * @param gc Graphical context on which drawing operations can be performed
 	 */
-	abstract void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, PaintEvent e, GC gc);
+	abstract void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, Graphics2D g2d);
 	
 	static final int SIDEPANEL_SPACING = 3;
 	static final int SIDEPANEL_MARGIN = 5;
@@ -199,7 +195,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	void drawSidePanel(PaintEvent e) {
 		if(spGraphics == null) return;
 		
-		Rectangle area = sidePanel.getClientArea();
+		org.eclipse.swt.graphics.Rectangle area = sidePanel.getClientArea();
 		area.x += SIDEPANEL_MARGIN;
 		area.y += SIDEPANEL_MARGIN;
 		area.width -= SIDEPANEL_MARGIN * 2;
@@ -255,7 +251,9 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 			e.gc.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
 			e.gc.drawText(gps[i].getGmmlData().getTextLabel(), area.x, y + h / 2 - e.gc.getFontMetrics().getHeight() / 2);
 			Rectangle r = new Rectangle(area.x + tw, y, area.width - tw, h - SIDEPANEL_SPACING);
-			drawArea(gps[i], r, e, e.gc);
+			SWTGraphics2D g2d = new SWTGraphics2D(e.gc, e.display);
+			drawArea(gps[i], r, g2d);
+			g2d.dispose();
 		}
 	}
 	
@@ -391,7 +389,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		//Draw labels for samplenames
 		//Draw vertical line to labels
 		
-		Rectangle r = c.getClientArea();
+		org.eclipse.swt.graphics.Rectangle r = c.getClientArea();
 		r.x += LEGEND_MARGIN;
 		r.y += LEGEND_MARGIN;
 		r.width -= 2*LEGEND_MARGIN;
@@ -403,7 +401,8 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 		
 		for(int i = 0; i < ns; i++) {
 			ConfiguredSample s = useSamples.get(i);
-			Rectangle area = new Rectangle(w * i, r.y, w, LEGEND_BOXHEIGHT);
+			org.eclipse.swt.graphics.Rectangle area = 
+				new org.eclipse.swt.graphics.Rectangle(w * i, r.y, w, LEGEND_BOXHEIGHT);
 			drawLegendSample(s, area, e, e.gc);
 			
 			Point ts = e.gc.textExtent(s.getName());
@@ -429,7 +428,7 @@ public abstract class PluginWithColoredSamples extends VisualizationPlugin {
 	 * @param e
 	 * @param gc
 	 */
-	protected void drawLegendSample(ConfiguredSample s, Rectangle area, PaintEvent e, GC gc) {
+	protected void drawLegendSample(ConfiguredSample s, org.eclipse.swt.graphics.Rectangle area, PaintEvent e, GC gc) {
 		e.gc.drawRectangle(area);
 	}
 	

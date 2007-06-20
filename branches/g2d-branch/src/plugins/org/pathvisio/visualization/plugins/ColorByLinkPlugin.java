@@ -16,22 +16,16 @@
 //
 package org.pathvisio.visualization.plugins;
 
-import org.pathvisio.view.Graphics;
-
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
-
-import org.pathvisio.visualization.Visualization;
-import org.pathvisio.visualization.plugins.VisualizationPlugin;
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.util.ColorConverter;
+import org.pathvisio.view.Graphics;
+import org.pathvisio.visualization.Visualization;
 
 /**
  * Colors drawing-objects according to their graphId / graphRef values
@@ -46,7 +40,7 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	static final int refMarkRadius = 12;
 	static final int refMarkAlpha = 128;
 	
-	HashMap<String, RGB> id2col;
+	HashMap<String, Color> id2col;
 	Random rnd;
 	
 	public ColorByLinkPlugin(Visualization v) {
@@ -55,7 +49,7 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 		setIsGeneric(true);
 		setIsConfigurable(false);
 		
-		id2col = new HashMap<String, RGB>();
+		id2col = new HashMap<String, Color>();
 		rnd = new Random();
 	}
 
@@ -64,61 +58,58 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 	
 	public void initSidePanel(Composite parent) { }
 
-	public void visualizeOnDrawing(Graphics g, PaintEvent e, GC buffer) {
+	public void visualizeOnDrawing(Graphics g, Graphics2D g2d) {
 		PathwayElement gd = g.getGmmlData();
 		String[] ids = parseIds(gd);
 		if(ids[0] != null) { //This is a shape
-			drawShape(ids[0], g, e, buffer);
+			drawShape(ids[0], g, g2d);
 			return;
 		}
 		if(ids[1] != null) {
-			drawLineStart(ids[1], g, e, buffer);
+			drawLineStart(ids[1], g, g2d);
 		}
 		if(ids[2] != null) {
-			drawLineEnd(ids[2], g, e, buffer);
+			drawLineEnd(ids[2], g, g2d);
 		}
 	}
 	
-	void drawLineStart(String id, Graphics g, PaintEvent e, GC buffer) {
+	void drawLineStart(String id, Graphics g, Graphics2D g2d) {
 		PathwayElement gd = g.getGmmlData();
 		drawRefMark( 
 				id,			
 				// TODO: this should be in visual coords
 				(int)gd.getMStartX() - refMarkRadius/2, 
 				(int)gd.getMStartY() - refMarkRadius/2,
-				e, buffer);
+				g2d);
 	}
 	
-	void drawLineEnd(String id, Graphics g, PaintEvent e, GC buffer) {
+	void drawLineEnd(String id, Graphics g, Graphics2D g2d) {
 		PathwayElement gd = g.getGmmlData();
 		drawRefMark( 
 				id,			
 				// TODO: this should be in visual coords
 				(int)gd.getMEndX() - refMarkRadius/2, 
 				(int)gd.getMEndY() - refMarkRadius/2,
-				e, buffer);
+				g2d);
 	}
 	
-	void drawRefMark(String id, int x, int y, PaintEvent e, GC buffer) {
-		int origAlpha = buffer.getAlpha();
-		Color c = new Color(e.display, getRGB(id));
-		buffer.setBackground(c);
-		buffer.setAlpha(refMarkAlpha);
-		buffer.fillOval(x, y, refMarkRadius, refMarkRadius);
-		buffer.setAlpha(origAlpha);
+	void drawRefMark(String id, int x, int y, Graphics2D g2d) {
+		Color c = getRGB(id);
+		g2d.setColor(c);
+		g2d.fillOval(x, y, refMarkRadius, refMarkRadius);
 	}
 	
-	void drawShape(String id, Graphics g, PaintEvent e, GC buffer) {
+	void drawShape(String id, Graphics g, Graphics2D g2d) {
 		PathwayElement gd = g.getGmmlData();
-		RGB oldRGB = ColorConverter.toRGB(gd.getColor());
+		Color oldRGB = gd.getColor();
 		gd.dontFireEvents(2);
-		gd.setColor(ColorConverter.fromRGB(getRGB(id)));
-		g.draw(e, buffer);
-		gd.setColor(ColorConverter.fromRGB(oldRGB));
+		gd.setColor(getRGB(id));
+		g.draw(g2d);
+		gd.setColor(oldRGB);
 	}
 	
-	RGB getRGB(String id) {
-		RGB rgb = id2col.get(id);
+	Color getRGB(String id) {
+		Color rgb = id2col.get(id);
 		if(rgb == null) {
 			rgb = randomRGB();
 			id2col.put(id, rgb);
@@ -126,10 +117,10 @@ public class ColorByLinkPlugin extends VisualizationPlugin {
 		return rgb;
 	}
 	
-	RGB randomRGB() {
+	Color randomRGB() {
 		int rgb = java.awt.Color.HSBtoRGB(rnd.nextFloat(), 1, 1);
-		java.awt.Color c = new java.awt.Color(rgb);
-		return new RGB(c.getRed(), c.getGreen(), c.getBlue());
+		Color c = new Color(rgb);
+		return new Color(c.getRed(), c.getGreen(), c.getBlue(), refMarkAlpha);
 	}
 	
 	String[] parseIds(PathwayElement gd) {

@@ -22,8 +22,10 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
+import java.text.AttributedString;
 
 import org.pathvisio.model.PathwayElement;
 
@@ -160,7 +162,15 @@ public class Label extends GraphicsShape
 		Rectangle area = getVOutline().getBounds();
 		
 		String label = gdata.getTextLabel();
-		TextLayout tl = new TextLayout(label, g.getFont(), g.getFontRenderContext());
+		AttributedString ats = new AttributedString(label);
+		if(gdata.isStrikethru()) {
+			ats.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
+		}
+		if(gdata.isUnderline()) {
+			ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+		}
+		
+		TextLayout tl = new TextLayout(ats.getIterator(), g.getFontRenderContext());
 		Rectangle2D tb = tl.getBounds();
 		tl.draw(g, 	area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2), 
 					area.y + (int)(area.height / 2) + (int)(tb.getHeight() / 2));		

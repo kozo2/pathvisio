@@ -16,6 +16,7 @@
 //
 package org.pathvisio.gui.swt;
 
+import java.awt.Color;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.graphics.DeviceData;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.pathvisio.Globals;
@@ -58,7 +58,7 @@ public abstract class Engine {
 	/**
 	 * the transparent color used in the icons for visualization of protein/mrna data
 	 */
-	public static final RGB TRANSPARENT_COLOR = new RGB(255, 0, 255);
+	public static final Color TRANSPARENT_COLOR = new Color(255, 0, 255);
 	
 	/**
 	 * {@link Pathway} object containing JDOM representation of the gpml pathway 

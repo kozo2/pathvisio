@@ -16,6 +16,7 @@
 //
 package org.pathvisio.visualization.plugins;
 
+import java.awt.Graphics2D;
 import java.util.Collection;
 
 import org.eclipse.jface.window.ApplicationWindow;
@@ -23,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
-
 import org.pathvisio.view.Graphics;
 import org.pathvisio.visualization.Visualization;
 import org.pathvisio.visualization.VisualizationManager;
@@ -85,6 +84,7 @@ public abstract class VisualizationPlugin implements Comparable {
 	 */
 	public abstract String getDescription();
 	
+	//TODO: Update javadoc
 	/**
 	 * Create a visualization on the pathway drawing for the given {@link Graphics} object.
 	 * This method will only be called when the plugin display options contains {@link VisualizationPlugin#DRAWING}.
@@ -94,7 +94,7 @@ public abstract class VisualizationPlugin implements Comparable {
 	 * @see <a href=http://www.eclipse.org/articles/Article-SWT-graphics/SWT_graphics.html>
 	 * Introduction in SWT graphics</a>
 	 */
-	public abstract void visualizeOnDrawing(Graphics g, PaintEvent e, GC gc);
+	public abstract void visualizeOnDrawing(Graphics g, Graphics2D g2d);
 	
 	/**
 	 * Create a visualization on the side panel for the given {@link Graphics} objects

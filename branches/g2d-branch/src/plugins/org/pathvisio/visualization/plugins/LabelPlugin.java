@@ -16,24 +16,24 @@
 //
 package org.pathvisio.visualization.plugins;
 
-import org.pathvisio.gui.Engine;
+import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.Graphics;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -62,7 +62,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	static final String DESCRIPTION = 
 		"This plugin shows a label with customizable font on Gene Products.\n" +
 		"The label text can be set to the Gene Product's ID or Symbol.";
-	static final FontData DEFAULT_FONTDATA = new FontData("Arial narrow", 10, SWT.NORMAL);
+	static final Font DEFAULT_FONT = new Font("Arial narrow", Font.PLAIN, 10);
 			
 	final static int STYLE_ID = 0;
 	final static int STYLE_SYMBOL = 1;
@@ -77,8 +77,8 @@ public class LabelPlugin extends VisualizationPlugin {
 	boolean adaptFontSize;
 	int align;
 	
-	FontData fontData;
-	RGB fontColor;
+	Font font;
+	Color fontColor;
 	
 	public LabelPlugin(Visualization v) {
 		super(v);		
@@ -121,12 +121,11 @@ public class LabelPlugin extends VisualizationPlugin {
 		labelSidePanel = new Label(comp, SWT.CENTER);
 	}
 
-	public void visualizeOnDrawing(Graphics g, PaintEvent e, GC buffer) {
+	public void visualizeOnDrawing(Graphics g, Graphics2D g2d) {
 		if(g instanceof GeneProduct) {
-			Font f = null;
-			Color fc = null;
+			Font f = getFont();
 			
-			Region region;
+			Shape region;
 			
 			if(isUseProvidedArea()) {
 				region = getVisualization().provideDrawArea(this, g);
@@ -137,46 +136,36 @@ public class LabelPlugin extends VisualizationPlugin {
 			Rectangle area = region.getBounds();
 			
 			if(!getOverlay()) {
-				buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
-				buffer.fillRectangle(area);
+				g2d.setColor(Color.WHITE);
+				g2d.fill(area);
 			}
-			buffer.setForeground(e.display.getSystemColor(SWT.COLOR_BLACK));
-			buffer.drawRectangle(area);
+			g2d.setColor(Color.BLACK);
+			g2d.draw(area);
 			
-			buffer.setClipping(region);
-			
-			f = SwtUtils.changeFont(f, getFontData(true), e.display);
-		
+			g2d.clip(region);
+					
 			String label = getLabelText((GeneProduct) g);
 			
 			if(adaptFontSize) {
-				f = SwtUtils.adjustFontSize(f, new Point(area.width, area.height), label, buffer, e.display);
-			} else {
-				buffer.setFont(f);
-			}
+				//TODO: adapt font size for awt
+				//f = SwtUtils.adjustFontSize(f, new Dimension(area.width, area.height), label, g2d);
+			}	
+			g2d.setFont(f);
 			
-			fc = SwtUtils.changeColor(fc, getFontColor(), e.display);
-			buffer.setForeground(fc);
+			g2d.setColor(getFontColor());
 			
-			Point textSize = buffer.textExtent (label);
+			Rectangle2D textSize = g2d.getFontMetrics().getStringBounds(label, g2d);
 			
 			switch(align) {
 			case ALIGN_RIGHT: 
-				area.x += area.width - textSize.x;
+				area.x += area.width - textSize.getWidth();
 				break;
 			case ALIGN_CENTER:
-				area.x += (int)(area.width / 2) - (int)(textSize.x / 2);
+				area.x += (int)(area.width / 2) - (int)(textSize.getWidth()/ 2);
 			}
-			buffer.drawString (label, 
+			g2d.drawString (label, 
 					area.x,
-					area.y + (int)(area.height / 2) - (int)(textSize.y / 2), true);
-			
-			Region none = null;
-			buffer.setClipping(none);
-						
-			if(f != null) f.dispose();
-			if(region != null) region.dispose();
-			if(fc != null) fc.dispose();
+					area.y + (int)(area.height / 2) - (int)(textSize.getHeight()/ 2));
 		}
 	}
 	
@@ -185,37 +174,37 @@ public class LabelPlugin extends VisualizationPlugin {
 		fireModifiedEvent();
 	}
 	
-	void setFontData(FontData fd) {
-		if(fd != null) {
-			fontData = fd;
+	void setFont(Font f) {
+		if(f != null) {
+			font = f;
 			fireModifiedEvent();
 		}
 	}
 	
-	void setFontColor(RGB fc) {
+	void setFontColor(Color fc) {
 		fontColor = fc;
 		fireModifiedEvent();
 	}
 	
-	RGB getFontColor() { 
-		return fontColor == null ? new RGB(0,0,0) : fontColor;
+	Color getFontColor() { 
+		return fontColor == null ? Color.BLACK : fontColor;
 	}
 	
 	int getFontSize() {
-		return getFontData().getHeight();
+		return getFont().getSize();
 	}
 	
-	FontData getFontData() {
-		return getFontData(false);
+	Font getFont() {
+		return getFont(false);
 	}
 	
-	FontData getFontData(boolean adjustZoom) {
-		FontData fd = fontData == null ? DEFAULT_FONTDATA : fontData;
+	Font getFont(boolean adjustZoom) {
+		Font f = font == null ? DEFAULT_FONT : font;
 		if(adjustZoom) {
-			fd = new FontData(fd.getName(), fd.getHeight(), fd.getStyle());
-			fd.setHeight((int)Math.ceil(Engine.getVPathway().vFromM(fd.getHeight()) * 15)); //TODO: get rid of 15
+			int fs = (int)Math.ceil(Engine.getVPathway().vFromM(f.getSize()) * 15);
+			f = new Font(f.getName(), f.getStyle(), f.getSize());
 		}
-		return fd;
+		return f;
 	}
 	
 	public Composite visualizeOnToolTip(Composite parent, Graphics g) {
@@ -275,10 +264,10 @@ public class LabelPlugin extends VisualizationPlugin {
 		font.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				FontDialog fd = new FontDialog(font.getShell());
-				fd.setRGB(getFontColor());
-				fd.setFontList(new FontData[] { getFontData() });
-				setFontData(fd.open());
-				setFontColor(fd.getRGB());
+				fd.setRGB(SwtUtils.color2rgb(getFontColor()));
+				fd.setFontList(new FontData[] { SwtUtils.awtFont2FontData(getFont()) });
+				setFont(SwtUtils.fontData2awtFont(fd.open()));
+				setFontColor(SwtUtils.rgb2color(fd.getRGB()));
 			}
 		});
 		final Button adapt = new Button(fontSizeComp, SWT.CHECK);
@@ -339,7 +328,15 @@ public class LabelPlugin extends VisualizationPlugin {
 		Element elm = super.toXML();
 		elm.setAttribute(XML_ATTR_STYLE, Integer.toString(style));
 		elm.setAttribute(XML_ATTR_ADAPT_FONT, Boolean.toString(adaptFontSize));
-		elm.setAttribute(XML_ATTR_FONTDATA, getFontData().toString());
+		
+		Font f = getFont();
+		String style = "PLAIN";
+		if(f.isBold() && f.isItalic()) style = "BOLDITALIC";
+		else if (f.isBold()) style = "BOLD";
+		else if (f.isItalic()) style = "ITALIC";
+		String fs = f.getName() + "-" + style + "-" + f.getSize(); 
+		elm.setAttribute(XML_ATTR_FONTDATA, fs);
+		
 		elm.addContent(ColorConverter.createColorElement(XML_ELM_FONTCOLOR, getFontColor()));
 		elm.setAttribute(XML_ATTR_OVERLAY, Boolean.toString(getOverlay()));
 		elm.setAttribute(XML_ATTR_ALIGN, Integer.toString(getAlignment()));
@@ -358,7 +355,7 @@ public class LabelPlugin extends VisualizationPlugin {
 		try {
 			if(styleStr != null) setStyle(Integer.parseInt(styleStr));
 			if(adaptStr != null) adaptFontSize = Boolean.parseBoolean(adaptStr);
-			if(fontStr != null) fontData = new FontData(fontStr);
+			if(fontStr != null) font = Font.decode(fontStr);
 			if(ovrStr != null) setOverlay(Boolean.parseBoolean(ovrStr));
 			if(fcElm != null) fontColor = ColorConverter.parseColorElement(fcElm);
 			if(alnStr != null) align = Integer.parseInt(alnStr);

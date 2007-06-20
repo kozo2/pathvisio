@@ -16,6 +16,9 @@
 //
 package org.pathvisio.visualization;
 
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,12 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -38,17 +37,16 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
-
-import org.pathvisio.util.Utils;
-import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
-import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
-import org.pathvisio.visualization.plugins.PluginManager;
-import org.pathvisio.visualization.plugins.VisualizationPlugin;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gex.ExpressionDataEvent;
 import org.pathvisio.data.Gex.ExpressionDataListener;
 import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.util.Utils;
 import org.pathvisio.view.Graphics;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
+import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
+import org.pathvisio.visualization.plugins.PluginManager;
+import org.pathvisio.visualization.plugins.VisualizationPlugin;
 
 /**
  * Represents a set of configured visualization plugins
@@ -179,14 +177,13 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 	
 	/**
 	 * Draw this visualization to the pathway drawing for the given {@link Graphics} object.
-	 * @see VisualizationPlugin#visualizeOnDrawing(Graphics, PaintEvent, GC)
+	 * @see VisualizationPlugin#visualizeOnDrawing(Graphics, Graphics2D)
 	 * @param g	The {@link Graphics} object the visualization applies to
-	 * @param e	{@link PaintEvent} containing information about the paint
-	 * @param gc Graphical context on which drawing operations can be performed
+	 * @param g2d Graphical context on which drawing operations can be performed
 	 */
-	public void visualizeDrawing(Graphics g, PaintEvent e, GC gc) {
+	public void visualizeDrawing(Graphics g, Graphics2D g2d) {
 		for(PluginSet pr : getPluginSetsDrawingOrder()) {
-			if(pr.isDrawing()) pr.getDrawingPlugin().visualizeOnDrawing(g, e, gc);
+			if(pr.isDrawing()) pr.getDrawingPlugin().visualizeOnDrawing(g, g2d);
 		}
 	}
 	
@@ -195,10 +192,10 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 	 * when {@link VisualizationPlugin#isUseProvidedArea()})
 	 * @param p the VisualizationPlugin to provide the area for
 	 * @param g the Graphics on which the area is created
-	 * @return An {@link Region} object that contains the area in which the
+	 * @return A {@link Shape} object that contains the area in which the
 	 * VisualizationPlugin can draw its visualization
 	 */
-	public Region provideDrawArea(VisualizationPlugin p, Graphics g) {
+	public Shape provideDrawArea(VisualizationPlugin p, Graphics g) {
 		if(!p.isUseProvidedArea()) 
 			throw new IllegalArgumentException("useProvidedArea set to false for this plug-in");
 		
@@ -210,9 +207,9 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 			nrRes += (pr.getDrawingPlugin().isActive() && pr.getDrawingPlugin().isUseProvidedArea()) ? 1 : 0;
 		}
 		
-		Region region = g.createVisualizationRegion();
+		Shape shape = g.createVisualizationRegion();
 		//Distribute space over plugins
-		Rectangle bounds = region.getBounds();
+		Rectangle bounds = shape.getBounds();
 		
 		//Adjust width so we can divide into equal rectangles
 		bounds.width += bounds.width % nrRes;
@@ -221,8 +218,8 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 		bounds.width = w;
 		
 		
-		region.intersect(bounds);
-		return region;
+		shape.intersects(bounds);
+		return shape;
 	}
 	
 	/**

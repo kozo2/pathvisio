@@ -80,6 +80,7 @@ public class SwtUtils {
 	public static java.awt.Color rgb2color(RGB rgb) {
 		return new java.awt.Color(rgb.red, rgb.green, rgb.blue);
 	}
+	
 	/**
 	 * Change the given {@link Color}; this method disposes the old color for you
 	 * @param cOld	the old {@link Color}
@@ -200,6 +201,20 @@ public class SwtUtils {
 		//System.err.println("pix: " + pix);
 		//System.err.println("point: " + (double)pix/pixratio);
 		return pix / pixratio; 
+	}
+	
+	public static FontData awtFont2FontData(java.awt.Font f) {
+		int style = SWT.NORMAL;
+		if(f.isBold()) style |= SWT.BOLD;
+		if(f.isItalic()) style |= SWT.ITALIC;
+		return new FontData(f.getName(), f.getSize(), style);
+	}
+	
+	public static java.awt.Font fontData2awtFont(FontData fd) {
+		int style = java.awt.Font.PLAIN;
+		if((fd.style & SWT.BOLD) != 0) style |= java.awt.Font.BOLD;
+		if((fd.style & SWT.ITALIC) != 0) style |= java.awt.Font.ITALIC;
+		return new java.awt.Font(fd.getName(), fd.getHeight(), style);		
 	}
 	
 	static Font setFontSize(int size, Font f, GC gc, Display display) {

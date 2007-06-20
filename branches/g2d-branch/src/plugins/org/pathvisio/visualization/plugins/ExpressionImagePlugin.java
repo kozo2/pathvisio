@@ -16,9 +16,12 @@
 //
 package org.pathvisio.visualization.plugins;
 
-import org.pathvisio.gui.Engine;
-import org.pathvisio.view.Graphics;
-
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +29,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -41,17 +43,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -64,15 +61,16 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.jdom.Element;
-
-import org.pathvisio.util.ColorConverter;
-import org.pathvisio.util.SwtUtils;
-import org.pathvisio.visualization.Visualization;
-import org.pathvisio.visualization.colorset.ColorSet;
 import org.pathvisio.data.CachedData;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
+import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.util.ColorConverter;
+import org.pathvisio.util.SwtUtils;
+import org.pathvisio.view.Graphics;
+import org.pathvisio.visualization.Visualization;
+import org.pathvisio.visualization.colorset.ColorSet;
 
 public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	static final String NAME = "Colored image";
@@ -80,7 +78,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		"This plugin displays one or more images on Gene Product objects and \n" +
 		"colors the image(s) accoring to the expression value for the Gene Product.";
 		
-	static final RGB DEFAULT_TRANSPARENT = Engine.TRANSPARENT_COLOR;
+	static final Color DEFAULT_TRANSPARENT = Engine.TRANSPARENT_COLOR;
 		
 	List<URL> imageURLs;
 	
@@ -114,48 +112,44 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		if(url.getProtocol().equals("file")) imageURLs.remove(url);
 	}
 	
-	protected void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, PaintEvent e, GC gc) {
+	protected void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, Graphics2D g2d) {
 		CachedData cache = Gex.getCachedData();
 		ColorSet cs = s.getColorSet();
 
-		RGB rgb = cs.getColor(cache.getAverageSampleData(idc), s.getId());
+		Color rgb = cs.getColor(cache.getAverageSampleData(idc), s.getId());
 		
-		drawImage((ImageSample)s, rgb, area, e, gc);
+		drawImage((ImageSample)s, rgb, area, g2d);
 	}
 	
-	protected void drawLegendSample(ConfiguredSample s, Rectangle area, PaintEvent e, GC gc) {
-		drawImage((ImageSample)s, new RGB(255, 255, 255), area, e, gc);
-		e.gc.drawRectangle(area);
+	protected void drawLegendSample(ConfiguredSample s, Rectangle area, Graphics2D g2d) {
+		drawImage((ImageSample)s, Color.WHITE, area, g2d);
+		g2d.draw(area);
 	}
 	
-	void drawImage(ImageSample is, RGB rgb, Rectangle area, PaintEvent e, GC gc) {
-		ImageData id = is.getImageData(rgb);
-		if(id != null) {
-			Image image = new Image(e.display, id);
-			Point scaleTo = is.getScaleSize(new Point(area.width, area.height));
+	void drawImage(ImageSample is, Color rgb, Rectangle area, Graphics2D g2d) {
+		Image img = is.getImage(rgb);
+		if(img != null) {
+			Dimension scaleTo = is.getScaleSize(new Dimension(area.width, area.height));
 
 			drawBackground(area, gc, e);
 
 			Rectangle ib = image.getBounds();
-			int xs = area.width - scaleTo.x;
-			int ys = area.height - scaleTo.y;
-			gc.drawImage(image, ib.x, ib.y, ib.width, ib.height, 
-					area.x + xs / 2, area.y + ys / 2, scaleTo.x, scaleTo.y);
-			image.dispose();
+			int xs = area.width - scaleTo.width;
+			int ys = area.height - scaleTo.height;
+			g2d.drawImage(image, ib.x, ib.y, ib.width, ib.height, 
+					area.x + xs / 2, area.y + ys / 2, scaleTo.height, scaleTo.width);
 		}
 	}
 		
-	void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC buffer) {
+	void drawNoDataFound(ConfiguredSample s, Rectangle area, Graphics2D g2d) {
 		Color c = new Color(e.display, s.getColorSet().getColor(ColorSet.ID_COLOR_NO_DATA_FOUND));
-		buffer.setBackground(c);
-		buffer.fillRectangle(area);
-		c.dispose();
+		g2d.setColor(s.getColorSet().getColor(ColorSet.ID_COLOR_NO_DATA_FOUND));
+		g2d.fill(area);
 	}
 	
-	void drawBackground(Rectangle area, GC buffer, PaintEvent e) {
-		buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
-		buffer.fillRectangle(area);
-		
+	void drawBackground(Rectangle area, Graphics2D g2d) {
+		g2d.setColor(Color.WHITE);
+		g2d.fill(area);
 	}
 	
 	final static String XML_ELM_URL = "image";
@@ -197,8 +191,8 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	protected class ImageConfigComposite extends SampleConfigComposite {		
 		ListViewer imageList;
 		CLabel colorLabel, imageLabel;
-		Color replaceColor;
-		Image image;
+		org.eclipse.swt.graphics.Color replaceColor;
+		org.eclipse.swt.graphics.Image image;
 		Button aspectButton;
 		Spinner spinner;
 		
@@ -418,9 +412,9 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	}
 	
 	protected class ImageSample extends ConfiguredSample {
-		ImageData cacheImageData;
+		Image cacheImage;
 		URL imageURL;
-		RGB replaceColor = DEFAULT_TRANSPARENT;
+		Color replaceColor = DEFAULT_TRANSPARENT;
 		int tolerance; //range 0 - 255;
 		boolean aspectRatio = true;
 		
@@ -438,7 +432,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		
 		public void setURL(URL url) { 
 			imageURL = url;
-			cacheImageData = null;
+			cacheImage = null;
 			fireModifiedEvent();
 		}
 		
@@ -446,11 +440,11 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 			return imageURL == null ? imageURL = imageURLs.get(0) : imageURL; 
 		}
 		
-		public void setReplaceColor(RGB rgb) { 
+		public void setReplaceColor(Color rgb) { 
 			if(rgb != null) replaceColor = rgb;
 			fireModifiedEvent();
 		}
-		public RGB getReplaceColor() { return replaceColor; }
+		public Color getReplaceColor() { return replaceColor; }
 		public void setMaintainAspect(boolean maintain) { 
 			aspectRatio = maintain;
 			fireModifiedEvent();
@@ -464,11 +458,11 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		
 		public ImageData getImageData() {
 			if(imageURL == null) return null;
-			if(cacheImageData == null) {
+			if(cacheImage == null) {
 				InputStream in = getInputStream(imageURL);
-				cacheImageData = new ImageData(in);
+				cacheImage = Toolkit.getDefaultToolkit().getImage(imageURL);
 			}
-			return (ImageData)cacheImageData.clone();
+			return cacheImage.clone();
 		}
 		
 		public ImageData getImageData(Point size) {
@@ -584,17 +578,4 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	}
 	
 	public Composite visualizeOnToolTip(Composite parent, Graphics g) { return null; }
-
-	@Override
-	public void visualizeOnDrawing(Graphics g, PaintEvent e, GC gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visualizeOnSidePanel(Collection<Graphics> objects) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

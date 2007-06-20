@@ -45,8 +45,8 @@ import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 import org.pathvisio.data.Gex;
 
 public abstract class PluginManager {
-	static final String PLUGIN_PKG = "visualization.plugins";
-	static final String PKG_DIR = PLUGIN_PKG.replace('.', '/');
+	//static final String PLUGIN_PKG = "org.pathvisio.visualization.plugins";
+	//static final String PKG_DIR = PLUGIN_PKG.replace('.', '/');
 	static final String FILE_ADD_PLUGINS = "visplugins.xml";
 	static final String XML_ELEMENT = "additional-plugins";
 	static final String XML_ELM_PLUGIN = "plugin";
@@ -118,7 +118,7 @@ public abstract class PluginManager {
 	public static void loadPlugins() throws Throwable {	
 		Engine.log.trace("> Loading visualization plugins");
 		Enumeration<URL> resources = 
-			Engine.class.getClassLoader().getResources(PLUGIN_PKG.replace('.', '/'));
+			Engine.class.getClassLoader().getResources(".");
         while (resources.hasMoreElements()) {
         	URL url = resources.nextElement();
         	Engine.log.trace("visualization.plugins package found in: " + url);
@@ -246,12 +246,24 @@ public abstract class PluginManager {
 		Engine.log.trace("\tLoading from directory " + url);
 		File directory = new File(URLDecoder.decode(url.getPath(), "UTF-8"));
 		if (directory.exists()) {
-            String[] files = directory.list(classFilter);
-            for (String file : files)
-            	addPlugin(Class.forName(PLUGIN_PKG + '.' + removeClassExt(file)));
+           processFile(directory, directory.toString());
         }
 	}
 	
+	static private void processFile(File f, String base) throws Throwable {
+		if(f.isDirectory()) {
+			File[] files = f.listFiles();
+            for (File file : files)
+            	processFile(file, base);
+		} else {
+			if(f.toString().endsWith(".class")) {
+				String cn = f.toString().substring(base.length() + 1);
+				cn = cn.replace('/', '.').replace('$', '.');
+				System.out.println(cn);
+				addPlugin(Class.forName(removeClassExt(cn)));
+			}
+		}
+	}
 	static void loadFromJar(URL url) throws Throwable {
 		Engine.log.trace("\tLoading from jar connection " + url);
 		JarFile f = null;
@@ -272,7 +284,7 @@ public abstract class PluginManager {
 			ZipEntry entry = (ZipEntry)e.nextElement();
 			Engine.log.trace("Checking " + entry);
 			String entryname = entry.getName();
-			if(entryname.startsWith(PKG_DIR) && entryname.endsWith(".class")) {
+			if(entryname.endsWith(".class")) {
 				try {
 					String cn = removeClassExt(entryname.replace('/', '.').replace('$', '.'));
 					Class pluginClass = Class.forName(cn);

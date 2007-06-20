@@ -18,8 +18,8 @@ package org.pathvisio.view;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Shape;
 
-import org.eclipse.swt.graphics.Region;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
@@ -72,11 +72,8 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 		if(listen) markDirty(); // mark everything dirty
 	}
 	
-	public Region createVisualizationRegion() {
-		Region region = new Region();
-		java.awt.Rectangle r = getVBounds();
-		region.add(r.x, r.y, r.width, r.height);
-		return region;
+	public Shape createVisualizationRegion() {
+		return getVBounds();
 	}
 	
 	

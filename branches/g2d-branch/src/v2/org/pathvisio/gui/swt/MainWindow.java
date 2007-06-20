@@ -14,11 +14,12 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.gui;
+package org.pathvisio.gui.swt;
 
 import java.io.File;
 import java.net.URL;
 import java.util.Vector;
+import java.util.prefs.Preferences;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -43,6 +44,7 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -60,12 +62,14 @@ import org.pathvisio.data.Gex;
 import org.pathvisio.data.GexImportWizard;
 import org.pathvisio.data.Gex.ExpressionDataEvent;
 import org.pathvisio.data.Gex.ExpressionDataListener;
-import org.pathvisio.gui.Engine.ApplicationEvent;
-import org.pathvisio.gui.Engine.ApplicationEventListener;
-import org.pathvisio.preferences.Preferences;
+import org.pathvisio.gui.swt.Engine.ApplicationEvent;
+import org.pathvisio.gui.swt.Engine.ApplicationEventListener;
+import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.VPathway;
+import org.pathvisio.view.swt.VPathwaySWT;
 import org.pathvisio.visualization.LegendPanel;
 import org.pathvisio.visualization.VisualizationDialog;
 import org.pathvisio.visualization.VisualizationManager;
@@ -248,7 +252,7 @@ public class MainWindow extends ApplicationWindow implements
 				if(dbName == null) return;
 				
 				Gdb.connect(dbName);
-				setStatus("Using Gene Database: '" + Engine.getPreferences().getString(Preferences.PREF_CURR_GDB) + "'");
+				setStatus("Using Gene Database: '" + SwtPreference.SWT_DIR_GDB.getValue() + "'");
 				cacheExpressionData();
 			} catch(Exception e) {
 				String msg = "Failed to open Gene Database; " + e.getMessage();
@@ -642,7 +646,7 @@ public class MainWindow extends ApplicationWindow implements
 		
 		public void run() {
 			FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
-			fd.setFilterPath(Engine.getPreferences().getString(Preferences.PREF_DIR_RDATA));
+			fd.setFilterPath(SwtPreference.SWT_DIR_RDATA.getValue());
 			fd.setFilterNames(new String[] {"R data file"});
 			fd.setFilterExtensions(new String[] {"*.*"});
 			File file = new File(fd.open());
@@ -1018,14 +1022,14 @@ public class MainWindow extends ApplicationWindow implements
 		rightPanel.addTab(legend, "Legend");
 		rightPanel.addTab(visPanel, "Visualization");
 		
-		int sidePanelSize = Engine.getPreferences().getInt(Preferences.PREF_SIDEPANEL_SIZE);
+		int sidePanelSize = GlobalPreference.getValueInt(SwtPreference.SWT_SIDEPANEL_SIZE);
 		sashForm.setWeights(new int[] {100 - sidePanelSize, sidePanelSize});
 		showRightPanelAction.setChecked(sidePanelSize > 0);
 		
 		rightPanel.getTabFolder().setSelection(0); //select backpage browser tab
 		rightPanel.hideTab("Legend"); //hide legend on startup
 		
-		setStatus("Using Gene Database: '" + Engine.getPreferences().getString(Preferences.PREF_CURR_GDB) + "'");
+		setStatus("Using Gene Database: '" + SwtPreference.SWT_CURR_GDB + "'");
 				
 		return parent;
 		
@@ -1051,7 +1055,10 @@ public class MainWindow extends ApplicationWindow implements
 	 */
 	public VPathway createNewDrawing()
 	{		
-		return new VPathway(sc, SWT.NO_BACKGROUND);
+		VPathwaySWT pswt = new VPathwaySWT(sc, SWT.NO_BACKGROUND);
+		VPathway p = new VPathway(pswt);
+		pswt.setChild(p);
+		return p;
 	}
 	
 	public void applicationEvent(ApplicationEvent e) {
@@ -1059,11 +1066,11 @@ public class MainWindow extends ApplicationWindow implements
 		switch(e.type) {
 		case ApplicationEvent.NEW_PATHWAY:
 			drawing = Engine.getVPathway();
-			sc.setContent(drawing);
+			sc.setContent((Canvas)drawing.getWrapper());
 			break;
 		case ApplicationEvent.OPEN_PATHWAY:
 			drawing = Engine.getVPathway();
-			sc.setContent(drawing);
+			sc.setContent((Canvas)drawing.getWrapper());
 			if(Gex.isConnected()) cacheExpressionData();
 			break;	
 		}

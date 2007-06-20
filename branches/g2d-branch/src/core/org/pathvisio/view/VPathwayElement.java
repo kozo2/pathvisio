@@ -36,7 +36,7 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	
 	private boolean isSelected;
 		
-	protected final void draw(Graphics2D g2d) {
+	public final void draw(Graphics2D g2d) {
 		//Create a copy to ensure that the state of this Graphics2D will be intact
 		//see: http://java.sun.com/docs/books/tutorial/uiswing/painting/concepts2.html
 		

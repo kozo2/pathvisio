@@ -16,10 +16,11 @@
 //
 package org.pathvisio.visualization.plugins;
 
-import org.pathvisio.gui.Engine;
-import org.pathvisio.view.GeneProduct;
-import org.pathvisio.view.Graphics;
-
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -35,13 +36,9 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,15 +50,17 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.jdom.Element;
-
-import org.pathvisio.util.SwtUtils;
-import org.pathvisio.visualization.Visualization;
 import org.pathvisio.data.CachedData;
+import org.pathvisio.data.DataSources;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.CachedData.Data;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
-import org.pathvisio.model.PathwayElement;
+import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.util.SwtUtils;
+import org.pathvisio.view.GeneProduct;
+import org.pathvisio.view.Graphics;
+import org.pathvisio.visualization.Visualization;
 
 /**
  * Provides label for Gene Product
@@ -73,13 +72,13 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 	static final String DESCRIPTION = 
 		"This plugin displays expression data for a given set of samples as text";
 	
-	static final FontData DEFAULT_FONTDATA = new FontData("Arial narrow", 10, SWT.NORMAL);
+	static final Font DEFAULT_FONT = new Font("Arial narrow", Font.PLAIN, 10);
 			
 	final static String SEP = ", ";	
 	int roundTo = 2;
 	boolean mean = false;
 			
-	FontData fontData;
+	Font font;
 	Set<Sample> useSamples = new LinkedHashSet<Sample>();
 	
 	public ExpressionAsTextPlugin(Visualization v) {
@@ -94,34 +93,37 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 	public String getDescription() { return DESCRIPTION; }
 	
 	static final int SPACING = 3;
-	public void visualizeOnDrawing(Graphics g, PaintEvent e, GC buffer) {
+	public void visualizeOnDrawing(Graphics g, Graphics2D g2d) {
 		if(g instanceof GeneProduct) {
 			GeneProduct gp = (GeneProduct) g;
 			CachedData  cache = Gex.getCachedData();
 			
-			IdCodePair idc = new IdCodePair(gp.getID(), gp.getSystemCode());
+			String id = gp.getGmmlData().getXref();
+			String db = DataSources.sysName2Code.get(gp.getGmmlData().getDataSource());
+			IdCodePair idc = new IdCodePair(id, db);
 			
 			if(cache == null || !cache.hasData(idc)|| useSamples.size() == 0) {
 				return;
 			}
-						
-			Font f = new Font(e.display, getFontData(true));
-			
+									
 			int startx = (int)(g.getVLeft() + g.getVWidth() + SPACING);
 			int starty = (int)(g.getVTop() + g.getVHeight() / 2);
 			
-
-			buffer.setFont(f);
+			Font f = getFont(true);
+			g2d.setFont(f);
+			
 			int w = 0, i = 0;
 			for(Sample s : useSamples) {
 				String str = getDataString(s, idc, cache, SEP + "\n") + 
 				(++i == useSamples.size() ? "" : SEP);
-				Point size = buffer.textExtent(str);
-				buffer.drawText(str, startx + w, starty - size.y / 2, true);
-				w += size.x;
-			}
 				
-			f.dispose();
+				TextLayout tl = new TextLayout(str, f, g2d.getFontRenderContext());
+				Rectangle2D tb = tl.getBounds();
+				Dimension size = new Dimension((int)tb.getHeight(), (int)tb.getWidth());
+
+				g2d.drawString(str, startx + w, starty - size.height / 2);
+				w += size.width;
+			}
 		}
 	}
 	
@@ -213,28 +215,36 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 		return data;
 	}
 	
-	void setFontData(FontData fd) {
-		if(fd != null) {
-			fontData = fd;
+	void setFont(Font f) {
+		if(f != null) {
+			font = f;
 			fireModifiedEvent();
 		}
 	}
 	
-	int getFontSize() {
-		return getFontData().getHeight();
+//	int getFontSize() {
+//		return getFont().getSize()
+//	}
+	
+	Font getFont() {
+		return getFont(false);
+	}
+	
+	Font getFont(boolean adjustZoom) {
+		Font f = font == null ? DEFAULT_FONT : font;
+		if(adjustZoom) {
+			int size = (int)Math.ceil(Engine.getVPathway().vFromM(f.getSize()) * 15);
+			f = new Font(f.getName(), size, f.getStyle());
+		}
+		return f;
 	}
 	
 	FontData getFontData() {
-		return getFontData(false);
+		return SwtUtils.awtFont2FontData(getFont());
 	}
 	
-	FontData getFontData(boolean adjustZoom) {
-		FontData fd = fontData == null ? DEFAULT_FONTDATA : fontData;
-		if(adjustZoom) {
-			fd = new FontData(fd.getName(), fd.getHeight(), fd.getStyle());
-			fd.setHeight((int)Math.ceil(Engine.getVPathway().vFromM(fd.getHeight()) * 15));//TODO: get rid of 15
-		}
-		return fd;
+	void setFontData(FontData fd) {
+		setFont(SwtUtils.fontData2awtFont(fd));
 	}
 	
 	void addUseSample(Sample s) {
@@ -412,7 +422,7 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 			} catch(Exception e) { Engine.log.error("Unable to add sample", e); }
 		}
 		roundTo = Integer.parseInt(xml.getAttributeValue(XML_ATTR_ROUND));
-		fontData = new FontData(xml.getAttributeValue(XML_ATTR_FONTDATA));
+		setFontData(new FontData(xml.getAttributeValue(XML_ATTR_FONTDATA)));
 		mean = Boolean.parseBoolean(xml.getAttributeValue(XML_ATTR_AVG));
 	}
 }

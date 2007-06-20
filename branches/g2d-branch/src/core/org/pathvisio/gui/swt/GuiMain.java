@@ -32,8 +32,8 @@ import org.pathvisio.model.Pathway;
 import org.pathvisio.model.SvgFormat;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.Preference;
-import org.pathvisio.preferences.swt.SwtPreferences;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
+import org.pathvisio.util.SwtUtils;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.plugins.PluginManager;
 
@@ -166,11 +166,11 @@ public class GuiMain {
 		
 		// Labels for color by expressiondata (mRNA and Protein)
 		ImageData img = new ImageData(cl.getResourceAsStream("images/mRNA.bmp"));
-		img.transparentPixel = img.palette.getPixel(Engine.TRANSPARENT_COLOR);
+		img.transparentPixel = img.palette.getPixel(SwtUtils.color2rgb(Engine.TRANSPARENT_COLOR));
 		imageRegistry.put("data.mRNA",
 				new Image(display, img));
 		img = new ImageData(cl.getResourceAsStream("images/protein.bmp"));
-		img.transparentPixel = img.palette.getPixel(Engine.TRANSPARENT_COLOR);
+		img.transparentPixel = img.palette.getPixel(SwtUtils.color2rgb(Engine.TRANSPARENT_COLOR));
 		imageRegistry.put("data.protein",
 				new Image(display, img));
 		imageRegistry.put("sidepanel.minimize",

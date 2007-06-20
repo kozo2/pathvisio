@@ -16,6 +16,9 @@
 //
 package org.pathvisio.visualization.plugins;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -23,14 +26,10 @@ import java.util.List;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -43,25 +42,24 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.jdom.Element;
-
-import org.pathvisio.gui.Engine;
-import org.pathvisio.view.Graphics;
-import org.pathvisio.util.ColorConverter;
-import org.pathvisio.util.SwtUtils;
-import org.pathvisio.visualization.Visualization;
-import org.pathvisio.visualization.colorset.ColorSet;
 import org.pathvisio.data.CachedData;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.CachedData.Data;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
+import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.util.ColorConverter;
+import org.pathvisio.util.SwtUtils;
+import org.pathvisio.view.Graphics;
+import org.pathvisio.visualization.Visualization;
+import org.pathvisio.visualization.colorset.ColorSet;
 
 public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	final String NAME = "Color by expression";
 	static final String DESCRIPTION = 
 		"This plugin colors gene product objects in the pathway by their expression data.";
 			
-	RGB lineColor;
+	Color lineColor;
 	boolean drawLine = false;
 	
 	public ExpressionColorPlugin(Visualization v) {
@@ -72,80 +70,71 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	public String getName() { return NAME; }
 	public String getDescription() { return DESCRIPTION; }
 		
-	void drawNoDataFound(ConfiguredSample s, Rectangle area, PaintEvent e, GC buffer) {
+	void drawNoDataFound(ConfiguredSample s, Rectangle area, Graphics2D g2d) {
 		ColorSet cs = s.getColorSet();
-		drawColoredRectangle(area, cs.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND), e, buffer);
+		drawColoredRectangle(area, cs.getColor(ColorSet.ID_COLOR_NO_DATA_FOUND), g2d);
 	}
 
-	protected void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, PaintEvent e, GC buffer) {
+	protected void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, Graphics2D g2d) {
 		ColorSample smp = (ColorSample)s;
 		CachedData cache = Gex.getCachedData();
 		
 		if(cache.hasMultipleData(idc)) {
 			switch(smp.getAmbigiousType()) {
 			case ColorSample.AMBIGIOUS_AVG:
-				drawSampleAvg(smp, idc, cache, area, e, buffer);
+				drawSampleAvg(smp, idc, cache, area, g2d);
 				break;
 			case ColorSample.AMBIGIOUS_BARS:
-				drawSampleBar(smp, idc, cache, area, e, buffer);
+				drawSampleBar(smp, idc, cache, area, g2d);
 				break;
 			}
 		} else {
 			ColorSet cs = smp.getColorSet();
 			HashMap<Integer, Object> data = cache.getSingleData(idc).getSampleData();
-			RGB rgb = cs.getColor(data, smp.getId());
-			drawColoredRectangle(area, rgb, e, buffer);
+			Color rgb = cs.getColor(data, smp.getId());
+			drawColoredRectangle(area, rgb, g2d);
 		}
 	}
 
-	void drawSampleAvg(ConfiguredSample s, IdCodePair idc, CachedData cache, Rectangle area, PaintEvent e, GC buffer) {
+	void drawSampleAvg(ConfiguredSample s, IdCodePair idc, CachedData cache, Rectangle area, Graphics2D g2d) {
 		ColorSet cs = s.getColorSet();
-		RGB rgb = cs.getColor(cache.getAverageSampleData(idc), s.getId());
-		drawColoredRectangle(area, rgb, e, buffer);
+		Color rgb = cs.getColor(cache.getAverageSampleData(idc), s.getId());
+		drawColoredRectangle(area, rgb, g2d);
 	}
 	
-	void drawSampleBar(ConfiguredSample s, IdCodePair idc, CachedData cache, Rectangle area, PaintEvent e, GC buffer) {
+	void drawSampleBar(ConfiguredSample s, IdCodePair idc, CachedData cache, Rectangle area, Graphics2D g2d) {
 		ColorSet cs = s.getColorSet();
 		List<Data> refdata = cache.getData(idc);
 		int n = refdata.size();
 		int left = area.height % n;
 		int h = area.height / n;
 		for(int i = 0; i < n; i++) {
-			RGB rgb = cs.getColor(refdata.get(i).getSampleData(), s.getId());
+			Color rgb = cs.getColor(refdata.get(i).getSampleData(), s.getId());
 			Rectangle r = new Rectangle(
 					area.x, area.y + i*h,
 					area.width, h + (i == n-1 ? left : 0));
-			drawColoredRectangle(r, rgb, e, buffer);
+			drawColoredRectangle(r, rgb, g2d);
 		}
 	}
 	
-	void drawColoredRectangle(Rectangle r, RGB rgb, PaintEvent e, GC buffer) {
-		Color c = null;
-		Color lc = null;
+	void drawColoredRectangle(Rectangle r, Color c, Graphics2D g2d) {			
+		g2d.setColor(c);
+		g2d.fill(r);
 		
-		c = SwtUtils.changeColor(c, rgb, e.display);
-		
-		buffer.setBackground(c);
-		
-		buffer.fillRectangle(r);
 		if(drawLine) {
-			lc = SwtUtils.changeColor(lc, getLineColor(), e.display);
-			buffer.setForeground(lc);
-			buffer.drawRectangle(r);
+			g2d.setColor(getLineColor());
+			g2d.draw(r);
 		}
-		
-		c.dispose();
-		if(lc != null) lc.dispose();
 	}
 	
-	void setLineColor(RGB rgb) {
+	void setLineColor(Color rgb) {
 		if(rgb != null)	{
 			lineColor = rgb;
 			fireModifiedEvent();
 		}
 	}
 	
-	RGB getLineColor() { return lineColor == null ? LINE_COLOR_DEFAULT : lineColor; }
+	Color getLineColor() { return lineColor == null ? LINE_COLOR_DEFAULT : lineColor; }
 	
 	void setDrawLine(boolean draw) {
 		drawLine = draw;
@@ -171,7 +160,7 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	
 	SampleConfigComposite sampleConfigComp;
 	Button checkLine;
-	Color labelColor;
+	org.eclipse.swt.graphics.Color labelColor;
 	Composite createOptionsComp(Composite parent) {
 		Group lineGroup = new Group(parent, SWT.NULL);
 		lineGroup.setLayout(new GridLayout());
@@ -202,7 +191,7 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 					if(rgb != null) {
 						labelColor = SwtUtils.changeColor(labelColor, rgb, e.display);
 						colorLabel.setBackground(labelColor);
-						setLineColor(rgb);
+						setLineColor(SwtUtils.rgb2color(rgb));
 					}
 				break;
 				case SWT.Dispose:
@@ -336,16 +325,4 @@ public class ExpressionColorPlugin extends PluginWithColoredSamples {
 	}
 	
 	public Composite visualizeOnToolTip(Composite parent, Graphics g) { return null; }
-
-	@Override
-	public void visualizeOnDrawing(Graphics g, PaintEvent e, GC gc) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visualizeOnSidePanel(Collection<Graphics> objects) {
-		// TODO Auto-generated method stub
-		
-	}
 }
