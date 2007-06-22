@@ -93,6 +93,9 @@ public class GuiMain {
 		Engine.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
 		Pathway.setLogger(Engine.log);
 		
+		//load the preferences
+		loadPreferences();
+		
 		//initiate Gene database (to load previously used gdb)
 		Gdb.init();
 		
@@ -153,6 +156,10 @@ public class GuiMain {
 		}
 		
 		VisualizationManager.loadGeneric();
+	}
+	
+	static void loadPreferences() {
+		Engine.getPreferences();
 	}
 	
 	/**

@@ -473,26 +473,6 @@ public class VPathway implements PathwayListener, VisualizationListener
 	 */
 	public void draw (Graphics2D g2d, Rectangle area)
 	{		
-//		Image image = (Image)getData("double-buffer-image");
-//		// create an image for double-buffering, if it doesn't exist 
-//		// or the component has been resized
-//		if(image == null
-//				|| image.getBounds().width != getSize().x
-//				|| image.getBounds().height != getSize().y)
-//		{
-//			Engine.log.trace("Creating image of size " + getSize().x + ", " + getSize().y);
-//			image = new Image(getDisplay(), getSize().x, getSize().y);
-//			setData("double-buffer-image", image);
-//		}
-//
-//		GC buffer = new GC(image);
-//		buffer.setBackground(e.display.getSystemColor(SWT.COLOR_WHITE));
-//		buffer.fillRectangle(e.x, e.y, e.width, e.height);
-//		
-//		buffer.setAntialias(SWT.ON);
-//		
-//		Rectangle2D.Double r = new Rectangle.Double(e.x, e.y, e.width, e.height);
-
 		if(area == null) {
 			area = g2d.getClipBounds();
 		}
@@ -514,21 +494,17 @@ public class VPathway implements PathwayListener, VisualizationListener
 					o.draw (g2d);
 				}
 				
-//				if(v != null && o instanceof Graphics) {
-//						try {
-//							v.visualizeDrawing((Graphics) o, g2d);
-//						} catch(Exception ex) {
-//							Engine.log.error(
-//									"Unable to apply visualization " + v + " on " + o, ex);
-//							ex.printStackTrace();
-//						}
-//				}
-				//if(o instanceof GeneProduct) ((GeneProduct)o).drawHighlight(g2d);
+				if(v != null && o instanceof Graphics) {
+						try {
+							v.visualizeDrawing((Graphics) o, g2d);
+						} catch(Exception ex) {
+							Engine.log.error(
+									"Unable to apply visualization " + v + " on " + o, ex);
+							ex.printStackTrace();
+						}
+				}
 			}
 		}
-		
-//		e.gc.drawImage(image, 0, 0);
-//		buffer.dispose();
 	}
 
 	boolean checkDrawAllowed(VPathwayElement o) {

@@ -18,11 +18,11 @@ package org.pathvisio.preferences.swt;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.graphics.RGB;
 import org.pathvisio.gui.swt.Engine;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.Preference;
@@ -55,13 +55,30 @@ public class SwtPreferences extends PreferenceStore implements PreferenceCollect
 		return p;
 	}
 	
+	protected void toEnums(Preference[] enumPrefs) {
+		for(Preference p : enumPrefs) {
+			p.setValue(getString(p.name()));
+		}
+	}
+	
+	protected void toEnums() {
+		toEnums(SwtPreference.values());
+		toEnums(GlobalPreference.values());
+	}
+	
+	protected void fromEnums(Preference[] enumPrefs) {
+		for(Preference p : enumPrefs) {
+			setValue(p.name(), p.getValue());
+		}
+	}
+	
+	protected void fromEnums() {
+		fromEnums(SwtPreference.values());
+		fromEnums(GlobalPreference.values());
+	}
+	
 	public void save() throws IOException {
-		for(Preference p : SwtPreference.values()) {
-			setValue(p.name(), p.getValue());
-		}
-		for(Preference p : GlobalPreference.values()) {
-			setValue(p.name(), p.getValue());
-		}
+		fromEnums();
 		super.save();
 	}
 	
@@ -83,9 +100,11 @@ public class SwtPreferences extends PreferenceStore implements PreferenceCollect
 		try {
 			load();
 		} catch(Exception e) { 
-			try { save(); } catch(Exception ex) { } 
+			Engine.log.error("Unable to load preferences", e);
 		}
-
+		
+		toEnums();
+		
 		createDataDirectories();
 		
 	}

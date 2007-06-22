@@ -19,6 +19,7 @@ package org.pathvisio.visualization;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -195,7 +196,7 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 	 * @return A {@link Shape} object that contains the area in which the
 	 * VisualizationPlugin can draw its visualization
 	 */
-	public Shape provideDrawArea(VisualizationPlugin p, Graphics g) {
+	public Area provideDrawArea(VisualizationPlugin p, Graphics g) {
 		if(!p.isUseProvidedArea()) 
 			throw new IllegalArgumentException("useProvidedArea set to false for this plug-in");
 		
@@ -207,9 +208,9 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 			nrRes += (pr.getDrawingPlugin().isActive() && pr.getDrawingPlugin().isUseProvidedArea()) ? 1 : 0;
 		}
 		
-		Shape shape = g.createVisualizationRegion();
+		Area area = g.createVisualizationRegion();
 		//Distribute space over plugins
-		Rectangle bounds = shape.getBounds();
+		Rectangle bounds = area.getBounds();
 		
 		//Adjust width so we can divide into equal rectangles
 		bounds.width += bounds.width % nrRes;
@@ -217,9 +218,10 @@ public class Visualization implements ExpressionDataListener, VisualizationListe
 		bounds.x += w * index;
 		bounds.width = w;
 		
+		Area barea = new Area(bounds);
+		area.intersect(barea);
 		
-		shape.intersects(bounds);
-		return shape;
+		return area;
 	}
 	
 	/**

@@ -83,7 +83,7 @@ public abstract class Gdb {
 			try {
 				connect(null);
 			} catch(Exception e) {
-				setCurrentGdb(SwtPreference.SWT_CURR_GDB.getValue());
+				setCurrentGdb(SwtPreference.SWT_CURR_GDB.getDefault());
 			}
 		}
 	}

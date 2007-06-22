@@ -18,7 +18,7 @@ package org.pathvisio.view;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Shape;
+import java.awt.geom.Area;
 
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
@@ -72,8 +72,8 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 		if(listen) markDirty(); // mark everything dirty
 	}
 	
-	public Shape createVisualizationRegion() {
-		return getVBounds();
+	public Area createVisualizationRegion() {
+		return new Area(getVBounds());
 	}
 	
 	
@@ -127,11 +127,11 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 		int style = Font.PLAIN;
 		if(gdata.getFontName() != null) {
 			if(gdata.isBold()) {
-				style &= Font.BOLD;
+				style |= Font.BOLD;
 			}
 			if(gdata.isItalic()) {
-				style &= Font.ITALIC;
-			}//TODO: underline / strikethrough
+				style |= Font.ITALIC;
+			}
 		}
 		return style;
 	}

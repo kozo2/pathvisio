@@ -252,7 +252,7 @@ public class MainWindow extends ApplicationWindow implements
 				if(dbName == null) return;
 				
 				Gdb.connect(dbName);
-				setStatus("Using Gene Database: '" + SwtPreference.SWT_DIR_GDB.getValue() + "'");
+				setStatus("Using Gene Database: '" + SwtPreference.SWT_CURR_GDB.getValue() + "'");
 				cacheExpressionData();
 			} catch(Exception e) {
 				String msg = "Failed to open Gene Database; " + e.getMessage();
@@ -1029,7 +1029,7 @@ public class MainWindow extends ApplicationWindow implements
 		rightPanel.getTabFolder().setSelection(0); //select backpage browser tab
 		rightPanel.hideTab("Legend"); //hide legend on startup
 		
-		setStatus("Using Gene Database: '" + SwtPreference.SWT_CURR_GDB + "'");
+		setStatus("Using Gene Database: '" + SwtPreference.SWT_CURR_GDB.getValue() + "'");
 				
 		return parent;
 		

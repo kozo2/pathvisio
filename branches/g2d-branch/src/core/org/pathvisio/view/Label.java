@@ -122,11 +122,10 @@ public class Label extends GraphicsShape
 //		textComposite.pack();
 //	}
 	
-	Dimension mComputeTextSize(Graphics2D g) {
+	Dimension computeTextSize(Graphics2D g) {
 		Rectangle2D tb = null;
 		if(g != null) {
-			TextLayout tl = new TextLayout(gdata.getTextLabel(), g.getFont(), g.getFontRenderContext());
-			tb = tl.getBounds();
+			 tb = g.getFontMetrics().getStringBounds(getVAttributedString().getIterator(), 0, gdata.getTextLabel().length(), g);
 		} else { //No graphics context, we can only guess...
 			tb = new Rectangle2D.Double(0, 0, getVWidthDouble(), getVHeightDouble()); 
 		}
@@ -146,23 +145,15 @@ public class Label extends GraphicsShape
 		return vFromM(gdata.getMFontSize());
 	}
 	
-	Graphics2D g2d = null; //last Graphics2D for determining text size
-	public void doDraw(Graphics2D g)
-	{		
-		g2d = g;
-		
-		if(isSelected()) {
-			g.setColor(selectColor);
-		} else {
-			g.setColor(gdata.getColor());
-		}
-						
-		g.setFont(new Font(gdata.getFontName(), getVFontStyle(), (int)getVFontSize()));
-		
-		Rectangle area = getVOutline().getBounds();
-		
-		String label = gdata.getTextLabel();
-		AttributedString ats = new AttributedString(label);
+	Font getVFont() {
+		String name = gdata.getFontName();
+		int style = getVFontStyle();
+		int size = (int)getVFontSize();
+		return new Font(name, style, size);
+	}
+	
+	AttributedString getVAttributedString() {
+		AttributedString ats = new AttributedString(gdata.getTextLabel());
 		if(gdata.isStrikethru()) {
 			ats.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
 		}
@@ -170,9 +161,32 @@ public class Label extends GraphicsShape
 			ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		}
 		
-		TextLayout tl = new TextLayout(ats.getIterator(), g.getFontRenderContext());
-		Rectangle2D tb = tl.getBounds();
-		tl.draw(g, 	area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2), 
+		ats.addAttribute(TextAttribute.FONT, getVFont());
+		return ats;
+	}
+	
+	Graphics2D g2d = null; //last Graphics2D for determining text size
+	public void doDraw(Graphics2D g)
+	{		
+		if(g2d != null) g2d.dispose();
+		g2d = (Graphics2D)g.create();
+		
+		if(isSelected()) {
+			g.setColor(selectColor);
+		} else {
+			g.setColor(gdata.getColor());
+		}
+						
+		Font f = getVFont();
+		g.setFont(f);
+		
+		Rectangle area = getVOutline().getBounds();
+		
+		String label = gdata.getTextLabel();
+		AttributedString ats = getVAttributedString();
+		
+		Rectangle2D tb = g.getFontMetrics().getStringBounds(ats.getIterator(), 0, label.length(), g);
+		g.drawString(ats.getIterator(), area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2), 
 					area.y + (int)(area.height / 2) + (int)(tb.getHeight() / 2));		
 	}
 		
@@ -191,28 +205,14 @@ public class Label extends GraphicsShape
 	 */
 	protected Shape getVOutline()
 	{
-		int[] vx = new int[4];
-		int[] vy = new int[4];
-		
-		int[] p = getVHandleLocation(handleNE).asIntArray();
-		vx[0] = p[0]; vy[0] = p[1];
-		p = getVHandleLocation(handleSE).asIntArray();
-		vx[1] = p[0]; vy[1] = p[1];
-		p = getVHandleLocation(handleSW).asIntArray();
-		vx[2] = p[0]; vy[2] = p[1];
-		p = getVHandleLocation(handleNW).asIntArray();
-		vx[3] = p[0]; vy[3] = p[1];
-		
-		Polygon pol = new Polygon(vx, vy, 4);		
-		Rectangle bounds = pol.getBounds();
-		
-		Dimension mq = mComputeTextSize(g2d);
-		double vqx = vFromM(mq.getWidth());
-		double vqy = vFromM(mq.getHeight());
+		Rectangle bounds = super.getVOutline().getBounds();
+		Dimension mq = computeTextSize(g2d);
+		double vqx = mq.getWidth();
+		double vqy = mq.getHeight();
 		
 		LinAlg.Point c = getVCenter();
-		bounds.add(new Rectangle2D.Double(c.x - vqx / 2, c.y - vqy / 2, vqx, vqy)); 
-		
+		bounds.add(new Rectangle2D.Double(c.x - vqx / 2, c.y - vqy / 2, vqx, vqy));
+
 		return bounds;
 	}
 	

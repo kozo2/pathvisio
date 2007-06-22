@@ -22,6 +22,10 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +34,9 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -46,7 +53,6 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -129,20 +135,18 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	void drawImage(ImageSample is, Color rgb, Rectangle area, Graphics2D g2d) {
 		Image img = is.getImage(rgb);
 		if(img != null) {
+			drawBackground(area, g2d);
+			
 			Dimension scaleTo = is.getScaleSize(new Dimension(area.width, area.height));
-
-			drawBackground(area, gc, e);
-
-			Rectangle ib = image.getBounds();
+			Image simg = img.getScaledInstance(scaleTo.width, scaleTo.height, Image.SCALE_SMOOTH);
+									
 			int xs = area.width - scaleTo.width;
 			int ys = area.height - scaleTo.height;
-			g2d.drawImage(image, ib.x, ib.y, ib.width, ib.height, 
-					area.x + xs / 2, area.y + ys / 2, scaleTo.height, scaleTo.width);
+			g2d.drawImage(simg, area.x + xs / 2, area.y + ys / 2, null);
 		}
 	}
 		
 	void drawNoDataFound(ConfiguredSample s, Rectangle area, Graphics2D g2d) {
-		Color c = new Color(e.display, s.getColorSet().getColor(ColorSet.ID_COLOR_NO_DATA_FOUND));
 		g2d.setColor(s.getColorSet().getColor(ColorSet.ID_COLOR_NO_DATA_FOUND));
 		g2d.fill(area);
 	}
@@ -337,16 +341,16 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		
 		void changeColorLabel() {
 			ColorDialog cd = new ColorDialog(getShell());
-			cd.setRGB(getInput().getReplaceColor());
+			cd.setRGB(SwtUtils.color2rgb(getInput().getReplaceColor()));
 			RGB rgb = cd.open();
 			if(rgb != null) {
-				getInput().setReplaceColor(rgb);
+				getInput().setReplaceColor(SwtUtils.rgb2color(rgb));
 				setColorLabel();
 			}
 		}
 		
 		void setColorLabel() {
-			RGB rgb = getInput().getReplaceColor();
+			RGB rgb = SwtUtils.color2rgb(getInput().getReplaceColor());
 			replaceColor = SwtUtils.changeColor(replaceColor, rgb, getDisplay());
 			colorLabel.setBackground(replaceColor);
 			refreshImage();
@@ -412,7 +416,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 	}
 	
 	protected class ImageSample extends ConfiguredSample {
-		Image cacheImage;
+		BufferedImage cacheImage;
 		URL imageURL;
 		Color replaceColor = DEFAULT_TRANSPARENT;
 		int tolerance; //range 0 - 255;
@@ -456,92 +460,80 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		}
 		public int getTolerance() { return tolerance; }
 		
-		public ImageData getImageData() {
+		public BufferedImage getImage() {
 			if(imageURL == null) return null;
 			if(cacheImage == null) {
-				InputStream in = getInputStream(imageURL);
-				cacheImage = Toolkit.getDefaultToolkit().getImage(imageURL);
+				try {
+					cacheImage = ImageIO.read(imageURL);
+				} catch(IOException e) {
+					Engine.log.error("Unable to load image", e);
+					return null;
+				}
 			}
-			return cacheImage.clone();
+			return cacheImage.getSubimage(0, 0, cacheImage.getWidth(), cacheImage.getHeight());
 		}
 		
-		public ImageData getImageData(Point size) {
-			return getImageData(size, null);
+		public Image getImage(Dimension size) {
+			return getImage(size, null);
 		}
 		
-		public ImageData getImageData(RGB replaceWith) {
-			ImageData img = getImageData();
+		public Image getImage(Color replaceWith) {
+			Image img = getImage();
 			if(img == null) return null;
-			if(replaceWith != null) img = doReplaceColor(img, replaceWith);
+			if(replaceWith != null) img = doReplaceColor(img, replaceColor, replaceWith, tolerance);
 			return img;
 		}
 		
 		public ImageData getImageData(Point size, RGB replaceWith) {
-			ImageData img = getImageData();
+			Dimension dsize = new Dimension(size.x, size.y);
+			BufferedImage img = toBufferedImage(getImage(dsize, SwtUtils.rgb2color(replaceWith)));
+			return SwtUtils.convertImageToSWT(img);
+		}
+		
+		public Image getImage(Dimension size, Color replaceWith) {
+			Image img = getImage();
 			if(img == null) return null;
 			
-			img = getImageData(replaceWith);
+			img = getImage(replaceWith);
 			
 			size = getScaleSize(size);
 			
-			img = img.scaledTo(size.x, size.y);
+			img = img.getScaledInstance(size.width, size.height, Image.SCALE_SMOOTH);
 			return img;
 		}
 		
-		public Point getScaleSize(Point target) {
+		public Dimension getScaleSize(Dimension target) {
 			if(aspectRatio) {
-				ImageData img = getImageData();
-				double r = (double)img.height / img.width;
-				int min = Math.min(target.x, target.y);
-				if(min == target.x) target.y = (int)(min * r);
-				else target.x = (int)(min * r);
+				BufferedImage img = getImage();
+				double r = (double)img.getHeight() / img.getWidth();
+				int min = (int)Math.min(target.getWidth(), target.getHeight());
+				if(min == target.getWidth()) target.height = (int)(min * r);
+				else target.width = (int)(min * r);
 			}
 			return target;
 		}
 		
-		ImageData doReplaceColor(ImageData img, RGB replaceWith) {
-			PaletteData pd = img.palette;
-			if(pd.isDirect) 
-				replaceDirect(img, getReplaceColor(), replaceWith, getTolerance());
-			else 
-				replaceIndexed(img, getReplaceColor(), replaceWith, getTolerance());
-			return img;
-		}
-		
-		void replaceDirect(ImageData imgd, RGB tr, RGB rp, int tol) {
-			PaletteData pd = imgd.palette;
-			int rpvalue = pd.getPixel(rp);
-			int[] line = new int[imgd.width];
-			for (int y = 0; y < imgd.height; y++) {
-				imgd.getPixels(0, y, imgd.width, line, 0);
-				for (int x = 0; x < line.length; x++) {
-					if(compareRGB(tr, pd.getRGB(line[x]), tol)) {
-						imgd.setPixel(x, y, rpvalue);
+		Image doReplaceColor(Image img, final Color oldColor, final Color newColor, final int tol) {
+			RGBImageFilter f = new RGBImageFilter() {
+				public int filterRGB(int x, int y, int rgb) {
+					Color thisColor = new Color(rgb);
+					if(compareColor(oldColor, thisColor, tol)) {
+						return newColor.getRGB();
 					}
+					return rgb;
 				}
 			};
-		}
-
-		void replaceIndexed(ImageData imgd, RGB tr, RGB rp, int tol) {
-			RGB[] rgbs = imgd.palette.getRGBs();
-			RGB[] newRgbs = new RGB[rgbs.length];
-			for(int i = 0; i < rgbs.length; i++) {
-				RGB rgb = rgbs[i];
-				if( compareRGB(tr, rgbs[i], tol)) {
-					rgb = rp;
-				}
-				newRgbs[i] = rgb;
-			}
-			imgd.palette = new PaletteData(newRgbs);
+			ImageProducer pr = new FilteredImageSource(img.getSource(), f);
+			return Toolkit.getDefaultToolkit().createImage(pr);
 		}
 		
-		boolean compareRGB(RGB rgb1, RGB rgb2, int tolerance) {
-			return 	rgb2.red >= rgb1.red - tolerance &&
-					rgb2.red <= rgb1.red + tolerance &&
-					rgb2.green >= rgb1.green - tolerance &&
-					rgb2.green <= rgb1.green + tolerance &&
-					rgb2.blue >= rgb1.blue - tolerance &&
-					rgb2.blue <= rgb1.blue + tolerance;
+		boolean compareColor(Color rgb1, Color rgb2, int tolerance) {
+			return 	rgb2.getRed() >= rgb1.getRed() - tolerance &&
+					rgb2.getRed() <= rgb1.getRed() + tolerance &&
+					rgb2.getGreen() >= rgb1.getGreen() - tolerance &&
+					rgb2.getGreen() <= rgb1.getGreen() + tolerance &&
+					rgb2.getBlue() >= rgb1.getBlue() - tolerance &&
+					rgb2.getBlue() <= rgb1.getBlue() + tolerance;
 		}
 		
 		InputStream getInputStream(URL url) {
@@ -577,5 +569,30 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		
 	}
 	
+    // This method returns a buffered image with the contents of an image
+	public static BufferedImage toBufferedImage(Image image) {
+		if (image instanceof BufferedImage) {
+			return (BufferedImage)image;
+		}
+
+		// This code ensures that all the pixels in the image are loaded
+		image = new ImageIcon(image).getImage();
+
+
+		// Create a buffered image with a format that's compatible with the screen
+		int type = BufferedImage.TYPE_INT_ARGB;
+		System.out.println(image.getWidth(null));
+		BufferedImage bimage = new BufferedImage(image.getWidth(null), image.getHeight(null), type);
+
+		// Copy image to buffered image
+		Graphics2D g = bimage.createGraphics();
+
+		// Paint the image onto the buffered image
+		g.drawImage(image, 0, 0, null);
+        g.dispose();
+    
+        return bimage;
+    }
+    
 	public Composite visualizeOnToolTip(Composite parent, Graphics g) { return null; }
 }

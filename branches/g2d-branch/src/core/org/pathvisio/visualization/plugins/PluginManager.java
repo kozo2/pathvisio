@@ -256,11 +256,11 @@ public abstract class PluginManager {
             for (File file : files)
             	processFile(file, base);
 		} else {
-			if(f.toString().endsWith(".class")) {
-				String cn = f.toString().substring(base.length() + 1);
-				cn = cn.replace('/', '.').replace('$', '.');
-				System.out.println(cn);
-				addPlugin(Class.forName(removeClassExt(cn)));
+			String fn = f.toString();
+			if(fn.endsWith(".class") && !fn.contains("$")) { //Ignore inner classes for now
+				String cn = fn.substring(base.length() + 1);
+				cn = removeClassExt(cn.replace('/', '.'));
+				addPlugin(Class.forName(cn, false, Engine.class.getClassLoader()));
 			}
 		}
 	}

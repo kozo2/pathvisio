@@ -40,7 +40,7 @@ public class SWTGraphics2DRenderer {
    */
   public void prepareRendering(int clipX, int clipY, int clipW, int clipH) {
     // check that the offscreen images are initialized and large enough
-    checkOffScreenImages(clipW, clipH);
+    checkOffScreenImages(clipX, clipY, clipW, clipH);
     // fill the region in the AWT image with the transparent color
     java.awt.Graphics awtGraphics = awtImage.getGraphics();
     awtGraphics.setColor(new java.awt.Color(TRANSPARENT_COLOR));
@@ -103,7 +103,8 @@ public class SWTGraphics2DRenderer {
    * Ensure that the offscreen images are initialized and are at least
    * as large as the size given as parameter.
    */
-  private void checkOffScreenImages(int width, int height) {
+  private void checkOffScreenImages(int x, int y, int width, int height) {
+	System.out.println("width: " + width + "| height: " + height);
     int currentImageWidth = 0;
     int currentImageHeight = 0;
     if (swtImage != null) {
@@ -112,10 +113,10 @@ public class SWTGraphics2DRenderer {
     }
 
     // if the offscreen images are too small, recreate them
-    if (width > currentImageWidth || height > currentImageHeight) {
+    if ((x + width) > currentImageWidth || (y + height) > currentImageHeight) {
       dispose();
-      width = Math.max(width, currentImageWidth);
-      height = Math.max(height, currentImageHeight);
+      width = Math.max(width, x + width);
+      height = Math.max(height, y + height);
       awtImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
       swtImageData = new ImageData(width, height, 24, PALETTE_DATA);
       swtImageData.transparentPixel = TRANSPARENT_COLOR;
