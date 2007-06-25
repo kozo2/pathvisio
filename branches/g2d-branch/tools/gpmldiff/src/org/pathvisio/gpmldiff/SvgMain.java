@@ -41,17 +41,18 @@ class SvgMain
 		Document document = domImpl.createDocument (svgNS, "svg", null);
 		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
-		SvgMain svgMain = new SvgMain();
-		svgMain.paint(svgGenerator);
+//		SvgMain svgMain = new SvgMain();
+//		svgMain.paint(svgGenerator);
+
+		Pathway pwy = new Pathway();
+		pwy.readFromXml (new File ("/home/martijn/prg/pathvisio-g2d/tools/gpmldiff/testcases/Simple1.1.gpml"), false);
+		VPathway vpwy = new VPathway(null);
+		vpwy.fromGmmlData(pwy);
+		vpwy.draw (svgGenerator, null);
 
 		boolean useCSS = true;
 		Writer out = new OutputStreamWriter (System.out, "UTF-8");
 		svgGenerator.stream (out, useCSS);
 
-		Pathway pwy = new Pathway();
-		pwy.readFromXml (new File ("testcases/Simple1.1.gpml"), true);
-		VPathway vpwy = new VPathway(null);
-		vpwy.fromGmmlData(pwy);
-		vpwy.draw (svgGenerator, null);
 	}
 }
