@@ -12,6 +12,7 @@ import java.awt.event.MouseMotionListener;
 
 import javax.swing.JComponent;
 
+import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
@@ -90,7 +91,7 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		// TODO: find out how to handle this one, as mouseMove?
+		child.mouseMove(new SwingMouseEvent(e));
 	}
 
 	public void mouseMoved(MouseEvent e) {
@@ -99,6 +100,7 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 
 	public VPathway createVPathway() {
 		setChild(new VPathway(this));
+		SwingEngine.getApplicationPanel().setPathway(this);
 		return child;
 	}
 }

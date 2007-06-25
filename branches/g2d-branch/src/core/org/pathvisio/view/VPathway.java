@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.pathvisio.Engine;
-import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.model.GroupStyle;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
@@ -301,7 +300,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 		{
 			clearSelection();
 		}
-		SwtEngine.getWindow().showLegend(!editMode);	
+		//SwtEngine.getWindow().showLegend(!editMode);	
 		parent.redraw();
 	}
 	
@@ -419,7 +418,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 			if (newGraphics != NEWNONE)
 			{
 				newObject(new Point(e.getX(), e.getY()));
-				SwtEngine.getWindow().deselectNewItemActions();
+				//SwtEngine.getWindow().deselectNewItemActions();
 			}
 			else
 			{

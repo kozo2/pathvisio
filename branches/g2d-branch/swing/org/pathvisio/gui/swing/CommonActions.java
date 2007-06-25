@@ -10,13 +10,13 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 
 import org.pathvisio.Engine;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.PathwayImporter;
+import org.pathvisio.view.VPathwayWrapper;
 import org.pathvisio.view.swing.VPathwaySwing;
 
 public abstract class CommonActions {
@@ -80,9 +80,9 @@ public abstract class CommonActions {
 				if(status == JFileChooser.APPROVE_OPTION) {
 					try {
 						Engine.importPathway(jfc.getSelectedFile(), new VPathwaySwing());
+						Engine.getActiveVPathway().setEditMode(true);
 					} catch(ConverterException ex) {
-						Engine.log.error("Unable to import pathway", ex);
-						JOptionPane.showMessageDialog((Component)e.getSource(), "Unable to import pathway:\n" + ex.getMessage());
+						SwingEngine.handleConverterException(SwingEngine.MSG_UNABLE_IMPORT, (Component)e.getSource(), ex);
 					}
 				}
 		}

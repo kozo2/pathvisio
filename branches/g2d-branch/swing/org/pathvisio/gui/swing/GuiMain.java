@@ -14,7 +14,7 @@ public class GuiMain {
 		JFrame frame = new JFrame("PathVisio...swing it baby!");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		MainPanel mainPanel = new MainPanel();
+		MainPanel mainPanel = SwingEngine.getApplicationPanel();
 		frame.add(mainPanel);
 		frame.setJMenuBar(mainPanel.getMenuBar());
 		frame.setSize(400, 400);

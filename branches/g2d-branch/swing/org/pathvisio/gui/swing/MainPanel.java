@@ -2,19 +2,21 @@ package org.pathvisio.gui.swing;
 
 import java.awt.BorderLayout;
 
-import javax.swing.BoxLayout;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import org.pathvisio.gui.swing.CommonActions.ExportAction;
 import org.pathvisio.gui.swing.CommonActions.ImportAction;
 import org.pathvisio.gui.swing.CommonActions.SaveAction;
+import org.pathvisio.view.swing.VPathwaySwing;
 
 public class MainPanel extends JPanel {
 	private JMenuBar menuBar;
 	private JToolBar toolBar;
+	private JScrollPane scrollPane;
 	
 	public MainPanel() {
 		setLayout(new BorderLayout());
@@ -25,6 +27,10 @@ public class MainPanel extends JPanel {
 		addToolBarActions(toolBar);
 		
 		add(toolBar, BorderLayout.NORTH);
+		//menuBar will be added by container (JFrame or JApplet)
+		
+		scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		add(scrollPane, BorderLayout.CENTER);
 	}
 	
 	protected void addMenuActions(JMenuBar mb) {
@@ -40,6 +46,8 @@ public class MainPanel extends JPanel {
 		tb.add(new SaveAction());
 		tb.add(new ImportAction());
 		tb.add(new ExportAction());
+		tb.addSeparator();
+		
 	}
 	
 	public JMenuBar getMenuBar() {
@@ -48,6 +56,10 @@ public class MainPanel extends JPanel {
 	
 	public JToolBar getToolBar() {
 		return toolBar;
+	}
+	
+	public void setPathway(VPathwaySwing vPathway) {
+		scrollPane.setViewportView(vPathway);
 	}
 }
 
