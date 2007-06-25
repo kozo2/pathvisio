@@ -27,8 +27,20 @@
 		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
 			<classpath refid="project.class.path"/>
 		</javac>
+		<!--
 		<javac srcdir="../../src/"
 			   includes="core/**,v2/**"
+			   destdir="${build.dir}">
+		  <classpath refid="project.class.path"/>
+		</javac>
+		!-->
+		<javac srcdir="../../src/core"
+			   includes="**"
+			   destdir="${build.dir}">
+		  <classpath refid="project.class.path"/>
+		</javac>
+		<javac srcdir="../../src/v2"
+			   includes="**"
 			   destdir="${build.dir}">
 		  <classpath refid="project.class.path"/>
 		</javac>

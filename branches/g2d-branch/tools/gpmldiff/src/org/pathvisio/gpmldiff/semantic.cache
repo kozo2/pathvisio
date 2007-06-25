@@ -44,6 +44,12 @@
     :pointmax 2008
     :unmatched-syntax 'nil
     )
+   (semanticdb-table "SvgMain.java"
+    :major-mode 'jde-mode
+    :tags '(("org.pathvisio.gpmldiff" package nil nil [700 731]) ("java.awt.*" include nil nil [733 751]) ("java.io.*" include nil nil [752 769]) ("org.apache.batik.svggen.SVGGraphics2D" include nil nil [770 815]) ("org.apache.batik.dom.GenericDOMImplementation" include nil nil [816 869]) ("org.w3c.dom.Document" include nil nil [870 898]) ("org.w3c.dom.DOMImplementation" include nil nil [899 936]) ("org.pathvisio.view.VPathway" include nil nil [937 972]) ("org.pathvisio.model.Pathway" include nil nil [973 1008]) ("org.pathvisio.model.ConverterException" include nil nil [1009 1055]) ("SvgMain" type (:members (("paint" function (:typemodifiers ("public") :arguments (("g2d" variable (:type "Graphics2D") (reparse-symbol formal_parameters) [1093 1107])) :type "void") (reparse-symbol class_member_declaration) [1074 1189]) ("main" function (:throws ("IOException" "ConverterException") :typemodifiers ("static" "public") :arguments (("argv[]" variable (:type "String") (reparse-symbol formal_parameters) [1218 1231])) :type "void") (reparse-symbol class_member_declaration) [1193 1916])) :type "class") nil [1057 1918]))
+    :file "SvgMain.java"
+    :pointmax 1919
+    )
    )
   :file "semantic.cache"
   :semantic-tag-version "2.0pre3"

@@ -58,7 +58,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 	private static final long serialVersionUID = 1L;
 	static final double M_PASTE_OFFSET = 10 * 15;
 	
-	private VPathwayWrapper parent;
+	private VPathwayWrapper parent; // may be null
 	
 	/**
 	 * All objects that are visible on this mapp, including the handles
@@ -103,7 +103,8 @@ public class VPathway implements PathwayListener, VisualizationListener
 	public boolean isEditMode() { return editMode; }
 	
 	/**
-	 *Constructor for this class
+	 Constructor for this class.
+	 @param parent Optional gui-specific wrapper for this VPathway
 	 */	
 	public VPathway(VPathwayWrapper parent)
 	{
@@ -116,11 +117,13 @@ public class VPathway implements PathwayListener, VisualizationListener
 		VisualizationManager.addListener(this);
 	}
 	
-	public void redraw() {
-		parent.redraw();
+	public void redraw()
+	{
+		if (parent != null) parent.redraw();
 	}
 	
-	public VPathwayWrapper getWrapper() {
+	public VPathwayWrapper getWrapper()
+	{
 		return parent;
 	}
 	
@@ -160,7 +163,10 @@ public class VPathway implements PathwayListener, VisualizationListener
 		}
 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
-		parent.setVSize(width, height); 
+		if (parent != null)
+		{
+			parent.setVSize(width, height);
+		}
 		data.fireObjectModifiedEvent(new PathwayEvent(null, PathwayEvent.MODIFIED_GENERAL));
 		data.addListener(this);
 	}
@@ -180,7 +186,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 	public void addDirtyRect(Rectangle r)
 	{
 		if(r == null) { //In case r is null, add whole drawing
-			r = parent.getVBounds();
+			if (parent != null) { r = parent.getVBounds(); }
 		}
 		if(dirtyRect == null)
 			dirtyRect = r;
@@ -194,7 +200,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 	 */
 	public void redrawDirtyRect()
 	{
-		if (dirtyRect != null)
+		if (dirtyRect != null && parent != null)
 			parent.redraw (dirtyRect);
 		dirtyRect = null;
 	}
@@ -301,7 +307,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 			clearSelection();
 		}
 		//SwtEngine.getWindow().showLegend(!editMode);	
-		parent.redraw();
+		redraw();
 	}
 	
 	private double zoomFactor = 1.0/15.0;
@@ -346,8 +352,11 @@ public class VPathway implements PathwayListener, VisualizationListener
 		zoomFactor = pctZoomFactor / 100.0 / 15.0;
 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
-		parent.setVSize(width, height); 				
-		parent.redraw();
+		if (parent != null)
+		{
+			parent.setVSize(width, height); 				
+			redraw();
+		}
 	}
 
 	public void setPressedObject(VPathwayElement o) {
@@ -563,7 +572,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 	public void resetHighlight() 
 	{
 		for(VPathwayElement o : drawingObjects) o.unhighlight();
-		parent.redraw();
+		redraw();
 	}
 	
 	/**
@@ -1037,7 +1046,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 		if(e.isKey('d') && e.isKeyDown(KeyEvent.M_CTRL)) //CTRL-D to select all gene-products 
 		{
 			selectGeneProducts();
-			parent.redraw();
+			redraw();
 		}
 //		System.out.println(e.getKeyCode());
 //		System.out.println("is g? " + e.isKey('g'));
@@ -1097,7 +1106,10 @@ public class VPathway implements PathwayListener, VisualizationListener
 			case PathwayEvent.WINDOW:
 				int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 				int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());
-				parent.setVSize(width, height); 
+				if (parent != null)
+				{
+					parent.setVSize(width, height);
+				}
 				break;
 		}
 		redrawDirtyRect();
@@ -1259,7 +1271,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 		case(VisualizationEvent.PLUGIN_MODIFIED):
 			//getDisplay().syncExec(new Runnable() {
 			//	public void run() {
-					parent.redraw();
+					redraw();
 			//	}
 			//});
 		}
