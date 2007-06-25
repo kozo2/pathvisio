@@ -16,12 +16,7 @@
 //
 package org.pathvisio.visualization.plugins;
 
-import org.pathvisio.gui.swt.SwtEngine;
-import org.pathvisio.view.GeneProduct;
-import org.pathvisio.view.Graphics;
-
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -30,7 +25,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.FontData;
@@ -45,10 +39,12 @@ import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jdom.Element;
-
+import org.pathvisio.Engine;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.util.SwtUtils;
 import org.pathvisio.util.Utils;
+import org.pathvisio.view.GeneProduct;
+import org.pathvisio.view.Graphics;
 import org.pathvisio.visualization.Visualization;
 import org.pathvisio.visualization.Visualization.PluginSet;
 
@@ -201,7 +197,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	Font getFont(boolean adjustZoom) {
 		Font f = font == null ? DEFAULT_FONT : font;
 		if(adjustZoom) {
-			int fs = (int)Math.ceil(SwtEngine.getActiveVPathway().vFromM(f.getSize()) * 15);
+			int fs = (int)Math.ceil(Engine.getActiveVPathway().vFromM(f.getSize()) * 15);
 			f = new Font(f.getName(), f.getStyle(), f.getSize());
 		}
 		return f;

@@ -17,6 +17,7 @@
 package org.pathvisio.model;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +42,7 @@ import org.pathvisio.Engine;
  * @author Martijn
  *
  */
-public class GpmlFormat 
+public class GpmlFormat implements PathwayImporter, PathwayExporter
 {
 	public static final Namespace GPML = Namespace.getNamespace("gpml", "http://genmapp.org/GPML/2007");
 	public static final Namespace RDF = Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
@@ -1013,4 +1014,21 @@ public class GpmlFormat
 			"Maroon", "Navy", "Olive", "Purple", "Red", "Silver", "Teal",
 			"White", "Yellow", "Transparent"
 		});
+
+	public void doImport(File file, Pathway pathway) throws ConverterException {
+		pathway.readFromXml(file, true);
+	}
+
+	public void doExport(File file, Pathway pathway) throws ConverterException {
+		pathway.writeToXml(file, true);
+	}
+	
+	public String[] getExtensions() {
+		return new String[] { "gpml", "xml" };
+	}
+
+	public String getName() {
+		return "GPML file";
+	}
+
 }

@@ -17,8 +17,6 @@
 
 package org.pathvisio.R.wizard;
 
-import org.pathvisio.gui.swt.SwtEngine;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -36,12 +34,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
-import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
+import org.pathvisio.Engine;
 import org.pathvisio.R.RController;
 import org.pathvisio.R.RFunctionLoader;
 import org.pathvisio.R.RCommands.RException;
 import org.pathvisio.R.RFunctionLoader.RFunction;
+import org.pathvisio.gui.swt.SwtEngine;
+import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
 
 public class PageStats extends WizardPage {
 	String resultVar;

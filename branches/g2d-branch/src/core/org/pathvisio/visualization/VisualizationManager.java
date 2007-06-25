@@ -365,7 +365,7 @@ public class VisualizationManager implements ApplicationEventListener, Expressio
 	}
 	
 	public void applicationEvent(ApplicationEvent e) {
-		if(e.type == ApplicationEvent.CLOSE_APPLICATION) {
+		if(e.type == ApplicationEvent.APPLICATION_CLOSE) {
 			saveGeneric();
 		}		
 	}

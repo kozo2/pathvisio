@@ -18,7 +18,6 @@ package org.pathvisio.R.wizard;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.prefs.Preferences;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -38,12 +37,12 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.pathvisio.Engine;
 import org.pathvisio.R.RCommands;
 import org.pathvisio.R.RDataIn;
 import org.pathvisio.R.RDataOut;
 import org.pathvisio.R.RCommands.RInterruptedException;
 import org.pathvisio.data.Gex;
-import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 public class PageData extends WizardPage {

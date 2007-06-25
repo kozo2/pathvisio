@@ -50,13 +50,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.jdom.Element;
+import org.pathvisio.Engine;
 import org.pathvisio.data.CachedData;
 import org.pathvisio.data.DataSources;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.CachedData.Data;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
-import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.util.SwtUtils;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.Graphics;
@@ -233,7 +233,7 @@ public class ExpressionAsTextPlugin extends VisualizationPlugin {
 	Font getFont(boolean adjustZoom) {
 		Font f = font == null ? DEFAULT_FONT : font;
 		if(adjustZoom) {
-			int size = (int)Math.ceil(SwtEngine.getActiveVPathway().vFromM(f.getSize()) * 15);
+			int size = (int)Math.ceil(Engine.getActiveVPathway().vFromM(f.getSize()) * 15);
 			f = new Font(f.getName(), size, f.getStyle());
 		}
 		return f;

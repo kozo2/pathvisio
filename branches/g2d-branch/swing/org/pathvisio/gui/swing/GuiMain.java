@@ -1,28 +1,32 @@
 package org.pathvisio.gui.swing;
 
-import java.io.File;
-
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
-import org.pathvisio.model.ConverterException;
-import org.pathvisio.model.Pathway;
-import org.pathvisio.view.VPathway;
-import org.pathvisio.view.swing.VPathwaySwing;
+import org.pathvisio.Engine;
 
 public class GuiMain {
 
 	private static void createAndShowGUI() {
+		GuiInit.init();
+		
 		//Create and set up the window.
 		JFrame frame = new JFrame("PathVisio...swing it baby!");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		VPathwaySwing test = testcase();
-		frame.add(test);
-
-		test.setSize(400, 400);
+		
+		MainPanel mainPanel = new MainPanel();
+		frame.add(mainPanel);
+		frame.setJMenuBar(mainPanel.getMenuBar());
+		frame.setSize(400, 400);
+		
+		try {
+		    UIManager.setLookAndFeel(
+		        UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception ex) {
+			Engine.log.error("Unable to load native look and feel", ex);
+		}
 		
 		//Display the window.
-		frame.pack();
 		frame.setVisible(true);
 	}
 
@@ -32,23 +36,5 @@ public class GuiMain {
 				createAndShowGUI();
 			}
 		});
-	}
-
-	static VPathwaySwing testcase() {
-		String pwf = "test.gpml";
-		
-		VPathwaySwing svp = new VPathwaySwing();
-		VPathway vp = new VPathway(svp);
-		svp.setChild(vp);
-
-		try { 
-			Pathway p = new Pathway();
-			p.readFromXml(new File(pwf), true);
-			vp.fromGmmlData(p);
-		} catch(ConverterException e) {		
-			e.printStackTrace();
-		}
-
-		return svp;
 	}
 }

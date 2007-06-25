@@ -319,10 +319,10 @@ public class MainWindow extends ApplicationWindow implements
 		}
 
 		public void applicationEvent(ApplicationEvent e) {
-			if(e.type == ApplicationEvent.OPEN_PATHWAY) {
+			if(e.type == ApplicationEvent.PATHWAY_OPENED) {
 				Engine.getActiveVPathway().setEditMode(isChecked());
 			}
-			else if(e.type == ApplicationEvent.NEW_PATHWAY) {
+			else if(e.type == ApplicationEvent.PATHWAY_NEW) {
 				switchEditMode(true);
 			}
 		}
@@ -974,7 +974,7 @@ public class MainWindow extends ApplicationWindow implements
 	
 	public boolean close() {
 		Engine.fireApplicationEvent(
-				new ApplicationEvent(this, ApplicationEvent.CLOSE_APPLICATION));
+				new ApplicationEvent(this, ApplicationEvent.APPLICATION_CLOSE));
 		return super.close();
 	}
 	
@@ -1051,11 +1051,11 @@ public class MainWindow extends ApplicationWindow implements
 	public void applicationEvent(ApplicationEvent e) {
 		VPathway drawing = null;
 		switch(e.type) {
-		case ApplicationEvent.NEW_PATHWAY:
+		case ApplicationEvent.PATHWAY_NEW:
 			drawing = Engine.getActiveVPathway();
 			sc.setContent((Canvas)drawing.getWrapper());
 			break;
-		case ApplicationEvent.OPEN_PATHWAY:
+		case ApplicationEvent.PATHWAY_OPENED:
 			drawing = Engine.getActiveVPathway();
 			sc.setContent((Canvas)drawing.getWrapper());
 			if(Gex.isConnected()) cacheExpressionData();

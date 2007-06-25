@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.pathvisio.Engine;
 import org.pathvisio.R.RCommands.RException;
 import org.pathvisio.R.wizard.RWizard;
 import org.pathvisio.gui.swt.SwtEngine;
@@ -69,7 +70,7 @@ public class RFunctionLoader {
 	
 	
 	public static void loadFunctions() throws IOException, RException {
-		URL url = SwtEngine.getResourceURL(FUN_DIR);
+		URL url = Engine.getResourceURL(FUN_DIR);
 		
 		String protocol = url.getProtocol();
 		if(protocol.equals("jar")) {

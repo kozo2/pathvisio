@@ -16,8 +16,6 @@
 //
 package org.pathvisio.R;
 
-import org.pathvisio.gui.swt.SwtEngine;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
@@ -29,17 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.rosuda.JRI.REXP;
-import org.rosuda.JRI.RVector;
-import org.rosuda.JRI.Rengine;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
-import org.pathvisio.util.FileUtils;
-import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
-import org.pathvisio.util.PathwayParser;
-import org.pathvisio.util.PathwayParser.Gene;
-import org.pathvisio.visualization.colorset.Criterion;
+import org.pathvisio.Engine;
 import org.pathvisio.R.RCommands.RException;
 import org.pathvisio.R.RCommands.RObjectContainer;
 import org.pathvisio.R.RCommands.RTemp;
@@ -48,6 +36,17 @@ import org.pathvisio.data.Gdb;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
+import org.pathvisio.gui.swt.SwtEngine;
+import org.pathvisio.util.FileUtils;
+import org.pathvisio.util.PathwayParser;
+import org.pathvisio.util.PathwayParser.Gene;
+import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
+import org.pathvisio.visualization.colorset.Criterion;
+import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.RVector;
+import org.rosuda.JRI.Rengine;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 public class RDataOut {
 	List<File> pwFiles;
@@ -94,7 +93,7 @@ public class RDataOut {
 	public RDataOut(File pathways, boolean recursive) {
 		this();
 		//Get the pathway files
-		pwFiles = FileUtils.getFiles(pathways, SwtEngine.PATHWAY_FILE_EXTENSION, recursive);
+		pwFiles = FileUtils.getFiles(pathways, Engine.PATHWAY_FILE_EXTENSION, recursive);
 	}
 	
 	public List<File> getPathwayFiles() { return pwFiles; }
@@ -155,7 +154,7 @@ public class RDataOut {
 			
 		checkValid();
 		
-		pwFiles = FileUtils.getFiles(pwDir, SwtEngine.PATHWAY_FILE_EXTENSION, true);
+		pwFiles = FileUtils.getFiles(pwDir, Engine.PATHWAY_FILE_EXTENSION, true);
 
 		if(pwFiles.size() == 0) throw new Exception("No pathway files (*.gpml) found in " + pwDir);
 		

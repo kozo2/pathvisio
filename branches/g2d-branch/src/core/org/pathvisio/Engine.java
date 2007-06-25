@@ -76,6 +76,31 @@ public class Engine {
 		openPathway(pathwayFile, null);
 	}
 	
+	public static void importPathway(File file) throws ConverterException {
+		importPathway(file, null);
+	}
+	
+	public static void importPathway(File file, VPathwayWrapper wrapper) throws ConverterException {
+		String fileName = file.toString();
+		
+		int dot = fileName.lastIndexOf('.');
+		String ext = Engine.PATHWAY_FILE_EXTENSION; //
+		if(dot >= 0) {
+			ext = fileName.substring(dot + 1, fileName.length());
+		}
+		PathwayImporter importer = getPathwayImporter(ext);
+		
+		if(importer == null) throw new ConverterException( "No importer for '" + ext +  "' files" );
+		
+		Pathway _pathway = new Pathway();
+		importer.doImport(file, _pathway);
+		pathway = _pathway;
+		fireApplicationEvent(new ApplicationEvent(pathway, ApplicationEvent.PATHWAY_OPENED));
+		if(wrapper != null) {
+			createVPathway(pathway, wrapper);
+		}
+	}
+	
 	/**
 	 * Open a pathway from a gpml file
 	 */
@@ -96,15 +121,19 @@ public class Engine {
 		}
 		if(_pathway != null) //Only continue if the data is correctly loaded
 		{
-			if(wrapper != null) {
-				VPathway _drawing = wrapper.createVPathway();
-				vPathway = _drawing;
-				vPathway.fromGmmlData(_pathway);
-			}
 			pathway = _pathway;
-			fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.OPEN_PATHWAY));
+			fireApplicationEvent(new ApplicationEvent(pathway, ApplicationEvent.PATHWAY_OPENED));
+			if(wrapper != null) {
+				createVPathway(_pathway, wrapper);
+			}
 		}
 		
+	}
+	
+	private static void createVPathway(Pathway p, VPathwayWrapper wrapper) {
+		vPathway = wrapper.createVPathway();
+		vPathway.fromGmmlData(pathway);
+		fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.VPATHWAY_CREATED));
 	}
 	
 	/**
@@ -124,7 +153,7 @@ public class Engine {
 		if(wrapper != null) {
 			newVPathway(pathway, wrapper);
 		}
-		fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.NEW_PATHWAY));
+		fireApplicationEvent(new ApplicationEvent(vPathway, ApplicationEvent.PATHWAY_NEW));
 	}
 	
 	public static void newVPathway(Pathway pathway, VPathwayWrapper wrapper) {
@@ -226,9 +255,10 @@ public class Engine {
 	
 	public static class ApplicationEvent extends EventObject {
 		private static final long serialVersionUID = 1L;
-		public static final int OPEN_PATHWAY = 1;
-		public static final int NEW_PATHWAY = 2;
-		public static final int CLOSE_APPLICATION = 3;
+		public static final int PATHWAY_OPENED = 1;
+		public static final int PATHWAY_NEW = 2;
+		public static final int APPLICATION_CLOSE = 3;
+		public static final int VPATHWAY_CREATED = 4;
 
 		public Object source;
 		public int type;

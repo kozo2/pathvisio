@@ -16,10 +16,6 @@
 //
 package org.pathvisio.R;
 
-import org.pathvisio.gui.swt.SwtEngine;
-import org.pathvisio.gui.swt.SwtEngine.ApplicationEvent;
-import org.pathvisio.gui.swt.SwtEngine.ApplicationEventListener;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,12 +33,15 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.rosuda.JRI.REXP;
-import org.rosuda.JRI.Rengine;
-
+import org.pathvisio.Engine;
+import org.pathvisio.Engine.ApplicationEvent;
+import org.pathvisio.Engine.ApplicationEventListener;
+import org.pathvisio.R.RCommands.RException;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.util.JarUtils;
 import org.pathvisio.util.Utils;
-import org.pathvisio.R.RCommands.RException;
+import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.Rengine;
 
 public class RController implements ApplicationEventListener{	
 	private static Rengine re;
@@ -87,7 +86,7 @@ public class RController implements ApplicationEventListener{
 			return false;
 		} finally {
 			//Add a listener to close R on closing PathVisio
-			SwtEngine.addApplicationEventListener(new RController());
+			Engine.addApplicationEventListener(new RController());
 		}
 
 		return true;
@@ -405,7 +404,7 @@ public class RController implements ApplicationEventListener{
 	}
 		
 	public void applicationEvent(ApplicationEvent e) {
-		if(e.type == ApplicationEvent.CLOSE_APPLICATION) {
+		if(e.type == ApplicationEvent.APPLICATION_CLOSE) {
 			endR(); //End the R process
 			if(rOut != null) { //Close the R output file
 				try { 

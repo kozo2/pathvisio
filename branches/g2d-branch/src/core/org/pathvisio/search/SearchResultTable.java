@@ -102,7 +102,7 @@ public class SearchResultTable extends PathwayTable implements ApplicationEventL
 	}
 
 	public void applicationEvent(ApplicationEvent e) {
-		if(e.type == ApplicationEvent.OPEN_PATHWAY)
+		if(e.type == ApplicationEvent.PATHWAY_OPENED)
 				highlightResults(highlightButton.getSelection());
 	}
 }	

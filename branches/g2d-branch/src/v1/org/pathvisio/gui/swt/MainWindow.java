@@ -47,16 +47,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
+import org.pathvisio.Engine;
 import org.pathvisio.Globals;
+import org.pathvisio.Engine.ApplicationEvent;
+import org.pathvisio.Engine.ApplicationEventListener;
 import org.pathvisio.data.DBConnector;
 import org.pathvisio.data.Gdb;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gex.ExpressionDataEvent;
 import org.pathvisio.data.Gex.ExpressionDataListener;
-import org.pathvisio.gui.swt.Engine.ApplicationEvent;
-import org.pathvisio.gui.swt.Engine.ApplicationEventListener;
 import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.preferences.swt.SwtPreferences;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.view.GeneProduct;
@@ -132,7 +132,7 @@ public class MainWindow extends ApplicationWindow implements
 	{
 		if(Engine.isDrawingOpen())
 		{
-			VPathway drawing = Engine.getVPathway();
+			VPathway drawing = Engine.getActiveVPathway();
 			//Check for neccesary connections
 			if(Gex.isConnected() && Gdb.isConnected())
 			{
@@ -172,7 +172,7 @@ public class MainWindow extends ApplicationWindow implements
 		public void run () {
 			if(Engine.isDrawingOpen())
 			{
-				VPathway drawing = Engine.getVPathway();
+				VPathway drawing = Engine.getActiveVPathway();
 				if(isChecked())
 				{
 					//Switch to edit mode: show edit toolbar, show property table in sidebar
@@ -207,10 +207,10 @@ public class MainWindow extends ApplicationWindow implements
 		}
 
 		public void applicationEvent(ApplicationEvent e) {
-			if(e.type == ApplicationEvent.OPEN_PATHWAY) {
-				Engine.getVPathway().setEditMode(isChecked());
+			if(e.type == ApplicationEvent.PATHWAY_OPENED) {
+				Engine.getActiveVPathway().setEditMode(isChecked());
 			}
-			else if(e.type == ApplicationEvent.NEW_PATHWAY) {
+			else if(e.type == ApplicationEvent.PATHWAY_NEW) {
 				switchEditMode(true);
 			}
 		}
@@ -352,11 +352,11 @@ public class MainWindow extends ApplicationWindow implements
 			{
 				deselectNewItemActions();
 				setChecked(true);
-				Engine.getVPathway().setNewGraphics(element);
+				Engine.getActiveVPathway().setNewGraphics(element);
 			}
 			else
 			{	
-				Engine.getVPathway().setNewGraphics(VPathway.NEWNONE);
+				Engine.getActiveVPathway().setNewGraphics(VPathway.NEWNONE);
 			}
 		}
 		
@@ -441,7 +441,7 @@ public class MainWindow extends ApplicationWindow implements
 				((ActionContributionItem)items[i]).getAction().setChecked(false);
 			}
 		}
-		Engine.getVPathway().setNewGraphics(VPathway.NEWNONE);
+		Engine.getActiveVPathway().setNewGraphics(VPathway.NEWNONE);
 	}
 	
 	// Elements of the coolbar
@@ -620,7 +620,7 @@ public class MainWindow extends ApplicationWindow implements
 	
 	public boolean close() {
 		Engine.fireApplicationEvent(
-				new ApplicationEvent(this, ApplicationEvent.CLOSE_APPLICATION));
+				new ApplicationEvent(this, ApplicationEvent.APPLICATION_CLOSE));
 		return super.close();
 	}
 	
@@ -641,7 +641,7 @@ public class MainWindow extends ApplicationWindow implements
 		
 		GuiMain.loadImages(shell.getDisplay());
 		
-		shell.setImage(Engine.getImageRegistry().get("shell.icon"));
+		shell.setImage(SwtEngine.getImageRegistry().get("shell.icon"));
 		
 		Composite viewComposite = new Composite(parent, SWT.NULL);
 		viewComposite.setLayout(new FillLayout());
@@ -693,28 +693,16 @@ public class MainWindow extends ApplicationWindow implements
 		
 		else rightPanel.hideTab("Legend");
 	}
-			
-	/**
-	 * Creates a new empty drawing canvas
-	 * @return the empty {@link VPathway}
-	 */
-	public VPathway createNewDrawing()
-	{	
-		VPathwaySWT pswt = new VPathwaySWT(sc, SWT.NO_BACKGROUND);
-		VPathway p = new VPathway(pswt);
-		pswt.setChild(p);
-		return p;
-	}
-	
+				
 	public void applicationEvent(ApplicationEvent e) {
 		VPathway drawing = null;
 		switch(e.type) {
-		case ApplicationEvent.NEW_PATHWAY:
-			drawing = Engine.getVPathway();
+		case ApplicationEvent.PATHWAY_NEW:
+			drawing = Engine.getActiveVPathway();
 			sc.setContent((Canvas)drawing.getWrapper());
 			break;
-		case ApplicationEvent.OPEN_PATHWAY:
-			drawing = Engine.getVPathway();
+		case ApplicationEvent.PATHWAY_OPENED:
+			drawing = Engine.getActiveVPathway();
 			sc.setContent((Canvas)drawing.getWrapper());
 			if(Gex.isConnected()) cacheExpressionData();
 			break;	
