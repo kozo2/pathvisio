@@ -16,7 +16,7 @@
 //
 package org.pathvisio.R;
 
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.gui.swt.TabbedSidePanel;
 
 import java.io.File;
@@ -99,7 +99,7 @@ public class RDataIn {
 	}
 	
 	public static void displayResults(List<ResultSet> results, String tabName) {		
-		TabbedSidePanel sp = Engine.getWindow().getSidePanel();
+		TabbedSidePanel sp = SwtEngine.getWindow().getSidePanel();
 		
 		StatsResultTable srt = new StatsResultTable(sp.getTabFolder(), SWT.NULL);
 		srt.setResults(results);

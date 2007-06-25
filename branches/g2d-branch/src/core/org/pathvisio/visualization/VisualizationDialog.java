@@ -63,14 +63,14 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.Engine;
+import org.pathvisio.data.Gex;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.util.TableColumnResizer;
 import org.pathvisio.util.Utils;
 import org.pathvisio.visualization.Visualization.PluginSet;
 import org.pathvisio.visualization.colorset.ColorSetComposite;
 import org.pathvisio.visualization.plugins.PluginManager;
-import org.pathvisio.data.Gex;
 
 /**
  * Dialog to configure visualizations
@@ -577,9 +577,9 @@ public class VisualizationDialog extends ApplicationWindow {
 	}
 	
 	class PluginTableLabelProvider implements ITableLabelProvider {
-		final Image checkTrue = Engine.getImageRegistry().get("checkbox.checked");
-		final Image checkFalse = Engine.getImageRegistry().get("checkbox.unchecked");
-		final Image checkUnavailable = Engine.getImageRegistry().get("checkbox.unavailable");
+		final Image checkTrue = SwtEngine.getImageRegistry().get("checkbox.checked");
+		final Image checkFalse = SwtEngine.getImageRegistry().get("checkbox.unchecked");
+		final Image checkUnavailable = SwtEngine.getImageRegistry().get("checkbox.unavailable");
 		
 		public String getColumnText(Object element, int columnIndex) {
 			PluginSet ps = (PluginSet)element;

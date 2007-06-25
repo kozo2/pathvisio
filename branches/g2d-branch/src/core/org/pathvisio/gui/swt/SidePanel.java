@@ -88,16 +88,16 @@ public class SidePanel extends Composite {
 					}
 				}
 			});
-			minButton.setImage(Engine.getImageRegistry().get("sidepanel.minimize"));
+			minButton.setImage(SwtEngine.getImageRegistry().get("sidepanel.minimize"));
 			final Button hideButton = new Button(buttonBar, SWT.PUSH);
 			hideButton.setToolTipText("Close this sidepanel (use view menu to open again)");
 			hideButton.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					hide();
-					Engine.getWindow().showRightPanelAction.setChecked(false);
+					SwtEngine.getWindow().showRightPanelAction.setChecked(false);
 				}
 			});
-			hideButton.setImage(Engine.getImageRegistry().get("sidepanel.hide"));
+			hideButton.setImage(SwtEngine.getImageRegistry().get("sidepanel.hide"));
 			
 			GridData buttonGrid = new GridData();
 			buttonGrid.widthHint = 12;

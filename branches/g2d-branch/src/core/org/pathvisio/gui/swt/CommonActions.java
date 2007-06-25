@@ -32,6 +32,7 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.pathvisio.Engine;
 import org.pathvisio.Globals;
 import org.pathvisio.biopax.gui.BiopaxDialog;
 import org.pathvisio.model.ConverterException;
@@ -42,6 +43,7 @@ import org.pathvisio.preferences.swt.SwtPreferences;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.SwtUtils.SimpleRunnableWithProgress;
 import org.pathvisio.view.VPathway;
+import org.pathvisio.view.swt.VPathwaySWT;
 
 /**
    This class contains a large number of JFace Actions that are both in V1 and V2.
@@ -59,9 +61,9 @@ public class CommonActions
 		}
 		public void run() 
 		{
-			if (Engine.pathway != null)
+			if (Engine.getActivePathway() != null)
 			{
-				Engine.pathway.undo();
+				Engine.getActivePathway().undo();
 			}
 		}
 	}
@@ -81,12 +83,13 @@ public class CommonActions
 					Engine.getResourceURL("icons/new.gif")));
 		}
 		public void run () {
-			if (Engine.pathway == null ||
+			if (Engine.getActivePathway() == null ||
 				MessageDialog.openQuestion(window.getShell(), "Discard changes?",
 						"Warning: This will discard any changes to " +
 						"the current pathway. Are you sure?"))
 			{
-				Engine.newPathway();
+				VPathwaySWT pswt = new VPathwaySWT(window.sc, SWT.NO_BACKGROUND);
+				Engine.newPathway(pswt);
 			}
 		}
 	}
@@ -106,8 +109,8 @@ public class CommonActions
 		}
 		public void run () 
 		{
-			VPathway drawing = Engine.getVPathway();
-			Pathway gmmlData = Engine.getPathway();
+			VPathway drawing = Engine.getActiveVPathway();
+			Pathway gmmlData = Engine.getActivePathway();
 			// Check if a gpml pathway is loaded
 			if (drawing != null)
 			{
@@ -197,7 +200,7 @@ public class CommonActions
 	        // Only open pathway if user selected a file
 	        
 	        if(fnMapp != null) { 
-	        	Engine.openPathway(fnMapp); 
+	        	SwtEngine.openPathway(fnMapp); 
 	        }
 		}
 	}
@@ -225,7 +228,7 @@ public class CommonActions
 	        // Only open pathway if user selected a file
 	        
 	        if(fnMapp != null) { 
-	        	Engine.openPathway(fnMapp); 
+	        	SwtEngine.openPathway(fnMapp); 
 	        }
 		}
 	}
@@ -245,8 +248,8 @@ public class CommonActions
 		
 		static public void do_run(MainWindow window)
 		{
-			VPathway drawing = Engine.getVPathway();
-			Pathway gmmlData = Engine.getPathway();
+			VPathway drawing = Engine.getActiveVPathway();
+			Pathway gmmlData = Engine.getActivePathway();
 			// Check if a gpml pathway is loaded
 			if (drawing != null)
 			{
@@ -328,8 +331,8 @@ public class CommonActions
 			setToolTipText ("Export Pathway to GenMAPP format");
 		}
 		public void run () {
-			VPathway drawing = Engine.getVPathway();
-			Pathway gmmlData = Engine.getPathway();
+			VPathway drawing = Engine.getActiveVPathway();
+			Pathway gmmlData = Engine.getActivePathway();
 			// Check if a gpml pathway is loaded
 			if (drawing != null)
 			{
@@ -346,7 +349,7 @@ public class CommonActions
 				}
 				
 				ArrayList<FileType> fts = new ArrayList<FileType>();
-				HashMap<String, PathwayExporter> exporters = Engine.getGpmlExporters();
+				HashMap<String, PathwayExporter> exporters = Engine.getPathwayExporters();
 								
 				for(String ext : exporters.keySet()) {
 					fts.add(new FileType(
@@ -386,7 +389,7 @@ public class CommonActions
 				if(dot >= 0) {
 					ext = fileName.substring(dot + 1, fileName.length());
 				}
-				PathwayExporter exporter = Engine.getGpmlExporter(ext);
+				PathwayExporter exporter = Engine.getPathwayExporter(ext);
 				
 				if(exporter == null) 
 					MessageDialog.openError (window.getShell(), "Error", 
@@ -473,7 +476,7 @@ public class CommonActions
 		public void run () {
 			PreferenceManager pg = new PreferenceDlg();
 			PreferenceDialog pd = new PreferenceDialog(window.getShell(), pg);
-			pd.setPreferenceStore((SwtPreferences)Engine.getPreferences());
+			pd.setPreferenceStore((SwtPreferences)SwtEngine.getPreferences());
 			pd.open();
 		}
 	}
@@ -507,7 +510,7 @@ public class CommonActions
 			}
 		}
 		public void run () {
-			VPathway drawing = Engine.getVPathway();
+			VPathway drawing = Engine.getActiveVPathway();
 			if (drawing != null)
 			{
 				double newPctZoomFactor = pctZoomFactor;
@@ -592,7 +595,7 @@ public class CommonActions
 		}
 		public void run()
 		{
-			Engine.vPathway.copyToClipboard();
+			Engine.getActiveVPathway().copyToClipboard();
 		}
 	}
 
@@ -607,7 +610,7 @@ public class CommonActions
 		}
 		public void run()
 		{
-			Engine.vPathway.pasteFromClipboad();
+			Engine.getActiveVPathway().pasteFromClipboad();
 		}
 	}
 	
@@ -626,8 +629,8 @@ public class CommonActions
 		}
 		
 		public void run () {
-			Pathway gmmlData = Engine.getPathway();
-			VPathway drawing = Engine.getVPathway();
+			Pathway gmmlData = Engine.getActivePathway();
+			VPathway drawing = Engine.getActiveVPathway();
 			
 			double usedZoom = drawing.getPctZoom();
 			// Set zoom to 100%
@@ -670,7 +673,7 @@ public class CommonActions
 		
 		public void run () {
 			BiopaxDialog d = new BiopaxDialog(window.getShell());
-			d.setPathway(Engine.getPathway());
+			d.setPathway(Engine.getActivePathway());
 			d.open();
 		}
 	}

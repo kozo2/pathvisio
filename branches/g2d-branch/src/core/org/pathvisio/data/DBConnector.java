@@ -24,8 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.Engine;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 /**

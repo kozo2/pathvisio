@@ -19,7 +19,6 @@ package org.pathvisio.gui.swt;
 import java.io.File;
 import java.net.URL;
 import java.util.Vector;
-import java.util.prefs.Preferences;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
@@ -51,7 +50,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
+import org.pathvisio.Engine;
 import org.pathvisio.Globals;
+import org.pathvisio.Engine.ApplicationEvent;
+import org.pathvisio.Engine.ApplicationEventListener;
 import org.pathvisio.R.RController;
 import org.pathvisio.R.RDataIn;
 import org.pathvisio.R.RCommands.RException;
@@ -62,14 +64,11 @@ import org.pathvisio.data.Gex;
 import org.pathvisio.data.GexImportWizard;
 import org.pathvisio.data.Gex.ExpressionDataEvent;
 import org.pathvisio.data.Gex.ExpressionDataListener;
-import org.pathvisio.gui.swt.Engine.ApplicationEvent;
-import org.pathvisio.gui.swt.Engine.ApplicationEventListener;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.VPathway;
-import org.pathvisio.view.swt.VPathwaySWT;
 import org.pathvisio.visualization.LegendPanel;
 import org.pathvisio.visualization.VisualizationDialog;
 import org.pathvisio.visualization.VisualizationManager;
@@ -221,11 +220,11 @@ public class MainWindow extends ApplicationWindow implements
 			{
 				deselectNewItemActions();
 				setChecked(true);
-				Engine.getVPathway().setNewGraphics(element);
+				Engine.getActiveVPathway().setNewGraphics(element);
 			}
 			else
 			{	
-				Engine.getVPathway().setNewGraphics(VPathway.NEWNONE);
+				Engine.getActiveVPathway().setNewGraphics(VPathway.NEWNONE);
 			}
 		}
 		
@@ -285,7 +284,7 @@ public class MainWindow extends ApplicationWindow implements
 		public void run () {
 			if(Engine.isDrawingOpen())
 			{
-				VPathway drawing = Engine.getVPathway();
+				VPathway drawing = Engine.getActiveVPathway();
 				if(isChecked())
 				{
 					//Switch to edit mode: show edit toolbar, show property table in sidebar
@@ -321,7 +320,7 @@ public class MainWindow extends ApplicationWindow implements
 
 		public void applicationEvent(ApplicationEvent e) {
 			if(e.type == ApplicationEvent.OPEN_PATHWAY) {
-				Engine.getVPathway().setEditMode(isChecked());
+				Engine.getActiveVPathway().setEditMode(isChecked());
 			}
 			else if(e.type == ApplicationEvent.NEW_PATHWAY) {
 				switchEditMode(true);
@@ -387,7 +386,7 @@ public class MainWindow extends ApplicationWindow implements
 	{
 		if(Engine.isDrawingOpen())
 		{
-			VPathway drawing = Engine.getVPathway();
+			VPathway drawing = Engine.getActiveVPathway();
 			//Check for neccesary connections
 			if(Gex.isConnected() && Gdb.isConnected())
 			{
@@ -741,7 +740,7 @@ public class MainWindow extends ApplicationWindow implements
 				((ActionContributionItem)items[i]).getAction().setChecked(false);
 			}
 		}
-		Engine.getVPathway().setNewGraphics(VPathway.NEWNONE);
+		Engine.getActiveVPathway().setNewGraphics(VPathway.NEWNONE);
 	}
 	
 	// Elements of the coolbar
@@ -918,7 +917,7 @@ public class MainWindow extends ApplicationWindow implements
 		dataMenu.add(createGexAction);
 		dataMenu.add(colorSetManagerAction);
 		dataMenu.add(visualizationDialogAction);
-		if(Engine.USE_R) {
+		if(SwtEngine.USE_R) {
 			MenuManager statsMenu = new MenuManager("&Pathway statistics");
 			dataMenu.add(statsMenu);
 			statsMenu.add(rStatsAction);
@@ -996,7 +995,7 @@ public class MainWindow extends ApplicationWindow implements
 		
 		GuiMain.loadImages(shell.getDisplay());
 		
-		shell.setImage(Engine.getImageRegistry().get("shell.icon"));
+		shell.setImage(SwtEngine.getImageRegistry().get("shell.icon"));
 		
 		Composite viewComposite = new Composite(parent, SWT.NULL);
 		viewComposite.setLayout(new FillLayout());
@@ -1048,28 +1047,16 @@ public class MainWindow extends ApplicationWindow implements
 		
 		else rightPanel.hideTab("Legend");
 	}
-			
-	/**
-	 * Creates a new empty drawing canvas
-	 * @return the empty {@link VPathway}
-	 */
-	public VPathway createNewDrawing()
-	{		
-		VPathwaySWT pswt = new VPathwaySWT(sc, SWT.NO_BACKGROUND);
-		VPathway p = new VPathway(pswt);
-		pswt.setChild(p);
-		return p;
-	}
-	
+				
 	public void applicationEvent(ApplicationEvent e) {
 		VPathway drawing = null;
 		switch(e.type) {
 		case ApplicationEvent.NEW_PATHWAY:
-			drawing = Engine.getVPathway();
+			drawing = Engine.getActiveVPathway();
 			sc.setContent((Canvas)drawing.getWrapper());
 			break;
 		case ApplicationEvent.OPEN_PATHWAY:
-			drawing = Engine.getVPathway();
+			drawing = Engine.getActiveVPathway();
 			sc.setContent((Canvas)drawing.getWrapper());
 			if(Gex.isConnected()) cacheExpressionData();
 			break;	

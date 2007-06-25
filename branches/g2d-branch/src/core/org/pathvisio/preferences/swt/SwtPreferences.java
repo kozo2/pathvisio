@@ -18,12 +18,12 @@ package org.pathvisio.preferences.swt;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.Preference;
 import org.pathvisio.preferences.PreferenceCollection;
@@ -34,7 +34,7 @@ import org.pathvisio.view.Graphics;
  * This class contains all user preferences used in this application
  */
 public class SwtPreferences extends PreferenceStore implements PreferenceCollection, IPropertyChangeListener {
-	private static final File preferenceFile = new File(Engine.getApplicationDir(), ".PathVisio");
+	private static final File preferenceFile = new File(SwtEngine.getApplicationDir(), ".PathVisio");
 	
 	public SwtPreferences() {
 		this(preferenceFile.toString());
@@ -137,13 +137,13 @@ public class SwtPreferences extends PreferenceStore implements PreferenceCollect
 			//if(e.getNewValue() instanceof RGB) Graphics.selectColor = (RGB)e.getNewValue();
 			//else 
 				Graphics.selectColor = ColorConverter.parseColorString((String)e.getNewValue());
-			Engine.getVPathway().redraw();
+			Engine.getActiveVPathway().redraw();
 		}
 		else if(e.getProperty().equals(GlobalPreference.COLOR_HIGHLIGHTED.name())) {
 			//if(e.getNewValue() instanceof RGB) Graphics.highlightColor = (RGB)e.getNewValue();
 			//else 
 				Graphics.highlightColor = ColorConverter.parseColorString((String)e.getNewValue());
-			Engine.getVPathway().redraw();
+				Engine.getActiveVPathway().redraw();
 		}
 		else if(e.getProperty().startsWith("directories")) {
 			createDataDirectories();
@@ -151,10 +151,10 @@ public class SwtPreferences extends PreferenceStore implements PreferenceCollect
 	}
 	
 	public enum SwtPreference implements Preference {
-		SWT_DIR_PWFILES(new File(Engine.getDataDir().toString(), "pathways").toString()),
-		SWT_DIR_GDB(new File(Engine.getDataDir().toString(), "gene databases").toString()),
-		SWT_DIR_EXPR(new File(Engine.getDataDir().toString(), "expression datasets").toString()),
-		SWT_DIR_RDATA(new File(Engine.getDataDir().toString(), "R data").toString()),
+		SWT_DIR_PWFILES(new File(SwtEngine.getDataDir().toString(), "pathways").toString()),
+		SWT_DIR_GDB(new File(SwtEngine.getDataDir().toString(), "gene databases").toString()),
+		SWT_DIR_EXPR(new File(SwtEngine.getDataDir().toString(), "expression datasets").toString()),
+		SWT_DIR_RDATA(new File(SwtEngine.getDataDir().toString(), "R data").toString()),
 
 		SWT_CURR_GDB("none"),
 		SWT_DB_ENGINE_GDB("org.pathvisio.data.DBConnDerby"),

@@ -7,8 +7,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jdom.Document;
+import org.pathvisio.Engine;
 import org.pathvisio.gui.swt.ButtonCellEditor;
-import org.pathvisio.gui.swt.Engine;
 
 public class BiopaxCellEditor extends ButtonCellEditor {
 	Document biopax;
@@ -21,7 +21,7 @@ public class BiopaxCellEditor extends ButtonCellEditor {
 		b.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				BiopaxDialog d = new BiopaxDialog(e.display.getActiveShell());
-				d.setPathway(Engine.getPathway());
+				d.setPathway(Engine.getActivePathway());
 				d.open();
 			}
 		});

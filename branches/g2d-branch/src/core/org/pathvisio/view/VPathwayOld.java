@@ -16,7 +16,7 @@
 //
 package org.pathvisio.view;
 
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -299,7 +299,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 		{
 			clearSelection();
 		}
-		Engine.getWindow().showLegend(!editMode);	
+		SwtEngine.getWindow().showLegend(!editMode);	
 		redraw();
 	}
 	
@@ -417,7 +417,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			if (newGraphics != NEWNONE)
 			{
 				newObject(new Point(e.x, e.y));
-				Engine.getWindow().deselectNewItemActions();
+				SwtEngine.getWindow().deselectNewItemActions();
 			}
 			else
 			{
@@ -1133,11 +1133,11 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 		}
 		if (result.size() > 0)
 		{
-			Engine.clipboard = result;
+			SwtEngine.clipboard = result;
 		}
 		else
 		{
-			Engine.clipboard = null;
+			SwtEngine.clipboard = null;
 		}
 		
 		//clipboard.dispose();
@@ -1168,7 +1168,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 	 */
 	public void pasteFromClipboad()
 	{
-		if (Engine.clipboard != null)
+		if (SwtEngine.clipboard != null)
 		{
 			clearSelection();
 			Map<String, String> idmap = new HashMap<String, String>();
@@ -1177,7 +1177,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			/*
 			 * Step 1: generate new unique ids for copied items
 			 */
-			for (PathwayElement o : Engine.clipboard)
+			for (PathwayElement o : SwtEngine.clipboard)
 			{
 				String id = o.getGraphId();
 				if (id != null) 
@@ -1201,7 +1201,7 @@ PaintListener, MouseTrackListener, KeyListener, PathwayListener, VisualizationLi
 			/*
 			 * Step 2: do the actual copying 
 			 */
-			for (PathwayElement o : Engine.clipboard)
+			for (PathwayElement o : SwtEngine.clipboard)
 			{
 				if (o.getObjectType() == ObjectType.MAPPINFO ||
 					o.getObjectType() == ObjectType.INFOBOX)

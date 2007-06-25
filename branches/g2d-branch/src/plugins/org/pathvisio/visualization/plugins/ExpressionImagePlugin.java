@@ -71,7 +71,7 @@ import org.pathvisio.data.CachedData;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.data.Gex.Sample;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.util.SwtUtils;
 import org.pathvisio.view.Graphics;
@@ -84,7 +84,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		"This plugin displays one or more images on Gene Product objects and \n" +
 		"colors the image(s) accoring to the expression value for the Gene Product.";
 		
-	static final Color DEFAULT_TRANSPARENT = Engine.TRANSPARENT_COLOR;
+	static final Color DEFAULT_TRANSPARENT = SwtEngine.TRANSPARENT_COLOR;
 		
 	List<URL> imageURLs;
 	
@@ -101,8 +101,8 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 
 	private List<URL> defaultURLs() {
 		return new ArrayList<URL>(Arrays.asList(new URL[] {
-				Engine.getResourceURL("images/protein_hi.bmp"),
-				Engine.getResourceURL("images/mRNA_hi.bmp") }));
+				SwtEngine.getResourceURL("images/protein_hi.bmp"),
+				SwtEngine.getResourceURL("images/mRNA_hi.bmp") }));
 	}
 	
 	List<URL> getImageURLs() { 

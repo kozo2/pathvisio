@@ -20,7 +20,7 @@ import java.awt.Color;
 
 import org.eclipse.swt.graphics.RGB;
 import org.jdom.Element;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.Engine;
 
 public abstract class ColorConverter
 {		    

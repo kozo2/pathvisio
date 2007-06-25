@@ -36,13 +36,13 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.Engine;
+import org.pathvisio.data.Gex;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.util.Utils;
 import org.pathvisio.visualization.Visualization;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
-import org.pathvisio.data.Gex;
 
 public abstract class PluginManager {
 	//static final String PLUGIN_PKG = "org.pathvisio.visualization.plugins";
@@ -118,7 +118,7 @@ public abstract class PluginManager {
 	public static void loadPlugins() throws Throwable {	
 		Engine.log.trace("> Loading visualization plugins");
 		Enumeration<URL> resources = 
-			Engine.class.getClassLoader().getResources(".");
+			SwtEngine.class.getClassLoader().getResources(".");
         while (resources.hasMoreElements()) {
         	URL url = resources.nextElement();
         	Engine.log.trace("visualization.plugins package found in: " + url);
@@ -156,7 +156,7 @@ public abstract class PluginManager {
 	
 	static Document getAdditionalXML() {
 		if(addDoc == null) {
-			File f = new File(Engine.getApplicationDir(), FILE_ADD_PLUGINS);
+			File f = new File(SwtEngine.getApplicationDir(), FILE_ADD_PLUGINS);
 			if(!f.exists()) {
 				return createXML();
 			} else {
@@ -226,7 +226,7 @@ public abstract class PluginManager {
 	static void saveXML(Document doc) {
 		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
 		try {
-			FileWriter fw = new FileWriter(new File(Engine.getApplicationDir(), FILE_ADD_PLUGINS));
+			FileWriter fw = new FileWriter(new File(SwtEngine.getApplicationDir(), FILE_ADD_PLUGINS));
 			out.output(doc, fw);
 			fw.close();
 		} catch(IOException e) {
@@ -260,7 +260,7 @@ public abstract class PluginManager {
 			if(fn.endsWith(".class") && !fn.contains("$")) { //Ignore inner classes for now
 				String cn = fn.substring(base.length() + 1);
 				cn = removeClassExt(cn.replace('/', '.'));
-				addPlugin(Class.forName(cn, false, Engine.class.getClassLoader()));
+				addPlugin(Class.forName(cn, false, SwtEngine.class.getClassLoader()));
 			}
 		}
 	}

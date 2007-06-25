@@ -16,11 +16,11 @@
 //
 package org.pathvisio.visualization.colorset;
 
+import java.awt.Color;
 import java.util.HashMap;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import java.awt.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.jdom.Element;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.Engine;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.util.SwtUtils;
 

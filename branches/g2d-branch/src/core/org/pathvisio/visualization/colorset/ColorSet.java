@@ -25,7 +25,8 @@ import java.util.List;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.RGB;
 import org.jdom.Element;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.visualization.VisualizationManager;
@@ -212,7 +213,7 @@ public class ColorSet {
 	static void printParseError(String criterion, Exception e) {
 		Engine.log.error("Unable to parse colorset data stored in " +
 				"expression database: " + criterion, e);
-		MessageDialog.openWarning(Engine.getWindow().getShell(), 
+		MessageDialog.openWarning(SwtEngine.getWindow().getShell(), 
 					"Warning", "Unable to parse the colorset data in this expression dataset");
 	}
 	

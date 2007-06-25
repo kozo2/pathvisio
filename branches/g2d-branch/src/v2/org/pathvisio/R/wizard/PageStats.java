@@ -17,7 +17,7 @@
 
 package org.pathvisio.R.wizard;
 
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -140,7 +140,7 @@ public class PageStats extends WizardPage {
 	}
 	
 	protected void doSetTopToParent(final Control top) {
-		Engine.getWindow().getShell().getDisplay().asyncExec(new Runnable() {
+		SwtEngine.getWindow().getShell().getDisplay().asyncExec(new Runnable() {
 			public void run() {
 				((StackLayout)((Composite)getControl()).getLayout()).topControl = top.getParent();
 				((Composite)getControl()).layout();

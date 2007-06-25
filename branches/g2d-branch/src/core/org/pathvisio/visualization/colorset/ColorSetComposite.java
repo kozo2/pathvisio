@@ -65,7 +65,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-
 import org.pathvisio.util.SwtUtils;
 import org.pathvisio.util.TableColumnResizer;
 import org.pathvisio.util.Utils;

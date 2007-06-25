@@ -16,7 +16,7 @@
 //
 package org.pathvisio.visualization.plugins;
 
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.Graphics;
 
@@ -201,7 +201,7 @@ public class LabelPlugin extends VisualizationPlugin {
 	Font getFont(boolean adjustZoom) {
 		Font f = font == null ? DEFAULT_FONT : font;
 		if(adjustZoom) {
-			int fs = (int)Math.ceil(Engine.getVPathway().vFromM(f.getSize()) * 15);
+			int fs = (int)Math.ceil(SwtEngine.getActiveVPathway().vFromM(f.getSize()) * 15);
 			f = new Font(f.getName(), f.getStyle(), f.getSize());
 		}
 		return f;

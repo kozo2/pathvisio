@@ -43,16 +43,16 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-
-import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.gui.swt.Engine.ApplicationEvent;
-import org.pathvisio.gui.swt.Engine.ApplicationEventListener;
-import org.pathvisio.view.Graphics;
-import org.pathvisio.view.SelectionBox;
-import org.pathvisio.view.SelectionBox.SelectionListener;
+import org.pathvisio.Engine;
+import org.pathvisio.Engine.ApplicationEvent;
+import org.pathvisio.Engine.ApplicationEventListener;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gex.ExpressionDataEvent;
 import org.pathvisio.data.Gex.ExpressionDataListener;
+import org.pathvisio.gui.swt.SwtEngine;
+import org.pathvisio.view.Graphics;
+import org.pathvisio.view.SelectionBox;
+import org.pathvisio.view.SelectionBox.SelectionListener;
 
 /**
  * Manages visualizations
@@ -204,7 +204,7 @@ public class VisualizationManager implements ApplicationEventListener, Expressio
 	}
 	
 	static File getGenericFile() {
-		return new File(Engine.getApplicationDir(), FILENAME_GENERIC);
+		return new File(SwtEngine.getApplicationDir(), FILENAME_GENERIC);
 	}
 	
 	static VisComboItem visComboItem = new VisComboItem("VisualizationCombo");

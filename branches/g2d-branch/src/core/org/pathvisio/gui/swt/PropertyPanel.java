@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.pathvisio.Engine;
 import org.pathvisio.biopax.gui.BiopaxCellEditor;
 import org.pathvisio.data.DataSources;
 import org.pathvisio.model.DataNodeType;
@@ -475,7 +476,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 				o.setProperty(key, value);
 			}
 			tableViewer.refresh();
-			Engine.getVPathway().redrawDirtyRect();
+			Engine.getActiveVPathway().redrawDirtyRect();
 		}
 	};
 	

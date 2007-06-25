@@ -96,4 +96,9 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 	public void mouseMoved(MouseEvent e) {
 		child.mouseMove(new SwingMouseEvent(e));
 	}
+
+	public VPathway createVPathway() {
+		setChild(new VPathway(this));
+		return child;
+	}
 }

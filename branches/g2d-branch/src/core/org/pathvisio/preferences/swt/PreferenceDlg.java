@@ -24,7 +24,7 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.preference.StringFieldEditor;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
@@ -76,7 +76,7 @@ public class PreferenceDlg extends PreferenceManager {
 					"Expression datasets:", getFieldEditorParent());
 			addField(d3);
 
-			if(Engine.isUseR()) {
+			if(SwtEngine.isUseR()) {
 				DirectoryFieldEditor d4 = new DirectoryFieldEditor(SwtPreference.SWT_DIR_RDATA.name(),
 						"Results from pathway statistics:", getFieldEditorParent());
 				addField(d4);

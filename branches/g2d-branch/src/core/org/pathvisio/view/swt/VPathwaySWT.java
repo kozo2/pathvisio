@@ -1,10 +1,8 @@
 package org.pathvisio.view.swt;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -32,7 +30,12 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 		super(parent, style);
 	}
 
-	public void setChild(VPathway c) {
+	public VPathway createVPathway() {
+		setChild(new VPathway(this));
+		return child;
+	}
+	
+	protected void setChild(VPathway c) {
 		child = c;
 		addPaintListener(this);
 		addMouseListener(this);

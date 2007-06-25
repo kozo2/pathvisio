@@ -43,7 +43,7 @@ import org.pathvisio.R.RDataIn;
 import org.pathvisio.R.RDataOut;
 import org.pathvisio.R.RCommands.RInterruptedException;
 import org.pathvisio.data.Gex;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 public class PageData extends WizardPage {

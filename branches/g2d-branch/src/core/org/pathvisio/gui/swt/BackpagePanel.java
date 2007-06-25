@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.pathvisio.Engine;
 import org.pathvisio.data.DataSources;
 import org.pathvisio.data.Gdb;
 import org.pathvisio.data.Gex;

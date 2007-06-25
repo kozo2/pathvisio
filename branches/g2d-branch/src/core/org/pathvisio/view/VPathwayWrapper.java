@@ -11,4 +11,5 @@ public abstract interface VPathwayWrapper {
 	public Dimension getVSize();
 	public Rectangle getVBounds();
 	
+	public VPathway createVPathway();
 }

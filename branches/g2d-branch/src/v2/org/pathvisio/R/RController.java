@@ -16,9 +16,9 @@
 //
 package org.pathvisio.R;
 
-import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.gui.swt.Engine.ApplicationEvent;
-import org.pathvisio.gui.swt.Engine.ApplicationEventListener;
+import org.pathvisio.gui.swt.SwtEngine;
+import org.pathvisio.gui.swt.SwtEngine.ApplicationEvent;
+import org.pathvisio.gui.swt.SwtEngine.ApplicationEventListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,7 +65,7 @@ public class RController implements ApplicationEventListener{
 	public static boolean startR() {
 		//Start R-engine (with progress monitor)
 		try {
-			new ProgressMonitorDialog(Engine.getWindow().getShell()).run(true, true,
+			new ProgressMonitorDialog(SwtEngine.getWindow().getShell()).run(true, true,
 					new IRunnableWithProgress() {
 				public void run(IProgressMonitor m) throws 	InvocationTargetException, 
 				InterruptedException 
@@ -87,7 +87,7 @@ public class RController implements ApplicationEventListener{
 			return false;
 		} finally {
 			//Add a listener to close R on closing PathVisio
-			Engine.addApplicationEventListener(new RController());
+			SwtEngine.addApplicationEventListener(new RController());
 		}
 
 		return true;
@@ -206,10 +206,10 @@ public class RController implements ApplicationEventListener{
 	
 	private static String locateRExec() {
 		final StringBuilder cmd = new StringBuilder();
-		Engine.getWindow().getShell().getDisplay().syncExec(new Runnable() {
+		SwtEngine.getWindow().getShell().getDisplay().syncExec(new Runnable() {
 			public void run() {
 				String exec = Utils.getOS() == Utils.OS_WINDOWS ? "R.exe" : "R";
-				InputDialog libDialog = new InputDialog(Engine.getWindow().getShell(),
+				InputDialog libDialog = new InputDialog(SwtEngine.getWindow().getShell(),
 						"Unable to find R executable",
 						"Unable to locate " + exec + "\nPlease install R (" + WWW_R + ") " +
 						" or specify location:", "", null);
@@ -395,9 +395,9 @@ public class RController implements ApplicationEventListener{
 	}
 		
 	public static void openError(final String msg, final Throwable e) {
-		Engine.getWindow().getShell().getDisplay().asyncExec(new Runnable() {
+		SwtEngine.getWindow().getShell().getDisplay().asyncExec(new Runnable() {
 			public void run() {
-				MessageDialog.openError(Engine.getWindow().getShell(), 
+				MessageDialog.openError(SwtEngine.getWindow().getShell(), 
 						ERR_MSG_PRE, (msg == null ? "" : msg + "\n \n Details:\n") + e.getMessage() + 
 						" (" + e.getClass().getName() + ")");
 			}

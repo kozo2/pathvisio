@@ -19,12 +19,11 @@ package org.pathvisio.visualization.colorset;
 import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Composite;
-
-import org.pathvisio.gui.swt.Engine;
-import org.pathvisio.visualization.VisualizationManager;
-import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
+import org.pathvisio.Engine;
 import org.pathvisio.data.Gex;
 import org.pathvisio.data.Gex.Sample;
+import org.pathvisio.visualization.VisualizationManager;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 
 public class Criterion {
 	static final String displaySample = "|Displayed sample|";

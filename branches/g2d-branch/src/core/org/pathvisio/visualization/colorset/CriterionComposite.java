@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
-
 import org.pathvisio.data.Gex;
 
 public class CriterionComposite extends Composite {

@@ -1,7 +1,5 @@
 package org.pathvisio.view.swt;
 
-import java.awt.Point;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 

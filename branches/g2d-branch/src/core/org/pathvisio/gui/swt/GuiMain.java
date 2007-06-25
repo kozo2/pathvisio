@@ -24,6 +24,7 @@ import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
+import org.pathvisio.Engine;
 import org.pathvisio.data.Gdb;
 import org.pathvisio.data.Gex;
 import org.pathvisio.model.ImageExporter;
@@ -56,14 +57,14 @@ public class GuiMain {
 			}
 			else if(a.equalsIgnoreCase("--UseR") ||
 					a.equalsIgnoreCase("-ur")) {
-				Engine.USE_R = true;
+				SwtEngine.USE_R = true;
 			}
 		}
 		
 		//Setup the application window
 		MainWindow window = null;
-		if(debugHandles)	window = Engine.getSleakWindow();
-		else				window = Engine.getWindow();
+		if(debugHandles)	window = SwtEngine.getSleakWindow();
+		else				window = SwtEngine.getWindow();
 		
 		initiate();
 		
@@ -87,7 +88,7 @@ public class GuiMain {
 	public static void initiate() {
 		//initiate logger
 		try { 
-			GlobalPreference.FILE_LOG.setDefault(new File(Engine.getApplicationDir(), ".PathVisioLog").toString());
+			GlobalPreference.FILE_LOG.setDefault(new File(SwtEngine.getApplicationDir(), ".PathVisioLog").toString());
 			Engine.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
 		} catch(Exception e) {}
 		Engine.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
@@ -140,11 +141,11 @@ public class GuiMain {
 	}
 	
 	static void registerExporters() {
-		Engine.addGpmlExporter(new MappFormat());
-		Engine.addGpmlExporter(new SvgFormat());
-		Engine.addGpmlExporter(new ImageExporter(ImageExporter.TYPE_PNG));
-		Engine.addGpmlExporter(new ImageExporter(ImageExporter.TYPE_TIFF));
-		Engine.addGpmlExporter(new ImageExporter(ImageExporter.TYPE_PDF));
+		Engine.addPathwayExporter(new MappFormat());
+		Engine.addPathwayExporter(new SvgFormat());
+		Engine.addPathwayExporter(new ImageExporter(ImageExporter.TYPE_PNG));
+		Engine.addPathwayExporter(new ImageExporter(ImageExporter.TYPE_TIFF));
+		Engine.addPathwayExporter(new ImageExporter(ImageExporter.TYPE_PDF));
 	}
 	
 	static void loadVisualizations() {
@@ -159,7 +160,7 @@ public class GuiMain {
 	}
 	
 	static void loadPreferences() {
-		Engine.getPreferences();
+		SwtEngine.getPreferences();
 	}
 	
 	/**
@@ -198,7 +199,7 @@ public class GuiMain {
 				ImageDescriptor.createFromURL(cl.getResource("icons/tree_collapsed.gif")));
 		imageRegistry.put("tree.expanded",
 				ImageDescriptor.createFromURL(cl.getResource("icons/tree_expanded.gif")));
-		Engine.setImageRegistry(imageRegistry);
+		SwtEngine.setImageRegistry(imageRegistry);
 	}
 	
 }

@@ -34,10 +34,10 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.pathvisio.Engine;
 import org.pathvisio.debug.StopWatch;
-import org.pathvisio.gui.swt.Engine;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.preferences.swt.SwtPreferences;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 /**
@@ -95,7 +95,7 @@ public abstract class Gdb {
 	public static void setCurrentGdb(String dbNm) {
 		dbName = dbNm;
 		SwtPreference.SWT_CURR_GDB.setValue(dbNm);
-		try { Engine.getPreferences().save(); } 
+		try { SwtEngine.getPreferences().save(); } 
 		catch(Exception e) { Engine.log.error("Unable to save preferences", e); } 
 	}
 	
