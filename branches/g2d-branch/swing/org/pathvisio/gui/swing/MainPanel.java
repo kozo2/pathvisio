@@ -4,13 +4,18 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
+import org.pathvisio.Engine;
 import org.pathvisio.gui.swing.CommonActions.CopyAction;
 import org.pathvisio.gui.swing.CommonActions.ExportAction;
 import org.pathvisio.gui.swing.CommonActions.ImportAction;
@@ -21,10 +26,14 @@ import org.pathvisio.gui.swing.CommonActions.ZoomAction;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.swing.VPathwaySwing;
 
+import com.mammothsoftware.frwk.ddb.DropDownButton;
+
 public class MainPanel extends JPanel {
+	private JSplitPane splitPane;
 	private JMenuBar menuBar;
 	private JToolBar toolBar;
-	private JScrollPane scrollPane;
+	private JScrollPane pathwayScrollPane;
+	private JScrollPane sidebarScrollPane;
 	
 	public MainPanel() {
 		setLayout(new BorderLayout());
@@ -37,8 +46,15 @@ public class MainPanel extends JPanel {
 		add(toolBar, BorderLayout.NORTH);
 		//menuBar will be added by container (JFrame or JApplet)
 		
-		scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		add(scrollPane, BorderLayout.CENTER);
+		
+		
+		pathwayScrollPane = new JScrollPane();
+		sidebarScrollPane = new JScrollPane();
+		
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pathwayScrollPane, sidebarScrollPane);
+		splitPane.setResizeWeight(1);
+		splitPane.setOneTouchExpandable(true);
+		add(splitPane, BorderLayout.CENTER);
 	}
 	
 	protected void addMenuActions(JMenuBar mb) {
@@ -78,6 +94,7 @@ public class MainPanel extends JPanel {
 		tb.addSeparator();
 		
 		tb.addSeparator();
+		tb.add(new JLabel("Zoom:", JLabel.LEFT));
 		JComboBox combo = new JComboBox(new Object[] { 
 				new ZoomAction(VPathway.ZOOM_TO_FIT),
 				new ZoomAction(10),
@@ -111,14 +128,29 @@ public class MainPanel extends JPanel {
 		
 		tb.add(new NewElementAction(VPathway.NEWGENEPRODUCT));
 		tb.add(new NewElementAction(VPathway.NEWLABEL));
-		tb.add(new NewElementAction(VPathway.NEWLINEMENU));
+		//New line menu
+		DropDownButton lineButton = new DropDownButton(new ImageIcon(Engine.getResourceURL("icons/newlinemenu.gif")));
+		lineButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWLINE)));
+		lineButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWLINEARROW)));
+		lineButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWLINEDASHED)));
+		lineButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWLINEDASHEDARROW)));
+		lineButton.setRunFirstItem(true);
+		tb.add(lineButton);
+		
 		tb.add(new NewElementAction(VPathway.NEWRECTANGLE));
 		tb.add(new NewElementAction(VPathway.NEWOVAL));
 		tb.add(new NewElementAction(VPathway.NEWARC));
 		tb.add(new NewElementAction(VPathway.NEWBRACE));
 		tb.add(new NewElementAction(VPathway.NEWTBAR));
-		tb.add(new NewElementAction(VPathway.NEWLINESHAPEMENU));
-				
+		
+		//New lineshape menu
+		DropDownButton lineShapeButton = new DropDownButton(new ImageIcon(Engine.getResourceURL("icons/newlineshapemenu.gif")));
+		lineShapeButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWLIGANDROUND)));
+		lineShapeButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWRECEPTORROUND)));
+		lineShapeButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWLIGANDSQUARE)));
+		lineShapeButton.addComponent(new JMenuItem(new NewElementAction(VPathway.NEWRECEPTORSQUARE)));
+		lineShapeButton.setRunFirstItem(true);
+		tb.add(lineShapeButton);
 	}
 	
 	public JMenuBar getMenuBar() {
@@ -130,11 +162,11 @@ public class MainPanel extends JPanel {
 	}
 	
 	public void setPathway(VPathwaySwing vPathway) {
-		scrollPane.setViewportView(vPathway);
+		pathwayScrollPane.setViewportView(vPathway);
 	}
 	
 	public JScrollPane getScrollPane() {
-		return scrollPane;
+		return pathwayScrollPane;
 	}
 }
 

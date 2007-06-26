@@ -20,13 +20,16 @@ import org.pathvisio.gui.swt.MainWindow;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.PathwayImporter;
 import org.pathvisio.view.VPathway;
+import org.pathvisio.view.VPathwayEvent;
+import org.pathvisio.view.VPathwayListener;
 import org.pathvisio.view.swing.VPathwaySwing;
 
 public abstract class CommonActions {
-	private static URL IMG_IMPORT = Engine.getResourceURL("icons/open.gif");
-	private static URL IMG_EXPORT = Engine.getResourceURL("icons/save.gif");
-	private static URL IMG_COPY= Engine.getResourceURL("icons/save.gif");
-	private static URL IMG_PASTE = Engine.getResourceURL("icons/save.gif");
+	private static URL IMG_SAVE = Engine.getResourceURL("icons/save.gif");
+	private static URL IMG_IMPORT = Engine.getResourceURL("icons/import.gif");
+	private static URL IMG_EXPORT = Engine.getResourceURL("icons/export.gif");
+	private static URL IMG_COPY= Engine.getResourceURL("icons/copy.gif");
+	private static URL IMG_PASTE = Engine.getResourceURL("icons/paste.gif");
 	
 	static class ZoomAction extends AbstractAction {
 		Component parent;
@@ -56,8 +59,16 @@ public abstract class CommonActions {
 	}
 	
 	static class SaveAction extends AbstractAction {
+		public SaveAction() {
+			super("Save", new ImageIcon(IMG_SAVE));
+			putValue(Action.SHORT_DESCRIPTION, "Save the pathway");
+			putValue(Action.LONG_DESCRIPTION, "Save the pathway");
+			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		}
+
 		public void actionPerformed(ActionEvent e) {
-			//TODO
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -170,7 +181,7 @@ public abstract class CommonActions {
 		}
 	}
 	
-	static class NewElementAction extends AbstractAction {
+	static class NewElementAction extends AbstractAction implements VPathwayListener {
 		int element;
 		public NewElementAction(int type) {
 			super();
@@ -256,7 +267,20 @@ public abstract class CommonActions {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			Engine.getActiveVPathway().setNewGraphics(element);
+			VPathway vp = Engine.getActiveVPathway();
+			vp.addVPathwayListener(this);
+			if(vp != null) {
+				setEnabled(true);
+				vp.setNewGraphics(element);
+			}
+		}
+
+		public void vPathwayEvent(VPathwayEvent e) {
+			if(e.getType() == VPathwayEvent.NEW_ELEMENT_ADDED) {
+				setEnabled(false);
+				e.getVPathway().setNewGraphics(VPathway.NEWNONE);
+				e.getVPathway().removeVPathwayListener(this);	
+			}
 		}
 	}
 }

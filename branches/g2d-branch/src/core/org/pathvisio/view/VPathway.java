@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.pathvisio.Engine;
-import org.pathvisio.gui.swt.MainWindow;
 import org.pathvisio.model.GroupStyle;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
@@ -309,8 +308,10 @@ public class VPathway implements PathwayListener, VisualizationListener
 		{
 			clearSelection();
 		}
-		//SwtEngine.getWindow().showLegend(!editMode);	
+
 		redraw();
+		int type = editMode ? VPathwayEvent.EDIT_MODE_ON : VPathwayEvent.EDIT_MODE_OFF;
+		fireVPathwayEvent(new VPathwayEvent(this, VPathwayEvent.EDIT_MODE_OFF));
 	}
 	
 	private double zoomFactor = 1.0/15.0;
@@ -954,7 +955,8 @@ public class VPathway implements PathwayListener, VisualizationListener
 		
 		vPreviousX = ve.x;
 		vPreviousY = ve.y;
-				
+		
+		fireVPathwayEvent(new VPathwayEvent(this, lastAdded, VPathwayEvent.NEW_ELEMENT_ADDED));
 	}
 	
 
@@ -1276,6 +1278,31 @@ public class VPathway implements PathwayListener, VisualizationListener
 		}
 	}
 
+	private List<VPathwayListener> listeners = new ArrayList<VPathwayListener>();
+	private List<VPathwayListener> removeListeners = new ArrayList<VPathwayListener>();
+	
+	public void addVPathwayListener(VPathwayListener l) {
+		listeners.add(l);
+	}
+	
+	public void removeVPathwayListener(VPathwayListener l) {
+		removeListeners.add(l);
+	}
+	
+	private void cleanupListeners() {
+		//Do not remove immediately, to prevent ConcurrentModificationException
+		//when the listener removes itself
+		listeners.removeAll(removeListeners);
+		removeListeners.clear();
+	}
+	
+	protected void fireVPathwayEvent(VPathwayEvent e) {
+		cleanupListeners();
+		for(VPathwayListener l : listeners) {
+			l.vPathwayEvent(e);
+		}
+	}
+	
 	public void visualizationEvent(VisualizationEvent e) {
 		switch(e.type) {
 		case(VisualizationEvent.COLORSET_MODIFIED):

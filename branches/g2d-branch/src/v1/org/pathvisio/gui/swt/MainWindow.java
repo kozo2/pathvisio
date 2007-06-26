@@ -61,7 +61,8 @@ import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.VPathway;
-import org.pathvisio.view.swt.VPathwaySWT;
+import org.pathvisio.view.VPathwayEvent;
+import org.pathvisio.view.VPathwayListener;
 import org.pathvisio.visualization.LegendPanel;
 import org.pathvisio.visualization.VisualizationManager;
 

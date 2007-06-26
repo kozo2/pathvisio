@@ -69,6 +69,8 @@ import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.VPathway;
+import org.pathvisio.view.VPathwayEvent;
+import org.pathvisio.view.VPathwayListener;
 import org.pathvisio.visualization.LegendPanel;
 import org.pathvisio.visualization.VisualizationDialog;
 import org.pathvisio.visualization.VisualizationManager;
@@ -81,7 +83,7 @@ import edu.stanford.ejalbert.BrowserLauncher;
  * loading, creating and saving drawings to and from GPML.
  */
 public class MainWindow extends ApplicationWindow implements 
-						ApplicationEventListener, ExpressionDataListener
+						ApplicationEventListener, ExpressionDataListener, VPathwayListener
 {
 	private static final long serialVersionUID = 1L;
 	static int ZOOM_TO_FIT = -1;
@@ -1082,4 +1084,15 @@ public class MainWindow extends ApplicationWindow implements
 			break;
 		}
 	}
+	
+	public void vPathwayEvent(VPathwayEvent e) {
+		//SwtEngine.getWindow().showLegend(!editMode);	
+		switch(e.getType()) {
+		case VPathwayEvent.EDIT_MODE_OFF:
+			showLegend(true);
+		case VPathwayEvent.EDIT_MODE_ON:
+			showLegend(false);
+		}
+	}
+	
 } // end of class

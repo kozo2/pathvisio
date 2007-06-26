@@ -19,12 +19,12 @@ public class GuiMain {
 		frame.setJMenuBar(mainPanel.getMenuBar());
 		frame.setSize(800, 600);
 		
-		try {
-		    UIManager.setLookAndFeel(
-		        UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception ex) {
-			Engine.log.error("Unable to load native look and feel", ex);
-		}
+//		try {
+//		    UIManager.setLookAndFeel(
+//		        UIManager.getSystemLookAndFeelClassName());
+//		} catch (Exception ex) {
+//			Engine.log.error("Unable to load native look and feel", ex);
+//		}
 		
 		//Display the window.
 		frame.setVisible(true);
