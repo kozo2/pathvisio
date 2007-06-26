@@ -17,6 +17,7 @@
 package org.pathvisio.view;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.pathvisio.Engine;
+import org.pathvisio.gui.swt.MainWindow;
 import org.pathvisio.model.GroupStyle;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
@@ -57,6 +59,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 {	
 	private static final long serialVersionUID = 1L;
 	static final double M_PASTE_OFFSET = 10 * 15;
+	public static final double ZOOM_TO_FIT = -1;
 	
 	private VPathwayWrapper parent; // may be null
 	
@@ -345,10 +348,20 @@ public class VPathway implements PathwayListener, VisualizationListener
 
 	/**
 	 * Sets the drawings zoom in percent
-	 * @param pctZoomFactor zoomfactor in percent
+	 * @param pctZoomFactor zoomfactor in percent, or ZOOM_TO_FIT to fit the
+	 * zoomfactor to the drawing's viewport
 	 */
 	public void setPctZoom(double pctZoomFactor)
 	{
+		if(pctZoomFactor == ZOOM_TO_FIT) 
+		{
+			Dimension drawingSize = getWrapper().getVSize();
+			Dimension viewportSize = getWrapper().getViewportSize();
+			pctZoomFactor = (int)Math.min(
+					getPctZoom() * (double)viewportSize.width / drawingSize.width,
+					getPctZoom() * (double)viewportSize.height / drawingSize.height
+			);
+		}
 		zoomFactor = pctZoomFactor / 100.0 / 15.0;
 		int width = (int)vFromM(infoBox.getGmmlData().getMBoardWidth());
 		int height = (int)vFromM(infoBox.getGmmlData().getMBoardHeight());

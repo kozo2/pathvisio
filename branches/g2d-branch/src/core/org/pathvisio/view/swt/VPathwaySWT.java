@@ -16,6 +16,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.view.InputEvent;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
@@ -64,6 +65,11 @@ public class VPathwaySWT extends Canvas implements VPathwayWrapper, PaintListene
 	public Rectangle getVBounds() {
 		org.eclipse.swt.graphics.Rectangle b = getBounds();
 		return new Rectangle(b.x, b.y, b.width, b.height);
+	}
+	
+	public Dimension getViewportSize() {
+		org.eclipse.swt.graphics.Point scs = SwtEngine.getWindow().sc.getSize();
+		return new Dimension(scs.x, scs.y);
 	}
 	
 	//Method 1: transfer from BufferedImage

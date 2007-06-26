@@ -17,7 +17,7 @@ public class GuiMain {
 		MainPanel mainPanel = SwingEngine.getApplicationPanel();
 		frame.add(mainPanel);
 		frame.setJMenuBar(mainPanel.getMenuBar());
-		frame.setSize(400, 400);
+		frame.setSize(800, 600);
 		
 		try {
 		    UIManager.setLookAndFeel(

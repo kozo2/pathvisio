@@ -513,17 +513,7 @@ public class CommonActions
 			VPathway drawing = Engine.getActiveVPathway();
 			if (drawing != null)
 			{
-				double newPctZoomFactor = pctZoomFactor;
-				if(pctZoomFactor == MainWindow.ZOOM_TO_FIT) 
-				{
-					org.eclipse.swt.graphics.Point shellSize = window.sc.getSize();
-					Dimension drawingSize = drawing.getWrapper().getVSize();
-					newPctZoomFactor = (int)Math.min(
-							drawing.getPctZoom() * (double)shellSize.x / drawingSize.width,
-							drawing.getPctZoom() * (double)shellSize.y / drawingSize.height
-					);
-				} 
-				drawing.setPctZoom(newPctZoomFactor);
+				drawing.setPctZoom(pctZoomFactor);
 			}
 			else
 			{

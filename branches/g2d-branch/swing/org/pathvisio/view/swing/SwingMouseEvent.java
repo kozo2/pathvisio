@@ -21,6 +21,7 @@ public class SwingMouseEvent extends org.pathvisio.view.MouseEvent {
 		case MouseEvent.MOUSE_EXITED:
 			return org.pathvisio.view.MouseEvent.MOUSE_EXIT;
 		case MouseEvent.MOUSE_MOVED:
+		case MouseEvent.MOUSE_DRAGGED:
 			return org.pathvisio.view.MouseEvent.MOUSE_MOVE;
 		case MouseEvent.MOUSE_PRESSED:
 			return org.pathvisio.view.MouseEvent.MOUSE_DOWN;

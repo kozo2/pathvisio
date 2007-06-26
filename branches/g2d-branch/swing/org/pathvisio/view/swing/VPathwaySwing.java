@@ -12,14 +12,17 @@ import java.awt.event.MouseMotionListener;
 
 import javax.swing.JComponent;
 
+import org.pathvisio.gui.swing.MainPanel;
 import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
 public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseMotionListener, MouseListener, KeyListener {
 	VPathway child;
+	MainPanel parent;
 	
-	public VPathwaySwing() {
+	public VPathwaySwing(MainPanel parent) {
+		this.parent = parent;
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addKeyListener(this);
@@ -37,6 +40,10 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 		return getSize();
 	}
 
+	public Dimension getViewportSize() {
+		return parent.getScrollPane().getViewport().getExtentSize();
+	}
+	
 	public void redraw() {
 		repaint();
 	}
@@ -80,14 +87,17 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 
 	public void keyPressed(KeyEvent e) {
 		child.keyPressed(new SwingKeyEvent(e));
+		System.out.println("Key pressed........!");
 	}
 
 	public void keyReleased(KeyEvent e) {
-		child.keyReleased(new SwingKeyEvent(e));		
+		child.keyReleased(new SwingKeyEvent(e));
+		System.out.println("Key released......!");
 	}
 
 	public void keyTyped(KeyEvent e) {
-		// TODO: find out how to handle this one	
+		// TODO: find out how to handle this one
+		System.out.println("Key types.....!");
 	}
 
 	public void mouseDragged(MouseEvent e) {

@@ -10,6 +10,7 @@ public abstract interface VPathwayWrapper {
 	public void setVSize(int w, int h);
 	public Dimension getVSize();
 	public Rectangle getVBounds();
+	public Dimension getViewportSize();
 	
 	public VPathway createVPathway();
 }
