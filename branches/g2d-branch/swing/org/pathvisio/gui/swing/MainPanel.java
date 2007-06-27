@@ -13,7 +13,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import org.pathvisio.Engine;
 import org.pathvisio.gui.swing.CommonActions.CopyAction;
@@ -23,6 +27,7 @@ import org.pathvisio.gui.swing.CommonActions.NewElementAction;
 import org.pathvisio.gui.swing.CommonActions.PasteAction;
 import org.pathvisio.gui.swing.CommonActions.SaveAction;
 import org.pathvisio.gui.swing.CommonActions.ZoomAction;
+import org.pathvisio.gui.swing.propertypanel.PathwayTableModel;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.swing.VPathwaySwing;
 
@@ -34,6 +39,7 @@ public class MainPanel extends JPanel {
 	private JToolBar toolBar;
 	private JScrollPane pathwayScrollPane;
 	private JScrollPane sidebarScrollPane;
+	private JTable propertyTable;
 	
 	public MainPanel() {
 		setLayout(new BorderLayout());
@@ -46,10 +52,18 @@ public class MainPanel extends JPanel {
 		add(toolBar, BorderLayout.NORTH);
 		//menuBar will be added by container (JFrame or JApplet)
 		
-		
-		
 		pathwayScrollPane = new JScrollPane();
 		sidebarScrollPane = new JScrollPane();
+		
+		final PathwayTableModel model = new PathwayTableModel();
+		propertyTable = new JTable(model) {
+			public TableCellRenderer getCellRenderer(int row, int column) {
+				TableCellRenderer r = model.getCellRenderer(row, column);
+				return r == null ? super.getCellRenderer(row, column) : r;
+			}
+		};
+		
+		sidebarScrollPane.setViewportView(propertyTable);
 		
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pathwayScrollPane, sidebarScrollPane);
 		splitPane.setResizeWeight(1);

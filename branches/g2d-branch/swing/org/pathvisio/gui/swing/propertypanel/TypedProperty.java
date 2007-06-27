@@ -1,56 +1,82 @@
 package org.pathvisio.gui.swing.propertypanel;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.util.Collection;
 
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+
+import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
 
-public class TypedProperty {
-	public static final Object DIFFERENT = new Object();
-	Object value = DIFFERENT;
+public class TypedProperty<T> {	
+	Collection<PathwayElement> elements;
+	T value;
 	PropertyType type;
+	boolean different;
 	
-	public TypedProperty(Object value, PropertyType type) {
+	private TypedProperty(Collection<PathwayElement> elements, T value, PropertyType type, boolean different) {
+		this.elements = elements;
 		this.value = value;
-	}
-		
-	public Object getViewValue() {
-		return value;
+		this.type = type;
+		this.different = different;
 	}
 	
-	public String stringValue() {
-		return value.toString();
+	public void setValue(T value) {
+		//TODO: validate
+		this.value = value;
+		if(value != null) {
+			for(PathwayElement e : elements) {
+				e.setProperty(type, value);
+			}
+		}
+	}
+	
+	public T getViewValue() {
+		return value;
 	}
 	
 	public PropertyType getType() {
 		return type;
 	}
+		
+	public boolean hasDifferentValues() { return different; }
+	public void setHasDifferentValues(boolean diff) { different = diff; }
 	
-	public static TypedProperty getInstance(Object value, PropertyType type) {
+	public TableCellRenderer getCellRenderer() {
+		return hasDifferentValues() ? differentRenderer : null;
+	}
+	
+//	public TableEditor getCellEditor() {
+//		
+//	}
+	
+	public static TypedProperty getInstance(Collection<PathwayElement> elements, Object value, PropertyType type) {
+		return getInstance(elements, value, type, false);
+	}
+	
+	public static TypedProperty getInstance(Collection<PathwayElement> elements, PropertyType type) {
+		return getInstance(elements, null, type, true);
+	}
+	
+	private static TypedProperty getInstance(Collection<PathwayElement> elements, Object value, PropertyType type, boolean different) {
 		switch(type.type()) {
 		case STRING:
-			return new StringProperty(value, type);
+			return new TypedProperty<String>(elements, (String)value, type, different);
 		case COLOR:
-			return new ColorProperty(value, type);
+			return new TypedProperty<Color>(elements, (Color)value, type, different);
 		default:
-			return new TypedProperty(value, type);
+			return new TypedProperty<Object>(elements, value, type, different);
 		}
 	}
 	
-	public static class StringProperty extends TypedProperty {
-		public StringProperty(Object value, PropertyType type) {
-			super(value, type);
+	private DefaultTableCellRenderer differentRenderer = new DefaultTableCellRenderer() {
+		protected void setValue(Object value) {
+			value = "Different values";
+			super.setValue(value);
 		}
-		public String getViewValue() {
-			return (String)value;
-		}
-	}
-
-	public static class ColorProperty extends TypedProperty {
-		public ColorProperty(Object value, PropertyType type) {
-			super(value, type);
-		}
-		public Color getViewValue() {
-			return (Color)value;
-		}
-	}
+	};
 }
