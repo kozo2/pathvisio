@@ -1,12 +1,20 @@
 package org.pathvisio.gui.swing.propertypanel;
 
+import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.EventListenerList;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import org.pathvisio.model.PathwayElement;
@@ -19,6 +27,8 @@ import org.pathvisio.view.SelectionBox.SelectionEvent;
 import org.pathvisio.view.SelectionBox.SelectionListener;
 
 public class PathwayTableModel extends AbstractTableModel implements SelectionListener, PathwayListener {
+	TableCellEditor defaultEditor = new DefaultCellEditor(new JTextField());
+	
 	Set<PathwayElement> input;
 	List<TypedProperty> properties;
 	
@@ -129,7 +139,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return columnIndex == 1;
 	}
-	
+		
 	public void drawingEvent(SelectionEvent e) {
 		switch(e.type) {
 		case SelectionEvent.OBJECT_ADDED:
@@ -154,6 +164,14 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		return null;
 	}
 
+	public TableCellEditor getCellEditor(int row, int column) {
+		if(column != 0) {
+			TypedProperty tp = getPropertyAt(row);
+			if(tp != null) return tp.getCellEditor();
+		}
+		return null;
+	}
+	
 	public void gmmlObjectModified(PathwayEvent e) {
 		refresh();
 	}

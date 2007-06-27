@@ -17,7 +17,6 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
 import org.pathvisio.Engine;
 import org.pathvisio.gui.swing.CommonActions.CopyAction;
@@ -60,6 +59,10 @@ public class MainPanel extends JPanel {
 			public TableCellRenderer getCellRenderer(int row, int column) {
 				TableCellRenderer r = model.getCellRenderer(row, column);
 				return r == null ? super.getCellRenderer(row, column) : r;
+			}
+			public TableCellEditor getCellEditor(int row, int column) {
+				TableCellEditor e = model.getCellEditor(row, column);
+				return e == null ? super.getCellEditor(row, column) : e;
 			}
 		};
 		

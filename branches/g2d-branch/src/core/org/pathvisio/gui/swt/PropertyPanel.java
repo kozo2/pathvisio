@@ -46,9 +46,11 @@ import org.pathvisio.Engine;
 import org.pathvisio.biopax.gui.BiopaxCellEditor;
 import org.pathvisio.data.DataSources;
 import org.pathvisio.model.DataNodeType;
+import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
 import org.pathvisio.model.MappFormat;
 import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.OrientationType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayListener;
@@ -243,13 +245,11 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 	 * a comboboxeditor will be set up with the proper values for
 	 * the drop down list.
 	 */
-	final static String[] orientation_names = {"Top", "Right", "Bottom", "Left"};
-	final static String[] linestyle_names = {"Solid", "Dashed"};
+	final static String[] orientation_names = OrientationType.getNames();
+	final static String[] linestyle_names = LineStyle.getNames();
 	final static String[] boolean_names = {"false", "true"};
 	final static String[] shape_names = ShapeType.getNames();
-	final static String[] linetype_names = {
-			"Line", "Arrow", "TBar", "Receptor", "LigandSquare", 
-			"ReceptorSquare", "LigandRound", "ReceptorRound"}; 
+	final static String[] linetype_names = LineType.getNames(); 
 	final static String[] genetype_names = DataNodeType.getNames();
 	
 	private CellEditor getCellEditor(Object element)
