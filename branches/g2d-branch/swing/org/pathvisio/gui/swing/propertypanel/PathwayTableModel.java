@@ -1,18 +1,12 @@
 package org.pathvisio.gui.swing.propertypanel;
 
-import java.awt.Component;
 import java.util.ArrayList;
-import java.util.EventObject;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.DefaultCellEditor;
-import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.EventListenerList;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -29,7 +23,7 @@ import org.pathvisio.view.SelectionBox.SelectionListener;
 public class PathwayTableModel extends AbstractTableModel implements SelectionListener, PathwayListener {
 	TableCellEditor defaultEditor = new DefaultCellEditor(new JTextField());
 	
-	Set<PathwayElement> input;
+	Collection<PathwayElement> input;
 	List<TypedProperty> properties;
 	
 	public PathwayTableModel() {
@@ -63,7 +57,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		fireTableDataChanged();
 	}
 	
-	protected List<TypedProperty> generateProperties(Set<PathwayElement> elements) {
+	protected List<TypedProperty> generateProperties(Collection<PathwayElement> elements) {
 		List<TypedProperty> properties = new ArrayList<TypedProperty>();
 		List<PropertyType> propTypes = getProperties(elements);
 		for(PropertyType pt : propTypes) {
@@ -73,7 +67,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		return properties;
 	}
 	
-	protected List<PropertyType> getProperties(Set<PathwayElement> elements) {
+	protected List<PropertyType> getProperties(Collection<PathwayElement> elements) {
 		ArrayList<PropertyType> properties = null;
 		ArrayList<PropertyType> remove = new ArrayList<PropertyType>();
 		for(PathwayElement e : elements) {
@@ -94,7 +88,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		return properties == null ? new ArrayList<PropertyType>() : properties;
 	}
 	
-	TypedProperty getAggregateProperty(PropertyType key, Set<PathwayElement> elements) {
+	TypedProperty getAggregateProperty(PropertyType key, Collection<PathwayElement> elements) {
 		Object value = null;
 		boolean first = true;
 		for(PathwayElement e : elements) {
@@ -121,14 +115,16 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 	}
 	
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TypedProperty p = properties.get(rowIndex);
+		TypedProperty p = getPropertyAt(rowIndex);
 		if(columnIndex == 0) return p.getType().desc();
-		else return p.getViewValue();
+		else return p.getValue();
 	}
 
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		// TODO Auto-generated method stub
-		super.setValueAt(aValue, rowIndex, columnIndex);
+		if(columnIndex != 0) {
+			TypedProperty p = getPropertyAt(rowIndex);
+			p.setValue(aValue);
+		}
 	}
 	
 	public String getColumnName(int column) {

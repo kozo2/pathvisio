@@ -14,6 +14,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -50,11 +51,7 @@ public class TypedProperty<T> {
 	public T getValue() {
 		return value;
 	}
-
-	public T getViewValue() {
-		return value;
-	}
-
+	
 	public PropertyType getType() {
 		return type;
 	}
@@ -71,14 +68,18 @@ public class TypedProperty<T> {
 			return lineTypeRenderer;
 		case LINESTYLE:
 			return lineStyleRenderer;
-		default: return null;
 		}
+		switch(type.type()) {
+		case DOUBLE:
+			return doubleRenderer;
+		}
+		return null;
 	}
 
 	public TableCellEditor getCellEditor() {
 		switch(type) {
 		case COLOR:
-			return colorEditor;
+			return null;
 		default: return null;
 		}
 	}
@@ -104,15 +105,17 @@ public class TypedProperty<T> {
 		case LINETYPE:
 			return new TypedProperty<LineType>(elements, (LineType)value, type, different);
 		case LINESTYLE:
-			return new TypedProperty<Integer>(elements, (Integer)value, type, different);	
+			return new TypedProperty<Integer>(elements, (Integer)value, type, different);
+		case DOUBLE:
+			return new TypedProperty<Double>(elements, (Double)value, type, different);
 		default:
 			return new TypedProperty<Object>(elements, value, type, different);
 		}
 	}
 
-	private ColorEditor colorEditor = new ColorEditor();
+	//private ColorEditor colorEditor = new ColorEditor();
 	
-	private class ColorEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+	private static class ColorEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
 		Color currentColor;
 		JButton button;
 		JColorChooser colorChooser;
@@ -164,7 +167,8 @@ public class TypedProperty<T> {
 	private ColorRenderer colorRenderer = new ColorRenderer();
 	private ComboRenderer lineTypeRenderer = new ComboRenderer(LineType.getNames());
 	private ComboRenderer lineStyleRenderer = new ComboRenderer(LineStyle.getNames());
-
+	private DoubleRenderer doubleRenderer = new DoubleRenderer();
+	
 	private DefaultTableCellRenderer differentRenderer = new DefaultTableCellRenderer() {
 		protected void setValue(Object value) {
 			value = "Different values";
@@ -172,7 +176,7 @@ public class TypedProperty<T> {
 		}
 	};
 
-	private class ComboRenderer extends JComboBox implements TableCellRenderer {
+	private static class ComboRenderer extends JComboBox implements TableCellRenderer {
 		public ComboRenderer(Object[] items) {
 			super(items);
 		}
@@ -182,8 +186,15 @@ public class TypedProperty<T> {
 			return this;
 		}
 	}
-
-	private class ColorRenderer extends JLabel implements TableCellRenderer {
+	
+	private static class DoubleRenderer extends DefaultTableCellRenderer {		
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			Double d = Math.round((Double)(value) * 100.0) / 100.0;
+			return super.getTableCellRendererComponent(table, d, isSelected, hasFocus, row, column);
+		}		
+	}
+	
+	private static class ColorRenderer extends JLabel implements TableCellRenderer {
 		Border unselectedBorder = null;
 		Border selectedBorder = null;
 		boolean isBordered = true;
