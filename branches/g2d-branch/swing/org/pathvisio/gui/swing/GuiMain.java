@@ -28,7 +28,7 @@ public class GuiMain {
 		
 		//Display the window.
 		frame.setVisible(true);
-		Engine.newPathway(new VPathwaySwing(mainPanel));
+		Engine.newPathway(new VPathwaySwing(mainPanel.getScrollPane()));
 		Engine.getActiveVPathway().setEditMode(true);
 	}
 

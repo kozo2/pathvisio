@@ -1,5 +1,6 @@
 package org.pathvisio.view.swing;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,18 +12,20 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 
-import org.pathvisio.gui.swing.MainPanel;
 import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
 public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseMotionListener, MouseListener, KeyListener {
 	VPathway child;
-	MainPanel parent;
+	JScrollPane container;
 	
-	public VPathwaySwing(MainPanel parent) {
-		this.parent = parent;
+	public VPathwaySwing(JScrollPane parent) {
+		super();
+		if(parent == null) throw new IllegalArgumentException("parent is null");
+		this.container = parent;
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		addKeyListener(this);
@@ -42,7 +45,10 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 	}
 
 	public Dimension getViewportSize() {
-		return parent.getScrollPane().getViewport().getExtentSize();
+		if(container instanceof JScrollPane) {
+			return ((JScrollPane)container).getViewport().getExtentSize();
+		}
+		return getSize();
 	}
 	
 	public void redraw() {
@@ -114,7 +120,7 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 
 	public VPathway createVPathway() {
 		setChild(new VPathway(this));
-		SwingEngine.getApplicationPanel().setPathway(this);
+		container.setViewportView(this);
 		return child;
 	}
 }

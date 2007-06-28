@@ -64,6 +64,8 @@ import org.pathvisio.data.Gex;
 import org.pathvisio.data.GexImportWizard;
 import org.pathvisio.data.Gex.ExpressionDataEvent;
 import org.pathvisio.data.Gex.ExpressionDataListener;
+import org.pathvisio.gui.swt.awt.EmbeddedSwingComposite;
+import org.pathvisio.gui.swt.awt.VPathwaySwingComposite;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.search.PathwaySearchComposite;
@@ -987,6 +989,7 @@ public class MainWindow extends ApplicationWindow implements
 	TabbedSidePanel rightPanel; //side panel containing backbage browser and property editor
 	PathwaySearchComposite pwSearchComposite; //Composite that handles pathway searches and displays results
 	LegendPanel legend; //Legend to display colorset information
+	VPathwaySwingComposite swingPathwayComposite;
 	protected Control createContents(Composite parent)
 	{		
 		Shell shell = parent.getShell();
@@ -1004,8 +1007,10 @@ public class MainWindow extends ApplicationWindow implements
 		
 		sashForm = new SashForm(viewComposite, SWT.HORIZONTAL);
 		
-		sc = new ScrolledComposite (sashForm, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		sc.setFocus();
+		//sc = new ScrolledComposite (sashForm, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		//sc.setFocus();
+		
+		swingPathwayComposite = new VPathwaySwingComposite(sashForm, SWT.NONE);
 		
 		rightPanel = new TabbedSidePanel(sashForm, SWT.NULL);
 		
@@ -1055,11 +1060,11 @@ public class MainWindow extends ApplicationWindow implements
 		switch(e.type) {
 		case ApplicationEvent.PATHWAY_NEW:
 			drawing = Engine.getActiveVPathway();
-			sc.setContent((Canvas)drawing.getWrapper());
+			//sc.setContent((Canvas)drawing.getWrapper());
 			break;
 		case ApplicationEvent.PATHWAY_OPENED:
 			drawing = Engine.getActiveVPathway();
-			sc.setContent((Canvas)drawing.getWrapper());
+			//sc.setContent((Composite)drawing.getWrapper());
 			if(Gex.isConnected()) cacheExpressionData();
 			break;	
 		}
@@ -1090,8 +1095,13 @@ public class MainWindow extends ApplicationWindow implements
 		switch(e.getType()) {
 		case VPathwayEvent.EDIT_MODE_OFF:
 			showLegend(true);
+			break;
 		case VPathwayEvent.EDIT_MODE_ON:
 			showLegend(false);
+			break;
+		case VPathwayEvent.NEW_ELEMENT_ADDED:
+			deselectNewItemActions();
+			break;
 		}
 	}
 	

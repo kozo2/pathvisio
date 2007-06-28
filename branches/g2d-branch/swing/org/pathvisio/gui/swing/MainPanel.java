@@ -176,11 +176,7 @@ public class MainPanel extends JPanel {
 	public JToolBar getToolBar() {
 		return toolBar;
 	}
-	
-	public void setPathway(VPathwaySwing vPathway) {
-		pathwayScrollPane.setViewportView(vPathway);
-	}
-	
+
 	public JScrollPane getScrollPane() {
 		return pathwayScrollPane;
 	}

@@ -88,8 +88,7 @@ public class CommonActions
 						"Warning: This will discard any changes to " +
 						"the current pathway. Are you sure?"))
 			{
-				VPathwaySWT pswt = new VPathwaySWT(window.sc, SWT.NO_BACKGROUND);
-				Engine.newPathway(pswt);
+				SwtEngine.newPathway();
 			}
 		}
 	}

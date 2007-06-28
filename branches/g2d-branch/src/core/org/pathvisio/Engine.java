@@ -126,10 +126,10 @@ public class Engine {
 		if(_pathway != null) //Only continue if the data is correctly loaded
 		{
 			pathway = _pathway;
-			fireApplicationEvent(new ApplicationEvent(pathway, ApplicationEvent.PATHWAY_OPENED));
 			if(wrapper != null) {
 				createVPathway(_pathway, wrapper);
 			}
+			fireApplicationEvent(new ApplicationEvent(pathway, ApplicationEvent.PATHWAY_OPENED));
 		}
 		
 	}

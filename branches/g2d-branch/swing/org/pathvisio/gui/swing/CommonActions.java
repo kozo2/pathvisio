@@ -129,7 +129,7 @@ public abstract class CommonActions {
 						int totalWork = 1000;
 						ProgressMonitor m = new ProgressMonitor(component, "Loading pathway", "Please wait while the pathway is being loaded", 0, 1000);
 						m.setProgress(10);
-						Engine.importPathway(jfc.getSelectedFile(), new VPathwaySwing(mainPanel));
+						Engine.importPathway(jfc.getSelectedFile(), new VPathwaySwing(mainPanel.getScrollPane()));
 						m.setProgress((int)(totalWork*2/3));
 						Engine.getActiveVPathway().setEditMode(true);
 						m.setProgress(totalWork);
