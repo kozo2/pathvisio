@@ -270,14 +270,12 @@ public abstract class CommonActions {
 			VPathway vp = Engine.getActiveVPathway();
 			vp.addVPathwayListener(this);
 			if(vp != null) {
-				setEnabled(true);
 				vp.setNewGraphics(element);
 			}
 		}
 
 		public void vPathwayEvent(VPathwayEvent e) {
 			if(e.getType() == VPathwayEvent.NEW_ELEMENT_ADDED) {
-				setEnabled(false);
 				e.getVPathway().setNewGraphics(VPathway.NEWNONE);
 				e.getVPathway().removeVPathwayListener(this);	
 			}

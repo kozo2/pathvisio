@@ -11,6 +11,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import org.pathvisio.Engine;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayListener;
@@ -125,6 +126,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 			TypedProperty p = getPropertyAt(rowIndex);
 			p.setValue(aValue);
 		}
+		Engine.getActiveVPathway().redrawDirtyRect();
 	}
 	
 	public String getColumnName(int column) {
@@ -155,6 +157,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 	public TableCellRenderer getCellRenderer(int row, int column) {
 		if(column != 0) {
 			TypedProperty tp = getPropertyAt(row);
+			System.out.println("Getting cell renderer" + tp);
 			if(tp != null) return tp.getCellRenderer();
 		}
 		return null;

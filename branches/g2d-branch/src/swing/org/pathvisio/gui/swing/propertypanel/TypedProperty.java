@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -53,7 +54,6 @@ public class TypedProperty {
 	}
 
 	public void setValue(Object value) {
-		//TODO: validate
 		this.value = value;
 		if(value != null) {
 			for(PathwayElement e : elements) {
@@ -92,8 +92,10 @@ public class TypedProperty {
 			return organismRenderer;
 		case ANGLE:
 			return angleRenderer;
+		case DOUBLE:
+			return doubleRenderer;
 		case FONT:
-		case GENETYPE:
+		case GENETYPE: //TODO
 		}
 		return null;
 	}
@@ -116,8 +118,26 @@ public class TypedProperty {
 			return organismEditor;
 		case ANGLE:
 			return angleEditor;
+		case DOUBLE:
+			return doubleEditor;
 		default:
 			return null;
+		}
+	}
+	
+	private static class DoubleEditor extends DefaultCellEditor {
+		public DoubleEditor() {
+			super(new JTextField());
+		}
+		public Object getCellEditorValue() {
+			String value = ((JTextField)getComponent()).getText();
+			Double d = new Double(0);
+			try {
+				d = Double.parseDouble(value);
+			} catch(Exception e) {
+				//ignore
+			}
+			return d;
 		}
 	}
 	
@@ -240,14 +260,22 @@ public class TypedProperty {
 	private static ComboEditor orientationEditor = new ComboEditor(OrientationType.getNames(), true);
 	private static ComboEditor organismEditor = new ComboEditor(MappFormat.organism_latin_name, false);
 	private static AngleEditor angleEditor = new AngleEditor();
+	private static DoubleEditor doubleEditor = new DoubleEditor();
 	
-	private DefaultTableCellRenderer angleRenderer = new DefaultTableCellRenderer() {
+	private static DefaultTableCellRenderer angleRenderer = new DefaultTableCellRenderer() {
 		protected void setValue(Object value) {
 			super.setValue( (Double)(value) * 180.0 / Math.PI );
 		}
 	};
 	
-	private DefaultTableCellRenderer differentRenderer = new DefaultTableCellRenderer() {
+	private static DefaultTableCellRenderer doubleRenderer = new DefaultTableCellRenderer() {
+		protected void setValue(Object value) {
+			double d = (Double)value;
+			super.setValue(d);
+		}
+	};
+	
+	private static DefaultTableCellRenderer differentRenderer = new DefaultTableCellRenderer() {
 		protected void setValue(Object value) {
 			value = "Different values";
 			super.setValue(value);
