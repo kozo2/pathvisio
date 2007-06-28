@@ -23,6 +23,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.pathvisio.Engine;
+import org.pathvisio.gui.swt.AlignActions;
 import org.pathvisio.model.GroupStyle;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
@@ -1045,7 +1047,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 		List<Graphics> selection = getSelectedGraphics();
 		
 		for(Graphics g : selection) {
-			PathwayElement pe = g.getGmmlData();
+			PathwayElement pe = g.getGmmlData(); 
 			String ref = pe.getGroupRef();
 			if(ref == null) {
 				pe.setGroupRef(id);
@@ -1160,6 +1162,151 @@ public class VPathway implements PathwayListener, VisualizationListener
 		//clipboard.dispose();
 	}
 	
+	/**
+	 * Aligns selected objects based on user-selected align type
+	 * @param alignType
+	 */
+	public void alignSelected(char alignType)
+	{
+		List<Graphics> selectedGraphics = getSelectedGraphics();
+		
+		int aveC = 0;
+		int minC = java.lang.Integer.MAX_VALUE;
+		int maxC = 0;
+		
+		if (selectedGraphics.size() > 0){
+			switch (alignType){
+			case AlignActions.CENTERX : 
+				for(Graphics g : selectedGraphics) {
+					int c = g.getVCenterX();
+					aveC = aveC + c;
+				}
+				aveC = aveC/selectedGraphics.size();
+				for(Graphics g : selectedGraphics) {
+					g.vMoveBy(aveC - g.getVCenterX(), 0);
+				}
+				break;
+			case AlignActions.CENTERY : 
+				for(Graphics g : selectedGraphics) {
+					int c = g.getVCenterY();
+					aveC = aveC + c;
+				}
+				aveC = aveC/selectedGraphics.size();
+				for(Graphics g : selectedGraphics) {
+					g.vMoveBy(0, aveC-g.getVCenterY());
+				}
+				break;
+			case AlignActions.LEFT :
+				for(Graphics g : selectedGraphics) {
+					int c = g.getVLeft();
+					if (c < minC){ 
+						minC = c;
+						}
+				}
+				for(Graphics g : selectedGraphics) {	
+					g.vMoveBy(minC - g.getVLeft(),0);
+				}
+				break;
+			case AlignActions.RIGHT : 
+				for(Graphics g : selectedGraphics) {
+					int c = (g.getVLeft()+g.getVWidth());
+					if (c > maxC){
+						maxC = c;
+					}	
+				}
+				for(Graphics g : selectedGraphics) {
+					g.vMoveBy(maxC - (g.getVLeft()+g.getVWidth()),0);
+				}
+				break;
+			case AlignActions.TOP : 
+				for(Graphics g : selectedGraphics) {
+					int c = g.getVTop();
+					if (c < minC){
+						minC = c;
+					}
+				}
+				for(Graphics g : selectedGraphics) {
+					g.vMoveBy(0,minC - g.getVTop());
+				}
+				break;
+			case AlignActions.BOTTOM :
+				for(Graphics g : selectedGraphics) {
+					int c = (g.getVTop()+g.getVHeight());
+					if (c > maxC){
+						maxC = c;
+					}
+				}
+				for(Graphics g : selectedGraphics) {
+					g.getGmmlData().setMCenterY(mFromV(maxC-(g.getVHeight()/2)));
+					g.vMoveBy(0,maxC - (g.getVTop()+g.getVHeight()));
+				}
+				break;
+			}
+			redrawDirtyRect();
+	}
+	}
+	/**
+	 * Scales selected objects either by max width or max height
+	 * @param alignType
+	 */
+	public void scaleSelected (char alignType){
+		
+		List<Graphics> selectedGraphics = getSelectedGraphics();
+		double maxW = 0;
+		double maxH = 0;
+		
+		if (selectedGraphics.size() > 0){
+			switch (alignType){
+			case AlignActions.WIDTH:
+				for(Graphics g : selectedGraphics) {
+					Rectangle2D r = g.getVScaleRectangle();
+					double w = Math.abs(r.getWidth());
+					if (w > maxW){
+						maxW = w;
+					}
+				}
+				for(Graphics g : selectedGraphics) {
+					Rectangle2D r = g.getVScaleRectangle();
+					double oldWidth = r.getWidth();
+					if (oldWidth <0){
+						r.setRect(r.getX(), r.getY(), -(maxW), r.getHeight());
+						g.setVScaleRectangle(r);
+						g.vMoveBy((oldWidth+maxW)/2,0);
+					}
+					else{
+						r.setRect(r.getX(), r.getY(), maxW, r.getHeight());
+						g.setVScaleRectangle(r);
+						g.vMoveBy((oldWidth - maxW)/2,0);
+					}
+				}
+				break;
+			case AlignActions.HEIGHT:
+				for(Graphics g : selectedGraphics) {
+					Rectangle2D r = g.getVScaleRectangle();
+					double h = Math.abs(r.getHeight());
+					if (h > maxH){
+						maxH = h;
+					}
+				}
+				for(Graphics g : selectedGraphics) {
+					Rectangle2D r = g.getVScaleRectangle();
+					double oldHeight = r.getHeight();
+					if (oldHeight < 0){
+						r.setRect(r.getX(), r.getY(), r.getWidth(), -(maxH));
+						g.setVScaleRectangle(r);
+						g.vMoveBy(0,(maxH+oldHeight)/2);
+					}
+					else{
+					r.setRect(r.getX(), r.getY(), r.getWidth(), maxH);
+					g.setVScaleRectangle(r);
+					g.vMoveBy(0,(oldHeight - maxH)/2);
+					}
+				}
+				break;
+			}
+			redrawDirtyRect();
+		}
+	}
 	/**
 	 * TODO: document
 	 * @return
@@ -1316,6 +1463,7 @@ public class VPathway implements PathwayListener, VisualizationListener
 			//});
 		}
 	}	
+	
 	
 	/** 
 	 * helper method to convert view coordinates to model coordinates 

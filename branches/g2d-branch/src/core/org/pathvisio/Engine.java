@@ -134,6 +134,14 @@ public class Engine {
 		
 	}
 	
+	public static void savePathway() throws ConverterException {
+		savePathway(pathway.getSourceFile());
+	}
+	
+	public static void savePathway(File toFile) throws ConverterException {
+		pathway.writeToXml(toFile, true);
+	}
+	
 	private static void createVPathway(Pathway p, VPathwayWrapper wrapper) {
 		vPathway = wrapper.createVPathway();
 		vPathway.fromGmmlData(pathway);

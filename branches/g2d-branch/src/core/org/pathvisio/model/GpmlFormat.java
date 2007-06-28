@@ -44,7 +44,7 @@ import org.pathvisio.Engine;
  */
 public class GpmlFormat implements PathwayImporter, PathwayExporter
 {
-	public static final Namespace GPML = Namespace.getNamespace("gpml", "http://genmapp.org/GPML/2007");
+	public static final Namespace GPML = Namespace.getNamespace("http://genmapp.org/GPML/2007");
 	public static final Namespace RDF = Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 	public static final Namespace RDFS = Namespace.getNamespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
 	public static final Namespace BIOPAX = Namespace.getNamespace("bp", "http://www.biopax.org/release/biopax-level2.owl#");
@@ -827,8 +827,15 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			List<Content> content = bp.getRootElement().cloneContent();
 			for(Content c : content) {
 				if(c instanceof Element) {
-					if(((Element)c).getNamespace() == BIOPAX) {
+					Element elm = (Element)c;
+					if(elm.getNamespace().equals(BIOPAX)) {
 						e.addContent(c);
+					} else if(elm.getName().equals("RDF") && elm.getNamespace().equals(RDF)) {
+						for(Object ce : elm.getChildren()) {
+							if(((Element)ce).getNamespace().equals(BIOPAX)) {
+								e.addContent((Element)ce);
+							}
+						}
 					} else {
 						Engine.log.info("Skipped non-biopax element" + c);
 					}

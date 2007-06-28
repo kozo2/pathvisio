@@ -16,6 +16,7 @@
 //
 package org.pathvisio.preferences.swt;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -95,6 +96,10 @@ public class PreferenceDlg extends PreferenceManager {
 			f.setValidRange(0, 100);
 			addField(f);
 			
+			BooleanFieldEditor f2 =	new BooleanFieldEditor (
+					SwtPreference.SWT_SHOW_ADVANCED_ATTR.name(),									   
+					"Show advanced attributes (e.g. references):", getFieldEditorParent());
+				addField (f2);
 		}
 	}
 	private class ColorsPage extends FieldEditorPreferencePage {

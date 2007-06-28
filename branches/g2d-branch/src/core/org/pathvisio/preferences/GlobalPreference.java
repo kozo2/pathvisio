@@ -72,6 +72,10 @@ public enum GlobalPreference implements Preference {
 		return Double.parseDouble(p.getValue());
 	}
 	
+	public static boolean getValueBoolean(Preference p) {
+		return Boolean.parseBoolean(p.getValue());
+	}
+	
 	private static Color string2Color(String s) {
 		return ColorConverter.parseColorString(s);
 	}

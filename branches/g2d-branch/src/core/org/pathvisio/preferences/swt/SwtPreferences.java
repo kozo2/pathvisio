@@ -30,6 +30,8 @@ import org.pathvisio.preferences.PreferenceCollection;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.view.Graphics;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 /**
  * This class contains all user preferences used in this application
  */
@@ -159,7 +161,9 @@ public class SwtPreferences extends PreferenceStore implements PreferenceCollect
 		SWT_CURR_GDB("none"),
 		SWT_DB_ENGINE_GDB("org.pathvisio.data.DBConnDerby"),
 		SWT_DB_ENGINE_EXPR("org.pathvisio.data.DBConnDerby"),
-		SWT_SIDEPANEL_SIZE("30");
+		SWT_SIDEPANEL_SIZE("30"),
+		
+		SWT_SHOW_ADVANCED_ATTR(Boolean.toString(false));
 		
 		SwtPreference(String defaultValue) {
 			this.defaultValue = defaultValue;

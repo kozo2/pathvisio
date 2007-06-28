@@ -344,6 +344,48 @@ public class Line extends Graphics
 		return points.get(points.size() - 1);
 	}
 	
+	public int getVCenterX() {
+		// TODO Auto-generated method stub
+		double start = gdata.getMStart().getX();
+		double end = gdata.getMEnd().getX();
+		return (int)vFromM(start + (end - start) / 2);
+	}
+	
+	public int getVCenterY() {
+		// TODO Auto-generated method stub
+		double start = gdata.getMStart().getY();
+		double end = gdata.getMEnd().getY();
+		return (int)vFromM(start + (end - start) / 2);
+	}
+	
+	public int getVLeft() {
+		// TODO Auto-generated method stub
+		double start = gdata.getMStart().getX();
+		double end = gdata.getMEnd().getX();
+		return (int)vFromM(Math.min(start, end));
+	}
+	
+	public int getVWidth() {
+		// TODO Auto-generated method stub
+		double start = gdata.getMStart().getX();
+		double end = gdata.getMEnd().getX();
+		return (int)vFromM(Math.abs(start-end));
+	}
+	
+	public int getVHeight() {
+		// TODO Auto-generated method stub
+		double start = gdata.getMStart().getY();
+		double end = gdata.getMEnd().getY();
+		return (int)vFromM(Math.abs(start-end));
+	}	
+	
+	public int getVTop() {
+		// TODO Auto-generated method stub
+		double start = gdata.getMStart().getY();
+		double end = gdata.getMEnd().getY();
+		return (int)vFromM(Math.min(start, end));
+	}
+	
 	protected void vMoveBy(double vdx, double vdy)
 	{
 		for(VPoint p : points) {

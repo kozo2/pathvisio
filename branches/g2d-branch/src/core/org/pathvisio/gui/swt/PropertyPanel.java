@@ -57,6 +57,8 @@ import org.pathvisio.model.PathwayListener;
 import org.pathvisio.model.PropertyClass;
 import org.pathvisio.model.PropertyType;
 import org.pathvisio.model.ShapeType;
+import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.util.SuggestCellEditor;
 import org.pathvisio.util.TableColumnResizer;
@@ -166,7 +168,9 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 		HashMap<PropertyType, Integer> master = new HashMap<PropertyType, Integer>();
 		for (PathwayElement o : dataObjects)
 		{
-			for (PropertyType attr : o.getAttributes())
+			// get attributes. Only get advanced attributes if the preferences say so.
+			for (PropertyType attr : o.getAttributes(
+					 GlobalPreference.getValueBoolean(SwtPreference.SWT_SHOW_ADVANCED_ATTR)))
 			{
 				if (master.containsKey(attr))
 				{
@@ -224,7 +228,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 		comboBoxEditor = new ComboBoxCellEditor(tableViewer.getTable(), new String[] {""});
 		identifierSuggestEditor = new GdbCellEditor(tableViewer.getTable(), GdbCellEditor.TYPE_IDENTIFIER);
 		symbolSuggestEditor = new GdbCellEditor(tableViewer.getTable(), GdbCellEditor.TYPE_SYMBOL);
-		biopaxEditor = new BiopaxCellEditor(tableViewer.getTable(), "Edit Biopax info");
+		biopaxEditor = new BiopaxCellEditor(tableViewer.getTable(), "...");
 		
 		tableViewer.setCellEditors(cellEditors);
 		tableViewer.setColumnProperties(colNames);
@@ -292,7 +296,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 				return identifierSuggestEditor;
 			case DB_SYMBOL:
 				return textEditor;
-			case BIOPAX:
+			case BIOPAXREF:
 				return biopaxEditor;
 				
 		}
@@ -374,7 +378,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 					if(value instanceof String) return (String)value;
 					if(value instanceof PropertyPanel.AutoFillData) 
 						return ((PropertyPanel.AutoFillData)value).getMainValue();
-				case BIOPAX:
+				case BIOPAXREF:
 					return value;
 					
 			}
