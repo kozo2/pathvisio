@@ -21,6 +21,7 @@ import java.io.File;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.window.ApplicationWindow;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -31,6 +32,8 @@ import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.preferences.PreferenceCollection;
 import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.view.VPathwayWrapper;
+import org.pathvisio.view.swt.VPathwaySWT;
 
 /**
  * This class contains the essential parts of the program: the window, drawing and gpml data
@@ -80,6 +83,10 @@ public class SwtEngine {
 	
 	public static void openPathway(String fileName) {
 		try {
+			VPathwayWrapper pswt = null;
+			if(window != null) {
+				pswt = new VPathwaySWT(window.sc, SWT.NO_BACKGROUND);
+			}
 			Engine.openPathway(fileName);
 		} catch(ConverterException e) {		
 			if (e.getMessage().contains("Cannot find the declaration of element 'Pathway'"))

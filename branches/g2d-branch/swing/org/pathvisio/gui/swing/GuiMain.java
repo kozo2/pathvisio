@@ -1,9 +1,9 @@
 package org.pathvisio.gui.swing;
 
 import javax.swing.JFrame;
-import javax.swing.UIManager;
 
 import org.pathvisio.Engine;
+import org.pathvisio.view.swing.VPathwaySwing;
 
 public class GuiMain {
 
@@ -28,6 +28,8 @@ public class GuiMain {
 		
 		//Display the window.
 		frame.setVisible(true);
+		Engine.newPathway(new VPathwaySwing(mainPanel));
+		Engine.getActiveVPathway().setEditMode(true);
 	}
 
 	public static void main(String[] args) {

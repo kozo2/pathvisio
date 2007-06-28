@@ -69,12 +69,12 @@ public class Shape extends GraphicsShape
 		
 		switch(gdata.getShapeType()) {
 		case OVAL:
-			g.setColor(linecolor);
-			g.drawOval(x, y, w, h);
 			if(!gdata.isTransparent()) {
 				g.setColor(fillcolor);
 				g.fillOval(x, y, w, h);
 			}
+			g.setColor(linecolor);
+			g.drawOval(x, y, w, h);
 			break;
 		case ARC:
 			g.setColor(linecolor);
@@ -90,12 +90,12 @@ public class Shape extends GraphicsShape
 			g.drawArc (cx + w/2 - h, cy, h, h, 0, 90); //arc on the right
 			break;
 		default:
-			g.setColor(linecolor);
-			g.drawRect(x, y, w, h);
 			if(!gdata.isTransparent()) {
 				g.setColor(fillcolor);
 				g.fillRect(x, y, w, h);
 			}
+			g.setColor(linecolor);
+			g.drawRect(x, y, w, h);
 			break;
 		}
 	}	

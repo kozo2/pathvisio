@@ -52,7 +52,6 @@ public class MainPanel extends JPanel {
 		//menuBar will be added by container (JFrame or JApplet)
 		
 		pathwayScrollPane = new JScrollPane();
-		sidebarScrollPane = new JScrollPane();
 		
 		final PathwayTableModel model = new PathwayTableModel();
 		propertyTable = new JTable(model) {
@@ -66,7 +65,7 @@ public class MainPanel extends JPanel {
 			}
 		};
 		
-		sidebarScrollPane.setViewportView(propertyTable);
+		sidebarScrollPane = new JScrollPane(propertyTable);
 		
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pathwayScrollPane, sidebarScrollPane);
 		splitPane.setResizeWeight(1);

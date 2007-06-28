@@ -94,12 +94,12 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		for(PathwayElement e : elements) {
 			Object o = e.getProperty(key);
 			if(!first && (o == null || !o.equals(value))) {
-				return TypedProperty.getInstance(elements, key);
+				return new TypedProperty(elements, key);
 			}
 			value = o;
 			first = false;
 		}
-		return TypedProperty.getInstance(elements, value, key);
+		return new TypedProperty(elements, value, key);
 	}
 		
 	public int getColumnCount() {

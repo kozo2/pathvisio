@@ -5,10 +5,13 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.HashMap;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -20,25 +23,36 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import org.pathvisio.data.DataSources;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
+import org.pathvisio.model.MappFormat;
+import org.pathvisio.model.OrientationType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
 
-public class TypedProperty<T> {	
+public class TypedProperty {	
 	Collection<PathwayElement> elements;
-	T value;
+	Object value;
 	PropertyType type;
 	boolean different;
 
-	private TypedProperty(Collection<PathwayElement> elements, T value, PropertyType type, boolean different) {
+	public TypedProperty(Collection<PathwayElement> elements, PropertyType type) {
+		this(elements, null, type, true);
+	}
+	
+	public TypedProperty(Collection<PathwayElement> elements, Object value, PropertyType type) {
+		this(elements, value, type, false);
+	}
+	
+	private TypedProperty(Collection<PathwayElement> elements, Object value, PropertyType type, boolean different) {
 		this.elements = elements;
 		this.value = value;
 		this.type = type;
 		this.different = different;
 	}
 
-	public void setValue(T value) {
+	public void setValue(Object value) {
 		//TODO: validate
 		this.value = value;
 		if(value != null) {
@@ -48,7 +62,7 @@ public class TypedProperty<T> {
 		}
 	}
 
-	public T getValue() {
+	public Object getValue() {
 		return value;
 	}
 	
@@ -61,59 +75,105 @@ public class TypedProperty<T> {
 
 	public TableCellRenderer getCellRenderer() {
 		if(hasDifferentValues()) return differentRenderer;
-		switch(type) {
+		switch(type.type()) {
 		case COLOR:
 			return colorRenderer;
 		case LINETYPE:
 			return lineTypeRenderer;
 		case LINESTYLE:
 			return lineStyleRenderer;
-		}
-		switch(type.type()) {
-		case DOUBLE:
-			return doubleRenderer;
+		case DATASOURCE:
+			return datasourceRenderer;
+		case BOOLEAN:
+			return checkboxRenderer;
+		case ORIENTATION:
+			return orientationRenderer;
+		case ORGANISM:
+			return organismRenderer;
+		case ANGLE:
+			return angleRenderer;
+		case FONT:
+		case GENETYPE:
 		}
 		return null;
 	}
 
 	public TableCellEditor getCellEditor() {
-		switch(type) {
+		switch(type.type()) {
+		case BOOLEAN:
+			return checkboxEditor;
+		case DATASOURCE:
+			return datasourceEditor;
 		case COLOR:
+			return colorEditor;
+		case LINETYPE:
+			return lineTypeEditor;
+		case LINESTYLE:
+			return lineStyleEditor;
+		case ORIENTATION:
+			return orientationEditor;
+		case ORGANISM:
+			return organismEditor;
+		case ANGLE:
+			return angleEditor;
+		default:
 			return null;
-		default: return null;
 		}
 	}
 	
-	public Component getEditComponent() {
-		return (Component)getCellRenderer();
-	}
-
-	public static TypedProperty getInstance(Collection<PathwayElement> elements, Object value, PropertyType type) {
-		return getInstance(elements, value, type, false);
-	}
-
-	public static TypedProperty getInstance(Collection<PathwayElement> elements, PropertyType type) {
-		return getInstance(elements, null, type, true);
-	}
-
-	private static TypedProperty getInstance(Collection<PathwayElement> elements, Object value, PropertyType type, boolean different) {
-		switch(type.type()) {
-		case STRING:
-			return new TypedProperty<String>(elements, (String)value, type, different);
-		case COLOR:
-			return new TypedProperty<Color>(elements, (Color)value, type, different);
-		case LINETYPE:
-			return new TypedProperty<LineType>(elements, (LineType)value, type, different);
-		case LINESTYLE:
-			return new TypedProperty<Integer>(elements, (Integer)value, type, different);
-		case DOUBLE:
-			return new TypedProperty<Double>(elements, (Double)value, type, different);
-		default:
-			return new TypedProperty<Object>(elements, value, type, different);
+	private static class AngleEditor extends DefaultCellEditor {
+		public AngleEditor() {
+			super(new JTextField());
+		}
+		public Object getCellEditorValue() {
+			String value = ((JTextField)getComponent()).getText();
+			Double d = new Double(0);
+			try {
+				d = Double.parseDouble(value) * Math.PI / 180;
+			} catch(Exception e) {
+				//ignore
+			}
+			return d;
+		}
+		
+		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+			value =  (Double)(value) * 180.0 / Math.PI;
+			return super.getTableCellEditorComponent(table, value, isSelected, row, column);
 		}
 	}
+	
+	private static class ComboEditor extends DefaultCellEditor {
+		HashMap label2value;
+		boolean useIndex;
+		
+		public ComboEditor(Object[] labels, boolean useIndex) {
+			super(new JComboBox(labels));
+			this.useIndex = useIndex;
+		}
 
-	//private ColorEditor colorEditor = new ColorEditor();
+		public ComboEditor(Object[] labels, Object[] values) {
+			this(labels, false);
+			if(values != null) {
+				if(labels.length != values.length) {
+					throw new IllegalArgumentException("Number of labels doesn't equal number of values");
+				}
+				label2value = new HashMap();
+				for(int i = 0; i < labels.length; i++) {
+					label2value.put(labels[i], values[i]);
+				}
+			}
+		}
+		
+		public Object getCellEditorValue() {
+			if(label2value == null) { //Use index
+				JComboBox cb = (JComboBox)getComponent();
+				return useIndex ? cb.getSelectedIndex() : cb.getSelectedItem();
+			} else {
+				Object label = super.getCellEditorValue();
+				return label2value.get(label);
+			}
+		}
+	}
 	
 	private static class ColorEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
 		Color currentColor;
@@ -164,10 +224,28 @@ public class TypedProperty<T> {
 		}
 	}
 
-	private ColorRenderer colorRenderer = new ColorRenderer();
-	private ComboRenderer lineTypeRenderer = new ComboRenderer(LineType.getNames());
-	private ComboRenderer lineStyleRenderer = new ComboRenderer(LineStyle.getNames());
-	private DoubleRenderer doubleRenderer = new DoubleRenderer();
+	private static ColorRenderer colorRenderer = new ColorRenderer();
+	private static ComboRenderer lineTypeRenderer = new ComboRenderer(LineType.getNames(), LineType.values());
+	private static ComboRenderer lineStyleRenderer = new ComboRenderer(LineStyle.getNames());
+	private static ComboRenderer datasourceRenderer = new ComboRenderer(DataSources.dataSources);
+	private static CheckBoxRenderer checkboxRenderer = new CheckBoxRenderer();
+	private static ComboRenderer orientationRenderer = new ComboRenderer(OrientationType.getNames());
+	private static ComboRenderer organismRenderer = new ComboRenderer(MappFormat.organism_latin_name);
+	
+	private static ColorEditor colorEditor = new ColorEditor();
+	private static ComboEditor lineTypeEditor = new ComboEditor(LineType.getNames(), true);
+	private static ComboEditor lineStyleEditor = new ComboEditor(LineStyle.getNames(), true);
+	private static ComboEditor datasourceEditor = new ComboEditor(DataSources.dataSources, false);
+	private static DefaultCellEditor checkboxEditor = new DefaultCellEditor(new JCheckBox());
+	private static ComboEditor orientationEditor = new ComboEditor(OrientationType.getNames(), true);
+	private static ComboEditor organismEditor = new ComboEditor(MappFormat.organism_latin_name, false);
+	private static AngleEditor angleEditor = new AngleEditor();
+	
+	private DefaultTableCellRenderer angleRenderer = new DefaultTableCellRenderer() {
+		protected void setValue(Object value) {
+			super.setValue( (Double)(value) * 180.0 / Math.PI );
+		}
+	};
 	
 	private DefaultTableCellRenderer differentRenderer = new DefaultTableCellRenderer() {
 		protected void setValue(Object value) {
@@ -176,22 +254,37 @@ public class TypedProperty<T> {
 		}
 	};
 
-	private static class ComboRenderer extends JComboBox implements TableCellRenderer {
-		public ComboRenderer(Object[] items) {
-			super(items);
-		}
-
+	private static class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			setSelectedItem(value);
+			setSelected((Boolean)value);
 			return this;
 		}
 	}
 	
-	private static class DoubleRenderer extends DefaultTableCellRenderer {		
+	private static class ComboRenderer extends JComboBox implements TableCellRenderer {
+		HashMap value2label;
+		public ComboRenderer(Object[] values) {
+			super(values);
+		}
+		
+		public ComboRenderer(Object[] labels, Object[] values) {
+			this(labels);
+			if(labels.length != values.length) {
+				throw new IllegalArgumentException("Number of labels doesn't equal number of values");
+			}
+			value2label = new HashMap();
+			for(int i = 0; i < labels.length; i++) {
+				value2label.put(values[i], labels[i]);
+			}
+		}
+
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			Double d = Math.round((Double)(value) * 100.0) / 100.0;
-			return super.getTableCellRendererComponent(table, d, isSelected, hasFocus, row, column);
-		}		
+			if(value2label != null) {
+				value = value2label.get(value);
+			}
+			setSelectedItem(value);
+			return this;
+		}
 	}
 	
 	private static class ColorRenderer extends JLabel implements TableCellRenderer {

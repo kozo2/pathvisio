@@ -37,7 +37,8 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 	}
 
 	public Dimension getVSize() {
-		return getSize();
+		System.out.println(getPreferredSize());
+		return getPreferredSize();
 	}
 
 	public Dimension getViewportSize() {
@@ -57,11 +58,14 @@ public class VPathwaySwing extends JComponent implements VPathwayWrapper, MouseM
 	}
 
 	public void setVSize(Dimension size) {
-		setSize(size.width, size.height);
+		setSize(size);
+		setMaximumSize(size);
+		setMinimumSize(size);
+		setPreferredSize(size);
 	}
 
 	public void setVSize(int w, int h) {
-		setSize(w, h);
+		setVSize(new Dimension(w, h));
 	}
 
 	public void mouseClicked(MouseEvent arg0) {

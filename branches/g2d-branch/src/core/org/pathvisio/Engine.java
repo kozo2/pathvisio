@@ -101,6 +101,10 @@ public class Engine {
 		}
 	}
 	
+	public static void openPathway(String fileName, VPathwayWrapper wrapper) throws ConverterException {
+		openPathway(new File(fileName), wrapper);
+	}
+	
 	/**
 	 * Open a pathway from a gpml file
 	 */
