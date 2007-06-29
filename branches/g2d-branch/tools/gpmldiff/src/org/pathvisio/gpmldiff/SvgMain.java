@@ -41,15 +41,48 @@ class SvgMain
 		Document document = domImpl.createDocument (svgNS, "svg", null);
 		SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 
-//		SvgMain svgMain = new SvgMain();
-//		svgMain.paint(svgGenerator);
-
-		Pathway pwy = new Pathway();
-		pwy.readFromXml (new File ("/home/martijn/prg/pathvisio-g2d/tools/gpmldiff/testcases/Simple1.1.gpml"), false);
-		VPathway vpwy = new VPathway(null);
-		vpwy.fromGmmlData(pwy);
-		vpwy.draw (svgGenerator, null);
-
+		File oldFile = null;
+		File newFile = null;
+		if (argv.length > 0)
+		{
+			oldFile = new File (argv[0]);
+			if (!oldFile.canRead())
+			{
+				oldFile = null;
+			}
+		}
+		if (oldFile == null)
+		{
+			oldFile = new File ("testcases/Simple1.1.gpml");
+		}
+		if (argv.length > 1)
+		{
+			newFile = new File (argv[1]);
+			if (!newFile.canRead())
+			{
+				newFile = null;
+			}
+		}
+		if (newFile == null)
+		{
+			newFile = new File ("testcases/Simple1.2.gpml");
+		}
+		
+		Pathway newPwy = new Pathway();
+		Pathway oldPwy = new Pathway();
+		oldPwy.readFromXml (oldFile, false);
+		newPwy.readFromXml (newFile, false);
+		VPathway vnewPwy = new VPathway(null);
+		VPathway voldPwy = new VPathway(null);
+		vnewPwy.fromGmmlData(newPwy);
+		voldPwy.fromGmmlData(oldPwy);
+		vnewPwy.draw (svgGenerator, null);
+		svgGenerator.translate (100,0);
+ 		voldPwy.draw (svgGenerator, null);
+		//svgGenerator.setComposite(AlphaComposite.SRC_OVER);
+		svgGenerator.setColor (new Color (1.0f, 0.0f, 0.0f, 0.5f));
+		svgGenerator.fill (new Rectangle(50, 50, 100, 100));
+		
 		boolean useCSS = true;
 		Writer out = new OutputStreamWriter (System.out, "UTF-8");
 		svgGenerator.stream (out, useCSS);

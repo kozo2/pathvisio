@@ -27,21 +27,28 @@
 		<javac srcdir="${src.dir}" debug="true"	destdir="${build.dir}">
 			<classpath refid="project.class.path"/>
 		</javac>
-		<!--
-		<javac srcdir="../../src/"
-			   includes="core/**,v2/**"
-			   destdir="${build.dir}">
+<!--		<javac srcdir="../../"
+			   includes="src/core/**,src/v2/**,swing/**"
+			   destdir="${build.dir}"
+			   debug="true">
 		  <classpath refid="project.class.path"/>
-		</javac>
-		!-->
+		</javac>-->
 		<javac srcdir="../../src/core"
 			   includes="**"
-			   destdir="${build.dir}">
+			   destdir="${build.dir}"
+			   debug="true">
 		  <classpath refid="project.class.path"/>
 		</javac>
 		<javac srcdir="../../src/v2"
 			   includes="**"
-			   destdir="${build.dir}">
+			   destdir="${build.dir}"
+			   debug="true">
+		  <classpath refid="project.class.path"/>
+		</javac>
+		<javac srcdir="../../swing"
+			   includes="**"
+			   destdir="${build.dir}"
+			   debug="true">
 		  <classpath refid="project.class.path"/>
 		</javac>
 	</target>
