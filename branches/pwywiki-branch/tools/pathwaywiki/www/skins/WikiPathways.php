@@ -190,7 +190,7 @@ class WikiPathwaysTemplate extends QuickTemplate {
 	</div>
 	<?php } ?>
 	<div id="p-search" class="portlet">
-		<h5><label for="searchInput"><?php $this->msg('search') ?></label></h5>
+		<h5><label for="searchInput">Pathway search</label></h5>
 		<div id="searchBody" class="pBody">
 			<form action="<?php $this->text('searchaction') ?>" id="searchform"><div>
 				<input id="searchInput" name="search" type="text" <?php
@@ -203,7 +203,7 @@ class WikiPathwaysTemplate extends QuickTemplate {
 		</div>
 	</div>
 	<div id="p-search" class="portlet">
-		<h5><label for="searchInput">Google search</label></h5>
+		<h5><label for="searchInput">Full text search</label></h5>
 		<div id="googleSearch" class="pBody">
 			<!-- Google CSE Search Box Begins -->
 		  <form id="searchbox_002915365922082279465:6qd0wwvwtwu" action="http://www.wikipathways.org/index.php/WikiPathways:GoogleSearch"><div>

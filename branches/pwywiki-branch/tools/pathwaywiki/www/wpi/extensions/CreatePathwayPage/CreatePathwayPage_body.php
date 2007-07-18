@@ -30,6 +30,7 @@ class CreatePathwayPage extends SpecialPage
 				$html = tag('table', $html);
 				$html .= tag('input', "", array('type'=>'submit', 'value'=>'Create pathway'));
 				$html = tag('form', $html, array('action'=>$wpiScriptURL, 'method'=>'get'));
+				$html .= "<HR><A href='http://blog.bigcat.unimaas.nl/~gmmlvisio/pathvisio_v1.jnlp'>Create new local pathway</A>";
 				$wgOut->addHTML($html);
         }
 

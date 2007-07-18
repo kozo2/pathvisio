@@ -321,7 +321,8 @@ class Pathway {
 	public function getGpml() {
 		$gpmlTitle = $this->getFileTitle(FILETYPE_GPML);
 		$gpmlRef = Revision::newFromTitle($gpmlTitle);
-		return $gpmlRef->getText();
+		
+		return $gpmlRef == NULL ? "no gpml" : $gpmlRef->getText();
 	}
 
 	public function getFileName($fileType) {
@@ -456,16 +457,17 @@ class Pathway {
 
 	private function saveGpml($gpmlData, $description) {
 		global $wgLoadBalancer;
-		$gpmlArticle = new Article($this->getFileTitle(FILETYPE_GPML));		
+		$gpmlTitle = $this->getFileTitle(FILETYPE_GPML);
+		$gpmlArticle = new Article($gpmlTitle);		
 		
-		$new = $gpmlArticle->exists();
-		
+		$new = !$gpmlArticle->exists();
+
 		$succ = true;
 		$succ =  $gpmlArticle->doEdit($gpmlData, $description);
 		$wgLoadBalancer->commitAll();
 		$this->updateCache();
-				
-		if($succ) $succ = $this->newPathwayArticle();
+			
+		if($new) $succ = $this->newPathwayArticle();
 		
 		return $succ;
 	}
