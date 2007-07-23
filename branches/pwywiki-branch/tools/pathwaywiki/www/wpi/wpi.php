@@ -1,15 +1,6 @@
 <?php
-define("FILETYPE_IMG", "svg");
-define("FILETYPE_GPML", "gpml");
-define("FILETYPE_MAPP", "mapp");
-define("FILETYPE_PNG", "png");
 
-//Constants
-$wpiScriptPath = 'wpi';
-$wpiScriptFile = 'wpi.php';
-$wpiScript = "$wpiScriptPath/$wpiScriptFile"; 
-$wpiScriptURL =  "http://" . $_SERVER['HTTP_HOST'] . '/' . $wpiScript; //TODO: use these variables
-
+require_once('globals.php');
 //Initialize MediaWiki
 set_include_path(get_include_path().PATH_SEPARATOR.realpath('../includes').PATH_SEPARATOR.realpath('../').PATH_SEPARATOR);
 $dir = getcwd();
