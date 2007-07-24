@@ -14,9 +14,13 @@ function wfEditApplet_Magic( &$magicWords, $langCode ) {
 	return true;
 }
 
-function createApplet( &$parser, $idClick = 'appletButton', $idReplace = 'pwThumb', $new = '' ) {
+function createApplet( &$parser, $idClick = 'appletButton', $idReplace = 'pwThumb', $new = '', $pwTitle = '' ) {
 	try {
-		$pathway = Pathway::newFromTitle($parser->mTitle);
+		if(!$pwTitle) {
+			$pathway = Pathway::newFromTitle($parser->mTitle);
+		} else {
+			$pathway = Pathway::newFromTitle($pwTitle);
+		}
 		$appletCode = makeAppletFunctionCall($pathway, $idReplace, $idClick, $new);
 		$output = scriptTag('', JS_SRC_PROTOTYPE) . scriptTag('', JS_SRC_RESIZE) . scriptTag('', JS_SRC_EDITAPPLET) . $appletCode;
 	} catch(Exception $e) {
