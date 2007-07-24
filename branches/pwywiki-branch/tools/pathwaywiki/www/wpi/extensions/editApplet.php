@@ -15,6 +15,7 @@ function wfEditApplet_Magic( &$magicWords, $langCode ) {
 }
 
 function createApplet( &$parser, $idClick = 'appletButton', $idReplace = 'pwThumb', $new = '', $pwTitle = '' ) {
+	$parser->disableCache();
 	try {
 		if(!$pwTitle) {
 			$pathway = Pathway::newFromTitle($parser->mTitle);
@@ -45,7 +46,6 @@ function createJsArray($array) {
 
 function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
 	global $wgUser;
-
 	if($new) {
 		$pwUrl = $pathway->getTitleObject()->getFullURL();
 	} else {
@@ -59,7 +59,7 @@ function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
 		'pwUrl' => $pwUrl
 	);
 	if($wgUser && $wgUser->isLoggedIn()) {
-		$args = array_merge($args, array('user', $wgUser->getRealName()));
+		$args = array_merge($args, array('user' => $wgUser->getRealName()));
 	}
 	if($new) {
 		$args = array_merge($args, array('new' => true));
@@ -70,8 +70,8 @@ function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
 	return scriptTag(
 		"var elm = document.getElementById('{$idClick}');" . 
 		"var listener = function() { replaceWithApplet('{$idReplace}', 'applet', {$keys}, {$values}); };" .
-		"if(elm.attachEvent) elm.attachEvent('onclick',listener);" .
-		"else elm.addEventListener('click',listener, false);"
+		"if(elm.attachEvent) { elm.attachEvent('onclick',listener); }" .
+		"else { elm.addEventListener('click',listener, false); }"
 	);
 }
 ?>
