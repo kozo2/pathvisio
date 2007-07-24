@@ -68,8 +68,10 @@ function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
 	$values = createJsArray(array_values($args));
 
 	return scriptTag(
-		"elm = document.getElementById('{$idClick}');" . 
-		"elm.addEventListener('click',function() { replaceWithApplet('{$idReplace}', 'applet', {$keys}, {$values}); }, false);"
+		"var elm = document.getElementById('{$idClick}');" . 
+		"var listener = function() { replaceWithApplet('{$idReplace}', 'applet', {$keys}, {$values}); };" .
+		"if(elm.attachEvent) elm.attachEvent('onclick',listener);" .
+		"else elm.addEventListener('click',listener, false);"
 	);
 }
 ?>
