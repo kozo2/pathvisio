@@ -465,7 +465,7 @@ class Pathway {
 	
 	private function saveImageCache() {
 		$file = $this->getFileLocation(FILETYPE_GPML);
-		$this->saveImage($file, "Updated from GPML");
+		$this->saveImage($file, "Updated SVG cache");
 	}
 	
 	private function saveGpmlCache() {

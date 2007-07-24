@@ -366,7 +366,7 @@ function DynamicPageList2( $input, $params, &$parser ) {
 
 	error_reporting(E_ALL);
 	
-	global  $wgUser, $wgContLang, $wgDPL2AllowedNamespaces, $wgDPL2Options, $wgDPL2MaxCategoryCount, $wgDPL2MinCategoryCount, $wgDPL2MaxResultCount, $wgDPL2AllowUnlimitedCategories, $wgDPL2AllowUnlimitedResults;
+	global $wgUser, $wgContLang, $wgDPL2AllowedNamespaces, $wgDPL2Options, $wgDPL2MaxCategoryCount, $wgDPL2MinCategoryCount, $wgDPL2MaxResultCount, $wgDPL2AllowUnlimitedCategories, $wgDPL2AllowUnlimitedResults;
 	
 	//logger (display of debug messages)
 	$logger = new DPL2Logger();
@@ -1021,7 +1021,10 @@ function DynamicPageList2( $input, $params, &$parser ) {
             $sTitleText = str_replace( '_', ' ', $title->prefix($sTitleText) );
 		//AP20070710
 		$titleText = $wgContLang->convert( $sTitleText);
-		$pick = $_GET["browse"];
+		$pick = 'Human';
+		if (isset($_GET["browse"])){
+                        $pick = $_GET["browse"];
+		}
 		if(preg_match('/\:/', $titleText) && $pick != 'All Species'){
 			$parts = explode(':', $titleText);
 			if(count($parts) < 1){

@@ -59,11 +59,11 @@ $wgEmailAuthentication = true;
 
 $wgDBtype           = "mysql";
 $wgDBserver         = "localhost";
-$wgDBname           = "wikipathways";
-$wgDBuser           = "wikipathwaysuser";
-$wgDBpassword       = "ba8adeT9";
 $wgDBport           = "5432";
 $wgDBprefix         = "";
+
+# Load passwords/usernames
+require('pass.php');
 
 # Schemas for Postgres
 $wgDBmwschema       = "mediawiki";

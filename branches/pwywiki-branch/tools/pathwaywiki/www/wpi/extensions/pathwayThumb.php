@@ -81,7 +81,8 @@ function renderPathwayImage( &$parser, $pwTitle, $width = 0, $align = '', $capti
       	}
         $keys = createJsArray(array_keys($args));
         $values = createJsArray(array_values($args));
-        return "replaceWithApplet('{$id}', 'applet', {$keys}, {$values});new Resizeable('applet', {bottom: 10, right: 10, left: 0, top: 0});";
+        //return "replaceWithApplet('{$id}', 'applet', {$keys}, {$values});new Resizeable('applet', {bottom: 10, right: 10, left: 0, top: 0});";
+	return "replaceWithApplet('{$id}', 'applet', {$keys}, {$values});";
     }
 
     function createJsArray($array) {

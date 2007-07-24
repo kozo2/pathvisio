@@ -20,11 +20,13 @@ function replaceWithApplet(idImg, idApplet, keys, values) {
 	}
 	var w = parent.offsetWidth;
 
-	resizeDiv.setAttribute('style', 'width: ' + w + 'px; height: 500px');
-	resizeDiv.setAttribute('class', 'thumbinner');
+	resizeDiv.style.width = w + 'px';
+	resizeDiv.style.height = '500px';
+	resizeDiv.className = 'thumbinner';
 	resizeDiv.setAttribute('id', idApplet);
 	resizeDiv.appendChild(applet);
 	replaceElement(image, resizeDiv);
+	new Resizeable(idApplet, {bottom: 10, right: 10, left: 0, top: 0});
 }
 
 function restoreImage() {
@@ -34,24 +36,26 @@ function restoreImage() {
 }
 
 function replaceElement(elmOld, elmNew) {
-	p = elmOld.parentNode;
+	var p = elmOld.parentNode;
 	p.insertBefore(elmNew, elmOld);
 	p.removeChild(elmOld);
 }
 
 function createAppletElement(id, keys, values) {
-	applet = document.createElement('applet');
+	var applet = document.createElement('applet');
 	//applet.setAttribute('id', id);
 	applet.setAttribute('CODEBASE', '/wpi/applet');
 	applet.setAttribute('CODE', 'org.pathvisio.gui.wikipathways.AppletMain');
 	applet.setAttribute('ARCHIVE', 'wikipathways.jar');
-	applet.setAttribute('WIDTH', '100%');
-	applet.setAttribute('HEIGHT', '100%');
+	applet.setAttribute('width', '100%');
+	applet.setAttribute('height', '100%');
 	if(keys != null && values != null) {
 		for(i=0; i < keys.length; i++) {
-			param = document.createElement('PARAM');
-			param.setAttribute('NAME', keys[i]);
-			param.setAttribute('VALUE', values[i]);
+			var param = document.createElement('PARAM');
+			//param.setAttribute('NAME', keys[i]);
+			//param.setAttribute('VALUE', values[i]);
+			param.name = keys[i];
+			param.value = values[i];
 			applet.appendChild(param);
 		}
 	}

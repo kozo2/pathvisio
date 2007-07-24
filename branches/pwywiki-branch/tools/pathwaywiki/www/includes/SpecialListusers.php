@@ -21,11 +21,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # http://www.gnu.org/copyleft/gpl.html
-/**
- *
- * @package MediaWiki
- * @subpackage SpecialPage
- */
 
 /**
  * This class is used to get a list of user. The ones with specials
@@ -115,7 +110,7 @@ class ListUsersPage extends QueryPage {
 		$dbr =& wfGetDB( DB_SLAVE );
 		$user = $dbr->tableName( 'user' );
 		$user_groups = $dbr->tableName( 'user_groups' );
-
+		$ip_blocks = $dbr->tablename( 'ipblocks');
 		// We need to get an 'atomic' list of users, so that we
 		// don't break the list half-way through a user's group set
 		// and so that lists by group will show all group memberships.
@@ -131,9 +126,10 @@ class ListUsersPage extends QueryPage {
 
 		$userspace = NS_USER;
 		$sql = "SELECT 'Listusers' as type, $userspace AS namespace, user_name AS title, " .
-			"user_name, user_id as value, user_touched as last, user_email, user_real_name, COUNT(ug_group) as numgroups " .
+			"user_name, user_id as value, user_touched as last, user_email, user_real_name, ipb_timestamp, COUNT(ug_group) as numgroups " .
 			"FROM $user ".
 			"LEFT JOIN $user_groups ON user_id=ug_user " .
+                        "LEFT JOIN $ip_blocks ON user_id=ipb_user " .
 			$this->userQueryWhere( $dbr ) .
 			" GROUP BY user_name ";
 		if ( $wgDBtype != 'mysql' ) {
@@ -181,6 +177,9 @@ class ListUsersPage extends QueryPage {
 		$name = $skin->makeLinkObj( $userPage, htmlspecialchars( $userPage->getText() ) );
 		//AP20070717 - new information added to output list
 		$name .= " - ".$result->last." - ".$result->user_real_name." - ".$result->user_email." ";
+		if ($result->ipb_timestamp){
+			$name .= "-> BLOCKED on ".$result->ipb_timestamp. " ";
+		}
 		$groups = null;
 
 		if( !isset( $result->numgroups ) || $result->numgroups > 0 ) {
@@ -218,7 +217,6 @@ function wfSpecialListusers( $par = null ) {
 	global $wgRequest;
 
 	list( $limit, $offset ) = wfCheckLimits();
-
 
 	$slu = new ListUsersPage();
 
