@@ -16,4 +16,5 @@ $wpiScriptURL =  "http://" . $_SERVER['HTTP_HOST'] . '/' . $wpiScript; //TODO: u
 //JS info
 define("JS_SRC_EDITAPPLET", "/wpi/js/editapplet.js");
 define("JS_SRC_RESIZE", "/wpi/js/resize.js");
+define("JS_SRC_PROTOTYPE", "/wpi/js/prototype.js");
 ?>

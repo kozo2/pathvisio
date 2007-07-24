@@ -1,32 +1,29 @@
-var image;
-var applet;
-
 function replaceWithApplet(idImg, idApplet, keys, values) {
-	var image = document.getElementById(idImg);
-	var applet = createAppletElement(idApplet, keys, values);
-	var resizeDiv = document.createElement('div');
+    var image = document.getElementById(idImg);
+    var applet = createAppletElement(idApplet, keys, values);
+    var resizeDiv = document.createElement('div');
 	
-	//find getWidth of enclosing element / table
-	var parent = image.parentNode;
-	var nn = parent.nodeName.toLowerCase();
-	if(nn == 'td' || nn == 'tr' || nn == 'tbody') {
-		while(true) {
-			if(parent.parentNode == null || parent.nodeName.toLowerCase() == 'table') {
-				break;
-			} else {
-				parent = parent.parentNode;
-			}
-		}
+    //find getWidth of enclosing element / table
+    var parent = image.parentNode;
+    var nn = parent.nodeName.toLowerCase();
+    if(nn == 'td' || nn == 'tr' || nn == 'tbody') {
+	while(true) {
+	    if(parent.parentNode == null || parent.nodeName.toLowerCase() == 'table') {
+		break;
+	    } else {
+		parent = parent.parentNode;
+	    }
 	}
-	var w = parent.offsetWidth;
+    }
+    var w = parent.offsetWidth;
 
-	resizeDiv.style.width = w + 'px';
-	resizeDiv.style.height = '500px';
-	resizeDiv.className = 'thumbinner';
-	resizeDiv.setAttribute('id', idApplet);
-	resizeDiv.appendChild(applet);
-	replaceElement(image, resizeDiv);
-	new Resizeable(idApplet, {bottom: 10, right: 10, left: 0, top: 0});
+    resizeDiv.style.width = w + 'px';
+    resizeDiv.style.height = '500px';
+    resizeDiv.className = 'thumbinner';
+    resizeDiv.setAttribute('id', idApplet);
+    resizeDiv.appendChild(applet);
+    replaceElement(image, resizeDiv);
+    new Resizeable(idApplet, {bottom: 10, right: 10, left: 0, top: 0});
 }
 
 function restoreImage() {
@@ -43,7 +40,6 @@ function replaceElement(elmOld, elmNew) {
 
 function createAppletElement(id, keys, values) {
 	var applet = document.createElement('applet');
-	//applet.setAttribute('id', id);
 	applet.setAttribute('CODEBASE', '/wpi/applet');
 	applet.setAttribute('CODE', 'org.pathvisio.gui.wikipathways.AppletMain');
 	applet.setAttribute('ARCHIVE', 'wikipathways.jar');

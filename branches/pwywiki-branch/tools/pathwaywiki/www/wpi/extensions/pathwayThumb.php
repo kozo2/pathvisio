@@ -15,10 +15,8 @@ function wfPathwayThumb_Magic( &$magicWords, $langCode ) {
         return true;
 }
 
-
-
-function renderPathwayImage( &$parser, $pwTitle, $width = 0, $align = '', $caption = '', $href = '', $tooltip = '', $id='pwthumb') {    
-        try {
+function renderPathwayImage( &$parser, $pwTitle, $width = 0, $align = '', $caption = '', $href = '', $tooltip = '', $id='pwthumb') {      
+      try {
                 $pathway = Pathway::newFromTitle($pwTitle);
                 $img = new Image($pathway->getFileTitle(FILETYPE_IMG));
                 switch($href) {
@@ -31,67 +29,17 @@ function renderPathwayImage( &$parser, $pwTitle, $width = 0, $align = '', $capti
                         default:
                                 if(!$href) $href = $pathway->getFullURL();
                 }
-                $doApplet = strpos($caption, JS_OPEN_EDITOR_APPLET);
-                if($doApplet) { //Add a link to the editor applet to the caption
-                        $appletCode = makeAppletFunctionCall($pathway, $id, $new);
-                }
+
                 $caption = html_entity_decode($caption);        //This can be quite dangerous (injection),
                                                                 //we would rather parse wikitext, let me know if
                                                                 //you know a way to do that (TK)
                 $output = makeThumbLinkObj($pathway, $caption, $href, $tooltip, $align, $id, $width);
-                
-                if($doApplet) {
-                  //Replace JS_OPEN_EDITOR_APPLET with applet call
-                  $output = str_replace(JS_OPEN_EDITOR_APPLET, $appletCode, $output);
-                  //Add import javascript files (also for resize)
-                  $output = scriptTag('', JS_SRC_EDITAPPLET) . scriptTag('', '/wpi/js/prototype.js') . scriptTag('', JS_SRC_RESIZE) . $output;
-                }
+
         } catch(Exception $e) {
                 return "invalid pathway title: $e";
         }
-       // echo($output);
         return array($output, 'isHTML'=>1, 'noparse'=>1);
 }
-
-    function scriptTag($code, $src = '') {
-      $src = $src ? 'src="' . $src . '"' : '';
-      return '<script type="text/javascript"' . $src . '">' . $code . '</script>';
-    }
-
-    function makeAppletFunctionCall($pathway, $id, $new) {
-        global $wgUser;
-
-  			if($new) {
-     	         	$pwUrl = $pathway->getTitleObject()->getFullURL();
-     			} else {
-     	         	$pwUrl = $pathway->getFileURL(FILETYPE_GPML);
-      		}
-
-  			$args = array(
-  					'rpcUrl' => "http://" . $_SERVER['HTTP_HOST'] . "/wpi/wpi_rpc.php",
-  					'pwName' => 	$pathway->name(),	
-  					'pwSpecies' => $pathway->species(),
-  					'pwUrl' => $pwUrl
-  			);
-  			if($wgUser && $wgUser->isLoggedIn()) {
-             		$args = array_merge($args, array('user', $wgUser->getRealName()));
-     		}
-      	if($new) {
-              	$args = array_merge($args, array('new' => true));
-      	}
-        $keys = createJsArray(array_keys($args));
-        $values = createJsArray(array_values($args));
-        //return "replaceWithApplet('{$id}', 'applet', {$keys}, {$values});new Resizeable('applet', {bottom: 10, right: 10, left: 0, top: 0});";
-	return "replaceWithApplet('{$id}', 'applet', {$keys}, {$values});";
-    }
-
-    function createJsArray($array) {
-      $jsa = "new Array(";      
-      foreach($array as $elm) {
-        $jsa .= "'{$elm}', ";
-      }
-      return substr($jsa, 0, strlen($jsa) - 2) . ')';
-    }
 
     /** MODIFIED FROM Linker.php
         * Make HTML for a thumbnail including image, border and caption
