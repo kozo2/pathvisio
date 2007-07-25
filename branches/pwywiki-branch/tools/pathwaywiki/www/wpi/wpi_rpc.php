@@ -34,6 +34,7 @@ $s->service();
 function updatePathway($pwName, $pwSpecies, $description, $gpmlData64) {
 	global $xmlrpcerruser;
 	
+	$resp = TRUE;
 	try {
 		$pathway = new Pathway($pwName, $pwSpecies);
 		$gpmlData = base64_decode($gpmlData64);
@@ -41,8 +42,8 @@ function updatePathway($pwName, $pwSpecies, $description, $gpmlData64) {
 	} catch(Exception $e) {
 		wfDebug("XML-RPC ERROR: $e");
 		$resp = new xmlrpcresp(0, $xmlrpcerruser, $e->getMessage());
-		return $resp;
 	}
-	return TRUE;
+	ob_clean(); //Clean the output buffer, so nothing is printed before the xml response
+	return $resp;
 }
 ?>
