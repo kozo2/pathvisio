@@ -196,6 +196,7 @@ require_once('wpi/extensions/button.php');
 require_once('wpi/extensions/pathwayThumb.php');
 require_once('wpi/extensions/BrowsePathwaysPage/BrowsePathwaysPage.php');
 require_once('wpi/extensions/editApplet.php');
+require_once('wpi/extensions/listPathways.php');
 
 /* Biblio extension
 Isbndb account: thomas.kelder@bigcat.unimaas.nl / BigC0w~wiki
