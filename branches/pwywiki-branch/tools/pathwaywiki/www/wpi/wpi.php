@@ -238,7 +238,8 @@ class Pathway {
 		if($name && $code) {
 			return new Pathway($name, $species);
 		} else {
-			throw new Exception("Couldn't parse pathway article title: $title");
+		
+	throw new Exception("Couldn't parse pathway article title: $title");
 		}
 	}
 	
@@ -391,12 +392,16 @@ class Pathway {
 	}
 	
 	private function saveImage($gpmlFile, $description) {
+		$imgName = $this->getFileName(FILETYPE_IMG);
+
 		# Convert gpml to svg
 		$gpmlFile = realpath($gpmlFile);
-		$imgName = $this->getFileName(FILETYPE_IMG);
-		$imgFile = realpath('tmp') . '/' . $imgName;
 
-		exec("java -jar bin/pathvisio_convert.jar $gpmlFile $imgFile 2>&1", $output, $status);
+		$basePath = dirname(realpath(__FILE__));
+		$imgFile = $basePath . '/tmp/' . $imgName;
+		$cmd = "java -jar $basePath/bin/pathvisio_convert.jar $gpmlFile $imgFile 2>&1";
+		wfDebug($cmd);
+		exec($cmd, $output, $status);
 		
 		foreach ($output as $line) {
 			$msg .= $line . "\n";
@@ -419,21 +424,26 @@ class Pathway {
 
 	public function delete() {
 		global $wgLoadBalancer;
+		wfDebug("Deleting pathway" . $this->getTitleObject()->getFullText() . "\n");
 		$reason = 'Deleted pathway';
 		$title = $this->getTitleObject();
 		Pathway::deleteArticle($title, $reason);
 		//Clean up GPML and SVG pages
 		$title = $this->getFileTitle(FILETYPE_GPML);
 		Pathway::deleteArticle($title, $reason);
-		$this->clearCache();
+		$this->clearCache(null, true);
+		$wgLoadBalancer->commitAll();
+	}
 
+	private function deleteImagePage($reason) {
+		global $wgLoadBalancer;
 		$title = $this->getFileTitle(FILETYPE_IMG);
 		Pathway::deleteArticle($title, $reason);
 		$img = new Image($title);
 		$img->delete($reason);
 		$wgLoadBalancer->commitAll();
 	}
-	
+
 	public static function deleteArticle($title, $reason='not specified') {
 		global $wgUser, $wgLoadBalancer;
 		
@@ -525,9 +535,10 @@ class Pathway {
 		}
 	}
 	
-	public function clearCache($fileType = null) {
-		if($fileType == FILETYPE_IMG) return; //Never delete the image file!
-
+	public function clearCache($fileType = null, $forceImagePage=false) {
+		if($forceImagePage) { //Only delete the image file when explicitly asked for!
+			$this->deleteImagePage("Clearing cache");
+		}
 		if(!$fileType) { //Update all
 			$this->clearCache(FILETYPE_PNG);
 			$this->clearCache(FILETYPE_GPML);

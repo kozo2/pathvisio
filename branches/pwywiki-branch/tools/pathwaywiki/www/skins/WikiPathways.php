@@ -61,21 +61,22 @@ class WikiPathwaysTemplate extends QuickTemplate {
  */
               //Remove edit tab on all pages except User(2), User_talk(3), and Pathway_talk(101)
 //AP20070423 Don't remove edit buttons for sysops (sysops can protect)
-//MAY20070502 Also remove move button for now on pathway pages
+		$ns = $wgTitle->getNameSpace();
 		if(!array_search('sysop', $wgUser->getGroups())) {
-			if($wgTitle->getNameSpace() != NS_USER
-				&& $wgTitle->getNameSpace() != NS_USER_TALK
-				&&  $wgTitle->getNameSpace() != NS_PATHWAY_TALK) {
+			if($ns != NS_USER && $ns != NS_USER_TALK &&  $ns != NS_PATHWAY_TALK) {
 	                        $actions = $this->data['content_actions'];
 	                        unset($actions['edit']);
 	                        $this->data['content_actions'] = $actions;
 			}
-		}
-			if($wgTitle->getNameSpace() == NS_PATHWAY || NS_PATHWAY_TALK || NS_IMAGE) {
-				$actions = $this->data['content_actions'];
+			//If not sysop, remove move button on pathway/gpml/image pages
+			if($ns == NS_PATHWAY || $ns == NS_GPML || $ns == NS_IMAGE || $ns == NS_PATHWAY_TALK) {
 				unset($actions['move']);
-				$this->data['content_actions'] = $actions;
 			}
+		}
+		if($wgTitle->getNameSpace() == NS_PATHWAY || NS_PATHWAY_TALK || NS_IMAGE) {
+			$actions = $this->data['content_actions'];
+			$this->data['content_actions'] = $actions;
+		}
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="<?php $this->text('xhtmldefaultnamespace') ?>" <?php 
 	foreach($this->data['xhtmlnamespaces'] as $tag => $ns) {
