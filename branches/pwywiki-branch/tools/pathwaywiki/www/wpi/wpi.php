@@ -126,6 +126,7 @@ JS;
 }
 
 function sendWebstart($webstart, $tmpname) {
+	ob_clean();
 	$os = getClientOs();
 	if($os == 'linux') { //return shell script that sets MOZILLA_FIVE_HOME and opens webstart
 		header("Content-type: application/x-shellscript");
@@ -647,8 +648,12 @@ function writeFile($filename, $data) {
 	if(!$handle) {
 		throw new Exception ("Couldn't open file $filename");
 	}
-	fwrite($handle, $data);
-	fclose($handle);
+	if(fwrite($handle, $data) === FALSE) {
+		throw new Exception ("Couldn't write file $filename");
+	}
+	if(fclose($handle) === FALSE) {
+		throw new Exception ("Couln't close file $filename");
+	}
 }
 
 function tag($name, $text, $attributes = array()) {
