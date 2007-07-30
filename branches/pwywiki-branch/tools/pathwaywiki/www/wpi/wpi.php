@@ -170,6 +170,7 @@ function downloadFile($fileType, $pwTitle) {
 			break;
 	}
 	$fn = $pathway->getFileName($fileType);
+	ob_clean();
 	header("Content-Disposition: attachment; filename=\"$fn\"");
 	echo $content;
 	exit;

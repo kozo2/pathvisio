@@ -1,7 +1,7 @@
 <?php
 require_once('wpi/wpi.php');
 
-define('SEPARATOR', ' ');
+define('SEPARATOR', ',');
 define('PAR_PATHWAYS', 'pathways');
 
 $wgExtensionFunctions[] = 'wfListPathways';
