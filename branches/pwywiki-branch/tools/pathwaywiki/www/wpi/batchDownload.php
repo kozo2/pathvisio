@@ -1,5 +1,4 @@
 <?php
-require_once('includes/zip.lib.php');
 require_once('wpi.php');
 
 //As mediawiki extension
