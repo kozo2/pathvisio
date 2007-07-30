@@ -55,7 +55,7 @@ EOD;
 function howManyPathways($species) {
 	$dbr =& wfGetDB(DB_SLAVE);
 	//Fetch number of pathways for this species
-	$res = $dbr->query("SELECT COUNT(*) FROM page WHERE page_namespace=" . NS_PATHWAY . " AND page_title LIKE '$species%'");
+	$res = $dbr->query("SELECT COUNT(*) FROM page WHERE page_namespace=" . NS_PATHWAY . " AND page_title LIKE '$species%' AND page_is_redirect = 0");
 	$row = $dbr->fetchRow($res);
 	$dbr->freeResult($res);
 	return $row[0];

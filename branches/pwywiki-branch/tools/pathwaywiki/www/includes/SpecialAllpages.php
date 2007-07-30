@@ -270,7 +270,8 @@ function showChunk( $namespace = NS_PATHWAY, $from, $including = false ) {
 			array( 'page_namespace', 'page_title', 'page_is_redirect' ),
 			array(
 				'page_namespace' => $namespace,
-				'page_title >= ' . $dbr->addQuotes( $fromKey )
+				'page_title >= ' . $dbr->addQuotes( $fromKey ),
+				'page_is_redirect' => 0
 			),
 			$fname,
 			array(

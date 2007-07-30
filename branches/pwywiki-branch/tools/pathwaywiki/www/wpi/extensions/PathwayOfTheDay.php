@@ -183,7 +183,7 @@ class PathwayOfTheDay {
 		//Pick a random pathway from all articles in namespace NS_PATHWAY
 		$res = $dbr->query(
 			"SELECT page_title FROM page WHERE page_namespace = " . NS_PATHWAY .
-				" ORDER BY RAND() LIMIT 1" ,DB_SLAVE ); //RAND() only works in MySQL?
+				" AND page_is_redirect = 0 ORDER BY RAND() LIMIT 1" ,DB_SLAVE ); //RAND() only works in MySQL?
 		$row = $dbr->fetchRow($res);
 		wfDebug("Resulting pathway: " . $row[0] . "\n");
 		return $row[0];
