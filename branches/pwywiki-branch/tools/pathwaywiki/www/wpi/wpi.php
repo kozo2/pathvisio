@@ -649,4 +649,11 @@ function writeFile($filename, $data) {
 	fwrite($handle, $data);
 	fclose($handle);
 }
+
+function tag($name, $text, $attributes = array()) {
+	foreach(array_keys($attributes) as $key) {
+		if($value = $attributes[$key])$attr .= $key . '="' . $value . '" ';
+	}
+	return "<$name $attr>$text</$name>";
+}
 ?>

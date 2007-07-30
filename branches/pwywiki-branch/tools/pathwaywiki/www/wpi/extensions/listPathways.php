@@ -42,11 +42,4 @@ function createPathwayList($input, $argv, &$parser) {
 	$html = tag('ul', $html);
 	return $html;
 }
-
-function tag($name, $text, $attributes = array()) {
-	foreach(array_keys($attributes) as $key) {
-		if($value = $attributes[$key])$attr = $key . '="' . $value . '" ';
-	}
-	return "<$name $attr>$text</$name>";
-}
 ?>

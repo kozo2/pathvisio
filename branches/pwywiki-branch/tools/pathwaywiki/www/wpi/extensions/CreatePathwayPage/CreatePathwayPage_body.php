@@ -46,14 +46,4 @@ class CreatePathwayPage extends SpecialPage
                 }
         }
 }
-
-
-function tag($name, $content, $attr = array()) {
-	$html = "<$name ";
-	foreach(array_keys($attr) as $key) {
-		$html .= "$key=\"$attr[$key]\"";
-	}
-	$html .= ">$content</$name>";
-	return $html;
-}
 ?>
