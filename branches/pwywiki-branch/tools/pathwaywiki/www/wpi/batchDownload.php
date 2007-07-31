@@ -1,4 +1,5 @@
 <?php
+require_once('includes/zip.lib.php');
 require_once('wpi.php');
 
 //As mediawiki extension
@@ -23,7 +24,7 @@ function createDownloadLinks($input, $argv, &$parser) {
 	$fileType = $argv['filetype'];
 	foreach(Pathway::getAvailableSpecies() as $species) {
 		$html .= tag('li', 
-					tag('a',$species,array('href'=> WPI_URL . '/' . "batchDownload.php?species=$species&fileType=$fileType", 'target'=>'_blank')));
+					tag('a',$species,array('href'=> WPI_URL . '/' . "batchDownload.php?species=$species&fileType=$fileType", 'target'=>'_new')));
 	}
 	$html = tag('ul', $html);
 	return $html;
@@ -70,26 +71,25 @@ function getPathways($conditions = array()) {
 }
 
 function doDownload($pathways, $fileType) {
-	$zipFile = tempnam(WPI_TMP_PATH, 'batchDownload') . '.zip';
-
+	ob_start();
+	$zip = new zipfile();
+	
+	//Fill zip file
 	foreach($pathways as $pw) {
-		$files .= $pw->getFileLocation($fileType) . ' ';
+		$file = $pw->getFileLocation($fileType);
+		$zip->addFile(file_get_contents($file), basename($file));
 	}
-
-	$cmd = "zip $zipFile $files 2>&1";
-	wfDebug("ZIPPING: $cmd\n");
-	exec($cmd, $output, $status);	
-	foreach ($output as $line) {
-		$msg .= $line . "\n";
-	}
-
+	$zipData = $zip->file();
+	
+	//$zipFile = tempnam(WPI_TMP_PATH, 'batchDownload') . '.zip';
+	//writeFile($zipFile, $zipData);
 	//header("Location: " . WPI_TMP_URL . '/' . basename($zipFile));
+	$time = time();
 	ob_clean();
-	header('Content-disposition: attachment; filename=wikipathways.zip');
+	header("Content-disposition: attachment; filename=wikipathways_$time.zip");
 	header('Content-type: application/zip');
-	header('Content-size: ' . $filesize($zipFile));
-	readfile($zipFile);
-	unlink($zipFile); //Clean up after yourself
+	//readfile($zipFile);
+	echo $zipData;
 	exit;
 }
 

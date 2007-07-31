@@ -126,6 +126,7 @@ JS;
 }
 
 function sendWebstart($webstart, $tmpname) {
+	ob_start();
 	ob_clean();
 	$os = getClientOs();
 	if($os == 'linux') { //return shell script that sets MOZILLA_FIVE_HOME and opens webstart
@@ -155,10 +156,12 @@ function createJnlpArg($flag, $value = false) {
 }
 
 function downloadFile($fileType, $pwTitle) {
+	ob_start();
 	$pathway = Pathway::newFromTitle($pwTitle);
 	$file = $pathway->	getFileLocation($fileType);
-	$content = file_get_contents($file);
+	$fn = $pathway->getFileName($fileType);	
 	
+	ob_clean();
 	switch($fileType) {
 		case FILETYPE_GPML:
 			header("Content-type: text/xml");
@@ -170,10 +173,9 @@ function downloadFile($fileType, $pwTitle) {
 			header("Content-type: image/png");
 			break;
 	}
-	$fn = $pathway->getFileName($fileType);
-	ob_clean();
 	header("Content-Disposition: attachment; filename=\"$fn\"");
-	echo $content;
+	header("Content-Length: " . filesize($file));
+	readfile($file);
 	exit;
 }
 
