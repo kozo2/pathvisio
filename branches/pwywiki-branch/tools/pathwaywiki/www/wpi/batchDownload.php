@@ -13,10 +13,10 @@ function wfBatchDownload() {
 //To be called directly
 if(realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
 	$species = $_GET['species'];
-	$fileType = $_GET['filetype'];
+	$fileType = $_GET['fileType'];
 
 	if($species) {
-		batchDownload($species, $fileType ? $fileType : FILETYPE_GPML);
+		batchDownload($species, $fileType);
 	}
 }
 
@@ -72,7 +72,7 @@ function getPathways($conditions = array()) {
 
 function doDownload($pathways, $fileType) {
 	ob_start();
-	$zip = new zipfile();
+/*	$zip = new zipfile();
 	
 	//Fill zip file
 	foreach($pathways as $pw) {
@@ -80,17 +80,29 @@ function doDownload($pathways, $fileType) {
 		$zip->addFile(file_get_contents($file), basename($file));
 	}
 	$zipData = $zip->file();
+*/	
+	$zipFile = tempnam(WPI_TMP_PATH, 'batchDownload') . '.zip';
+	foreach($pathways as $pw) {
+		$files .= $pw->getFileLocation($fileType) . ' ';
+	}
+	$cmd = "zip -j $zipFile $files 2>&1";
+	exec($cmd, $output, $status);
+	foreach($output as $line) {
+		$msg .= $line . "\n";
+	}
 	
-	//$zipFile = tempnam(WPI_TMP_PATH, 'batchDownload') . '.zip';
-	//writeFile($zipFile, $zipData);
 	//header("Location: " . WPI_TMP_URL . '/' . basename($zipFile));
+	// Can't get this to work under windows, corrupt zip file
 	$time = time();
 	ob_clean();
-	header("Content-disposition: attachment; filename=wikipathways_$time.zip");
-	header('Content-type: application/zip');
-	//readfile($zipFile);
-	echo $zipData;
-	exit;
+	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	header("Cache-Control: private", false);
+	header("Content-Disposition: attachment; filename=wikipathways_$time.zip");
+	header('Content-Type: application/octet-stream');
+	header("Content-Transfer-Encoding: binary");
+	header("Content-Length: ".filesize($zipFile));
+	set_time_limit(0); //In case reading file takes a long time
+	@readfile($zipFile);
 }
 
 ?>

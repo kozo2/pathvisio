@@ -18,13 +18,13 @@ class MostEditedPathwaysPage extends SpecialPage
 				
 				//Most revisioned pathway images
 				$wgOut->addWikiText("== Pathways Changed  ==");
-				$ppp = new PathwayQueryPage(102);
+				$ppp = new PathwayQueryPage(NS_GPML);
 
 				$ppp->doQuery( $offset, $limit );
 				
 				//Most edited pathway articles
 				$wgOut->addWikiText("== Descriptions & Bibliographies Changed ==");
-				$ppp = new PathwayQueryPage(100);
+				$ppp = new PathwayQueryPage(NS_PATHWAY);
 
 				$ppp->doQuery( $offset, $limit );
 							
@@ -76,6 +76,7 @@ class PathwayQueryPage extends QueryPage {
 			JOIN $page ON page_id = rev_page
 			WHERE page_namespace = " . $this->namespace . "
 			AND page_title NOT LIKE '%Sandbox%'
+			AND page_is_redirect = 0
 			GROUP BY 1,2,3
 			HAVING COUNT(*) > 1
 			";
