@@ -91,8 +91,6 @@ function doDownload($pathways, $fileType) {
 		$msg .= $line . "\n";
 	}
 	
-	//header("Location: " . WPI_TMP_URL . '/' . basename($zipFile));
-	// Can't get this to work under windows, corrupt zip file
 	$time = time();
 	ob_clean();
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");

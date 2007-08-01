@@ -122,4 +122,3 @@ function renderPathwayImage( &$parser, $pwTitle, $width = 0, $align = '', $capti
     }
 
 ?>
-

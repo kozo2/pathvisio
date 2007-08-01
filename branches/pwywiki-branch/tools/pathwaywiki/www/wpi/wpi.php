@@ -1,5 +1,4 @@
 <?php
-
 require_once('globals.php');
 //Initialize MediaWiki
 set_include_path(get_include_path().PATH_SEPARATOR.realpath('../includes').PATH_SEPARATOR.realpath('../').PATH_SEPARATOR);
@@ -155,9 +154,12 @@ function createJnlpArg($flag, $value = false) {
 }
 
 function downloadFile($fileType, $pwTitle) {
+	ob_start();
 	$pathway = Pathway::newFromTitle($pwTitle);
 	$file = $pathway->getFileLocation($fileType);
-	$fn = $pathway->getFileName($fileType);	
+	$fn = $pathway->getFileName($fileType);
+	
+	ob_clean();
 	switch($fileType) {
 		case FILETYPE_GPML:
 			header("Content-type: text/xml");
@@ -172,9 +174,9 @@ function downloadFile($fileType, $pwTitle) {
 	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 	header("Content-Disposition: attachment; filename=\"$fn\"");
 	header("Content-Length: " . filesize($file));
-	ob_clean();
-	echo(file_get_contents($file));
-	exit;
+	set_time_limit(0);
+	@readfile($file);
+	exit();
 }
 
 function getClientOs() {
