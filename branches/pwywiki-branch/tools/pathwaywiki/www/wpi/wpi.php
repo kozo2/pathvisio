@@ -118,6 +118,7 @@ history.go(-1);
 </body>
 </html>
 JS;
+		echo($script);
 		exit;
 	}
 	sendWebstart($webstart, $pathway->name());//This exits script
@@ -148,9 +149,10 @@ function getJnlpURL($webstart, $tmpname) {
 	return 'http://' . $_SERVER['HTTP_HOST'] . '/wpi/tmp/' . basename($wsFile);
 }
 
-function createJnlpArg($flag, $value = false) {
+function createJnlpArg($flag, $value) {
 	//return "<argument>" . $flag . ' "' . $value . '"' . "</argument>\n";
-	return "<argument>" . $flag . "</argument>\n<argument>" . $value . "</argument>\n";
+	if(!$flag || !$value) return '';
+	return "<argument>" . htmlspecialchars($flag) . "</argument>\n<argument>" . htmlspecialchars($value) . "</argument>\n";
 }
 
 function downloadFile($fileType, $pwTitle) {

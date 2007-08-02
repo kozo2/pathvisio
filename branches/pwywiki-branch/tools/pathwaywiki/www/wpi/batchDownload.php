@@ -12,6 +12,7 @@ function wfBatchDownload() {
 
 //To be called directly
 if(realpath($_SERVER['SCRIPT_FILENAME']) == realpath(__FILE__)) {
+	wfDebug("PROCESSING BATCH DOWNLOAD\n");
 	$species = $_GET['species'];
 	$fileType = $_GET['fileType'];
 
@@ -90,6 +91,9 @@ function doDownload($pathways, $fileType) {
 	foreach($output as $line) {
 		$msg .= $line . "\n";
 	}
+	if($status != 0) {
+		exit("<H1>Unable process download</H1><P>$msg</P>");
+	}
 	
 	$time = time();
 	ob_clean();
@@ -100,7 +104,21 @@ function doDownload($pathways, $fileType) {
 	header("Content-Transfer-Encoding: binary");
 	header("Content-Length: ".filesize($zipFile));
 	set_time_limit(0); //In case reading file takes a long time
-	@readfile($zipFile);
+	readfile_chunked($zipFile);
 }
+
+function readfile_chunked ($filename) {
+  $chunksize = 1*(1024*1024); // how many bytes per chunk
+  $buffer = '';
+  $handle = fopen($filename, 'rb');
+  if ($handle === false) {
+    return false;
+  }
+  while (!feof($handle)) {
+    $buffer = fread($handle, $chunksize);
+    print $buffer;
+  }
+  return fclose($handle);
+} 
 
 ?>
