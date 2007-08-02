@@ -23,7 +23,7 @@ function createApplet( &$parser, $idClick = 'appletButton', $idReplace = 'pwThum
 			$pathway = Pathway::newFromTitle($pwTitle);
 		}
 		$appletCode = makeAppletFunctionCall($pathway, $idReplace, $idClick, $new);
-		$output = scriptTag('', JS_SRC_PROTOTYPE) . scriptTag('', JS_SRC_RESIZE) . scriptTag('', JS_SRC_EDITAPPLET) . $appletCode;
+		$output = scriptTag('', JS_SRC_APPLETOBJECT) . scriptTag('', JS_SRC_PROTOTYPE) . scriptTag('', JS_SRC_RESIZE) . scriptTag('', JS_SRC_EDITAPPLET) . $appletCode;
 	} catch(Exception $e) {
 		return "Error: $e";
 	}
@@ -67,9 +67,11 @@ function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
 	$keys = createJsArray(array_keys($args));
 	$values = createJsArray(array_values($args));
 
+	//$function = "replaceWithApplet('{$idReplace}', 'applet', {$keys}, {$values});";
+	$function = "doApplet('{$idReplace}', 'applet', {$keys}, {$values});";
 	return scriptTag(
 		"var elm = document.getElementById('{$idClick}');" . 
-		"var listener = function() { replaceWithApplet('{$idReplace}', 'applet', {$keys}, {$values}); };" .
+		"var listener = function() { $function };" .
 		"if(elm.attachEvent) { elm.attachEvent('onclick',listener); }" .
 		"else { elm.addEventListener('click',listener, false); }"
 	);

@@ -29,4 +29,5 @@ define("WPI_TMP_URL", WPI_URL . '/' . $wpiPath . '/' . $wpiTmpPath);
 define("JS_SRC_EDITAPPLET", "/wpi/js/editapplet.js");
 define("JS_SRC_RESIZE", "/wpi/js/resize.js");
 define("JS_SRC_PROTOTYPE", "/wpi/js/prototype.js");
+define("JS_SRC_APPLETOBJECT", "/wpi/js/appletobject.js");
 ?>
