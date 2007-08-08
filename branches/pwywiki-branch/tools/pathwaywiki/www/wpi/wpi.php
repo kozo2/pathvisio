@@ -577,6 +577,17 @@ class Pathway {
 		}
 	}
 	
+	public function getGpmlModificationTime() {
+		$gpmlTitle = $this->getFileTitle(FILETYPE_GPML);
+		$gpmlRev = Revision::newFromTitle($gpmlTitle);
+		if($gpmlRev) {
+			$gpmlDate = $gpmlRev->getTimestamp();
+		} else {
+			throw new Exception("No GPML page");
+		}
+		return $gpmlDate;
+	}
+
 	## Based on SpecialUploadForm.php
 	## Assumes $saveName is already checked to be a valid Title
 	//TODO: run hooks
