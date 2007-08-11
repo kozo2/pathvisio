@@ -167,7 +167,7 @@ $wgNamespacesToBeSearchedDefault +=
 $wgContentNamespaces += array(NS_PATHWAY, NS_PATHWAY_TALK, NS_GPML, NS_GPML_TALK);
 
 ##Debug
-$wgDebugLogFile = '/var/www/wpi/tmp/wikipathwaysdebug.txt';
+$wgDebugLogFile = '/var/www/wikipathways/wpi/tmp/wikipathwaysdebug.txt';
 $wgProfiling = true; //Set to true for debugging info
 
 ##Extensions

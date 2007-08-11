@@ -8,11 +8,11 @@ chmod 777 createSiteMap.php
 
 # Generate new sitemap
 echo "Generating sitemap"
-wget -O sitemap.xml http://www.wikipathways.org/wpi/sitemap/createSiteMap.php
+wget -O /var/www/wikipathways/sitemap.xml http://www.wikipathways.org/wpi/sitemap/createSiteMap.php
 
 # Set the correct permissions for sitemap.xml
 echo "Setting permissions of sitemap.xml to 777"
-chmod 777 sitemap.xml
+chmod 777 /var/www/wikipathwayssitemap.xml
 
 # Restore permissions
 echo "Restoring permissions of createSiteMap.php"

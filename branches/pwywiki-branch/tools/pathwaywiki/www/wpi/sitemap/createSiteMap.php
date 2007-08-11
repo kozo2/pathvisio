@@ -67,7 +67,7 @@ error_reporting(E_ALL);
 ?>
 <!-- MediaWiki - Google Sitemaps - v0.3 -->
 <!-- <?php echo $totalRows_rsPages ?> wikipages found. -->
-<!-- Created on <?php echo fnTimestampToIso(timestamp()); ?> -->
+<!-- Created on <?php echo fnTimestampToIso(time()); ?> -->
 <urlset xmlns="http://www.google.com/schemas/sitemap/0.84">
 <?php 
 
