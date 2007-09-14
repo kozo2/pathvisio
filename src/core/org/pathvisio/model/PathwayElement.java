@@ -1099,31 +1099,22 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	}
 
 	/**
-	   checks if fill color is equal to null or the alpha value is equal to 0.
+	   checks if fill color is equal to null.
 	 */
 	public boolean isTransparent()
 	{
-		return fillColor == null || fillColor.getAlpha() == 0;
+		return fillColor == null;
 	}
 
 	/**
-	   sets the alpha component of fillColor to 0 if true
-	   sets the alpha component of fillColor to 255 if true
+	   sets fillColor to null if true,
+	   sets fillColor to white if false
 	 */
 	public void setTransparent(boolean v)
 	{
 		if (isTransparent() != v)
 		{
-			if(fillColor == null) {
-				fillColor = Color.WHITE;
-			}
-			int alpha = v ? 0 : 255;
-			fillColor = new Color(
-					fillColor.getRed(), 
-					fillColor.getGreen(), 
-					fillColor.getBlue(), 
-					alpha);
-
+			fillColor = (v ? null : Color.WHITE);
 			fireObjectModifiedEvent(new PathwayEvent(this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}

@@ -14,16 +14,7 @@ function wfEditApplet_Magic( &$magicWords, $langCode ) {
 	return true;
 }
 
-/**
- * Creates the applet
- * @parameter $idClick Id of the element to attach an 'onclick' event 
- * to that will trigger the applet to start. If this argument equals 'direct', 
- * the applet will be activated directly.
- * @parameter $idReplace Id of the element that will be replaced by the applet
- * @parameter $new Whether the pathway is yet to be created (will be passed on to the applet)
- * @parameter $pwTitle The title of the pathway to be edited (Species:Pathwayname)
-*/
-function createApplet( &$parser, $idClick = 'direct', $idReplace = 'pwThumb', $new = '', $pwTitle = '' ) {
+function createApplet( &$parser, $idClick = 'appletButton', $idReplace = 'pwThumb', $new = '', $pwTitle = '' ) {
 	$parser->disableCache();
 	try {
 		if(!$pwTitle) {
@@ -62,7 +53,7 @@ function increase_version($old) {
 	return implode('.', $numbers);
 }
 
-function makeAppletObjectCall($pathway, $idReplace, $new) {
+function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
 	global $wgUser;
 	if($new) {
 		$pwUrl = $pathway->getTitleObject()->getFullURL();
@@ -125,20 +116,13 @@ function makeAppletObjectCall($pathway, $idReplace, $new) {
 	$keys = createJsArray(array_keys($args));
 	$values = createJsArray(array_values($args));
 
-	return "doApplet('{$idReplace}', 'applet', {$keys}, {$values});";
-}
-
-function makeAppletFunctionCall($pathway, $idReplace, $idClick, $new) {
-	$function = makeAppletObjectCall($pathway, $idReplace, $new);
-	if($idClick == 'direct') {
-		return scriptTag($function);
-	} else {
-		return scriptTag(
-			"var elm = document.getElementById('{$idClick}');" . 
-			"var listener = function() { $function };" .
-			"if(elm.attachEvent) { elm.attachEvent('onclick',listener); }" .
-			"else { elm.addEventListener('click',listener, false); }"
-		);
-	}
+	//$function = "replaceWithApplet('{$idReplace}', 'applet', {$keys}, {$values});";
+	$function = "doApplet('{$idReplace}', 'applet', {$keys}, {$values});";
+	return scriptTag(
+		"var elm = document.getElementById('{$idClick}');" . 
+		"var listener = function() { $function };" .
+		"if(elm.attachEvent) { elm.attachEvent('onclick',listener); }" .
+		"else { elm.addEventListener('click',listener, false); }"
+	);
 }
 ?>
