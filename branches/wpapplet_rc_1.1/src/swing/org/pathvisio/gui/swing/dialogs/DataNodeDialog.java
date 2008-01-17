@@ -61,8 +61,7 @@ public class DataNodeDialog extends PathwayElementDialog {
 		JLabel dbLabel = new JLabel("Database");
 		symText = new JTextField();
 		idText = new JTextField();
-		String[] datasources = DataSource.getFullNames().toArray (new String[0]);
-		dbCombo = new JComboBox(datasources);
+		dbCombo = new JComboBox(DataSource.getDataSources().toArray());
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.ipadx = c.ipady = 5;
@@ -103,7 +102,8 @@ public class DataNodeDialog extends PathwayElementDialog {
 		
 		dbCombo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getInput().setDataSource(DataSource.getByFullName(dbCombo.getSelectedItem().toString()));
+				DataSource item = (DataSource)dbCombo.getSelectedItem();
+				getInput().setDataSource(item);
 			}
 		});
 		
