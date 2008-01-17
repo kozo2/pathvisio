@@ -310,6 +310,7 @@ public class ViewActions implements VPathwayListener, SelectionListener {
 
 		public GroupAction() {
 			super();
+			vPathway.addSelectionListener(this);
 			putValue(NAME, "Group");
 			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl G"));
 			setLabel();
