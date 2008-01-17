@@ -55,7 +55,7 @@ public class WikiPathwaysInit {
 	public static File getApplicationDir() {
 		if(DIR_APPLICATION == null) {
 			DIR_APPLICATION = new File(System.getProperty("user.home"), "." + Globals.APPLICATION_NAME);
-			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdir();
+			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdirs();
 		}
 		return DIR_APPLICATION;
 	}
@@ -65,6 +65,5 @@ public class WikiPathwaysInit {
 		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_PNG));
 		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_SVG));
 //		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_TIFF)); disabled, see bug #166
-		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_PDF));
 	}
 }
