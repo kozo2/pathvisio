@@ -25,7 +25,6 @@ import org.pathvisio.debug.Logger;
 import org.pathvisio.model.ImageExporter;
 import org.pathvisio.model.PropertyType;
 import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.view.MIMShapes;
 
 /**
  * Static utility class that contains a collection of global methods for {@link WikiPathways}.
@@ -34,9 +33,6 @@ import org.pathvisio.view.MIMShapes;
 public class WikiPathwaysInit {
 	static void init() throws Exception {
 		GlobalPreference.FILE_LOG.setDefault(new File(getApplicationDir(), ".wikipathwaysLog").toString());
-		
-		GlobalPreference.MIM_SUPPORT.setValue(Boolean.toString(true));
-		MIMShapes.registerShapes();
 		
 		PropertyType.CENTERX.setHidden(true);
 		PropertyType.CENTERY.setHidden(true);
@@ -59,7 +55,7 @@ public class WikiPathwaysInit {
 	public static File getApplicationDir() {
 		if(DIR_APPLICATION == null) {
 			DIR_APPLICATION = new File(System.getProperty("user.home"), "." + Globals.APPLICATION_NAME);
-			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdirs();
+			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdir();
 		}
 		return DIR_APPLICATION;
 	}
@@ -69,5 +65,6 @@ public class WikiPathwaysInit {
 		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_PNG));
 		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_SVG));
 //		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_TIFF)); disabled, see bug #166
+		engine.addPathwayExporter(new WikiPathwaysExporter(rpcUrl, ImageExporter.TYPE_PDF));
 	}
 }

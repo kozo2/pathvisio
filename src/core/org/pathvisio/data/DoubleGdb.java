@@ -16,7 +16,6 @@
 //
 package org.pathvisio.data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -108,23 +107,6 @@ public class DoubleGdb implements Gdb
 		}
 	}
 
-	/**
-	 * Check if the reference exists in either one of the 
-	 * child databases
-	 */
-	public boolean xrefExists(Xref xref) {
-		for (SimpleGdb child : gdbs)
-		{
-			if (child != null && child.isConnected())
-			{
-				if(child.xrefExists(xref)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
 	/**
 	 * Return the aggregate of the child results.
 	 * @deprecated
@@ -218,22 +200,6 @@ public class DoubleGdb implements Gdb
 		return result;
 	}
 
-	public List<Xref> getCrossRefsByAttribute(String attrName, String attrValue) {
-		List<Xref> result = null;
-		
-		for (SimpleGdb child : gdbs)
-		{
-			if (child != null && child.isConnected())
-			{
-				if (result == null)
-					result = child.getCrossRefsByAttribute (attrName, attrValue);
-				else
-					result.addAll (child.getCrossRefsByAttribute (attrName, attrValue));
-			}
-		}
-		return result;
-	}
-	
 	/**
 	 * This implementation concatenates the dbname's of all
 	 * connected child databases.
@@ -314,10 +280,10 @@ public class DoubleGdb implements Gdb
 	/**
 	 * returns the aggregate of all child results.
 	 */
-	public List<Xref> getIdSuggestions(String text,
+	public List<Map<PropertyType, String>> getIdSuggestions(String text,
 			int limit) 
 	{
-		List<Xref> result = new ArrayList<Xref>();
+		List<Map<PropertyType, String>> result = null;
 		
 		for (SimpleGdb child : gdbs)
 		{
@@ -337,10 +303,10 @@ public class DoubleGdb implements Gdb
 	/**
 	 * returns the aggregate of all child results.
 	 */
-	public List<String> getSymbolSuggestions(String text,
+	public List<Map<PropertyType, String>> getSymbolSuggestions(String text,
 			int limit) 
 	{
-		List<String> result = new ArrayList<String>();
+		List<Map<PropertyType, String>> result = null;
 		
 		for (SimpleGdb child : gdbs)
 		{

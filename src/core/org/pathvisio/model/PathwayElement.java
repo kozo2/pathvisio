@@ -83,64 +83,75 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		}
 		
 		public String toString() {
-			String src = "";
-			if(src != null && !"".equals(src)) {
-				src = " (" + source + ")";
-			}
-			return comment + src;
+			return comment + " (" + source + ")";
 		}
 	}
 
-	/**
-	 * Represents a generic point in an coordinates.length dimensional space.
-	 * The point is automatically a {@link GraphIdContainer} and therefore lines
-	 * can link to the point.
-	 * @see MPoint
-	 * @see MAnchor
-	 * @author thomas
-	 *
-	 */
-	private class GenericPoint implements Cloneable, GraphIdContainer
+	public class MPoint implements Cloneable, GraphIdContainer,
+			GraphRefContainer
 	{
-		private double[] coordinates;
+		private double x;
+
+		private double y;
+
+		private String graphRef;
 
 		private String graphId;
 
-		GenericPoint(double[] coordinates)
+		MPoint(double _x, double _y)
 		{
-			this.coordinates = coordinates;
+			x = _x;
+			y = _y;
 		}
 
-		GenericPoint(GenericPoint p)
+		MPoint(MPoint p)
 		{
-			coordinates = new double[p.coordinates.length];
-			for(int i = 0; i < coordinates.length; i++) {
-				coordinates[i] = p.coordinates[i];
-			}
+			x = p.x;
+			y = p.y;
+			if (p.graphRef != null)
+				graphRef = new String(p.graphRef);
 			if (p.graphId != null)
 				graphId = new String(p.graphId);
 		}
 
-		protected void moveBy(double[] delta)
+		public void moveBy(double dx, double dy)
 		{
-			for(int i = 0; i < coordinates.length; i++) {
-				coordinates[i] += delta[i];
-			}
+			x += dx;
+			y += dy;
 			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 
-		protected void moveTo(GenericPoint p)
+		public void moveTo(MPoint p)
 		{
-			coordinates = p.coordinates;
+			x = p.x;
+			y = p.y;
 			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 
-		protected double getCoordinate(int i) {
-			return coordinates[i];
+		public void setX(double nx)
+		{
+			if (nx != x)
+				moveBy(nx - x, 0);
 		}
-		
+
+		public void setY(double ny)
+		{
+			if (ny != y)
+				moveBy(0, ny - y);
+		}
+
+		public double getX()
+		{
+			return x;
+		}
+
+		public double getY()
+		{
+			return y;
+		}
+
 		public String getGraphId()
 		{
 			return graphId;
@@ -158,85 +169,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			graphId = v;
 			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
 					PathwayEvent.MODIFIED_GENERAL));
-		}
-
-		public Object clone() throws CloneNotSupportedException
-		{
-			GenericPoint p = (GenericPoint) super.clone();
-			if (graphId != null)
-				p.graphId = new String(graphId);
-			return p;
-		}
-
-		public Set<GraphRefContainer> getReferences()
-		{
-			return GraphLink.getReferences(this, parent);
-		}
-
-		public Pathway getPathway() {
-			return parent;
-		}
-		
-		/**
-		 * @deprecated use {@link #getPathway()} instead
-		 */
-		public Pathway getGmmlData()
-		{
-			return parent;
-		}
-
-		public PathwayElement getParent()
-		{
-			return PathwayElement.this;
-		}
-	}
-	
-	/**
-	 * This class represents the Line.Graphics.Point element in GPML.
-	 * @author thomas
-	 *
-	 */
-	public class MPoint extends GenericPoint implements GraphRefContainer
-	{
-		private String graphRef;
-
-		MPoint(double x, double y)
-		{
-			super(new double[] { x, y });
-		}
-
-		MPoint(MPoint p)
-		{
-			super(p);
-			if (p.graphRef != null)
-				graphRef = new String(p.graphRef);
-		}
-
-		public void moveBy(double dx, double dy)
-		{
-			super.moveBy(new double[] { dx, dy });
-		}
-
-		public void setX(double nx)
-		{
-			if (nx != getX())
-				moveBy(nx - getX(), 0);
-		}
-
-		public void setY(double ny)
-		{
-			if (ny != getY())
-				moveBy(0, ny - getY());
-		}
-
-		public double getX()
-		{
-			return getCoordinate(0);
-		}
-
-		public double getY()
-		{
-			return getCoordinate(1);
 		}
 
 		public String getGraphRef()
@@ -295,56 +227,30 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		public Object clone() throws CloneNotSupportedException
 		{
 			MPoint p = (MPoint) super.clone();
+			if (graphId != null)
+				p.graphId = new String(graphId);
 			if (graphRef != null)
 				p.graphRef = new String(graphRef);
 			return p;
 		}
-	}
-	
-	/**
-	 * This class represents the Line.Graphics.Anchor element in GPML
-	 * @author thomas
-	 *
-	 */
-	public class MAnchor extends GenericPoint {
-		LineType shape = LineType.LIGAND_ROUND;
-		
-		public MAnchor(double position) {
-			super(new double[] { position });
-		}
-		
-		public MAnchor(MAnchor a) {
-			super(a);
-			shape = a.shape;
-		}
-		
-		public void setShape(LineType type) {
-			if(!this.shape.equals(type) && type != null) {
-				this.shape = type;
-				fireObjectModifiedEvent(new PathwayEvent(
-						PathwayElement.this, PathwayEvent.MODIFIED_GENERAL));
-			}
-		}
-		
-		public LineType getShape() {
-			return shape;
-		}
-		
-		public double getPosition() {
-			return getCoordinate(0);
+
+		public Set<GraphRefContainer> getReferences()
+		{
+			return GraphLink.getReferences(this, parent);
 		}
 
-		public void setPosition(double position) {
-			if(position != getPosition()) {
-				moveBy(position - getPosition());
-			}
+		public Pathway getGmmlData()
+		{
+			return parent;
 		}
-		
-		public void moveBy(double delta) {
-			super.moveBy(new double[] { delta });
+
+		public PathwayElement getParent()
+		{
+			return PathwayElement.this;
 		}
+
 	}
-	
+
 	private static final int M_INITIAL_SHAPE_SIZE = 30 * 15; // initial
 																// Radius for
 																// rect and oval
@@ -371,7 +277,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			throw new IllegalArgumentException("Trying to set objectType to "
 					+ ot);
 		}
-		/* set default value for transparency */
+		/* set default value for transparancy */
 		if (ot == ObjectType.LINE || ot == ObjectType.LABEL)
 		{
 			setTransparent (false);
@@ -1017,9 +923,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		{
 			mPoints.add(new MPoint(p));
 		}
-		for (MAnchor a : src.anchors) {
-			anchors.add(new MAnchor(a));
-		}
 		comments = new ArrayList<Comment>();
 		for (Comment c : src.comments)
 		{
@@ -1103,7 +1006,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMStartX()
 	{
-		return getMStart().getX();
+		return getMStart().x;
 	}
 
 	public void setMStartX(double v)
@@ -1113,7 +1016,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMStartY()
 	{
-		return getMStart().getY();
+		return getMStart().y;
 	}
 
 	public void setMStartY(double v)
@@ -1123,7 +1026,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMEndX()
 	{
-		return mPoints.get(mPoints.size() - 1).getX();
+		return mPoints.get(mPoints.size() - 1).x;
 	}
 
 	public void setMEndX(double v)
@@ -1133,7 +1036,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMEndY()
 	{
-		return getMEnd().getY();
+		return getMEnd().y;
 	}
 
 	public void setMEndY(double v)
@@ -1191,42 +1094,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		}
 	}
 
-	protected List<MAnchor> anchors = new ArrayList<MAnchor>();
-	
-	/**
-	 * Get the anchors for this line.
-	 * @return A list with the anchors, or an empty list, if no anchors are defined
-	 */
-	public List<MAnchor> getMAnchors() {
-		return anchors;
-	}
-	
-	/**
-	 * Add a new anchor to this line at the given position.
-	 * @param position The relative position on the line, between 0 (start) to 1 (end).
-	 */
-	public MAnchor addMAnchor(double position) {
-		if(position < 0 || position > 1) {
-			throw new IllegalArgumentException(
-					"Invalid position value '" + position + 
-					"' must be between 0 and 1");
-		}
-		MAnchor anchor = new MAnchor(position);
-		anchors.add(anchor);
-		fireObjectModifiedEvent(new PathwayEvent(
-				this, PathwayEvent.MODIFIED_GENERAL));
-		return anchor;
-	}
-	
-	/**
-	 * Remove the given anchor
-	 */
-	public void removeMAnchor(MAnchor anchor) {
-		anchors.remove(anchor);
-		fireObjectModifiedEvent(new PathwayEvent(
-				this, PathwayEvent.MODIFIED_GENERAL));
-	}
-	
 	protected Color color = new Color(0, 0, 0);
 
 	public Color getColor()
@@ -1464,6 +1331,8 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public void setDataSource(DataSource v)
 	{
+		if (v == null)
+			throw new IllegalArgumentException();
 		if (dataSource != v)
 		{
 			dataSource = v;

@@ -96,7 +96,7 @@ public class LineType
 		return fromName (value);
 	}
 
-	public static LineType fromName(String value)
+	static LineType fromName(String value)
 	{
 		return nameMappings.get (value);
 	}

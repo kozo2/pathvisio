@@ -160,7 +160,7 @@ public class DataSourcePatterns
 	 * There is not guaranteed to be a Pattern for every
 	 * DataSource constant.
 	 */
-	public static Map<DataSource, Pattern> getPatterns()
+	static Map<DataSource, Pattern> getPatterns()
 	{
 		return patterns;
 	}

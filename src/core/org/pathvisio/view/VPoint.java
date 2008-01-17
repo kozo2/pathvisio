@@ -21,7 +21,6 @@ import java.awt.Shape;
 import java.util.HashSet;
 import java.util.Set;
 import org.pathvisio.view.LinAlg.Point;
-import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.PathwayElement.MPoint;
 import org.pathvisio.preferences.GlobalPreference;
 
@@ -63,9 +62,10 @@ public class VPoint extends VPathwayElement {
 	
 	protected Set<Line> getLines() { return lines; }
 	
-	protected void link(GraphIdContainer g) {		
-		String id = g.getGraphId();
-		if(id == null) id = g.setGeneratedGraphId();
+	protected void link(Graphics g) {
+		if(lines.contains(g)) return; //Prevent linking to self
+		String id = g.getPathwayElement().getGraphId();
+		if(id == null) id = g.getPathwayElement().setGeneratedGraphId();
 		for(MPoint p : mPoints) p.setGraphRef(id);
 	}
 	

@@ -106,43 +106,22 @@ public class SimpleGdb implements Gdb
 	 */
 	public String getGeneSymbol(Xref ref) 
 	{
-		try {
-			Statement s = con.createStatement();
-			
-			String query =
-						"SELECT attrvalue FROM attribute WHERE " +
-						"attrname = 'Symbol' AND id = '" + ref.getId() + "' " +
-						"AND code = '" + ref.getDataSource().getSystemCode() + "'";
-			ResultSet r = s.executeQuery(query);
-	
-			while(r.next()) 
-			{
-				return r.getString(1);
-			}
-		} catch (SQLException e) {
-			Logger.log.error("Unable to query suggestions", e);
-		}
-		return null;
+		String bpInfo = getBpInfo(ref);
+		return bpInfo == null ? null : parseGeneSymbol(bpInfo);		
 	}
 	
-	public boolean xrefExists(Xref xref) {
-		try {
-			Statement s = con.createStatement();
-			
-			String query =
-						"SELECT id FROM datanode WHERE " +
-						"id = '" + xref.getId() + "' " +
-						"AND code = '" + xref.getDataSource().getSystemCode() + "'";
-			ResultSet r = s.executeQuery(query);
-	
-			while(r.next()) 
-			{
-				return true;
-			}
-		} catch (SQLException e) {
-			Logger.log.error("Unable to query suggestions", e);
-		}
-		return false;
+	/**
+	 * Parses the gene symbol from the backpage info
+	 * @param bpInfo The backpage info (as obtained from {@link #getBpInfo(String, String)})
+	 * @return The parsed gene symbol, or null if no symbol could be found
+	 */
+	private String parseGeneSymbol(String bpInfo) {
+		Pattern regex = Pattern.compile("<TH>Gene Name:<TH>(.+?)<TR>");
+		Matcher matcher = regex.matcher(bpInfo);
+		if(matcher.find())
+			return matcher.group(1);
+		else
+			return null;
 	}
 	
 	/**
@@ -375,29 +354,7 @@ public class SimpleGdb implements Gdb
 		Logger.log.trace("END Fetching cross references for " + idc + "; time:\t" + timer.stop());
 		return refs;
 	}
-	
-	public List<Xref> getCrossRefsByAttribute(String attrName, String attrValue) {
-		Logger.log.trace("Fetching cross references by attribute: " + attrName + " = " + attrValue);
-		String query = 
-			"SELECT DataNode.id, DataNode.code FROM Datanode " +
-			"LEFT JOIN Attribute ON DataNode.id = Attribute.id AND DataNode.code = Attribute.code " +
-			"WHERE attrName = '" + attrName + "' AND attrValue = '" + attrValue + "'";
-		
-		List<Xref> refs = new ArrayList<Xref>();
-
-		try {
-			ResultSet r = con.createStatement().executeQuery(query);
-			while(r.next()) {
-				Xref ref = new Xref(r.getString(1), DataSource.getBySystemCode(r.getString(2)));
-				refs.add(ref);
-			}
-		} catch(SQLException e) {
-			Logger.log.error("Unable to fetch cross-ref by attribute", e);
-		}
-		Logger.log.trace("End fetching cross references by attribute");
-		return refs;
-	}
-	
+				
 	/**
 	 * Opens a connection to the Gene Database located in the given file
 	 * @param dbName The file containing the Gene Database. 
@@ -534,9 +491,9 @@ public class SimpleGdb implements Gdb
 	/**
 	 * Get up to limit suggestions for a symbol autocompletion
 	 */
-	public List<String> getSymbolSuggestions(String text, int limit) 
+	public List<Map<PropertyType, String>> getSymbolSuggestions(String text, int limit) 
 	{		
-		List<String> result = new ArrayList<String>();
+		List<Map<PropertyType, String>> result = new ArrayList<Map<PropertyType, String>>();
 		try {
 			Statement s = con.createStatement();
 			
@@ -544,15 +501,24 @@ public class SimpleGdb implements Gdb
 			if(limit > NO_LIMIT) s.setMaxRows(limit);
 			
 			String query =
-						"SELECT attrvalue FROM attribute WHERE " +
-						"attrname = 'Symbol' AND attrvalue LIKE '" + text + "%'";
+						"SELECT id, code, backpageText FROM gene WHERE " +
+						"backpageText LIKE '%<TH>Gene Name:<TH>" + text + "%'";
 			
 			ResultSet r = s.executeQuery(query);
 	
 			while(r.next()) 
 			{
-				String symbol = r.getString("attrValue");
-				result.add(symbol);
+				String sysCode = r.getString("code");
+				String sysName = DataSource.getBySystemCode(sysCode).getFullName();				
+				
+				Map<PropertyType, String> item = new HashMap<PropertyType, String>();
+				
+				String symbol = parseGeneSymbol(r.getString("backpageText"));
+				item.put (PropertyType.TEXTLABEL, symbol);
+				item.put (PropertyType.DATASOURCE, sysName);
+				item.put (PropertyType.GENEID, r.getString("id"));
+				
+				result.add(item);
 			}
 		} catch (SQLException e) {
 			Logger.log.error("Unable to query suggestions", e);
@@ -564,9 +530,9 @@ public class SimpleGdb implements Gdb
 	/**
 	 * Get up to limit suggestions for a symbol autocompletion
 	 */
-	public List<Xref> getIdSuggestions(String text, int limit) 
+	public List<Map<PropertyType, String>> getIdSuggestions(String text, int limit) 
 	{		
-		List<Xref> result = new ArrayList<Xref>();
+		List<Map<PropertyType, String>> result = new ArrayList<Map<PropertyType, String>>();
 		try {
 			Statement s = con.createStatement();
 			
@@ -575,16 +541,19 @@ public class SimpleGdb implements Gdb
 			
 			String query = "";
 			query =
-					"SELECT id, code FROM datanode WHERE " +
+					"SELECT id, code FROM gene WHERE " +
 					"id LIKE '" + text + "%'";
 			
 			ResultSet r = s.executeQuery(query);
 	
 			while(r.next()) {
-				String id = r.getString(1);
-				DataSource ds = DataSource.getBySystemCode(r.getString(2));
-				Xref ref = new Xref(id, ds);
-				result.add (ref);
+				String sysCode = r.getString("code");
+				String sysName = DataSource.getBySystemCode(sysCode).getFullName();
+				
+				Map<PropertyType, String> item = new HashMap<PropertyType, String>();
+				item.put (PropertyType.GENEID, r.getString("id"));
+				item.put (PropertyType.DATASOURCE, sysName);
+				result.add (item);
 			}
 		} catch (SQLException e) {
 			Logger.log.error("Unable to query suggestions", e);

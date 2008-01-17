@@ -86,11 +86,6 @@ public class DropDownButton extends JButton implements ActionListener {
 		setBorder(null);
 	}
 	
-	public void setToolTipText(String text) {
-		mainButton.setToolTipText(text);
-		arrowButton.setToolTipText(text);
-	}
-	
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
 		mainButton.setEnabled(enabled);

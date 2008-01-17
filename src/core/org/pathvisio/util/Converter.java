@@ -33,8 +33,6 @@ import org.pathvisio.model.EUGeneExporter;
 import org.pathvisio.model.GpmlFormat;
 import org.pathvisio.model.ImageExporter;
 import org.pathvisio.model.MappFormat;
-import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.view.MIMShapes;
 
 /**
  * @author Thomas Kelder (t.a.j.kelder@student.tue.nl)
@@ -79,10 +77,6 @@ public class Converter {
 		engine.addPathwayExporter(new DataNodeListExporter());
 		engine.addPathwayExporter(new EUGeneExporter());
     	
-		//Enable MiM support (for export to graphics formats)
-		GlobalPreference.MIM_SUPPORT.setValue(Boolean.toString(true));
-		MIMShapes.registerShapes();
-		
         File inputFile = null;
         File outputFile = null;
         

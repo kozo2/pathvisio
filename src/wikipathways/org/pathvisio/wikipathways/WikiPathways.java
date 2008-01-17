@@ -61,13 +61,11 @@ import org.pathvisio.gui.wikipathways.Actions;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Organism;
 import org.pathvisio.model.Pathway;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.Pathway.StatusFlagEvent;
-import org.pathvisio.model.Pathway.StatusFlagListener;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.util.ProgressKeeper;
 import org.pathvisio.util.RunnableWithProgress;
 import org.pathvisio.view.VPathway;
+import org.pathvisio.view.VPathwayWrapper;
 import org.xml.sax.SAXException;
 
 /**
@@ -75,7 +73,7 @@ import org.xml.sax.SAXException;
  * @author thomas
  *
  */
-public class WikiPathways implements ApplicationEventListener, StatusFlagListener {		
+public class WikiPathways implements ApplicationEventListener {		
 	public static final String COMMENT_DESCRIPTION = "WikiPathways-description";
 	public static final String COMMENT_CATEGORY = "WikiPathways-category";
 	
@@ -84,11 +82,7 @@ public class WikiPathways implements ApplicationEventListener, StatusFlagListene
 	
 	File localFile;
 	
-	/**
-	 * Keep track of changes with respect to the remote version of the pathway
-	 * (because the {@link Pathway#hasChanged()} also depends on locally saved version
-	 */
-	boolean remoteChanged;
+	boolean ovrChanged;
 	boolean initPerformed;
 	boolean isInit;
 	
@@ -128,19 +122,10 @@ public class WikiPathways implements ApplicationEventListener, StatusFlagListene
 		if(isNew()) { //Create new pathway
 			Logger.log.trace("WIKIPATHWAYS INIT: new pathway");
 			Engine.getCurrent().newPathway();
-			//Set the initial information
-			Pathway p = Engine.getCurrent().getActivePathway();
-			PathwayElement info = p.getMappInfo();
-			info.setMapInfoName(Parameter.PW_NAME.getValue());
-			info.setAuthor(Parameter.USER.getValue());
-			info.setOrganism(Parameter.PW_SPECIES.getValue());
 		} else { //Download and open the pathway
 			Logger.log.trace("WIKIPATHWAYS INIT: open pathway");
 			Engine.getCurrent().openPathway(new URL(getPwURL()));
 		}
-		
-		//Register status flag listener to override changed flag for local saves
-		Engine.getCurrent().getActivePathway().addStatusFlagListener(this);
 		
 		initVPathway();
 		
@@ -153,7 +138,7 @@ public class WikiPathways implements ApplicationEventListener, StatusFlagListene
 		progress.report("Connecting to database...");
 		
 		//Connect to the gene database
-		DBConnector connector = new DBConnectorDerbyServer(Parameter.GDB_SERVER.getValue(), 1527);
+		DBConnector connector = new DBConnectorDerbyServer("wikipathways.org", 1527);
 		Engine.getCurrent().setDBConnector(connector, DBConnector.TYPE_GDB);
 		
 		GdbManager.setGeneDb(getPwSpecies());
@@ -263,7 +248,7 @@ public class WikiPathways implements ApplicationEventListener, StatusFlagListene
 		
 	public boolean saveUI() {
 		Pathway pathway = Engine.getCurrent().getActivePathway();
-		if(!remoteChanged && !pathway.hasChanged()) {
+		if(!pathway.hasChanged()) {
 			uiHandler.showInfo("Save pathway", "You didn't make any changes");
 			return false;
 		}
@@ -293,13 +278,13 @@ public class WikiPathways implements ApplicationEventListener, StatusFlagListene
 	}
 	
 	protected void saveToWiki(String description) throws XmlRpcException, IOException, ConverterException {		
-		if(remoteChanged || Engine.getCurrent().getActivePathway().hasChanged()) {
+		if(ovrChanged || Engine.getCurrent().getActivePathway().hasChanged()) {
 			File gpmlFile = getLocalFile();
 			//Save current pathway to local file
 			Engine.getCurrent().savePathway(gpmlFile);
-			remoteChanged = true; //In case we get an error, save changes next time
+			ovrChanged = true; //In case we get an error, save changes next time
 			saveToWiki(description, gpmlFile);
-			remoteChanged = false; //Save successful, don't save next time
+			ovrChanged = false; //Save successful, don't save next time
 		} else {
 			Logger.log.trace("No changes made, ignoring save");
 			throw new ConverterException("You didn't make any changes");
@@ -468,13 +453,6 @@ public class WikiPathways implements ApplicationEventListener, StatusFlagListene
 				p.getMappInfo().setOrganism(wikiOrg.latinName());
 			}
 			break;
-		}
-	}
-	
-	public void statusFlagChanged(StatusFlagEvent e) {
-		//Set our own flag to true if changes are detected
-		if(e.getNewStatus()) {
-			remoteChanged = true;
 		}
 	}
 }
