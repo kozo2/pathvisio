@@ -19,17 +19,19 @@ package org.pathvisio.view;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.pathvisio.model.LineStyle;
@@ -37,7 +39,6 @@ import org.pathvisio.model.LineType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
-import org.pathvisio.model.PathwayElement.MAnchor;
 import org.pathvisio.model.PathwayElement.MPoint;
  
 /**
@@ -48,7 +49,6 @@ public class Line extends Graphics
 	private static final long serialVersionUID = 1L;
 	
 	private List<VPoint> points;
-	private Map<MAnchor, VAnchor> anchors = new HashMap<MAnchor, VAnchor>();
 	
 	/**
 	 * Constructor for this class
@@ -64,34 +64,6 @@ public class Line extends Graphics
 			points.add(vp);
 			vp.addLine(this);
 			vp.setHandleLocation();
-		}
-		setAnchors();
-	}
-	
-	private void setAnchors() {
-		//Check for new anchors
-		List<MAnchor> manchors = gdata.getMAnchors();
-		for(MAnchor ma : manchors) {
-			if(!anchors.containsKey(ma)) {
-				anchors.put(ma, new VAnchor(ma, this));
-			}
-		}
-		//Check for deleted anchors
-		for(MAnchor ma : anchors.keySet()) {
-			if(!manchors.contains(ma)) {
-				anchors.get(ma).destroy();
-			}
-		}
-	}
-	
-	void removeVAnchor(VAnchor va) {
-		anchors.remove(va.getMAnchor());
-		gdata.removeMAnchor(va.getMAnchor());
-	}
-	
-	private void updateAnchorPositions() {
-		for(VAnchor va : anchors.values()) {
-			va.updatePosition();
 		}
 	}
 	
@@ -279,6 +251,47 @@ public class Line extends Graphics
 		return line;
 	}
 	
+//	/**
+//	 * If the line type is arrow, this method draws the arrowhead
+//	 */
+//	private void drawArrowhead(GC buffer) //TODO! clean up this mess.....
+//	{
+//		double angle = 25.0;
+//		double theta = Math.toRadians(180 - angle);
+//		double[] rot = new double[2];
+//		double[] p = new double[2];
+//		double[] q = new double[2];
+//		double a, b, norm;
+//		
+//		rot[0] = Math.cos(theta);
+//		rot[1] = Math.sin(theta);
+//		
+//		buffer.setLineStyle (SWT.LINE_SOLID);
+//		
+//		double vEndx = getVEndX();
+//		double vEndy = getVEndY();
+//		double vStartx = getVStartX();
+//		double vStarty = getVStartY();
+//		
+//		if(vStartx == vEndx && vStarty == vEndy) return; //Unable to determine direction
+//		
+//		a = vEndx-vStartx;
+//		b = vEndy-vStarty;
+//		norm = 8/(Math.sqrt((a*a)+(b*b)));				
+//		p[0] = ( a*rot[0] + b*rot[1] ) * norm + vEndx;
+//		p[1] = (-a*rot[1] + b*rot[0] ) * norm + vEndy;
+//		q[0] = ( a*rot[0] - b*rot[1] ) * norm + vEndx;
+//		q[1] = ( a*rot[1] + b*rot[0] ) * norm + vEndy;
+//		int[] points = {
+//			(int)vEndx, (int)vEndy,
+//			(int)(p[0]), (int)(p[1]),
+//			(int)(q[0]), (int)(q[1])
+//		};
+//		
+//		buffer.drawPolygon (points);
+//		buffer.fillPolygon (points);
+//	}
+
 	/**
 	 * Constructs the line for the coordinates stored in this class
 	 */
@@ -307,11 +320,11 @@ public class Line extends Graphics
 	
 	public Handle[] getHandles()
 	{
-		ArrayList<Handle> handles = new ArrayList<Handle>();
-		for(VPoint p : points) {
-			handles.add(p.getHandle());
+		Handle[] handles = new Handle[points.size()];
+		for(int i = 0; i < handles.length; i++) {
+			handles[i] = points.get(i).getHandle();
 		}
-		return handles.toArray(new Handle[handles.size()]);
+		return handles;
 	}
 		
 	public List<VPoint> getPoints() { return points; }
@@ -392,10 +405,6 @@ public class Line extends Graphics
 			p.markDirty();
 			p.setHandleLocation();
 		}
-		if(gdata.getMAnchors().size() != anchors.size()) {
-			setAnchors();
-		}
-		updateAnchorPositions();
 	}
 	
 	protected void destroyHandles() { 

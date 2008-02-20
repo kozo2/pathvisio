@@ -102,45 +102,9 @@ public class Pathway implements PathwayListener
 		return dataObjects;
 	}
 	
-	/**
-	 * Get a pathway element by it's GraphId
-	 * @param graphId The graphId of the element
-	 * @return The pathway element with the given id, or null when no element was found
-	 */
-	public PathwayElement getElementById(String graphId) {
-		//TODO: dataobject should be stored in a hashmap, with the graphId as key!
-		for(PathwayElement e : dataObjects) {
-			if(graphId.equals(e.getGraphId())) {
-				return e;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Takes the Xref of all DataNodes in this pathway
-	 * and returns them as a List.
-	 * 
-	 * returns an empty arraylist if there are no datanodes in
-	 * this pathway.
-	 */
-	public List<Xref> getDataNodeXrefs()
-	{
-		List<Xref> result = new ArrayList<Xref>();
-		for (PathwayElement e : dataObjects)
-		{
-			if (e.getObjectType() == ObjectType.DATANODE)
-			{
-				result.add(e.getXref());
-			}
-		}
-		return result;
-	}
-	
 	private PathwayElement mappInfo = null;
 	private PathwayElement infoBox = null;
 	private PathwayElement biopax = null;
-	private PathwayElement legend = null;
 	
 	/**
 	 * get the one and only MappInfo object.
@@ -218,16 +182,6 @@ public class Pathway implements PathwayListener
 			}
 			biopax = o;
 		}
-		// There can be only one Legend object, so if we're trying to add it, remove the old one.
-		if (o.getObjectType() == ObjectType.LEGEND && o != legend)
-		{
-			if(legend != null) {
-				replaceUnique (legend, o);
-				legend = o;
-				return;
-			}
-			legend = o;
-		}
 		if (o.getParent() == this) return; // trying to re-add the same object
 		forceAddObject(o);
 	}
@@ -237,6 +191,7 @@ public class Pathway implements PathwayListener
 		dataObjects.add(o);
 		o.addListener(this);
 		o.setParent(this);
+		o.setZOrder(getMaxZOrder() + 1);
 		fireObjectModifiedEvent(new PathwayEvent(o, PathwayEvent.ADDED));
 	}
 
@@ -388,16 +343,6 @@ public class Pathway implements PathwayListener
 			groupRefs.remove(id);
 	}
 	
-	/**
-	 * Get the pathway elements that are part of the given group
-	 * @param id The id of the group
-	 * @return The set of pathway elements part of the group
-	 */
-	public Set<PathwayElement> getGroupElements(String id) {
-		Set<PathwayElement> result = groupRefs.get(id);
-		//Return an empty set if the group is empty
-		return result == null ? new HashSet<PathwayElement>() : result;
-	}
 	
 	/**
 	 * Remove a reference to another Id. 
@@ -607,9 +552,6 @@ public class Pathway implements PathwayListener
 	{
 		private boolean newStatus;
 		StatusFlagEvent (boolean newStatus) { this.newStatus = newStatus; }
-		public boolean getNewStatus() {
-			return newStatus;
-		}
 	}
 
 	private List<StatusFlagListener> statusFlagListeners = new ArrayList<StatusFlagListener>();
@@ -652,7 +594,24 @@ public class Pathway implements PathwayListener
 		{
 			g.gmmlObjectModified(e);
 		}
-	}	
+	}
+	
+	/**
+	 * Get the systemcodes of all genes in this pathway
+	 * @return	a list of systemcodes for every gene on the mapp
+	 */
+	public ArrayList<String> getSystemCodes()
+	{
+		ArrayList<String> systemCodes = new ArrayList<String>();
+		for(PathwayElement o : dataObjects)
+		{
+			if(o.getObjectType() == ObjectType.DATANODE)
+			{
+				systemCodes.add(o.getSystemCode());
+			}
+		}
+		return systemCodes;
+	}
 	
 	public Pathway clone()
 	{
@@ -673,6 +632,55 @@ public class Pathway implements PathwayListener
 			code = code.substring (code.lastIndexOf ('@'), code.length() - 1);
 			result += "\n      " + code + " " +
 				ObjectType.getTagMapping(pe.getObjectType()) + " " + pe.getParent();
+		}
+		return result;
+	}
+	
+	/**
+	 * Check for any dangling references, and fix them if found
+	 * This is called just before writing out a pathway.
+	 * 
+	 * This is a fallback solution for problems elsewhere in the
+	 * reference handling code. Theoretically, if the rest of
+	 * the code is bug free, this should always return 0.
+	 * 
+	 * @return number of references fixed. Should be 0 under normal 
+	 * circumstances. 
+	 */
+	public int fixReferences()
+	{
+		int result = 0;
+		Set <String> graphIds = new HashSet <String>();
+		for (PathwayElement pe : dataObjects)
+		{
+			String id = pe.getGraphId();
+			if (id != null)
+			{
+				graphIds.add (id);
+			}
+		}
+		for (PathwayElement pe : dataObjects)
+		{
+			if (pe.getObjectType() == ObjectType.LINE)
+			{
+				String ref = pe.getStartGraphRef();
+				if (ref != null && !graphIds.contains(ref))
+				{
+					pe.setStartGraphRef(null);
+					result++;
+				}
+				
+				ref = pe.getEndGraphRef();
+				if (ref != null && !graphIds.contains(ref))
+				{
+					pe.setEndGraphRef(null);
+					result++;
+				}
+			}
+		}
+		if (result > 0)
+		{
+			Logger.log.warn("Pathway.fixReferences fixed " + result + " reference(s)");
 		}
 		return result;
 	}

@@ -32,13 +32,12 @@ import org.pathvisio.R.RCommands.RException;
 import org.pathvisio.R.RCommands.RObjectContainer;
 import org.pathvisio.R.RCommands.RTemp;
 import org.pathvisio.R.RCommands.RniException;
-import org.pathvisio.data.GdbManager;
-import org.pathvisio.data.GexManager;
-import org.pathvisio.data.Sample;
+import org.pathvisio.data.Gdb;
+import org.pathvisio.data.Gex;
+import org.pathvisio.data.Gdb.IdCodePair;
+import org.pathvisio.data.Gex.Sample;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.gui.swt.SwtEngine;
-import org.pathvisio.model.DataSource;
-import org.pathvisio.model.Xref;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.util.PathwayParser;
 import org.pathvisio.util.PathwayParser.Gene;
@@ -180,9 +179,9 @@ public class RDataOut {
 
 			for(Gene g : p.getGenes()) {
 				String id = g.getId();
-				String code = g.getDataSource().getSystemCode();
+				String code = g.getCode();
 				if(id.length() == 0 && code.length() == 0) continue; //Skip empty fields
-				pw.addGeneProduct(g);
+				pw.addGeneProduct(new IdCodePair(g.getId(), g.getCode()));
 			}
 			
 			//Update progress
@@ -276,12 +275,12 @@ public class RDataOut {
 		String name;
 		List<Pathway> pathways;	
 		
-		HashMap<Xref, GeneProduct> geneProducts;
+		HashMap<IdCodePair, GeneProduct> geneProducts;
 		
 		PathwaySet(String name) {
 			this.name = name;
 			pathways = new ArrayList<Pathway>();
-			geneProducts = new HashMap<Xref, GeneProduct>();
+			geneProducts = new HashMap<IdCodePair, GeneProduct>();
 		}
 		
 		void addPathway(Pathway pw) { pathways.add(pw); }
@@ -297,7 +296,7 @@ public class RDataOut {
 			return returnRef(xp, tmpVar);
 		}
 		
-		GeneProduct getUniqueGeneProduct(Xref idc) {
+		GeneProduct getUniqueGeneProduct(IdCodePair idc) {
 			GeneProduct gp = geneProducts.get(idc);
 			if(gp == null) {
 				gp = new GeneProduct(idc);
@@ -307,10 +306,10 @@ public class RDataOut {
 			return gp;
 		}
 
-		void addEnsembl(GeneProduct gp, Xref idc) {
-			List<String> ensIds = GdbManager.getCurrentGdb().ref2EnsIds(idc);
+		void addEnsembl(GeneProduct gp, IdCodePair idc) {
+			List<String> ensIds = Gdb.ref2EnsIds(idc.getId(), idc.getCode());
 			for(String ens : ensIds) {
-				gp.addReference(new Xref(ens, DataSource.ENSEMBL));
+				gp.addReference(new IdCodePair(ens, "En"));
 			}
 		}
 
@@ -375,7 +374,7 @@ public class RDataOut {
 			pws.addPathway(this);
 		}
 		
-		void addGeneProduct(Xref ref) {
+		void addGeneProduct(IdCodePair ref) {
 			if(ref.valid()) {
 				geneProducts.add(pws.getUniqueGeneProduct(ref));
 			}
@@ -396,25 +395,25 @@ public class RDataOut {
 	}
 	
 	static class GeneProduct extends RObject {		
-		List<Xref> refs;
+		List<IdCodePair> refs;
 		
 		private GeneProduct() {
-			refs = new ArrayList<Xref>();
+			refs = new ArrayList<IdCodePair>();
 		}
 		
-		GeneProduct(Xref idc) {
+		GeneProduct(IdCodePair idc) {
 			this();
 			addReference(idc);
 		}
 		
-		void addReference(Xref idc) {
+		void addReference(IdCodePair idc) {
 			if(!refs.contains(idc)) refs.add(idc);
 		}
 		
 		String[] getRowNames() {
 			String[] rowNames = new String[refs.size()];
 			int i = 0;
-			for(Xref ref : refs) rowNames[i++] = ref2String(ref);
+			for(IdCodePair ref : refs) rowNames[i++] = ref2String(ref);
 			return rowNames;
 		}
 		
@@ -422,9 +421,9 @@ public class RDataOut {
 			Rengine re = RController.getR();
 			String[] ar = new String[refs.size() * 2];
 			int i = 0;
-			for(Xref ref : refs) {
+			for(IdCodePair ref : refs) {
 				ar[i] = ref.getId(); //id
-				ar[i++ + refs.size()] = ref.getDataSource().getSystemCode(); //code
+				ar[i++ + refs.size()] = ref.getCode(); //code
 			}
 			
 			long ref_gp = re.rniPutStringArray(ar);
@@ -438,7 +437,7 @@ public class RDataOut {
 		}
 		
 		public void merge(GeneProduct gp) {
-			for(Xref ref : gp.refs) {
+			for(IdCodePair ref : gp.refs) {
 				addReference(ref);
 			}
 		}
@@ -454,24 +453,23 @@ public class RDataOut {
 		public boolean equals(Object o) {
 			if(!(o instanceof GeneProduct)) return false;
 			GeneProduct gp = (GeneProduct)o;
-			for(Xref ref : refs) 
-				for(Xref oref : gp.refs) 
+			for(IdCodePair ref : refs) 
+				for(IdCodePair oref : gp.refs) 
 					if(ref.equals(oref)) return true;
 			return false;
 		}
 		
-		public static String ref2String(Xref ref) 
-		{
-			return ref.getDataSource().getSystemCode() + ":" + ref.getId();
+		public static String ref2String(IdCodePair ref) {
+			return ref.getCode() + ":" + ref.getId();
 		}
 	}
 		
 	static class DataSet extends RObject {
 		String[][] data; //[samples][reporters] (transposed for export convenience)
-		Xref [] reporters;
+		IdCodePair [] reporters;
 		HashMap<Integer, Integer> sample2Col;
 		int[] col2Sample;
-		HashMap<Xref, String> rep2ens;
+		HashMap<IdCodePair, String> rep2ens;
 		
 		String name;
 		
@@ -480,9 +478,9 @@ public class RDataOut {
 			queryData(); //Get the data from the gex database
 		}
 		
-		HashMap<Xref, Xref> getReporterHash() {
-			HashMap<Xref, Xref> repHash = new HashMap<Xref, Xref>();
-			for(Xref rep : reporters) {
+		HashMap<IdCodePair, IdCodePair> getReporterHash() {
+			HashMap<IdCodePair, IdCodePair> repHash = new HashMap<IdCodePair, IdCodePair>();
+			for(IdCodePair rep : reporters) {
 				repHash.put(rep, rep);
 			}
 			return repHash;
@@ -490,17 +488,17 @@ public class RDataOut {
 		
 		List<String> getCodes() throws Exception {
 			List<String> codes = new ArrayList<String>();
-			ResultSet r = GexManager.getCurrentGex().getCon().createStatement().executeQuery(
+			ResultSet r = Gex.getCon().createStatement().executeQuery(
 					"SELECT DISTINCT code FROM expression");
 			while(r.next()) codes.add(r.getString("code"));
 			return codes;
 		}
 		
-		void addRep2Ens(Xref rep) {
+		void addRep2Ens(IdCodePair rep) {
 			if(rep2ens == null) 
-				rep2ens = new HashMap<Xref, String>();
+				rep2ens = new HashMap<IdCodePair, String>();
 			if(!rep2ens.containsKey(rep)) {
-				List<String> ensIds = GdbManager.getCurrentGdb().ref2EnsIds(rep);
+				List<String> ensIds = Gdb.ref2EnsIds(rep.getId(), rep.getCode());
 				if(ensIds.size() > 0) {
 					StringBuilder cmd = new StringBuilder("c(");
 					for(String ens : ensIds) cmd.append("'En:" + ens + "',");
@@ -519,7 +517,7 @@ public class RDataOut {
 			//#1 create a long 1-dimensional list -> fill rows first
 			//#2 set dims attribute to c(nrow, ncol)
 			//et voila, we have a matrix
-			HashMap<Integer, Sample> samples = GexManager.getCurrentGex().getSamples();
+			HashMap<Integer, Sample> samples = Gex.getSamples();
 			long l_ref = re.rniInitVector(data.length * data[0].length);
 			re.rniProtect(l_ref);
 			
@@ -554,7 +552,7 @@ public class RDataOut {
 			String[] smp_names = new String[data.length];
 			
 			for(int k = 0; k < reporters.length; k++)
-				rep_names[k] = reporters[k].toString();
+				rep_names[k] = reporters[k].getName();
 			
 			for(int k = 0; k < data.length; k++) 
 				smp_names[k] = samples.get(col2Sample[k]).getName();
@@ -569,7 +567,7 @@ public class RDataOut {
 			List<String> rep2ensCmd = new ArrayList<String>();
 			String[] rep2ensNms = new String[rep2ens.size()];
 			int i = 0;
-			for(Xref idc : rep2ens.keySet()) {
+			for(IdCodePair idc : rep2ens.keySet()) {
 				rep2ensCmd.add(rep2ens.get(idc));
 				rep2ensNms[i++] = GeneProduct.ref2String(idc);
 			}
@@ -591,7 +589,7 @@ public class RDataOut {
 		
 		void queryData() throws Exception {			
 			//Get the 'groups'
-			Statement s = GexManager.getCurrentGex().getCon().createStatement(
+			Statement s = Gex.getCon().createStatement(
 					ResultSet.TYPE_SCROLL_INSENSITIVE, 
 					ResultSet.CONCUR_READ_ONLY);
 			
@@ -603,14 +601,14 @@ public class RDataOut {
 			int nrow = r.getRow();
 			r.beforeFirst(); //Set the cursor back to the start
 			//Columns:
-			int ncol = GexManager.getCurrentGex().getSamples().size();
+			int ncol = Gex.getSamples().size();
 			
 			data = new String[ncol][nrow];
-			reporters = new Xref[nrow];
+			reporters = new IdCodePair[nrow];
 			sample2Col = new HashMap<Integer, Integer>();
 			int col = 0;
 			col2Sample = new int[ncol];
-			for(int sid : GexManager.getCurrentGex().getSamples().keySet()) {
+			for(int sid : Gex.getSamples().keySet()) {
 				col2Sample[col] = sid;
 				sample2Col.put(sid, col++);
 			}
@@ -619,9 +617,9 @@ public class RDataOut {
 			int progressContribution = (int)((double)totalWorkData / nrow);
 						
 			//Fill data matrix for every 'group'
-			PreparedStatement pst_dta = GexManager.getCurrentGex().getCon().prepareStatement(
+			PreparedStatement pst_dta = Gex.getCon().prepareStatement(
 					"SELECT idSample, data FROM expression WHERE groupId = ?");
-			PreparedStatement pst_rep = GexManager.getCurrentGex().getCon().prepareStatement(
+			PreparedStatement pst_rep = Gex.getCon().prepareStatement(
 					"SELECT DISTINCT id, code FROM expression WHERE groupid = ?");
 			int i = -1;
 			while(r.next()) {
@@ -633,7 +631,7 @@ public class RDataOut {
 				
 				ResultSet r1 = pst_rep.executeQuery();
 				if(r1.next()) {
-					Xref rep = new Xref(r1.getString("id"), DataSource.getBySystemCode(r1.getString("code")));
+					IdCodePair rep = new IdCodePair(r1.getString("id"), r1.getString("code"));
 					reporters[++i] = rep;
 					addRep2Ens(rep);
 				}

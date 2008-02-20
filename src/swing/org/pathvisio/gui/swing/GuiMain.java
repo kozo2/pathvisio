@@ -19,7 +19,6 @@ package org.pathvisio.gui.swing;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import org.pathvisio.Globals;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.preferences.GlobalPreference;
 
@@ -43,7 +42,7 @@ public class GuiMain {
 		GuiInit.init();
 		
 		//Create and set up the window.
-		frame = new JFrame(Globals.APPLICATION_NAME);
+		frame = new JFrame("PathVisio...swing it baby!");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		frame.add(mainPanel);
@@ -55,7 +54,7 @@ public class GuiMain {
 		} catch (Exception ex) {
 			Logger.log.error("Unable to load native look and feel", ex);
 		}
-		frame.pack();
+		
 		//Display the window.
 		frame.setVisible(true);
 

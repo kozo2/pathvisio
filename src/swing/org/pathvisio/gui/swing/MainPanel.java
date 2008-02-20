@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +55,6 @@ import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
 import org.pathvisio.gui.swing.dnd.PathwayImportHandler;
 import org.pathvisio.gui.swing.propertypanel.PathwayTableModel;
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.view.DefaultTemplates;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.view.SelectionBox;
 import org.pathvisio.view.VPathway;
@@ -64,8 +64,6 @@ import org.pathvisio.view.VPathwayListener;
 import com.mammothsoftware.frwk.ddb.DropDownButton;
 
 public class MainPanel extends JPanel implements VPathwayListener, ApplicationEventListener {
-	private static final long serialVersionUID = 1L;
-
 	private JSplitPane splitPane;
 
 	private JMenuBar menuBar;
@@ -117,8 +115,6 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 
 		final PathwayTableModel model = new PathwayTableModel();
 		propertyTable = new JTable(model) {
-			private static final long serialVersionUID = 1L;
-
 			public TableCellRenderer getCellRenderer(int row, int column) {
 				TableCellRenderer r = model.getCellRenderer(row, column);
 				return r == null ? super.getCellRenderer(row, column) : r;
@@ -242,24 +238,12 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 
 		tb.addSeparator();
 
-		String submenu = "line";
-		
 		for(Action[] aa : actions.newElementActions) {
 			if(aa.length == 1) {
 				addToToolbar(aa[0]);
-			} else { //This is the line/receptor sub-menu
-				String icon = "icons/newlinemenu.gif";
-				String tooltip = "Select a line to draw"; 
-				
-				if(submenu.equals("receptors")) { //Next one is receptors
-					icon = "icons/newlineshapemenu.gif";
-					tooltip = "Select a receptor/ligand to draw";
-				} else {
-					submenu = "receptors";
-				}
+			} else { //This is the line sub-menu
 				DropDownButton lineButton = new DropDownButton(new ImageIcon(Engine.getCurrent()
-						.getResourceURL(icon)));
-				lineButton.setToolTipText(tooltip);
+						.getResourceURL("icons/newlinemenu.gif")));
 				for(Action a : aa) {
 					lineButton.addComponent(new JMenuItem(a));
 				}
@@ -356,7 +340,7 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 		case VPathwayEvent.ELEMENT_DOUBLE_CLICKED:
 			if(e.getAffectedElement() instanceof Graphics && 
 					!(e.getAffectedElement() instanceof SelectionBox)) {
-				PathwayElement p = ((Graphics)e.getAffectedElement()).getPathwayElement();
+				PathwayElement p = ((Graphics)e.getAffectedElement()).getGmmlData();
 				if(p != null) {
 					PathwayElementDialog.getInstance(p, !vp.isEditMode(), null, this).setVisible(true);
 				}
@@ -376,7 +360,7 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 	}
 	
 	public void applicationEvent(ApplicationEvent e) {
-		switch(e.getType()) {
+		switch(e.type) {
 		case ApplicationEvent.VPATHWAY_CREATED:
 			VPathway vp = (VPathway)e.getSource();
 			vp.addVPathwayListener(this);

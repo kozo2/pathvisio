@@ -21,8 +21,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.jdom.Element;
 import org.pathvisio.biopax.BiopaxElementManager;
-import org.pathvisio.biopax.BiopaxReferenceManager;
 import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.ObjectType;
 import org.pathvisio.model.Pathway;
@@ -31,21 +31,19 @@ import org.pathvisio.model.PathwayEvent;
 
 public class Test extends TestCase {
 	Pathway data;
+	PathwayElement o;
 	List<PathwayEvent> received;
-	BiopaxElementManager elementManager;
-	BiopaxReferenceManager pwRefManager;
+	PathwayElement l;
 	
 	public void setUp()
 	{
 		data = new Pathway();
-		PathwayElement o = new PathwayElement(ObjectType.DATANODE);
+		o = new PathwayElement(ObjectType.DATANODE);
 		data.add (o);
-		
-		elementManager = new BiopaxElementManager(data);
 	}
 	
 	public void testProperties() {
-		PublicationXRef xref = new PublicationXRef();
+		PublicationXRef xref = new PublicationXRef("test");
 		
 		//Check cardinality
 		BiopaxProperty p1 = PropertyType.TITLE.getProperty("title 1");
@@ -75,101 +73,71 @@ public class Test extends TestCase {
 		
 	public void testReadWrite() {
 		//Add to datanode
-		PathwayElement pwElm = new PathwayElement(ObjectType.DATANODE);
-		data.add(pwElm);
-		BiopaxReferenceManager dnRefManager = new BiopaxReferenceManager(elementManager, pwElm);
-		pwRefManager = new BiopaxReferenceManager(elementManager, data.getMappInfo());
-		
-		//Test 1:
-		//Add two identical publication references, one to the pathway,
-		//the other to the pathway element.
-		//Expected behaviour:
-		//The pathway should have 1 reference with two authors
-		//There should only be one reference instance in the biopax element
-		
-		//Reference information
-		String title = "title1";
-		String author1 = "author1";
-		String author2 = "author2";
-		
-		//Add to pathway element
-		PublicationXRef xrefObject = new PublicationXRef();
+		BiopaxElementManager biopax = new BiopaxElementManager(o);
+		PublicationXRef xrefObject = new PublicationXRef(biopax.getUniqueID());
 		//Add one title and two authors
-		xrefObject.setTitle(title);
-		xrefObject.addAuthor(author1);
-		xrefObject.addAuthor(author2);
+		xrefObject.setTitle("title");
+		xrefObject.addAuthor("author1");
+		xrefObject.addAuthor("author2");
 		
-		dnRefManager.addElementReference(xrefObject);
+		biopax.addElementReference(xrefObject);
 		
 		//Add to pathway
-		PublicationXRef xrefPathway = new PublicationXRef();
+		biopax = new BiopaxElementManager(data.getMappInfo());
+		PublicationXRef xrefPathway = new PublicationXRef(biopax.getUniqueID());
 		//Add one title and two authors
-		xrefPathway.setTitle(title);
-		xrefPathway.addAuthor(author1);
-		xrefPathway.addAuthor(author2);
+		xrefPathway.setTitle("title");
+		xrefPathway.addAuthor("author1");
+		xrefPathway.addAuthor("author2");
 		
-		pwRefManager.addElementReference(xrefPathway);
+		biopax.addElementReference(xrefPathway);
 		
-		writeRead(data);
+		Pathway newData = readWrite(data);
 		
-		List<PublicationXRef> references = pwRefManager.getPublicationXRefs();
+		biopax = new BiopaxElementManager(newData.getMappInfo());
+		List<PublicationXRef> references = biopax.getPublicationXRefs();
 		//There has to be one reference
-		assertTrue("Should have one literature reference, has " + references.size(), references.size() == 1);
+		assertTrue("One literature reference, has " + references.size(), references.size() == 1);
 		//With two authors
 		assertTrue("Two authors", references.get(0).getAuthors().size() == 2);
-		
-		//There should be one publicationxref element total
-		int nrElm = elementManager.getElements().size();
-		assertTrue("Should have one element total, has " + nrElm, nrElm == 1);
-		
 		
 		//Test added 30-08, because of bug where biopax was lost after
 		//saving/loading/saving sequence
 		//Add another reference to Pathway
-		xrefPathway = new PublicationXRef();
+		xrefPathway = new PublicationXRef(biopax.getUniqueID());
 		//Add one title and one author
 		xrefPathway.setTitle("title3");
 		xrefPathway.addAuthor("author3");
 		
-		pwRefManager.addElementReference(xrefPathway);
+		biopax.addElementReference(xrefPathway);
 		
-		writeRead(data);
+		newData = readWrite(newData);
 		
-		references = pwRefManager.getPublicationXRefs();
+		biopax = new BiopaxElementManager(newData.getMappInfo());
+		references = biopax.getPublicationXRefs();
 		//There have to be two references now
 		assertTrue("Two literature references, has " + references.size(), references.size() == 2);
 		//Where the one we last added has one author
-		PublicationXRef xref = (PublicationXRef)elementManager.getElement(xrefPathway.getId());
+		PublicationXRef xref = (PublicationXRef)biopax.getElementById(xrefPathway.getId());
 		assertTrue("One author", xref.getAuthors().size() == 1);
 		
 	}
-
-	public void writeRead(Pathway data) {
-		write();
-		read();
-	}
 	
-	public void read() {
-		data = new Pathway();
+	public Pathway readWrite(Pathway data) {
+		//Write
 		try {
-			data.readFromXml(testfile(nrWrite - 1), true);
-		} catch(ConverterException e) {
-			fail("Unable to read a pathway: " + e.toString());
-		}
-		elementManager = new BiopaxElementManager(data);
-		pwRefManager = new BiopaxReferenceManager(elementManager, data.getMappInfo());
-	}
-	
-	int nrWrite = 0;
-	private File testfile(int i) {
-		return new File("testData/test-biopax-" + i + ".xml");
-	}
-	
-	public void write() {
-		try {
-			data.writeToXml(testfile(nrWrite++), true);
+			data.writeToXml(new File("testData/test-biopax.xml"), true);
 		} catch(ConverterException e) {
 			fail("Unable to write a pathway: " + e.toString());
 		}
+		
+		//Read
+		Pathway newData = new Pathway();
+		try {
+			newData.readFromXml(new File("testData/test-biopax.xml"), true);
+		} catch(ConverterException e) {
+			fail("Unable to read a pathway: " + e.toString());
+		}
+		return newData;
 	}
 }

@@ -34,7 +34,6 @@ public enum Organism {
 	CanisFamiliaris("Canis familiaris", "Cf"),
 	XenopusTropicalis("Xenopus tropicalis", "Xt"),
 	ArabidopsisThaliana("Arabidopsis thaliana", "At"),
-	SaccharomycesCerevisiae("Saccharomyces cerevisiae", "Sc"),
 	;
 	
 	String latinName;

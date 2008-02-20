@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.pathvisio.data.BackpageTextProvider;
 import org.pathvisio.data.DBConnector;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.ConverterException;
@@ -37,15 +36,14 @@ import org.pathvisio.util.FileUtils;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
-public class Engine 
-{	
+public class Engine {
 	private VPathway vPathway; // may be null
 	//TODO: standalone below is a hack to make Converter work
 	private Pathway standalone = null; // only used when vPathway is null
 	private VPathwayWrapper wrapper; // may also be null in case you
 									 // don't need to interact with
 									 // the pathway.
-		
+	
 	public static final String SVG_FILE_EXTENSION = "svg";
 	public static final String SVG_FILTER_NAME = "Scalable Vector Graphics (*." + SVG_FILE_EXTENSION + ")";
 	public static final String PATHWAY_FILE_EXTENSION = "gpml";
@@ -78,28 +76,6 @@ public class Engine
 		currentEngine = e;
 	}
 
-	private File DIR_APPLICATION;
-	private File DIR_DATA;
-	
-	/**
-	 * Get the working directory of this application
-	 */
-	public File getApplicationDir() {
-		if(DIR_APPLICATION == null) {
-			DIR_APPLICATION = new File(System.getProperty("user.home"), ".PathVisio");
-			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdir();
-		}
-		return DIR_APPLICATION;
-	}
-		
-	public File getDataDir() {
-		if(DIR_DATA == null) {
-			DIR_DATA = new File(System.getProperty("user.home"), "PathVisio-Data");
-			if(!DIR_DATA.exists()) DIR_DATA.mkdir();
-		}
-		return DIR_DATA;
-	}
-	
 	/**
 	   Set this to the toolkit-specific wrapper before opening or
 	   creating a new pathway otherwise Engine can't create a vPathway.
@@ -138,7 +114,7 @@ public class Engine
 		}
 		else
 		{
-			return vPathway.getPathwayModel();
+			return vPathway.getGmmlData();
 		}
 	}
 	
@@ -244,6 +220,8 @@ public class Engine
 		
 	public void savePathway(File toFile) throws ConverterException
 	{
+		// make sure there are no problems with references.
+		getActivePathway().fixReferences();
 		getActivePathway().writeToXml(toFile, true);
 	}
 
@@ -345,24 +323,9 @@ public class Engine
 		return importers;
 	}
 	
-	private BackpageTextProvider backpageTextProvider;
-	
-	/**
-	 * Get the backpage text provider for this Engine.
-	 * @return the backpage text provider
-	 * @see BackpageTextProvider
-	 */
-	public BackpageTextProvider getBackpageTextProvider() {
-		if(backpageTextProvider == null) {
-			backpageTextProvider = new BackpageTextProvider(this);
-		}
-		return backpageTextProvider;
-	}
-	
 	private HashMap<Integer, DBConnector> connectors = new HashMap<Integer, DBConnector>();
 	
-	public DBConnector getDbConnector(int type) throws ClassNotFoundException, InstantiationException, IllegalAccessException 
-	{
+	public DBConnector getDbConnector(int type) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		//Try to get the DBConnector from the hashmap first
 		DBConnector connector = connectors.get(type);
 		if(connector != null) return connector;
@@ -379,7 +342,7 @@ public class Engine
 		}
 		if(className == null) return null;
 		
-		Class<?> dbc = Class.forName(className);
+		Class dbc = Class.forName(className);
 		Object o = dbc.newInstance();
 		if(o instanceof DBConnector) {
 			connector = (DBConnector)dbc.newInstance();
@@ -406,9 +369,7 @@ public class Engine
 	 * property changes that has an effect throughout the program (e.g. opening a pathway)
 	 * @param l The {@link ApplicationEventListener} to add
 	 */
-	public void addApplicationEventListener(ApplicationEventListener l) 
-	{
-		if (l == null) throw new NullPointerException();
+	public void addApplicationEventListener(ApplicationEventListener l) {
 		applicationEventListeners.add(l);
 	}
 	

@@ -9,7 +9,7 @@ BASE_URL=
 # Set USE_EXPERIMENTAL to 1 if you want to run with Data visualizatoin and R mode
 USE_EXPERIMENTAL=0
 
-while getopts ":gerdsj" options; do
+while getopts ":gerds" options; do
 	case $options in
 		g )
 			RUN_MODE=DIRECT
@@ -32,19 +32,13 @@ while getopts ":gerdsj" options; do
 			MAIN_CLASS=
 			BASE_URL=http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart
 			;;
-		j )
-			RUN_MODE=JAR
-			MAIN_CLASS=
-			BASE_URL=
-			;;
 		\? )
-			echo "Usage: `basename $0` [-g|-r|-d|-j] [-e|-s] [-?]"
+			echo "Usage: `basename $0` [-g|-r|-d] [-e|-s] [-?]"
 			echo "  -g : Use swing instead of swt"
 			echo "  -r : Use webstart, latest stable release"
 			echo "  -d : Use webstart, daily build"
 			echo "  -e : Turn on experimental features (Data visualization, statistics)"
 			echo "  -s : Turn off experimental features (default)"
-			echo "  -j : Use jar"
 			echo "  -? : show this help message"
 			exit;
 			;;
@@ -57,8 +51,8 @@ source classpath.sh;
 export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/atlas:/usr/lib/firefox
 export MOZILLA_FIVE_HOME=/usr/lib/firefox
 
-MYCLASSPATH1=$PATHVISIO_CP:build/v1:build/core
-MYCLASSPATH2=$PATHVISIO_CP:build/v2:build/core
+MYCLASSPATH1=$PATHVISIO_CP:build/v1
+MYCLASSPATH2=$PATHVISIO_CP:build/v2
 
 if [ $RUN_MODE = "DIRECT" ]; then
 	if [ $USE_EXPERIMENTAL = "0" ]; then
@@ -72,10 +66,4 @@ elif [ $RUN_MODE = "WEBSTART" ]; then
 	elif [ $USE_EXPERIMENTAL = "1" ]; then
 		javaws "$BASE_URL/pathvisio_v2.jnlp" -ur
 	fi
-elif [ $RUN_MODE = "JAR" ]; then
-	if [ $USE_EXPERIMENTAL = "0" ]; then
-		java -jar pathvisio_v1.jar
-	elif [ $USE_EXPERIMENTAL = "1" ]; then
-		java -jar pathvisio_v2.jar
-	fi	
 fi

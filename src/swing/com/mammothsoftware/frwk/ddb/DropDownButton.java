@@ -44,8 +44,6 @@ import javax.swing.border.CompoundBorder;
  * Copyright 2005 Mammoth Software LLC
  */
 public class DropDownButton extends JButton implements ActionListener {
-
-	private static final long serialVersionUID = 1L;
 	private JPopupMenu popup = new JPopupMenu();
 	private JToolBar tb = new ToolBar();
 	private JButton mainButton;
@@ -84,11 +82,6 @@ public class DropDownButton extends JButton implements ActionListener {
 	private DropDownButton() {
 		super();
 		setBorder(null);
-	}
-	
-	public void setToolTipText(String text) {
-		mainButton.setToolTipText(text);
-		arrowButton.setToolTipText(text);
 	}
 	
 	public void setEnabled(boolean enabled) {
@@ -244,15 +237,11 @@ public class DropDownButton extends JButton implements ActionListener {
       }
   }
    
-   private static class ToolBar extends JToolBar 
-   {
-	   private static final long serialVersionUID = 1L;
-
-	   public void updateUI() 
-	   {
-		   super.updateUI();
-		   setBorder(null);
-	   }
+   private static class ToolBar extends JToolBar {
+   	public void updateUI() {
+   		super.updateUI();
+   		setBorder(null);
+   	}
    }
 
 }

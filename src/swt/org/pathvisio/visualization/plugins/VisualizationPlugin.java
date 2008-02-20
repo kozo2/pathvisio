@@ -35,15 +35,14 @@ import org.jdom.Element;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.visualization.Visualization;
 import org.pathvisio.visualization.VisualizationManager;
-import org.pathvisio.visualization.VisualizationEvent;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 
 /**
  * The VisualizationPlugin class can be extended to create a visualization plugin for
  * the visualization of experimental data on GPML pathways
  * @author Thomas
  */
-public abstract class VisualizationPlugin implements Comparable <VisualizationPlugin> 
-{
+public abstract class VisualizationPlugin implements Comparable {
 	public static String XML_ELEMENT = "plugin";
 	public static String XML_ATTR_CLASS = "class";
 	
@@ -351,8 +350,9 @@ public abstract class VisualizationPlugin implements Comparable <VisualizationPl
 		}
 	}
 	
-	public int compareTo(VisualizationPlugin o) 
-	{	
-		return getName().compareTo(o.getName());
+	public int compareTo(Object o) {
+		if(o instanceof VisualizationPlugin)
+			return getName().compareTo(((VisualizationPlugin)o).getName());
+		return -1;
 	}
 }

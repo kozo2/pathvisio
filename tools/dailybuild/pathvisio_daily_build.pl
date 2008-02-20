@@ -30,7 +30,8 @@ my $dir = tempdir ( CLEANUP => 1 );
 # these people will be emailed when a problem occurs
 my @emails = (
     'martijn.vaniersel@bigcat.unimaas.nl', 
-#    'thomas.kelder@bigcat.unimaas.nl',
+    'thomas.kelder@bigcat.unimaas.nl',
+    'apico@gladstone.ucsf.edu'
     );
 #~ my @emails = ('martijn.vaniersel@bigcat.unimaas.nl');
 
@@ -121,16 +122,27 @@ eval
 
 	# Next step: test the compile-v1 ant target
 	do_step (
-		name => "COMPILE ALL",
+		name => "COMPILE V1",
 		log => "$dir/compile1.txt",
 		action => sub
 		{
 			# compile
-			system ("ant all > $dir/compile1.txt") == 0 or 
-				die ("compile all failed with error code ", $? >> 8, "\n");
+			system ("ant compile-v1 > $dir/compile1.txt") == 0 or 
+				die ("compile-v1 failed with error code ", $? >> 8, "\n");
 		}
 	);
 
+	# Next step: test the compile-v2 ant target
+	do_step (
+		name => "COMPILE V2",
+		log => "$dir/compile2.txt",
+		action => sub
+		{
+			system ("ant compile-v2 > $dir/compile2.txt") == 0 or 
+				die ("compile-v2 failed with error code ", $? >> 8, "\n");
+		}
+	);
+	
 	# Next step: do all JUnit unit tests
 	do_step (
 		name => "JUNIT TEST",
@@ -141,19 +153,6 @@ eval
 				die ("test failed with error code ", $? >> 8, "\n");
 		}
 	);
-
-	# Next step: ogretest (test dependencies of core)
-	do_step (
-		name => "OGRETEST",
-		log => "$dir/ogretest.txt",
-		action => sub
-		{
-			# compile
-			system ("ant ogretest > $dir/ogretest.txt") == 0 or 
-				die ("compile all failed with error code ", $? >> 8, "\n");
-		}
-	);
-
 
 	# Next step: create javadocs and upload them to the web
 	do_step (
@@ -228,27 +227,32 @@ eval
 		}
 	);
 
-	# Next step: test gpmldiff shell scripts
-	# if this fails, it means that gpmldiff.sh can't be run.
+	chdir ("tools/gpmldiff");
+	
+	# Next step: compile gpmldiff
 	do_step (
-		name => "GPMLDIFF SHELL TEST",
-		log => undef,
+		name => "COMPILE GPMLDIFF",
+		log => "$dir/compile3.txt",
 		action => sub
 		{
-			my $fnOut1 = "test.result1.txt";
-			my $fnOut2 = "test.result2.txt";
-			my $fnIn1 = "tools/gpmldiff/testcases/Simple1.1.gpml";
-			my $fnIn2 = "tools/gpmldiff/testcases/Simple1.2.gpml";
-
-			# test gpmldiff -o table option
-			system ("./gpmldiff.sh -o table $fnIn1 $fnIn2 > $fnOut1") == 0
-				or die "gpmldiff -o table failed, $?";
-
-			# test gpmldiff -o dgpml option
-			system ("./gpmldiff.sh -o dgpml $fnIn1 $fnIn2 > $fnOut2") == 0
-				or die "gpmldiff -o dgpml failed, $?";
+			system ("ant compile > $dir/compile3.txt") == 0 or 
+				die ("GpmlDiff compile failed with error code ", $? >> 8, "\n");
 		}
 	);
+
+	# Next step: gpmldiff JUnit test
+	# note: GpmlDiff compile needs to be done first
+	do_step (
+		name => "JUNIT TEST",
+		log => "$dir/junit2.txt",
+		action => sub
+		{
+			system ("ant test > $dir/junit2.txt") == 0 or 
+				die ("GpmlDiff test failed with error code ", $? >> 8, "\n");
+		}
+	);
+	
+	chdir ("../..");
 
 	# Next step: check that all source files contain a license header.
 	# We tend to forget adding this.
@@ -275,8 +279,7 @@ eval
 # send a general error message, 
 # plus the log of the step that failed, 
 # plus the last 20 entries in the subversion log (so you can see who did it :) )
-
-#if ($@)
+if ($@)
 {
 	my $msg;
 	my $subject;

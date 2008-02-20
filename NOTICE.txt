@@ -1,4 +1,4 @@
-PathVisio 1.0 Beta
+PathVisio 1.0.1
 
 This product includes software developed by
 BiGCaT Bioinformatics (http://www.bigcat.unimaas.nl)

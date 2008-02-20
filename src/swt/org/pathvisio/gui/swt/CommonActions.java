@@ -68,8 +68,8 @@ public class CommonActions
 		}
 
 		public void applicationEvent(ApplicationEvent e) {
-			if(e.getType() == ApplicationEvent.VPATHWAY_CREATED) {
-				((VPathway)e.getSource()).getUndoManager().addListener(this);
+			if(e.type == ApplicationEvent.VPATHWAY_CREATED) {
+				((VPathway)e.source).getUndoManager().addListener(this);
 				setEnabled(false);
 			}
 		}
@@ -384,7 +384,7 @@ public class CommonActions
 
 		public void run ()
 		{
-			if(Engine.getCurrent().hasVPathway())
+			if(Engine.getCurrent().isDrawingOpen())
 			{
 				VPathway drawing = Engine.getCurrent().getActiveVPathway();
 				Pathway pathway = Engine.getCurrent().getActivePathway();
@@ -428,10 +428,10 @@ public class CommonActions
 		}
 
 		public void applicationEvent(ApplicationEvent e) {
-			if(e.getType() == ApplicationEvent.VPATHWAY_OPENED) {
+			if(e.type == ApplicationEvent.VPATHWAY_OPENED) {
 				Engine.getCurrent().getActiveVPathway().setEditMode(isChecked());
 			}
-			else if(e.getType() == ApplicationEvent.VPATHWAY_NEW) {
+			else if(e.type == ApplicationEvent.VPATHWAY_NEW) {
 				switchEditMode(true);
 			}
 		}

@@ -26,27 +26,21 @@ import org.pathvisio.model.ObjectType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayListener;
-import org.pathvisio.model.Xref;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayElement;
 import org.pathvisio.view.SelectionBox.SelectionEvent;
 import org.pathvisio.view.SelectionBox.SelectionListener;
 
-/**
- * This class fetches and distributes the backpage text to all registered
- * listeners when needed (e.g. a datanode is selected). 
- * @author thomas
- */
 public class BackpageTextProvider implements ApplicationEventListener, SelectionListener, PathwayListener {
 	PathwayElement input;
 	final static int maxThreads = 1;
 	volatile ThreadGroup threads;
 	volatile Thread lastThread;
 	
-	public BackpageTextProvider(Engine engine) {
-		engine.addApplicationEventListener(this);
-		VPathway vp = engine.getActiveVPathway();
+	public BackpageTextProvider() {		
+		Engine.getCurrent().addApplicationEventListener(this);
+		VPathway vp = Engine.getCurrent().getActiveVPathway();
 		if(vp != null) vp.addSelectionListener(this);
 		
 		threads = new ThreadGroup("backpage-queries");		
@@ -61,7 +55,7 @@ public class BackpageTextProvider implements ApplicationEventListener, Selection
 		
 		if(e == null || e.getObjectType() != ObjectType.DATANODE) {
 			input = null;
-			setText(GdbManager.getCurrentGdb().getBackpageHTML(null, null));
+			setText(Gdb.getBackpageHTML(null, null, null));
 		} else {
 			input = e;
 			input.addListener(this);
@@ -69,9 +63,9 @@ public class BackpageTextProvider implements ApplicationEventListener, Selection
 		}
 	}
 
-	private void doQuery() 
-	{
-		currRef = input.getXref();
+	private void doQuery() {
+		currId = input.getGeneID();
+		currCode = input.getSystemCode();
 		
 		//System.err.println("\tSetting input " + e + " using " + threads);
 		//First check if the number of running threads is not too high
@@ -110,19 +104,23 @@ public class BackpageTextProvider implements ApplicationEventListener, Selection
 	}
 
 	public void applicationEvent(ApplicationEvent e) {
-		if(e.getType() == ApplicationEvent.VPATHWAY_CREATED) {
-			((VPathway)e.getSource()).addSelectionListener(this);
+		if(e.type == ApplicationEvent.VPATHWAY_CREATED) {
+			((VPathway)e.source).addSelectionListener(this);
 		}
 	}
 	
-	Xref currRef;
+	String currId;
+	String currCode;
 	
 	public void gmmlObjectModified(PathwayEvent e) {
 		PathwayElement pe = e.getAffectedData();
 		if(input != null) {
-			Xref nref = new Xref (pe.getGeneID(), input.getDataSource());
-			if(!nref.equals(currRef)) 
-			{
+			String nId = pe.getGeneID();
+			String nC = input.getSystemCode();
+//			System.out.println("old: " + currId + ", " + currCode);
+//			System.out.println("new: " + nId + ", " + nC);
+			if(	currId != null && !currId.equals(nId) ||
+					currCode != null && !currCode.equals(nC)) {
 				doQuery();
 			}				
 		}
@@ -145,12 +143,10 @@ public class BackpageTextProvider implements ApplicationEventListener, Selection
 			}
 //			System.err.println("+++++ Thread " + this + " ended +++++");
 		}
-		void performTask() 
-		{
-			if(e == null) return;
-			Xref ref = new Xref (e.getGeneID(), e.getDataSource());
-			String txt = GdbManager.getCurrentGdb().getBackpageHTML(
-					ref, 
+		void performTask() {
+			String txt = Gdb.getBackpageHTML(
+					e.getGeneID(), 
+					e.getSystemCode(), 
 					e.getBackpageHead());
 			if(input == e) setText(txt);
 		}

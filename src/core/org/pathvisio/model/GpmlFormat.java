@@ -50,8 +50,6 @@ import org.jdom.output.Format;
 import org.jdom.output.SAXOutputter;
 import org.jdom.output.XMLOutputter;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.GraphLink.GraphIdContainer;
-import org.pathvisio.model.PathwayElement.MAnchor;
 import org.xml.sax.SAXException;
 
 /**
@@ -65,15 +63,6 @@ import org.xml.sax.SAXException;
  */
 public class GpmlFormat implements PathwayImporter, PathwayExporter
 {
-	/**
-	 * The factor that is used to convert pixel coordinates
-	 * to the GPML model coordinates. E.g. if you want to convert the
-	 * width from pixels to GPML model coordinates you use:
-	 * 
-	 * double mWidth = width * pixel2model;
-	 */
-	public static final double pixel2model = 15;
-	
 	public static final Namespace GPML = Namespace.getNamespace("http://genmapp.org/GPML/2007");
 	public static final Namespace RDF = Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 	public static final Namespace RDFS = Namespace.getNamespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
@@ -156,9 +145,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		result.put("Line.Graphics.Point@GraphId", new AttributeInfo ("xsd:ID", null, "optional"));
 		result.put("Line.Graphics.Point@Head", new AttributeInfo ("xsd:string", "Line", "optional"));
 		result.put("Line.Graphics.Point@ArrowHead", new AttributeInfo ("xsd:string", "Line", "optional"));
-		result.put("Line.Graphics.Anchor@position", new AttributeInfo ("xsd:float", null, "required"));
-		result.put("Line.Graphics.Anchor@Shape", new AttributeInfo ("xsd:string", "LigandRound", "required"));
-		result.put("Line.Graphics.Anchor@GraphId", new AttributeInfo ("xsd:ID", null, "optional"));
 		result.put("Line.Graphics@Color", new AttributeInfo ("gpml:ColorType", "Black", "optional"));
 		result.put("Line@Style", new AttributeInfo ("xsd:string", "Solid", "optional"));
 		result.put("Label.Graphics@CenterX", new AttributeInfo ("xsd:float", null, "required"));
@@ -516,18 +502,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     	o.setLineStyle ((style.equals("Solid")) ? LineStyle.SOLID : LineStyle.DASHED);
 		o.setStartLineType (LineType.fromName(type1));
     	o.setEndLineType (LineType.fromName(type2));
-    	
-    	//Map anchors
-    	List<Element> anchors = graphics.getChildren("Anchor", e.getNamespace());
-    	for(Element ae : anchors) {
-    		double position = Double.parseDouble(getAttribute("Line.Graphics.Anchor", "position", ae));
-    		MAnchor anchor = o.addMAnchor(position);
-    		mapGraphId(anchor, ae);
-    		String shape = getAttribute("Line.Graphics.Anchor", "Shape", ae);
-    		if(shape != null) {
-    			anchor.setShape(LineType.fromName(shape));
-    		}
-    	}
 	}
 	
 	private static void updateLineData(PathwayElement o, Element e) throws ConverterException
@@ -553,14 +527,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			if (o.getEndGraphRef() != null && !o.getEndGraphRef().equals(""))
 			{
 				setAttribute("Line.Graphics.Point", "GraphRef", p2, o.getEndGraphRef());
-			}
-			
-			for(MAnchor anchor : o.getMAnchors()) {
-				Element ae = new Element("Anchor", e.getNamespace());
-				setAttribute("Line.Graphics.Anchor", "position", ae, Double.toString(anchor.getPosition()));
-				setAttribute("Line.Graphics.Anchor", "Shape", ae, anchor.getShape().getName());
-				updateGraphId(anchor, ae);
-				jdomGraphics.addContent(ae);
 			}
 		}
 	}
@@ -633,16 +599,16 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		}
 	}
 	
-	private static void mapGraphId (GraphIdContainer o, Element e)
+	private static void mapGraphId (PathwayElement o, Element e)
 	{
 		String id = e.getAttributeValue("GraphId");
-		if((id == null || id.equals("")) && o.getGmmlData() != null) {
-			id = o.getGmmlData().getUniqueId();
+		if((id == null || id.equals("")) && o.getParent() != null) {
+			id = o.getParent().getUniqueId();
 		}
 		o.setGraphId (id);
 	}
 	
-	private static void updateGraphId (GraphIdContainer o, Element e)
+	private static void updateGraphId (PathwayElement o, Element e)
 	{
 		String id = o.getGraphId();
 		// id has to be unique!
@@ -677,10 +643,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		if((id == null || id.equals("")) && o.getParent() != null) 
 			{id = o.getParent().getUniqueId();}
 		o.setGroupId (id);
-		
-		//GraphId
-		mapGraphId(o, e);
-		
 		//Style
 		o.setGroupStyle(GroupStyle.fromGpmlName(getAttribute("Group", "Style", e)));
 		//Label
@@ -693,10 +655,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		String id = o.createGroupId();
 		if (id != null && !id.equals(""))
 			{e.setAttribute("GroupId", o.createGroupId());}
-		
-		//GraphId
-		updateGraphId(o, e);
-		
 		//Style
 		setAttribute("Group", "Style", e, GroupStyle.toGpmlName(o.getGroupStyle()));
 		//Label
@@ -706,25 +664,24 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 	private static void mapDataNode(PathwayElement o, Element e) throws ConverterException
 	{
 		o.setTextLabel    (getAttribute("DataNode", "TextLabel", e));
-		o.setGenMappXref         (getAttribute("DataNode", "GenMAPP-Xref", e));
+		o.setXref         (getAttribute("DataNode", "GenMAPP-Xref", e));
 		o.setDataNodeType (getAttribute("DataNode", "Type", e));
 		o.setBackpageHead (getAttribute("DataNode", "BackpageHead", e));
 		Element xref = e.getChild ("Xref", e.getNamespace());
 		o.setGeneID (getAttribute("DataNode.Xref", "ID", xref));
-		o.setDataSource (DataSource.getByFullName (getAttribute("DataNode.Xref", "Database", xref)));
+		o.setDataSource (getAttribute("DataNode.Xref", "Database", xref));
 	}
 
 	private static void updateDataNode(PathwayElement o, Element e) throws ConverterException
 	{
 		if(e != null) {
 			setAttribute ("DataNode", "TextLabel", e, o.getTextLabel());
-			setAttribute ("DataNode", "GenMAPP-Xref", e, o.getGenMappXref());
+			setAttribute ("DataNode", "GenMAPP-Xref", e, o.getXref());
 			setAttribute ("DataNode", "Type", e, o.getDataNodeType());
 			setAttribute ("DataNode", "BackpageHead", e, o.getBackpageHead());
 			Element xref = e.getChild("Xref", e.getNamespace());
-			String database = o.getDataSource() == null ? "" : o.getDataSource().getFullName();
-			setAttribute ("DataNode.Xref", "Database", xref, database == null ? "" : database);
-			setAttribute ("DataNode.Xref", "ID", xref, o.getGeneID());
+			setAttribute ("DataNode.Xref", "Database", xref, o.getDataSource());
+			setAttribute ("DataNode.Xref", "ID", xref, o.getGeneID());			
 		}
 	}
 
@@ -835,7 +792,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     	
     	String xref = getAttribute("Label", "Xref", e);
     	if (xref == null) xref = "";
-    	o.setGenMappXref(xref);
+    	o.setXref(xref);
     	String outline = getAttribute("Label", "Outline", e);
 		o.setOutline (OutlineType.fromTag (outline));
 	}
@@ -845,7 +802,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		if(e != null) 
 		{
 			setAttribute("Label", "TextLabel", e, o.getTextLabel());
-			setAttribute("Label", "Xref", e, o.getGenMappXref() == null ? "" : o.getGenMappXref());
+			setAttribute("Label", "Xref", e, o.getXref() == null ? "" : o.getXref());
 			setAttribute("Label", "Outline", e, o.getOutline().getTag());
 			Element graphics = e.getChild("Graphics", e.getNamespace());
 			if(graphics !=null) 
@@ -1086,7 +1043,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     	return s;
     }
     
-	public static final List<double[]> rgbMappings = Arrays.asList(new double[][] {
+	public static final List rgbMappings = Arrays.asList(new double[][] {
 			{0, 1, 1},		// aqua 
 			{0, 0, 0},	 	// black
 			{0, 0, 1}, 		// blue
@@ -1106,7 +1063,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			{0, 0, 0}		// transparent (actually irrelevant)
 		});
 	
-	public static final List<String> colorMappings = Arrays.asList(new String[]{
+	public static final List colorMappings = Arrays.asList(new String[]{
 			"Aqua", "Black", "Blue", "Fuchsia", "Gray", "Green", "Lime",
 			"Maroon", "Navy", "Olive", "Purple", "Red", "Silver", "Teal",
 			"White", "Yellow", "Transparent"
@@ -1220,12 +1177,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		{
 			throw new ConverterException (e);
 		}
-		catch(IllegalArgumentException e) {
-			throw new ConverterException (e);
-		}
-		catch(Exception e) { //Make all types of exceptions a ConverterException
-			throw new ConverterException (e);
-		}
 	}
 
 	/**
@@ -1246,6 +1197,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 				SAXOutputter so = new SAXOutputter(vh);
 				so.output(doc);
 				// If no errors occur, the file is valid according to the gpml xml schema definition
+				//TODO: open dialog to report error
 				Logger.log.info("Document is valid according to the xml schema definition '" + 
 						xsdFile.toString() + "'");
 			} catch (SAXException se) {

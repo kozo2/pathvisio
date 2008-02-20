@@ -17,6 +17,7 @@
 package org.pathvisio.gui.swing.dialogs;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.HashMap;
 
@@ -32,8 +33,6 @@ import org.pathvisio.model.PropertyType;
 import org.pathvisio.view.VPathway;
 
 public class PathwayElementDialog extends OkCancelDialog {
-	private static final long serialVersionUID = 1L;
-
 	public static final String TAB_COMMENTS = "Comments";
 	public static final String TAB_LITERATURE = "Literature";
 	

@@ -17,12 +17,8 @@
 package org.pathvisio.gui.swing;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.io.File;
 import java.net.URL;
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -36,7 +32,6 @@ import org.pathvisio.gui.swing.actions.CommonActions;
 import org.pathvisio.gui.swing.progress.ProgressDialog;
 import org.pathvisio.gui.swing.progress.SwingProgressKeeper;
 import org.pathvisio.model.ConverterException;
-import org.pathvisio.model.GpmlFormat;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayExporter;
 import org.pathvisio.model.PathwayImporter;
@@ -80,10 +75,6 @@ public class SwingEngine {
 	}
 	
 	public void setApplicationPanel(MainPanel mp) {
-		if(mainPanel != null) {
-			Container parent = mainPanel.getParent();
-			if(parent != null) parent.remove(mainPanel);
-		}
 		mainPanel = mp;
 	}
 	
@@ -121,11 +112,11 @@ public class SwingEngine {
 		 return new VPathwaySwing(getApplicationPanel().getScrollPane());
 	}
 	
-	public boolean processTask(SwingProgressKeeper pk, ProgressDialog d, SwingWorker<Boolean, Boolean> sw) {
+	public boolean processTask(SwingProgressKeeper pk, ProgressDialog d, SwingWorker sw) {
 		sw.execute();
 		d.setVisible(true);
 		try {
-			return sw.get();
+			return (Boolean)sw.get();
 		} catch (Exception e) {
 			Logger.log.error("Unable to perform task: " + pk.getTaskName(), e);
 			return false;
@@ -137,8 +128,8 @@ public class SwingEngine {
 		final ProgressDialog d = new ProgressDialog(JOptionPane.getFrameForComponent(getApplicationPanel()), 
 				"", pk, false, true);
 				
-		SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() {
-			protected Boolean doInBackground() throws Exception {
+		SwingWorker sw = new SwingWorker() {
+			protected Object doInBackground() throws Exception {
 				pk.setTaskName("Opening pathway");
 				try {
 					Engine.getCurrent().setWrapper (createWrapper());
@@ -161,12 +152,12 @@ public class SwingEngine {
 		final ProgressDialog d = new ProgressDialog(JOptionPane.getFrameForComponent(getApplicationPanel()), 
 				"", pk, false, true);
 				
-		SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean,Boolean>() {
-			protected Boolean doInBackground() throws Exception {
+		SwingWorker sw = new SwingWorker() {
+			protected Object doInBackground() throws Exception {
 				pk.setTaskName("Importing pathway");
 				try {
 					Engine eng = Engine.getCurrent();
-					boolean editMode = eng.hasVPathway() ? eng.getActiveVPathway().isEditMode() : true;
+					boolean editMode = eng.hasVPathway() ? eng.getActiveVPathway().isEditMode() : false;
 					eng.setWrapper (createWrapper());
 					eng.importPathway(f);
 					eng.getActiveVPathway().setEditMode(editMode);
@@ -196,24 +187,9 @@ public class SwingEngine {
 		jfc.setDialogTitle("Export pathway");
 		jfc.setDialogType(JFileChooser.SAVE_DIALOG);
 
-		SortedSet<PathwayExporter> exporters = new TreeSet<PathwayExporter>(
-				new Comparator<PathwayExporter>() {
-					public int compare(PathwayExporter o1, PathwayExporter o2) {
-						return o1.getName().compareTo(o2.getName());
-					}
-				}
-		);
-		exporters.addAll(Engine.getCurrent().getPathwayExporters().values());
-		
-		FileFilter selectedFilter = null;
-		for(PathwayExporter exp : exporters) {
-			FileFilter ff = new ImporterExporterFileFilter(exp);
-			jfc.addChoosableFileFilter(ff);
-			if(exp instanceof GpmlFormat) {
-				selectedFilter = ff;
-			}
+		for(final PathwayExporter exp : Engine.getCurrent().getPathwayExporters().values()) {
+			jfc.addChoosableFileFilter(new ImporterExporterFileFilter(exp));
 		}
-		if(selectedFilter != null) jfc.setFileFilter(selectedFilter);
 
 		int status = jfc.showDialog(getApplicationPanel(), "Export");
 		if(status == JFileChooser.APPROVE_OPTION) {	
@@ -234,8 +210,8 @@ public class SwingEngine {
 			final ProgressDialog d = new ProgressDialog(JOptionPane.getFrameForComponent(getApplicationPanel()), 
 					"", pk, false, true);
 
-			SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() {
-				protected Boolean doInBackground() throws Exception {
+			SwingWorker sw = new SwingWorker() {
+				protected Object doInBackground() throws Exception {
 					try {
 						pk.setTaskName("Exporting pathway");
 						Engine.getCurrent().exportPathway(f);
@@ -261,23 +237,9 @@ public class SwingEngine {
 		jfc.setDialogTitle("Import pathway");
 		jfc.setDialogType(JFileChooser.OPEN_DIALOG);
 
-		SortedSet<PathwayImporter> importers = new TreeSet<PathwayImporter>(
-				new Comparator<PathwayImporter>() {
-					public int compare(PathwayImporter o1, PathwayImporter o2) {
-						return o1.getName().compareTo(o2.getName());
-					}
-				}
-		);
-		importers.addAll(Engine.getCurrent().getPathwayImporters().values());
-		FileFilter selectedFilter = null;
-		for(PathwayImporter imp : importers) {
-			FileFilter ff = new ImporterExporterFileFilter(imp);
-			jfc.addChoosableFileFilter(ff);
-			if(imp instanceof GpmlFormat) {
-				selectedFilter = ff;
-			}
+		for(final PathwayImporter imp : Engine.getCurrent().getPathwayImporters().values()) {
+			jfc.addChoosableFileFilter(new ImporterExporterFileFilter(imp));
 		}
-		if(selectedFilter != null) jfc.setFileFilter(selectedFilter);
 
 		int status = jfc.showDialog(getApplicationPanel(), "Import");
 		if(status == JFileChooser.APPROVE_OPTION) {	

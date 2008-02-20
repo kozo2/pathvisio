@@ -15,6 +15,8 @@
 //
 package org.pathvisio.view;
 
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Ellipse2D;
 import org.pathvisio.model.ShapeType;

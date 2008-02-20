@@ -19,9 +19,11 @@ package org.pathvisio.visualization.colorset;
 import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Composite;
-import org.pathvisio.data.GexManager;
-import org.pathvisio.data.Sample;
+import org.pathvisio.data.Gex;
+import org.pathvisio.data.Gex.Sample;
 import org.pathvisio.debug.Logger;
+import org.pathvisio.visualization.VisualizationManager;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 
 public class Criterion {
 	static final String displaySample = "|Displayed sample|";
@@ -32,7 +34,7 @@ public class Criterion {
 		
 	private Exception parseException;
 	
-	RuleComposite configComp;
+	CriterionComposite configComp;
 		
 	public String getExpression() {  
 		return expression == null ? "" : expression; 
@@ -75,7 +77,7 @@ public class Criterion {
 
 	void setSampleData(HashMap<Integer, Object> data) {
 		// Add current sample values to symTab if they are of type Double
-		HashMap<Integer, Sample> samples = GexManager.getCurrentGex().getSamples();
+		HashMap<Integer, Sample> samples = Gex.getSamples();
 		clearSymbols();
 		for(Sample s : samples.values()) {
 			Object value = data.get(s.getId());
@@ -116,21 +118,20 @@ public class Criterion {
 		symTab.clear();
 	}
 		
-	public RuleComposite getConfigComposite() {
+	public CriterionComposite getConfigComposite() {
 		return configComp;
 	}
 	
-	public RuleComposite createConfigComposite(Composite parent) {
+	public CriterionComposite createConfigComposite(Composite parent) {
 		if(configComp != null && !configComp.isDisposed()) return configComp;
-		configComp = new RuleComposite(parent, this);
+		configComp = new CriterionComposite(parent, this);
 		return configComp;
 	}
 	
 	void fireModifiedEvent() {
-		ColorSetManager.fireColorSetEvent(
-				new ColorSetEvent(this, ColorSetEvent.COLORSET_MODIFIED));
+		VisualizationManager.fireVisualizationEvent(
+				new VisualizationEvent(this, VisualizationEvent.COLORSET_MODIFIED));
 	}
-	
 	//Boolean expression parser by Martijn
 	String input;
 	int charNr;

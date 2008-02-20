@@ -68,15 +68,13 @@ import org.eclipse.swt.widgets.Text;
 import org.pathvisio.util.Utils;
 import org.pathvisio.util.swt.SwtUtils;
 import org.pathvisio.util.swt.TableColumnResizer;
-import org.pathvisio.visualization.colorset.ColorGradientComposite;
-import org.pathvisio.visualization.colorset.ColorSetManager.ColorSetListener;
+import org.pathvisio.visualization.VisualizationManager;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
+import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
+import org.pathvisio.visualization.colorset.ColorCriterion.ColorCriterionComposite;
+import org.pathvisio.visualization.colorset.ColorGradient.ColorGradientComposite;
 
-/**
- * ColorSetComposite is one of the two tabs of the visualization dialog.
- * This tab is responsible for letting the user customize colorsets,
- * gradients and rules 
- */
-public class ColorSetComposite extends Composite implements ColorSetListener {
+public class ColorSetComposite extends Composite implements VisualizationListener {
 	final int colorLabelSize = 15;
 	ColorSet colorSet;
 	
@@ -93,7 +91,7 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 	public ColorSetComposite(Composite parent, int style) {
 		super(parent, style);
 		createContents();
-		ColorSetManager.addListener(this);
+		VisualizationManager.addListener(this);
 	}
 	
 	public void dispose() {
@@ -134,7 +132,6 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		colorSetCombo.setItems(ColorSetManager.getColorSetNames());
 		colorSetCombo.layout();
 		colorSetCombo.select(0);
-		colorSetSelected();
 	}
 
 	void createContents() {
@@ -196,10 +193,10 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 					images.put(element, img);
 					return img;
 				}
-				if(element instanceof ColorRule) {
+				if(element instanceof ColorCriterion) {
 					disposeImage(img);
 					img = new Image(null, createColorImage(
-							SwtUtils.color2rgb(((ColorRule)element).getColor())));
+							SwtUtils.color2rgb(((ColorCriterion)element).getColor())));
 					images.put(element, img);
 					return img;
 				}
@@ -227,8 +224,16 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 					ignore = false;
 					return;
 				}
-				previous = getSelectedObject();
-				objectSettings.setInput(previous);
+				boolean save = true;
+				if(previous != null && colorSet.getObjects().contains(previous))
+					save = objectSettings.save();
+				if(save) {
+					previous = getSelectedObject();
+					objectSettings.setInput(previous);
+				} else {
+					ignore = true;
+					objectsTable.setSelection(new StructuredSelection(previous));
+				}
 			}
 		});
 		
@@ -305,7 +310,6 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		ColorSetManager.newColorSet(null);
 		refreshCombo();
 		colorSetCombo.select(ColorSetManager.getColorSets().size() - 1);
-		addColorSetObject(); 
 	}
 	
 	void removeColorSet() {
@@ -313,10 +317,9 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		refreshCombo();
 	}
 	
-	void addColorSetObject()
-	{
+	void addColorSetObject() {
 		final int NEW_GRADIENT = 10;
-		final int NEW_RULE = 11;
+		final int NEW_EXPRESSION = 11;
 		Dialog dialog = new Dialog(getShell()) {
 			int newObject = NEW_GRADIENT;
 			public int open() {
@@ -330,12 +333,12 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 				final Button gradient = new Button(contents, SWT.RADIO);
 				gradient.setText("Color by gradient");
 				final Button expression = new Button(contents, SWT.RADIO);
-				expression.setText("Color by rule");
+				expression.setText("Color by boolean expression");
 				
 				SelectionListener lst = new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						if(e.widget == gradient) newObject =  NEW_GRADIENT;
-						else newObject = NEW_RULE;
+						else newObject = NEW_EXPRESSION;
 					}
 				};
 				
@@ -351,12 +354,10 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		ColorSetObject newCso = null;
 		switch(type) {
 		case NEW_GRADIENT:
-			ColorGradient newGrad = new ColorGradient(colorSet);
-			newGrad.generateDefault(); // populates with a few default colors
-			newCso = newGrad;
+			newCso = new ColorGradient(colorSet, colorSet.getNewName("New gradient"));
 			break;
-		case NEW_RULE:
-			newCso = new ColorRule(colorSet);
+		case NEW_EXPRESSION:
+			newCso = new ColorCriterion(colorSet, colorSet.getNewName("New expression"));
 			break;
 		}
 		if(newCso != null) {
@@ -493,7 +494,7 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		StackLayout stack;
 		ColorSetObject input;
 		ColorGradientComposite gradientComp;
-		ColorRuleComposite criterionComp;
+		ColorCriterionComposite criterionComp;
 		Composite nothing;
 		
 		public ObjectSettingsComposite(Composite parent, int style) {
@@ -504,6 +505,12 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		public void setInput(ColorSetObject cso) {
 			input = cso;
 			refresh();
+		}
+		
+		public boolean save() {
+			if(input instanceof ColorGradient) return gradientComp.save();
+			else if (input instanceof ColorCriterion) return criterionComp.save();
+			else return true;
 		}
 		
 		public void refresh() {
@@ -527,7 +534,7 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 			//Gradient
 			gradientComp = new ColorGradientComposite(this, SWT.NULL);
 			//Criterion
-			criterionComp = new ColorRuleComposite(this, SWT.NULL);
+			criterionComp = new ColorCriterionComposite(this, SWT.NULL);
 			//Nothing
 			new Composite(this, SWT.NULL);
 		}		
@@ -580,13 +587,12 @@ public class ColorSetComposite extends Composite implements ColorSetListener {
 		return data;
 	}
 
-	public void colorSetEvent (ColorSetEvent e) {
-		switch(e.getType())
-		{
-		case(ColorSetEvent.COLORSET_MODIFIED):
+
+	public void visualizationEvent(VisualizationEvent e) {
+		switch(e.type) {
+		case(VisualizationEvent.COLORSET_MODIFIED):
 			if(objectsTable != null && !objectsTable.getTable().isDisposed())
 				objectsTable.refresh();
-			break;
 		}
 		
 	}

@@ -18,8 +18,8 @@ package org.pathvisio.gui.swing;
 
 import javax.swing.JEditorPane;
 
-import org.pathvisio.Engine;
 import org.pathvisio.data.BackpageListener;
+import org.pathvisio.data.Gdb;
 
 /**
  * The backpage panel for the Swing version of PathVisio. This pane shows annotation
@@ -28,17 +28,14 @@ import org.pathvisio.data.BackpageListener;
  *
  */
 public class BackpagePane extends JEditorPane implements BackpageListener {	
-	private static final long serialVersionUID = 1L;
-
 	public BackpagePane() {
 		super();
 		setEditable(false);
 		setContentType("text/html");
-		Engine.getCurrent().getBackpageTextProvider().addListener(this);
+		Gdb.getBackpageTextProvider().addListener(this);
 	}
 
 	public void textChanged(String oldText, String newText) {
-		System.err.println("BACKPAGE TEXT CHANGED");
 		setText(newText);
 	}
 }

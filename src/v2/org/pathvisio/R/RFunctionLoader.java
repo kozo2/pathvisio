@@ -59,7 +59,7 @@ import org.pathvisio.util.JarUtils;
 import org.pathvisio.util.Utils;
 import org.pathvisio.util.swt.SwtUtils.SimpleRunnableWithProgress;
 import org.pathvisio.visualization.colorset.Criterion;
-import org.pathvisio.visualization.colorset.RuleComposite;
+import org.pathvisio.visualization.colorset.CriterionComposite;
 
 
 public class RFunctionLoader {
@@ -77,7 +77,7 @@ public class RFunctionLoader {
 			JarURLConnection conn = (JarURLConnection)url.openConnection();
 
 			JarFile jfile = conn.getJarFile();
-			Enumeration<?> e = jfile.entries();
+			Enumeration e = jfile.entries();
 			while (e.hasMoreElements()) {
 				ZipEntry entry = (ZipEntry)e.nextElement();
 				String entryname = entry.getName();
@@ -405,7 +405,7 @@ public class RFunctionLoader {
 					}
 				});
 							
-				final RuleComposite critConf = criterion.createConfigComposite(contents);
+				final CriterionComposite critConf = criterion.createConfigComposite(contents);
 				GridData critGrid = new GridData(GridData.FILL_BOTH);
 				critGrid.horizontalSpan = 2;
 				critConf.setLayoutData(critGrid);

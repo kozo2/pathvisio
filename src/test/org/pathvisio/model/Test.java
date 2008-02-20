@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import junit.framework.TestCase;
 
 public class Test extends TestCase implements PathwayListener 
@@ -376,27 +377,32 @@ public class Test extends TestCase implements PathwayListener
 		received.add(e);
 	}
 	
-	public void testDataSource()
-	{
-		DataSource ds = DataSource.ENSEMBL;
-		assertEquals (ds.getFullName(), "Ensembl");
-		assertEquals (ds.getSystemCode(), "En");
-		
-		DataSource.register("@@", "ZiZaZo", null, null);
-		
-		DataSource ds2 = DataSource.getBySystemCode ("@@");
-		DataSource ds3 = DataSource.getByFullName ("ZiZaZo");
-		assertEquals (ds2, ds3);
-		
-		// assert that you can refer to 
-		// undeclared systemcodes if necessary.
-		assertNotNull (DataSource.getBySystemCode ("##"));
-		
-		DataSource ds4 = DataSource.getBySystemCode ("En");
-		assertEquals (ds, ds4);
-		
-		DataSource ds5 = DataSource.getByFullName ("Entrez Gene");
-		assertEquals (ds5, DataSource.ENTREZ_GENE);
-	}
-
+ 	/**
+ 	 * Dangling references, pointing to nothing, can occur in theory.
+ 	 * These should be removed.
+ 	 */
+ 	public void testDanglingRef() throws IOException, ConverterException
+ 	{
+ 		// create a dangling ref
+ 		assertEquals (data.fixReferences(), 0);
+ 
+ 		l.setStartGraphRef("dangle");		
+ 		
+ 		File temp = File.createTempFile ("data.test", ".gpml");
+ 		temp.deleteOnExit();
+ 
+ 		assertEquals (data.fixReferences(), 1);
+ 		assertEquals (data.fixReferences(), 0);
+ 		
+ 		// should still validate
+ 		try
+ 		{
+ 			data.writeToXml(temp, true);
+ 		}
+ 		catch (ConverterException e)
+ 		{
+ 			e.printStackTrace();
+ 			fail ("Dangling reference should have been removed");
+ 		}
+ 	}
 }

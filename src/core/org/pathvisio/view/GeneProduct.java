@@ -20,11 +20,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 
+import org.pathvisio.data.DataSources;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.preferences.GlobalPreference;
 
@@ -58,7 +60,21 @@ public class GeneProduct extends GraphicsShape
 		//Looks like the wrong way around, but in gpml the ID is attribute 'Name'
 		//NOTE: maybe change this in gpml?
 		return gdata.getGeneID();
-	}		
+	}
+		
+	/**
+	 * Looks up the systemcode for this gene in Pathway.sysName2Code
+	 * @return	The system code or an empty string if the system is not found
+	 * 
+	 * @deprecated use PathwayElement.getSystemCode()
+	 */
+	public String getSystemCode()
+	{
+		String systemCode = "";
+		if(DataSources.sysName2Code.containsKey(gdata.getDataSource())) 
+			systemCode = DataSources.sysName2Code.get(gdata.getDataSource());
+		return systemCode;
+	}
 			
 	/**
 	 * Calculate the font size adjusted to the canvas zoom factor.

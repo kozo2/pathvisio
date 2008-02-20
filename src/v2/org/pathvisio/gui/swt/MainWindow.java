@@ -37,14 +37,13 @@ import org.pathvisio.R.RController;
 import org.pathvisio.R.RDataIn;
 import org.pathvisio.R.RCommands.RException;
 import org.pathvisio.R.wizard.RWizard;
-import org.pathvisio.data.DBConnector;
 import org.pathvisio.data.DBConnectorSwt;
-import org.pathvisio.data.GdbManager;
+import org.pathvisio.data.Gdb;
+import org.pathvisio.data.Gex;
 import org.pathvisio.data.GexImportWizard;
 import org.pathvisio.data.GexSwt;
-import org.pathvisio.data.GexManager;
-import org.pathvisio.data.GexManager.GexManagerEvent;
-import org.pathvisio.data.GexManager.GexManagerListener;
+import org.pathvisio.data.Gex.ExpressionDataEvent;
+import org.pathvisio.data.Gex.ExpressionDataListener;
 import org.pathvisio.data.GexSwt.ProgressWizardDialog;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
@@ -75,19 +74,15 @@ public class MainWindow extends MainWindowBase
 			setToolTipText("Select Expression Data");
 		}
 		
-		public void run () 
-		{
-			try 
-			{
+		public void run () {
+			try {
 				DBConnectorSwt dbcon = GexSwt.getDBConnector();
 				String dbName = dbcon.openChooseDbDialog(getShell());
 				
 				if(dbName == null) return;
 				
-				GexManager.setCurrentGex(dbName, false);
-			} 
-			catch(Exception e) 
-			{
+				Gex.connect(dbName);
+			} catch(Exception e) {
 				String msg = "Failed to open Expression Dataset" + e.getMessage();
 				MessageDialog.openError (window.getShell(), "Error", 
 						"Error: " + msg + "\n\n" + 
@@ -98,40 +93,6 @@ public class MainWindow extends MainWindowBase
 	}
 	private SelectGexAction selectGexAction = new SelectGexAction(this);
 	
-	/**
-	 * {@link Action} to select a Gene Database
-	 */
-	private class SelectMetaboliteDbAction extends Action
-	{
-		MainWindowBase window;
-		public SelectMetaboliteDbAction(MainWindowBase w)
-		{
-			window = w;
-			setText("Select &Metabolite Database");
-			setToolTipText("Select Metabolite Database");
-		}
-		
-		public void run () {			
-			try {
-				DBConnectorSwt dbcon = SwtEngine.getCurrent().getSwtDbConnector(DBConnector.TYPE_GDB);
-				String dbName = dbcon.openChooseDbDialog(getShell());
-				
-				if(dbName == null) return;
-				
-				GdbManager.setMetaboliteDb(dbName);
-			} 
-			catch(Exception e) 
-			{
-				String msg = "Failed to open Metabolite Database; " + e.getMessage();
-				MessageDialog.openError (window.getShell(), "Error", 
-						"Error: " + msg + "\n\n" + 
-						"See the error log for details.");
-				Logger.log.error(msg, e);
-			}
-		}
-	}
-	private SelectMetaboliteDbAction selectMetaboliteDbAction = 
-		new SelectMetaboliteDbAction(this);
 
 	/**
 	 * {@link Action} that opens an {@link GexImportWizard} that guides the user
@@ -149,7 +110,7 @@ public class MainWindow extends MainWindowBase
 		}
 		
 		public void run() {
-			if(!GdbManager.isConnected())
+			if(!Gdb.isConnected())
 			{
 				MessageDialog.openWarning(getShell(), "Warning", "No gene database selected, " +
 						"select gene database before creating a new expression dataset");
@@ -165,7 +126,7 @@ public class MainWindow extends MainWindowBase
 	/**
 	 * {@link Action} to open the {@link ColorSetWindow}
 	 */
-	private class ColorSetManagerAction extends Action implements GexManagerListener
+	private class ColorSetManagerAction extends Action implements ExpressionDataListener
 	{
 		MainWindow window;
 		public ColorSetManagerAction (MainWindow w)
@@ -175,7 +136,7 @@ public class MainWindow extends MainWindowBase
 			setToolTipText("Create and edit color sets");
 			setImageDescriptor(ImageDescriptor.createFromURL(
 					Engine.getCurrent().getResourceURL("icons/colorset.gif")));
-			GexManager.addListener(this);
+			Gex.addListener(this);
 			setEnabled(false);
 		}
 		public void run () {
@@ -183,13 +144,11 @@ public class MainWindow extends MainWindowBase
 			d.setTabItemOnOpen(VisualizationDialog.TABITEM_COLORSETS);
 			d.open();
 		}
-		public void gexManagerEvent(GexManagerEvent e) 
-		{
-			switch(e.getType()) 
-			{
-			case GexManagerEvent.CONNECTION_OPENED:
+		public void expressionDataEvent(ExpressionDataEvent e) {
+			switch(e.type) {
+			case ExpressionDataEvent.CONNECTION_OPENED:
 				setEnabled(true); break;
-			case GexManagerEvent.CONNECTION_CLOSED:
+			case ExpressionDataEvent.CONNECTION_CLOSED:
 				setEnabled(false); break;
 			}	
 		}
@@ -335,7 +294,6 @@ public class MainWindow extends MainWindowBase
 		viewMenu.add(zoomMenu);
 		MenuManager dataMenu = new MenuManager ("&Data");
 		dataMenu.add(selectGdbAction);
-		dataMenu.add(selectMetaboliteDbAction);
 		dataMenu.add(selectGexAction);
 		dataMenu.add(createGexAction);
 		dataMenu.add(colorSetManagerAction);
@@ -423,7 +381,7 @@ public class MainWindow extends MainWindowBase
 		addCoolBar(SWT.FLAT | SWT.LEFT);
 		
 		Engine.getCurrent().addApplicationEventListener(this);
-		GexManager.addListener(this);
+		Gex.addListener(this);
 	}
 
 	public boolean editOnOpen() {

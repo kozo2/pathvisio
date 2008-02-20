@@ -29,6 +29,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.text.AttributedString;
 
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.OutlineType;
 
 public class Label extends GraphicsShape
 {

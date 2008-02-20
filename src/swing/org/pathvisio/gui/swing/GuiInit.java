@@ -16,7 +16,6 @@
 //
 package org.pathvisio.gui.swing;
 
-import java.io.File;
 import java.io.PrintStream;
 
 import org.pathvisio.Engine;
@@ -39,9 +38,6 @@ public class GuiInit {
 		initImporters();
 		initExporters();
 		try {
-			GlobalPreference.FILE_LOG.setDefault(
-					new File(Engine.getCurrent().getApplicationDir(), ".PathVisioLog").toString()
-			);
 			Logger.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
 		} catch(Exception e) {
 			System.err.println("Unable to set log stream to " + GlobalPreference.FILE_LOG.getValue());

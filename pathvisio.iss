@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=PathVisio
-AppVerName=PathVisio 1.0 beta
+AppVerName=PathVisio 1.0
 AppPublisher=BiGCaT group, University of Maastricht
 AppPublisherURL=http://www.genmapp.org
 AppSupportURL=http://www.genmapp.org

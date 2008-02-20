@@ -36,13 +36,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.pathvisio.Engine;
 import org.pathvisio.Globals;
 import org.pathvisio.Revision;
-import org.pathvisio.data.DataException;
-import org.pathvisio.data.GdbManager;
-import org.pathvisio.data.GexManager;
+import org.pathvisio.data.Gdb;
+import org.pathvisio.data.Gex;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.BatikImageExporter;
-import org.pathvisio.model.DataNodeListExporter;
-import org.pathvisio.model.EUGeneExporter;
 import org.pathvisio.model.ImageExporter;
 import org.pathvisio.model.MappFormat;
 import org.pathvisio.preferences.GlobalPreference;
@@ -53,6 +50,7 @@ import org.pathvisio.util.swt.SwtUtils;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.plugins.PluginManager;
 import org.pathvisio.view.MIMShapes;
+import edu.stanford.ejalbert.BrowserLauncher;
 
 /**
  * This class contains the main method and is responsible for initiating 
@@ -91,16 +89,11 @@ public class GuiMain {
 		window.open();
 		Logger.log.trace ("Window closed");
 		
-		GexManager.close();
-		try
-		{
-			GdbManager.getCurrentGdb().close();
-		}
-		catch (DataException e)
-		{
-			Logger.log.error ("Problem during GdbManager.close()", e);
-		}
-		
+		//Perform exit operations
+		//TODO: implement PropertyChangeListener and fire exit property when closing
+		// make classes themself responsible for closing when exit property is changed
+		Gex.close();
+		Gdb.close();
 		//Close log stream
 		Logger.log.getStream().close();
 		
@@ -184,7 +177,7 @@ public class GuiMain {
 		Logger.log.trace ("Preferences loaded");
 		
 		//initiate Gene database (to load previously used gdb)
-		GdbManager.init();
+		Gdb.init();
 		
 		//load visualizations and plugins
 		loadVisualizations();
@@ -221,8 +214,11 @@ public class GuiMain {
 	
 			
 	static void registerListeners() {
-		VisualizationManager vmgr = new VisualizationManager();		
+		VisualizationManager vmgr = new VisualizationManager();
+		Gex gex = new Gex();
+		
 		Engine.getCurrent().addApplicationEventListener(vmgr);
+		Engine.getCurrent().addApplicationEventListener(gex);
 	}
 	
 	static void registerExporters() {
@@ -231,8 +227,6 @@ public class GuiMain {
 		Engine.getCurrent().addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_PNG));
 		Engine.getCurrent().addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_TIFF));
 		Engine.getCurrent().addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_PDF));
-		Engine.getCurrent().addPathwayExporter(new DataNodeListExporter());
-		Engine.getCurrent().addPathwayExporter(new EUGeneExporter());
 	}
 	
 	static void registerImporters() {

@@ -70,10 +70,10 @@ import org.eclipse.swt.widgets.Spinner;
 import org.jdom.Element;
 import org.pathvisio.Engine;
 import org.pathvisio.data.CachedData;
-import org.pathvisio.data.GexManager;
-import org.pathvisio.data.Sample;
+import org.pathvisio.data.Gex;
+import org.pathvisio.data.Gdb.IdCodePair;
+import org.pathvisio.data.Gex.Sample;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.Xref;
 import org.pathvisio.util.ColorConverter;
 import org.pathvisio.util.swt.SwtUtils;
 import org.pathvisio.view.Graphics;
@@ -86,7 +86,7 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		"This plugin displays one or more images on Gene Product objects and \n" +
 		"colors the image(s) accoring to the expression value for the Gene Product.";
 		
-	static final Color DEFAULT_TRANSPARENT = Engine.TRANSPARENT_COLOR;
+	static final Color DEFAULT_TRANSPARENT = Engine.getCurrent().TRANSPARENT_COLOR;
 		
 	List<URL> imageURLs;
 	
@@ -120,8 +120,8 @@ public class ExpressionImagePlugin extends PluginWithColoredSamples {
 		if(url.getProtocol().equals("file")) imageURLs.remove(url);
 	}
 	
-	protected void drawSample(ConfiguredSample s, Xref idc, Rectangle area, Graphics2D g2d) {
-		CachedData cache = GexManager.getCurrentGex().getCachedData();
+	protected void drawSample(ConfiguredSample s, IdCodePair idc, Rectangle area, Graphics2D g2d) {
+		CachedData cache = Gex.getCachedData();
 		ColorSet cs = s.getColorSet();
 
 		Color rgb = cs.getColor(cache.getAverageSampleData(idc), s.getId());

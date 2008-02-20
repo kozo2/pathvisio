@@ -50,8 +50,6 @@ import org.pathvisio.gui.swing.progress.SwingProgressKeeper;
 import org.pathvisio.util.ProgressKeeper;
 
 public class PublicationXRefDialog extends OkCancelDialog {
-	private static final long serialVersionUID = 1L;
-
 	final static String ADD = "Add";
 	final static String REMOVE = "Remove";
 	final static String PMID = "Pubmed ID";
@@ -108,8 +106,8 @@ public class PublicationXRefDialog extends OkCancelDialog {
 				JOptionPane.getFrameForComponent(this), 
 				"", pk, true, true);
 				
-		SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
-			protected Void doInBackground() throws Exception {
+		SwingWorker sw = new SwingWorker() {
+			protected Object doInBackground() throws Exception {
 				pk.setTaskName("Querying PubMed");
 				pmq.execute();
 				pk.finished();

@@ -41,22 +41,17 @@ import org.pathvisio.Engine;
 import org.pathvisio.Engine.ApplicationEventListener;
 import org.pathvisio.data.DBConnector;
 import org.pathvisio.data.DBConnectorSwt;
-import org.pathvisio.data.GdbManager;
-import org.pathvisio.data.GexManager;
+import org.pathvisio.data.Gdb;
+import org.pathvisio.data.Gex;
 import org.pathvisio.data.GexSwt;
-import org.pathvisio.data.GexManager.GexManagerEvent;
-import org.pathvisio.data.GexManager.GexManagerListener;
+import org.pathvisio.data.Gex.ExpressionDataEvent;
+import org.pathvisio.data.Gex.ExpressionDataListener;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.gui.swt.awt.VPathwaySwingComposite;
-import org.pathvisio.model.DataNodeType;
-import org.pathvisio.model.LineStyle;
-import org.pathvisio.model.LineType;
-import org.pathvisio.model.ShapeType;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.search.PathwaySearchComposite;
 import org.pathvisio.util.swt.ProgressKeeperDialog;
 import org.pathvisio.view.AlignType;
-import org.pathvisio.view.DefaultTemplates;
 import org.pathvisio.view.GeneProduct;
 import org.pathvisio.view.StackType;
 import org.pathvisio.view.UndoManagerEvent;
@@ -74,7 +69,7 @@ import org.pathvisio.visualization.LegendPanel;
  */
 //TODO: we mix coolbar and toolbar in this class. Evaluate and select one of the two for our needs.
 public abstract class MainWindowBase extends ApplicationWindow implements 
-	ApplicationEventListener, GexManagerListener, VPathwayListener, UndoManagerListener
+	ApplicationEventListener, ExpressionDataListener, VPathwayListener, UndoManagerListener
 															   
 {
 	private static final long serialVersionUID = 1L;
@@ -131,7 +126,9 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 				
 				if(dbName == null) return;
 				
-				GdbManager.setGeneDb(dbName);
+				Gdb.connect(dbName);
+				setStatus("Using Gene Database: '" + GlobalPreference.DB_GDB_CURRENT.getValue() + "'");
+				cacheExpressionData();
 			} catch(Exception e) {
 				String msg = "Failed to open Gene Database; " + e.getMessage();
 				MessageDialog.openError (window.getShell(), "Error", 
@@ -155,7 +152,7 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 				((ActionContributionItem)items[i]).getAction().setChecked(false);
 			}
 		}
-		Engine.getCurrent().getActiveVPathway().setNewTemplate(null);
+		Engine.getCurrent().getActiveVPathway().setNewGraphics(VPathway.NEWNONE);
 	}
 	
 	/**
@@ -182,20 +179,15 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 	 */
 	private void cacheExpressionData()
 	{
-		if(Engine.getCurrent().hasVPathway())
+		if(Engine.getCurrent().isDrawingOpen())
 		{
 			VPathway drawing = Engine.getCurrent().getActiveVPathway();
-			//Check for necessary connections
-			if(GexManager.isConnected() && GdbManager.isConnected())
+			//Check for neccesary connections
+			if(Gex.isConnected() && Gdb.isConnected())
 			{
 				ProgressKeeperDialog dialog = new ProgressKeeperDialog(getShell());
 				try {
-					dialog.run(
-							true, true, 
-							new GexSwt.CacheProgressKeeper(
-									drawing.getPathwayModel().getDataNodeXrefs()
-								)
-					);
+					dialog.run(true, true, new GexSwt.CacheProgressKeeper(drawing.getMappIds(), drawing.getSystemCodes()));
 					drawing.redraw();
 				} catch(Exception e) {
 					String msg = "while caching expression data: " + e.getMessage();					
@@ -222,7 +214,7 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 				((ActionContributionItem)items[i]).getAction().setChecked(false);
 			}
 		}
-		Engine.getCurrent().getActiveVPathway().setNewTemplate(null);
+		Engine.getCurrent().getActiveVPathway().setNewGraphics(VPathway.NEWNONE);
 	}
 
 	// Elements of the coolbar
@@ -250,25 +242,15 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 	protected void createEditActionsCI()
 	{
 		ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);		
-		toolBarManager.add(new NewElementAction(
-				new DefaultTemplates.DataNodeTemplate(DataNodeType.GENEPRODUCT)));
-		toolBarManager.add(new NewElementAction(
-				new DefaultTemplates.DataNodeTemplate(DataNodeType.METABOLITE)));
-		toolBarManager.add(new NewElementAction(new DefaultTemplates.LabelTemplate()));
-		toolBarManager.add(new NewElementAction(NewElementAction.MENULINE));
-		toolBarManager.add(new NewElementAction(
-				new DefaultTemplates.ShapeTemplate(ShapeType.RECTANGLE)));
-		toolBarManager.add(new NewElementAction(
-				new DefaultTemplates.ShapeTemplate(ShapeType.OVAL)));
-		toolBarManager.add(new NewElementAction(
-				new DefaultTemplates.ShapeTemplate(ShapeType.ARC)));
-		toolBarManager.add(new NewElementAction(
-				new DefaultTemplates.ShapeTemplate(ShapeType.BRACE)));
-		toolBarManager.add(new NewElementAction(new DefaultTemplates.LineTemplate(
-				LineStyle.SOLID, LineType.LINE, LineType.TBAR)));
-		toolBarManager.add(new NewElementAction(NewElementAction.MENULINESHAPE));
-		toolBarManager.add(new NewElementAction(new DefaultTemplates.InteractionTemplate()));
-
+		toolBarManager.add(new NewElementAction(VPathway.NEWGENEPRODUCT));
+		toolBarManager.add(new NewElementAction(VPathway.NEWLABEL));
+		toolBarManager.add(new NewElementAction(VPathway.NEWLINEMENU));
+		toolBarManager.add(new NewElementAction(VPathway.NEWRECTANGLE));
+		toolBarManager.add(new NewElementAction(VPathway.NEWOVAL));
+		toolBarManager.add(new NewElementAction(VPathway.NEWARC));
+		toolBarManager.add(new NewElementAction(VPathway.NEWBRACE));
+		toolBarManager.add(new NewElementAction(VPathway.NEWTBAR));
+		toolBarManager.add(new NewElementAction(VPathway.NEWLINESHAPEMENU));
 
 		editActionsCI = new ToolBarContributionItem(toolBarManager, "EditModeActions");
 	}
@@ -402,8 +384,8 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 		
 		rightPanel.getTabFolder().setSelection(0); //select backpage browser tab
 		rightPanel.hideTab("Legend"); //hide legend on startup
-
-		updateStatusBar();
+		
+		setStatus("Using Gene Database: '" + GlobalPreference.DB_GDB_CURRENT.getValue() + "'");
 
 		SwtEngine.getCurrent().updateTitle();
 
@@ -438,7 +420,10 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 	public boolean close() {
 		ApplicationEvent e = new ApplicationEvent(this, ApplicationEvent.APPLICATION_CLOSE);
 		Engine.getCurrent().fireApplicationEvent(e);
-		return super.close();
+		if(e.doit) {
+			return super.close();
+		}
+		return false;
 	}
 	
 	VPathwaySwingComposite swingPathwayComposite;
@@ -454,8 +439,7 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 	public LegendPanel getLegend() { return legend; }
 	
 	public void showLegend(boolean show) {	
-		if(show && GexManager.isConnected()) 
-		{
+		if(show && Gex.isConnected()) {
 			if(rightPanel.isVisible("Legend")) return; //Legend already visible, only refresh
 			rightPanel.unhideTab("Legend", 0);
 			rightPanel.selectTab("Legend");
@@ -465,35 +449,29 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 	}
 					
 	public void applicationEvent(ApplicationEvent e) {
-		switch(e.getType())
-		{
+		switch(e.type) {
 		case ApplicationEvent.PATHWAY_OPENED:
-			if(GexManager.isConnected()) cacheExpressionData();
+			if(Gex.isConnected()) cacheExpressionData();
 			break;
+		}
+		switch(e.type) {
 		case ApplicationEvent.VPATHWAY_NEW:
 		case ApplicationEvent.VPATHWAY_OPENED:
 			Engine.getCurrent().getActiveVPathway().addVPathwayListener(this);
 			Engine.getCurrent().getActiveVPathway().getUndoManager().addListener(this);
-			break;
-		case ApplicationEvent.GDB_CONNECTED:
-			updateStatusBar();
-			cacheExpressionData();
-			break;
 		}
 	}
 
-	public void gexManagerEvent(GexManagerEvent e) 
-	{
-		switch(e.getType()) 
-		{
-		case GexManagerEvent.CONNECTION_CLOSED:
+	public void expressionDataEvent(ExpressionDataEvent e) {
+		switch(e.type) {
+		case ExpressionDataEvent.CONNECTION_CLOSED:
 			getShell().getDisplay().syncExec(new Runnable() {
 				public void run() {
 					showLegend(false);
 				}
 			});
 			break;
-		case GexManagerEvent.CONNECTION_OPENED:
+		case ExpressionDataEvent.CONNECTION_OPENED:
 			getShell().getDisplay().syncExec(new Runnable() {
 				public void run() {
 					cacheExpressionData();
@@ -503,20 +481,11 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 			break;
 		}
 	}
-
-	/**
-	   Update the status bar with information on the current Gene Database.
-	 */
-	private void updateStatusBar()
-	{
-		setStatus("Using Gene Database: '" +
-				  GdbManager.getCurrentGdb().getDbName() + "'");
-	}
 	
 	public void vPathwayEvent(VPathwayEvent e) {
 		switch(e.getType()) {
 		case VPathwayEvent.EDIT_MODE_OFF:
-			threadSafe(new Runnable() {
+			threadSave(new Runnable() {
 				public void run() {
 					showLegend(true);
 					showEditActionsCI(false);
@@ -527,7 +496,7 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 			});
 			break;
 		case VPathwayEvent.EDIT_MODE_ON:
-			threadSafe(new Runnable() {
+			threadSave(new Runnable() {
 				public void run() {
 					showLegend(false);
 					showEditActionsCI(true);
@@ -538,7 +507,7 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 			});
 			break;
 		case VPathwayEvent.ELEMENT_ADDED:
-			threadSafe(new Runnable() {
+			threadSave(new Runnable() {
 				public void run() {
 					deselectNewItemActions();
 				}
@@ -547,7 +516,8 @@ public abstract class MainWindowBase extends ApplicationWindow implements
 		}
 	}
 
-	protected void threadSafe(Runnable r) {
+	//TODO: should be safe, not save.
+	protected void threadSave(Runnable r) {
 		Display d = getShell() == null ? Display.getDefault() : getShell().getDisplay();
 		if(Thread.currentThread() == d.getThread()) {
 			r.run();

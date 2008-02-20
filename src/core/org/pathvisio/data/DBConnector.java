@@ -19,20 +19,7 @@ package org.pathvisio.data;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/**
- * DBConnector is used by SimpleGex and SimpleGdb
- * to perform operations
- * such as creating a new database
- * or establishing a connection
- * that are different for Derby, Hsqldb, etc.
- * 
- * This class implements only non-GUI functionality.
- * There is a derived DBConnSwt class that also 
- * includes dialogs to set the parameters
- * for opening / creating.
- */
-public abstract class DBConnector 
-{
+public interface DBConnector {
 	public static final int PROP_NONE = 0;
 	public static final int PROP_RECREATE = 4;
 	public static final int PROP_FINALIZE = 8;
@@ -46,52 +33,45 @@ public abstract class DBConnector
 	 */
 	public static final int TYPE_GEX = 1;
 
-	public abstract Connection createConnection(String dbName, int props) throws DataException;	
+	public abstract Connection createConnection(String dbName) throws Exception;
+
+	public abstract Connection createConnection(String dbName, int props) throws Exception;	
 	
 	/**
 	 * Close the given connection
 	 * @param con The connection to be closed
 	 * @throws Exception
 	 */
-	public void closeConnection(Connection con) throws DataException 
-	{
-		closeConnection(con, PROP_NONE);
-	}
-	
+	public void closeConnection(Connection con) throws Exception;
 	/**
 	 * Close the given connection, and optionally finalize it after creation (using {@link #PROP_FINALIZE})
 	 * @param con The connection to be closed
 	 * @param props Close properties (one of {@link #PROP_NONE}, {@link #PROP_FINALIZE} or {@link #PROP_RECREATE})
 	 * @throws Exception
 	 */
-	public void closeConnection(Connection con, int props) throws DataException 
-	{
-		try
-		{
-			con.close();
-		}
-		catch (SQLException e)
-		{
-			throw new DataException (e);
-		}
-	}
+	public void closeConnection(Connection con, int props) throws Exception;
 	
-	private int dbType;
-
 	/**
 	 * Set the database type (one of {@link #TYPE_GDB} or {@link #TYPE_GEX})
 	 * @param type The type of the database that will be used for this class
 	 */
-	public void setDbType(int type) { dbType = type; }
+	public void setDbType(int type);
 	
 	/**
 	 * Get the database type (one of {@link #TYPE_GDB} or {@link #TYPE_GEX})
 	 * return The type of the database that is used for this class
 	 */
-	public int getDbType() { return dbType; }
+	public int getDbType();
 	
-
-		
+	/**
+	 * Create a new database with the given name. This includes creating tables.
+	 * @param dbName The name of the database to create
+	 * @return A connection to the newly created database
+	 * @throws Exception 
+	 * @throws Exception
+	 */
+	public Connection createNewDatabase(String dbName) throws Exception;
+	
 	/**
 	 * This method is called to finalize the given database after creation
 	 * (e.g. set read-only, archive files). The database name needs to returned, this
@@ -101,8 +81,21 @@ public abstract class DBConnector
 	 * @throws Exception
 	 * @return The name of the finalized database
 	 */
-	public abstract String finalizeNewDatabase(String dbName) throws DataException;
-		
+	public String finalizeNewDatabase(String dbName) throws Exception;
+	
+	/**
+	 * Excecutes several SQL statements to create the tables and indexes for storing 
+	 * the expression data
+	 */
+	public void createTables(Connection con) throws Exception;
+	
+	/**
+	 * Creates indices for a newly created expression database.
+	 * @param con The connection to the expression database
+	 * @throws SQLException
+	 */
+	public void createIndices(Connection con) throws SQLException;
+	
 	/**
 	 * This method may be implemented when the database files need to be
 	 * compacted or defragmented after creation of a new database. It will be called
@@ -110,10 +103,5 @@ public abstract class DBConnector
 	 * @param con A connection to the database
 	 * @throws SQLException
 	 */
-	public void compact(Connection con) throws DataException
-	{
-		//May be implemented by subclasses
-	}
-	
-
+	public void compact(Connection con) throws SQLException;
 }
