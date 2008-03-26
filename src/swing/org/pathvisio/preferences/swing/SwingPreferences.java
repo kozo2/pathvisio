@@ -16,10 +16,8 @@
 //
 package org.pathvisio.preferences.swing;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.pathvisio.Engine;
 import org.pathvisio.preferences.Preference;
 import org.pathvisio.preferences.PreferenceCollection;
 
@@ -35,9 +33,6 @@ public class SwingPreferences implements PreferenceCollection {
 	}
 	
 	public enum SwingPreference implements Preference {
-		SWING_DIR_PWFILES(new File(Engine.getCurrent().getDataDir().toString(), "pathways").toString()),
-		SWING_DIR_GDB(new File(Engine.getCurrent().getDataDir().toString(), "gene databases").toString()),
-		SWING_DIR_EXPR(new File(Engine.getCurrent().getDataDir().toString(), "expression datasets").toString())
 		;
 			String value;
 			String defaultValue;

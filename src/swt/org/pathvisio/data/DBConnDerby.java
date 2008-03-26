@@ -22,8 +22,6 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * user interface functions for single-file Derby databases
- * Swt version
- * There is another class with the exact same name for the swing version
  */
 public class DBConnDerby extends DataDerby implements DBConnectorSwt
 {

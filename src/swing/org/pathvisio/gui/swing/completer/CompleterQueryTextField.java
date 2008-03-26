@@ -24,7 +24,6 @@ package org.pathvisio.gui.swing.completer;
  *
  */
 public class CompleterQueryTextField extends CompleterTextField {
-	private static final long serialVersionUID = 1L;
 	CompleterQueryFilter myFilter;
 	
 	public CompleterQueryTextField(OptionProvider optionProvider, 

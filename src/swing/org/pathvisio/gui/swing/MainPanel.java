@@ -48,11 +48,13 @@ import javax.swing.table.TableCellRenderer;
 import org.pathvisio.ApplicationEvent;
 import org.pathvisio.Engine;
 import org.pathvisio.Engine.ApplicationEventListener;
-import org.pathvisio.gui.swing.CommonActions.ZoomAction;
+import org.pathvisio.gui.swing.actions.CommonActions;
+import org.pathvisio.gui.swing.actions.CommonActions.ZoomAction;
 import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
 import org.pathvisio.gui.swing.dnd.PathwayImportHandler;
 import org.pathvisio.gui.swing.propertypanel.PathwayTableModel;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.view.DefaultTemplates;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.view.SelectionBox;
 import org.pathvisio.view.VPathway;
@@ -66,71 +68,28 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 
 	private JSplitPane splitPane;
 
+	private JMenuBar menuBar;
+
 	private JToolBar toolBar;
 
 	private JScrollPane pathwayScrollPane;
 
 	private JScrollPane propertiesScrollPane;
 	
-	protected JTabbedPane sidebarTabbedPane;
-
-	protected JMenuBar menuBar;
+	private JTabbedPane sidebarTabbedPane;
 
 	private JTable propertyTable;
 
 	private BackpagePane backpagePane;
 	
-	protected CommonActions actions;
-	
+	private CommonActions actions;
+		
 	Set<Action> hideActions;
 	
 	private boolean mayAddAction(Action a) {
 		return hideActions == null || !hideActions.contains(a);
 	}
 	
-	protected void addMenuActions(JMenuBar mb) {
-		JMenu fileMenu = new JMenu("File");
-		
-		addToMenu(actions.saveAction, fileMenu);
-		addToMenu(actions.saveAsAction, fileMenu);
-		fileMenu.addSeparator();
-		addToMenu(actions.importAction, fileMenu);
-		addToMenu(actions.exportAction, fileMenu);
-		fileMenu.addSeparator();
-		addToMenu(actions.exitAction, fileMenu);
-		
-		JMenu editMenu = new JMenu("Edit");
-		addToMenu(actions.undoAction, editMenu);
-		addToMenu(actions.copyAction, editMenu);
-		addToMenu(actions.pasteAction, editMenu);
-		editMenu.addSeparator();
-		addToMenu(actions.preferencesAction, editMenu);
-		
-		JMenu selectionMenu = new JMenu("Selection");
-		JMenu alignMenu = new JMenu("Align");
-		JMenu stackMenu = new JMenu("Stack");
-		
-		for(Action a : actions.alignActions) addToMenu(a, alignMenu);
-		for(Action a : actions.stackActions) addToMenu(a, stackMenu);
-		
-		selectionMenu.add(alignMenu);
-		selectionMenu.add(stackMenu);
-		editMenu.add (selectionMenu);
-		
-		JMenu viewMenu = new JMenu("View");
-		JMenu zoomMenu = new JMenu("Zoom");
-		viewMenu.add(zoomMenu);
-		for(Action a : actions.zoomActions) addToMenu(a, zoomMenu);
-
-		JMenu helpMenu = new JMenu("Help");
-		helpMenu.add(actions.aboutAction);
-		
-		mb.add(fileMenu);
-		mb.add(editMenu);
-		mb.add(viewMenu);
-		mb.add(helpMenu);
-	}
-
 	/**
 	 * Constructor for this class. Creates the main panel of this application, containing
 	 * the main GUI elements (menubar, toolbar, sidepanel, drawing pane). Actions that should
@@ -146,6 +105,8 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 		
 		actions = SwingEngine.getCurrent().getActions();
 		
+		menuBar = new JMenuBar();
+		addMenuActions(menuBar);
 		toolBar = new JToolBar();
 		addToolBarActions(toolBar);
 
@@ -193,9 +154,6 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 			im.put((KeyStroke)a.getValue(Action.ACCELERATOR_KEY), a.getValue(Action.NAME));
 			am.put(a.getValue(Action.NAME), a);
 		}
-		
-		menuBar = new JMenuBar();
-		addMenuActions(menuBar);
 	}
 	
 	/**
@@ -206,6 +164,39 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 		this(null);
 	}
 	
+	protected void addMenuActions(JMenuBar mb) {
+		JMenu pathwayMenu = new JMenu("Pathway");
+		addToMenu(actions.saveAction, pathwayMenu);
+		addToMenu(actions.saveAsAction, pathwayMenu);
+		addToMenu(actions.importAction, pathwayMenu);
+		addToMenu(actions.exportAction, pathwayMenu);
+
+		JMenu editMenu = new JMenu("Edit");
+		addToMenu(actions.undoAction, editMenu);
+		addToMenu(actions.copyAction, editMenu);
+		addToMenu(actions.pasteAction, editMenu);
+
+		JMenu selectionMenu = new JMenu("Selection");
+		JMenu alignMenu = new JMenu("Align");
+		JMenu stackMenu = new JMenu("Stack");
+		
+		for(Action a : actions.alignActions) addToMenu(a, alignMenu);
+		for(Action a : actions.stackActions) addToMenu(a, stackMenu);
+		
+		selectionMenu.add(alignMenu);
+		selectionMenu.add(stackMenu);
+		
+		JMenu viewMenu = new JMenu("View");
+		JMenu zoomMenu = new JMenu("Zoom");
+		viewMenu.add(zoomMenu);
+		for(Action a : actions.zoomActions) addToMenu(a, zoomMenu);
+
+		mb.add(pathwayMenu);
+		mb.add(editMenu);
+		mb.add(selectionMenu);
+		mb.add(viewMenu);
+	}
+
 	protected void addToolBarActions(JToolBar tb) {
 		tb.setLayout(new WrapLayout(1, 1));
 		
@@ -339,6 +330,10 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 		return tbg;
 	}
 	
+	public JMenuBar getMenuBar() {
+		return menuBar;
+	}
+
 	public JToolBar getToolBar() {
 		return toolBar;
 	}
@@ -392,10 +387,4 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 			break;
 		}
 	}
-
-	public JMenuBar getMenuBar() {
-		return menuBar;
-	}
-
-
 }

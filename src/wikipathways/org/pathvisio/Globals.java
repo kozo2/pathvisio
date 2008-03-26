@@ -29,5 +29,4 @@ public class Globals {
 	public static final String SERVER_NAME = "WikiPathways.org";
 	// for inclusion in certain error messages.
 	public static final String DEVELOPER_EMAIL = "thomas.kelder@bigcat.unimaas.nl";
-	public static final boolean IS_APPLET = true;
 }

@@ -65,11 +65,9 @@ class TutorialFiles
 		
 		try
 		{
-			DataDerby connector = new DataDerby();
 			int error = 0;
-			SimpleGdb targetGdb = new SimpleGdb("tutorial", connector, DBConnector.PROP_RECREATE);
+			SimpleGdb targetGdb = new SimpleGdb("tutorial", new DataDerby(), DBConnector.PROP_NONE);
 			targetGdb.createGdbTables();
-			targetGdb.preInsert();
 			for (Xref i : refs)
 			{
 				List<Xref> newRefs = sourceGdb.getCrossRefs(i, DataSource.ENSEMBL);
@@ -89,7 +87,7 @@ class TutorialFiles
     		System.out.println ("total ids in gene table: " + targetGdb.getGeneCount());
     		targetGdb.close();
     		System.out.println ("Timer stopped: " + timer.stop());
-    		connector.finalizeNewDatabase(targetGdb.getDbName());
+    		
 		}
 		catch (DataException e)
 		{

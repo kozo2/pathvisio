@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 //
-package org.pathvisio.gui.swing;
+package org.pathvisio.gui.swing.actions;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -28,11 +28,11 @@ import javax.swing.KeyStroke;
 
 import org.pathvisio.ApplicationEvent;
 import org.pathvisio.Engine;
-import org.pathvisio.Globals;
 import org.pathvisio.Engine.ApplicationEventListener;
 import org.pathvisio.biopax.BiopaxElementManager;
 import org.pathvisio.biopax.BiopaxReferenceManager;
 import org.pathvisio.biopax.reflect.PublicationXRef;
+import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
 import org.pathvisio.gui.swing.dialogs.PublicationXRefDialog;
 import org.pathvisio.model.DataNodeType;
@@ -57,7 +57,6 @@ import org.pathvisio.view.ViewActions;
 import org.pathvisio.view.ViewActions.CopyAction;
 import org.pathvisio.view.ViewActions.PasteAction;
 import org.pathvisio.view.ViewActions.UndoAction;
-
 
 /**
  * A collection of {@link Action}s that may be used throughout the program (e.g. in
@@ -98,16 +97,12 @@ public class CommonActions implements ApplicationEventListener {
 	public final Action saveAsAction = new SaveAsAction();
 	public final Action importAction = new ImportAction();
 	public final Action exportAction = new ExportAction();
-	public final Action aboutAction = new AboutAction();
 	
 	public final Action copyAction = new CopyAction();
 	public final Action pasteAction = new PasteAction();
 	
 	public final Action undoAction = new UndoAction();
-	public final Action exitAction = new ExitAction();
 
-	public final Action preferencesAction = new PreferencesAction();
-	
 	public final Action[] zoomActions = new Action[] {
 			new ZoomToFitAction(),
 			new ZoomAction(10),
@@ -336,12 +331,8 @@ public class CommonActions implements ApplicationEventListener {
 			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.CTRL_MASK));
 		}
 		
-		public void actionPerformed(ActionEvent e) 
-		{
-			if (SwingEngine.getCurrent().canDiscardPathway())
-			{
+		public void actionPerformed(ActionEvent e) {
 				SwingEngine.getCurrent().importPathway();
-			}
 		}
 	}
 	
@@ -352,9 +343,9 @@ public class CommonActions implements ApplicationEventListener {
 			super();
 			putValue(NAME, "Export");
 			putValue(SMALL_ICON, new ImageIcon(IMG_EXPORT));
-			putValue(SHORT_DESCRIPTION, "Export pathway");
-			putValue(LONG_DESCRIPTION, "Export the pathway to various file formats");
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
+			putValue(Action.SHORT_DESCRIPTION, "Export pathway");
+			putValue(Action.LONG_DESCRIPTION, "Export the pathway to various file formats");
+			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -471,8 +462,8 @@ public class CommonActions implements ApplicationEventListener {
 		private static final long serialVersionUID = 1L;
 		public AddLiteratureAction(Component parent, VPathwayElement e) {
 			super(parent, e);
-			putValue(NAME, "Add literature reference");
-			putValue(SHORT_DESCRIPTION, "Add a literature reference to this element");
+			putValue(Action.NAME, "Add literature reference");
+			putValue(Action.SHORT_DESCRIPTION, "Add a literature reference to this element");
 			setEnabled(e.getDrawing().isEditMode());
 		}
 		
@@ -501,8 +492,8 @@ public class CommonActions implements ApplicationEventListener {
 
 		public EditLiteratureAction(Component parent, VPathwayElement e) {
 			super(parent, e);
-			putValue(NAME, "Edit literature references");
-			putValue(SHORT_DESCRIPTION, "Edit the literature references of this element");
+			putValue(Action.NAME, "Edit literature references");
+			putValue(Action.SHORT_DESCRIPTION, "Edit the literature references of this element");
 			setEnabled(e.getDrawing().isEditMode());
 		}
 		
@@ -516,81 +507,12 @@ public class CommonActions implements ApplicationEventListener {
 
 		public PropertiesAction(Component parent, VPathwayElement e) {
 			super(parent, e);
-			putValue(NAME, "Properties");
-			putValue(SHORT_DESCRIPTION, "View this element's properties");
+			putValue(Action.NAME, "Properties");
+			putValue(Action.SHORT_DESCRIPTION, "View this element's properties");
 		}
 		
 		protected String getSelectedPanel() {
 			return PathwayElementDialog.TAB_COMMENTS;
 		}
 	}
-
-	/**
-	 * Open the about dialog,
-	 * showing a list of authors and the current program version
-	 */
-	public static class AboutAction extends AbstractAction 
-	{
-		private static final long serialVersionUID = 1L;
-
-		public AboutAction() 
-		{
-			super();
-			putValue(NAME, "About");
-			putValue(SHORT_DESCRIPTION, "About " + Globals.APPLICATION_NAME);
-			putValue(LONG_DESCRIPTION, "About " + Globals.APPLICATION_NAME);
-		}
-
-		public void actionPerformed(ActionEvent e) 
-		{
-			AboutDlg.createAndShowGUI();
-		}
-	}
-
-	/**
-	 * Exit menu item. Quit the program with System.exit after checking
-	 * for unsaved changes
-	 */
-	public static class ExitAction extends AbstractAction 
-	{
-		private static final long serialVersionUID = 1L;
-
-		public ExitAction() 
-		{
-			super();
-			putValue(NAME, "Exit");
-			putValue(SHORT_DESCRIPTION, "Exit pathvisio");
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-		}
-
-		public void actionPerformed(ActionEvent e) 
-		{
-			if (SwingEngine.getCurrent().canDiscardPathway())
-			{
-				System.exit(0);
-			}
-		}
-	}
-
-	/**
-	 * Show preferences dialog.
-	 * Invoked in menu->edit->preferences
-	 */
-	public static class PreferencesAction extends AbstractAction 
-	{
-		private static final long serialVersionUID = 1L;
-
-		public PreferencesAction() 
-		{
-			super();
-			putValue(NAME, "Preferences");
-			putValue(SHORT_DESCRIPTION, "Edit preferences");
-		}
-
-		public void actionPerformed(ActionEvent e) 
-		{
-			PreferencesDlg.createAndShowGUI();
-		}
-	}
-
 }

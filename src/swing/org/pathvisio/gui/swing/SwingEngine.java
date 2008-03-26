@@ -31,9 +31,8 @@ import javax.swing.filechooser.FileFilter;
 import org.jdesktop.swingworker.SwingWorker;
 import org.pathvisio.Engine;
 import org.pathvisio.Globals;
-import org.pathvisio.data.DBConnector;
-import org.pathvisio.data.DBConnectorSwing;
 import org.pathvisio.debug.Logger;
+import org.pathvisio.gui.swing.actions.CommonActions;
 import org.pathvisio.gui.swing.progress.ProgressDialog;
 import org.pathvisio.gui.swing.progress.SwingProgressKeeper;
 import org.pathvisio.model.ConverterException;
@@ -144,31 +143,6 @@ public class SwingEngine {
 				try {
 					Engine.getCurrent().setWrapper (createWrapper());
 					Engine.getCurrent().openPathway(url);
-					return true;
-				} catch(ConverterException e) {
-					handleConverterException(e.getMessage(), null, e);
-					return false;
-				} finally {
-					pk.finished();
-				}
-			}
-		};
-		
-		return processTask(pk, d, sw);
-	}
-
-	private boolean openPathway(final File f) 
-	{		
-		final SwingProgressKeeper pk = new SwingProgressKeeper(ProgressKeeper.PROGRESS_UNKNOWN);
-		final ProgressDialog d = new ProgressDialog(JOptionPane.getFrameForComponent(getApplicationPanel()), 
-				"", pk, false, true);
-				
-		SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() {
-			protected Boolean doInBackground() throws Exception {
-				pk.setTaskName("Opening pathway");
-				try {
-					Engine.getCurrent().setWrapper (createWrapper());
-					Engine.getCurrent().openPathway(f);
 					return true;
 				} catch(ConverterException e) {
 					handleConverterException(e.getMessage(), null, e);
@@ -318,47 +292,6 @@ public class SwingEngine {
 		return false;
 	}
 
-	/**
-	 * Opens a file chooser dialog, and opens the chosen pathway.
-	 * @return true if a pathway was openend, false if the operation was 
-	 * cancelled
-	 */
-	public boolean openPathway() 
-	{
-		//Open file dialog
-		JFileChooser jfc = new JFileChooser();
-		jfc.setAcceptAllFileFilterUsed(false);
-		jfc.setDialogTitle("Import pathway");
-		jfc.setDialogType(JFileChooser.OPEN_DIALOG);
-
-		jfc.addChoosableFileFilter(new FileFilter() {
-			public boolean accept(File f) {
-				if(f.isDirectory()) return true;
-				String ext = f.toString().substring(f.toString().length() - 4);
-				if(ext.equalsIgnoreCase("xml") || ext.equalsIgnoreCase("gpml")) {
-					return true;
-				}
-				return false;
-			}
-			public String getDescription() {
-				return "GPML files (*.gpml, *.xml)";
-			}
-			
-		});
-
-		//TODO: use constants for extensions
-		int status = jfc.showDialog(getApplicationPanel(), "Open pathway");
-		if(status == JFileChooser.APPROVE_OPTION) {	
-			File f = jfc.getSelectedFile();			
-			if(!(f.toString().toUpperCase().endsWith("GPML") || f.toString().toUpperCase().endsWith("XML"))) 
-			{
-				f = new File(f.toString() + ".gpml");
-			}
-			return openPathway(f);
-		}
-		return false;
-	}
-
 	public boolean mayOverwrite(File f) {
 		boolean allow = true;
 		if(f.exists()) {
@@ -430,57 +363,4 @@ public class SwingEngine {
 
 		return result;
 	}
-	
-	/**
-	 * Call this when the user is about to perform an
-	 * action that could lead to discarding the current pathway.
-	 * (For example when creating a new pathway)
-	 * 
-	 * Checks if there are any unsaved changes, and
-	 * asks the user if they want to save those changes.
-	 * 
-	 * @return true if the user allows discarding the pathway, possibly after saving.
-	 */
-	public boolean canDiscardPathway()
-	{
-		Pathway pathway = Engine.getCurrent().getActivePathway();
-        // checking not necessary if there is no pathway or if pathway is not changed.
-		
-		if (pathway == null || !pathway.hasChanged()) return true;
-		int result = JOptionPane.showConfirmDialog
-			(null, "Save changes?", 
-					"Your pathway has changed. Do you want to save?",
-					JOptionPane.YES_NO_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE);
-		if (result == JOptionPane.CANCEL_OPTION) // cancel
-		{
-			return false;
-		}
-		else if (result == JOptionPane.YES_OPTION) // yes
-		{
-			// return false if save is cancelled.
-			return (savePathway());
-		}
-		// yes or no
-		return true;
-	}
-
-	/**
-	 * Get the preferred database connector to connect to Gex or Gdb databases, 
-	 * and try to cast it to swingDbConnector.
-	 * throws an exception if that fails
-	 */
-	public DBConnectorSwing getSwingDbConnector(int type) throws ClassNotFoundException, InstantiationException, IllegalAccessException 
-	{
-		DBConnector dbc = Engine.getCurrent().getDbConnector(type);
-		if(dbc instanceof DBConnectorSwing) 
-		{
-			return (DBConnectorSwing)dbc;
-		} 
-		else 
-		{
-			throw new IllegalArgumentException("Not a Swing database connector");
-		}
-	}
-
 }
