@@ -1191,7 +1191,63 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 	}
-
+//TODO: new values, add to clone and GpmlFormat
+	private String connectorType;
+	
+	public void setConnectorType(String type) {
+		if (connectorType == null || !connectorType.equals(type))
+		{
+			connectorType = type;
+			fireObjectModifiedEvent(new PathwayEvent(this,
+					PathwayEvent.MODIFIED_GENERAL));
+		}
+	}
+	
+	public String getConnectorType() {
+		return connectorType;
+	}
+	
+	MSegment[] segments;
+	
+	public void setMSegments(MSegment[] segments) {
+		this.segments = segments;
+		fireObjectModifiedEvent(new PathwayEvent(this,
+				PathwayEvent.MODIFIED_GENERAL));
+	}
+	
+	public MSegment[] getMSegments() {
+		return segments;
+	}
+	
+	public class MSegment {
+		public static final int HORIZONTAL = 0;
+		public static final int VERTICAL = 1;
+		private int direction;
+		private double length;
+		
+		public MSegment(int direction, double length) {
+			this.direction = direction;
+			this.length = length;
+		}
+		
+		public int getDirection() {
+			return direction;
+		}
+		
+		public double getLength() {
+			return length;
+		}
+		
+		public void setLength(double length) {
+			this.length = length;
+		}
+		
+		public void setDirection(int direction) {
+			this.direction = direction;
+		}
+	}
+	
+//TODO: end of new elements
 	protected List<MAnchor> anchors = new ArrayList<MAnchor>();
 	
 	/**

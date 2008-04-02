@@ -403,8 +403,6 @@ public class Line extends Graphics
 	}
 	
 	protected void destroy() {
-		//don't call super.destroy(), this will destroy handles of VPoints
-		//which may be used by other lines
 		super.destroy();
 		
 		for(VPoint p : points) {
