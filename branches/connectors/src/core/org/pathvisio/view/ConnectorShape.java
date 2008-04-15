@@ -43,36 +43,37 @@ public interface ConnectorShape {
 			this.end = end;
 		}
 		
-		public Point2D getEnd() {
+		public Point2D getVEnd() {
 			return end;
 		}
 		
-		public Point2D getStart() {
+		public Point2D getVStart() {
 			return start;
 		}
 		
-		public void setEnd(Point2D end) {
+		public void setVEnd(Point2D end) {
 			this.end = end;
 		}
 		
-		public void setStart(Point2D start) {
+		public void setVStart(Point2D start) {
 			this.start = start;
 		}
 		
-		public Point2D getCenter() {
+		public Point2D getVCenter() {
 			return new Point2D.Double(
 					start.getX() + (end.getX() - start.getX()) / 2,
 					start.getY() + (end.getY() - start.getY()) / 2
 			);
 		}
 		
-		public double getLength() {
+		public double getVLength() {
 			if(getAxis() == AXIS_X) {
 				return end.getX() - start.getX();
 			} else {
 				return end.getY() - start.getY();
 			}
 		}
+		
 		public int getAxis() {
 			if(start.getX() != end.getX()) 
 				return Segment.AXIS_X;

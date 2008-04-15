@@ -25,7 +25,7 @@ public class Connector extends Line implements ConnectorRestrictions {
 	Graphics startGraphics; //graphics to which the start connects, may be null
 	Graphics endGraphics; //graphics to which the end connects, may be null
 
-	String connectorType = "elbow"; //TODO: put in model
+	String connectorType = "curved"; //TODO: put in model
 
 	ArrayList<Handle> segmentHandles = new ArrayList<Handle>();
 
@@ -76,7 +76,7 @@ public class Connector extends Line implements ConnectorRestrictions {
 			restrictions = new SegmentPreference[mSegments.length];
 			for(int i = 0; i < mSegments.length; i++) {
 				restrictions[i] = new SegmentPreference(
-						mSegments[i].getDirection(), mSegments[i].getLength()
+						mSegments[i].getDirection(), vFromM(mSegments[i].getMLength())
 				);
 			}
 		}
@@ -159,7 +159,7 @@ public class Connector extends Line implements ConnectorRestrictions {
 		//Put the handles in the right place
 		for(int i = 1; i < segments.length - 1; i++) {
 			Handle h = segmentHandles.get(i - 1);
-			Point2D center = segments[i].getCenter();
+			Point2D center = segments[i].getVCenter();
 			h.setVLocation(center.getX(), center.getY());
 		}
 	}
@@ -172,40 +172,42 @@ public class Connector extends Line implements ConnectorRestrictions {
 		ConnectorShape shape = ConnectorShapeRegistry.getShape(connectorType);
 		Segment[] segments = shape.getSegments(this);
 		
-		System.out.printf("Want to move %s to %s, %s", h, vx, vy);
-		
 		if(index > -1) {
 			MSegment[] mSegments = gdata.getMSegments();
 			if(mSegments == null || segments.length != mSegments.length) {
 				//Build MSegments from Segments
 				mSegments = new MSegment[segments.length];
 				for(int i = 0; i < segments.length; i++) {
-					mSegments[i] = gdata.new MSegment(segments[i].getAxis(), segments[i].getLength());
+					mSegments[i] = gdata.new MSegment(
+							segments[i].getAxis(), 
+							mFromV(segments[i].getVLength())
+					);
 				}
+				gdata.dontFireEvents(1);
+				gdata.setMSegments(mSegments);
 			}
 			
 			MSegment currSeg = mSegments[index];
-			MSegment prevSeg = mSegments[index];
-			MSegment nextSeg = mSegments[index];
+			MSegment prevSeg = mSegments[index - 1];
+			MSegment nextSeg = mSegments[index + 1];
 			
 			//Segment moving vertically
+			gdata.dontFireEvents(1);
 			if(currSeg.getDirection() == MSegment.HORIZONTAL) {
 				double dl = vy - h.getVCenterY();
-				prevSeg.setLength(prevSeg.getLength() + dl);
-				nextSeg.setLength(nextSeg.getLength() - dl);
+				prevSeg.setMLength(mFromV(vFromM(prevSeg.getMLength()) + dl));
+				nextSeg.setMLength(mFromV(vFromM(nextSeg.getMLength()) - dl));
 			} else {
 				double dl = vx - h.getVCenterX();
-				prevSeg.setLength(prevSeg.getLength() + dl);
-				nextSeg.setLength(nextSeg.getLength() - dl);
+				prevSeg.setMLength(mFromV(vFromM(prevSeg.getMLength()) + dl));
+				nextSeg.setMLength(mFromV(vFromM(nextSeg.getMLength()) - dl));
 			}
-			gdata.setMSegments(mSegments);
 			
 			//Reset the segment preferences in the model if they are invalid
 			if(!shape.isUsePreferredSegments(this)) {
 				gdata.setMSegments(null);
 			}
 		} else {
-			System.err.println("Invalid handle!");
 			gdata.setMSegments(null);
 		}
 	}
@@ -213,16 +215,22 @@ public class Connector extends Line implements ConnectorRestrictions {
 	public void gmmlObjectModified(PathwayEvent e) {
 		super.gmmlObjectModified(e);
 		
+		findConnectingGraphics();
 		updateSegmentHandles();
 	}
 	
+	public void select() {
+		super.select();
+		if(isSelected()) {
+			updateSegmentHandles();
+		}
+	}
+	
 	private List<Handle> getSegmentHandles() {
-		updateSegmentHandles();
 		return segmentHandles;
 	}
 	
 	public Handle[] getHandles() {
-		updateSegmentHandles();
 		Handle[] lineHandles = super.getHandles();
 		ArrayList<Handle> handles = new ArrayList<Handle>();
 		for(Handle h : lineHandles) handles.add(h);
@@ -238,9 +246,6 @@ public class Connector extends Line implements ConnectorRestrictions {
 	}
 	
 	private Shape getShape() {
-		findConnectingGraphics();
-		updateSegmentHandles();
-
 		ConnectorShape cs = ConnectorShapeRegistry.getShape(connectorType);
 		if(cs != null) {
 			return cs.getShape(this);

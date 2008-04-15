@@ -1234,16 +1234,24 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			return direction;
 		}
 		
-		public double getLength() {
+		public double getMLength() {
 			return length;
 		}
 		
-		public void setLength(double length) {
+		public void setMLength(double length) {
 			this.length = length;
+			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
+					PathwayEvent.MODIFIED_GENERAL));
 		}
 		
 		public void setDirection(int direction) {
 			this.direction = direction;
+			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
+					PathwayEvent.MODIFIED_GENERAL));
+		}
+		
+		public String toString() {
+			return length + ";" + direction;
 		}
 	}
 	
