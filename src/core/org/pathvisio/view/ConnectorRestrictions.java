@@ -74,7 +74,7 @@ public interface ConnectorRestrictions {
 			return axis;
 		}
 		
-		public double getLength() {
+		public double getVLength() {
 			return length;
 		}
 	}

@@ -52,6 +52,7 @@ import org.jdom.output.XMLOutputter;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.PathwayElement.MAnchor;
+import org.pathvisio.model.PathwayElement.MSegment;
 import org.xml.sax.SAXException;
 
 /**
@@ -160,6 +161,8 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		result.put("Line.Graphics.Anchor@Shape", new AttributeInfo ("xsd:string", "LigandRound", "required"));
 		result.put("Line.Graphics.Anchor@GraphId", new AttributeInfo ("xsd:ID", null, "optional"));
 		result.put("Line.Graphics@Color", new AttributeInfo ("gpml:ColorType", "Black", "optional"));
+		result.put("Line.Graphics.Segment@direction", new AttributeInfo ("gpml:string", null, "required"));
+		result.put("Line.Graphics.Segment@length", new AttributeInfo ("gpml:float", null, "required"));
 		result.put("Line@Style", new AttributeInfo ("xsd:string", "Solid", "optional"));
 		result.put("Label.Graphics@CenterX", new AttributeInfo ("xsd:float", null, "required"));
 		result.put("Label.Graphics@CenterY", new AttributeInfo ("xsd:float", null, "required"));
@@ -528,6 +531,18 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     			anchor.setShape(LineType.fromName(shape));
     		}
     	}
+    	//Map segments
+    	List<Element> segElms = graphics.getChildren("Segment", e.getNamespace());
+    	ArrayList<MSegment> segments = new ArrayList<MSegment>();
+    	for(Element se : segElms) {
+    		double length = Double.parseDouble(getAttribute("Line.Graphics.Segment", "length", se));
+    		String dirString = getAttribute("Line.Graphics.Segment", "direction", se);
+    		int dir = dirString.equals("Horizontal") ? MSegment.HORIZONTAL : MSegment.VERTICAL;
+    		segments.add(o.new MSegment(dir, length));
+    	}
+    	if(segments.size() > 0) {
+    		o.setMSegments(segments.toArray(new MSegment[segments.size()]));
+    	}
 	}
 	
 	private static void updateLineData(PathwayElement o, Element e) throws ConverterException
@@ -561,6 +576,17 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 				setAttribute("Line.Graphics.Anchor", "Shape", ae, anchor.getShape().getName());
 				updateGraphId(anchor, ae);
 				jdomGraphics.addContent(ae);
+			}
+			
+			MSegment[] segments = o.getMSegments();
+			if(segments != null) {
+				for(MSegment s : segments) {
+					Element se = new Element("Segment", e.getNamespace());
+					String direction = s.getDirection() == MSegment.HORIZONTAL ? "Horizontal" : "Vertical";
+					setAttribute("Line.Graphics.Segment", "direction", se, direction);
+					setAttribute("Line.Graphics.Segment", "length", se, Double.toString(s.getMLength()));
+					jdomGraphics.addContent(se);
+				}
 			}
 		}
 	}

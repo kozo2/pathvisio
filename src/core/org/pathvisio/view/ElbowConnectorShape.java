@@ -18,14 +18,15 @@ public class ElbowConnectorShape implements ConnectorShape {
 	public Shape getShape(ConnectorRestrictions restrictions) {
 		GeneralPath path = new GeneralPath();
 		int i = 0;
-		for(Segment s : getSegments(restrictions)) {
+		Segment[] segments = getSegments(restrictions);
+		for(Segment s : segments) {
 			i++;
 			if(s == null) { //Ignore null segments
 				Logger.log.error("Null segment in connector!");
 				continue;
 			}
-			path.moveTo((float)s.getStart().getX(), (float)s.getStart().getY());
-			path.lineTo((float)s.getEnd().getX(), (float)s.getEnd().getY());
+			path.moveTo((float)s.getVStart().getX(), (float)s.getVStart().getY());
+			path.lineTo((float)s.getVEnd().getX(), (float)s.getVEnd().getY());
 		}
 		return path;
 	}
@@ -47,10 +48,9 @@ public class ElbowConnectorShape implements ConnectorShape {
 		//Do the preferred segments result in a proper connector
 		//that connects start with end?
 		for(SegmentPreference s : preferred) {
-			moving = movePoint(moving, s.getAxis(), s.getLength());
+			moving = movePoint(moving, s.getAxis(), s.getVLength());
 		}
 		Point2D end = restrictions.getEndPoint();
-		System.out.println("Supposed end: " + end + ", Calculated end: " + moving);
 		return moving.getX() == end.getX() && moving.getY() == end.getY();
 	}
 	
@@ -60,7 +60,7 @@ public class ElbowConnectorShape implements ConnectorShape {
 		Point2D  moving = (Point2D)start.clone();
 		for(int i = 0; i < preferred.length; i++) {
 			start = moving;
-			moving = movePoint(moving, preferred[i].getAxis(), preferred[i].getLength());
+			moving = movePoint(moving, preferred[i].getAxis(), preferred[i].getVLength());
 			segments[i] = new Segment(start, moving);
 		}
 		return segments;
@@ -115,16 +115,16 @@ public class ElbowConnectorShape implements ConnectorShape {
 			//Move from the end of the first segment
 			axis = getOppositeAxis(first.getAxis());
 			segments[1] = new Segment(
-					first.getEnd(),
+					first.getVEnd(),
 					movePoint(
-							first.getEnd(),
+							first.getVEnd(),
 							axis,
-							calculateSegmentLength(first.getEnd(), last.getStart(), axis)
+							calculateSegmentLength(first.getVEnd(), last.getVStart(), axis)
 					)
 			);
 						
 			//Extend the last segment to connect with the end of the middle segment
-			last.setStart((Point2D)segments[1].getEnd().clone());
+			last.setVStart((Point2D)segments[1].getVEnd().clone());
 		} else if(nrSegments - 2 == 2) {
 //			/*
 //			 * [S]---
@@ -135,19 +135,19 @@ public class ElbowConnectorShape implements ConnectorShape {
 			axis = getOppositeAxis(last.getAxis());
 			segments[2] = new Segment(
 					movePoint(
-							last.getStart(),
+							last.getVStart(),
 							axis,
-							- calculateSegmentLength(first.getEnd(), last.getStart(), axis)
+							- calculateSegmentLength(first.getVEnd(), last.getVStart(), axis)
 					),
-					last.getStart()
+					last.getVStart()
 			);
 			axis = getOppositeAxis(first.getAxis());
 			segments[1] = new Segment(
-					first.getEnd(),
+					first.getVEnd(),
 					movePoint(
-								first.getEnd(), 
+								first.getVEnd(), 
 								axis,
-								calculateSegmentLength(first.getEnd(), segments[2].getStart(), axis) 
+								calculateSegmentLength(first.getVEnd(), segments[2].getVStart(), axis) 
 					)
 			);
 		} else if(nrSegments - 2 == 3) {
@@ -165,26 +165,26 @@ public class ElbowConnectorShape implements ConnectorShape {
 					start.getY() + (end.getY() - start.getY()) / 2
 			);
 			axis = first.getAxis();
-			double length = calculateSegmentLength(first.getEnd(), last.getStart(), axis);
+			double length = calculateSegmentLength(first.getVEnd(), last.getVStart(), axis);
 			segments[2] = new Segment(
 					movePoint(middle, axis, -length/2),
 					movePoint(middle, axis, length/2)
 			);
-			segments[1] = new Segment(first.getEnd(), segments[2].getStart());
-			segments[3] = new Segment(segments[2].getEnd(), last.getStart());
+			segments[1] = new Segment(first.getVEnd(), segments[2].getVStart());
+			segments[3] = new Segment(segments[2].getVEnd(), last.getVStart());
 		} else {
 			/* [S]----
 			 *       |
 			 *      [S]
 			 */
-			first.setEnd(
+			first.setVEnd(
 					movePoint(
-							first.getEnd(),
+							first.getVEnd(),
 							first.getAxis(),
-							calculateSegmentLength(first.getEnd(), last.getStart(), first.getAxis())
+							calculateSegmentLength(first.getVEnd(), last.getVStart(), first.getAxis())
 					)
 			);
-			last.setStart((Point2D)first.getEnd().clone());			
+			last.setVStart((Point2D)first.getVEnd().clone());			
 		}
 		
 		return segments;
@@ -254,7 +254,6 @@ TLW		2	3	2	1
 	private int[][][] waypointNumbers;
 
 	private int getNrWaypoints(int x, int y, int z) {
-		System.out.println(x + ", " + y + ", " + z);
 //		if(waypointNumbers == null) {
 			waypointNumbers = new int[][][] {
 					new int[][] { 	

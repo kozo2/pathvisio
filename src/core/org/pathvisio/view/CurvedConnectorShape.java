@@ -12,44 +12,32 @@ public class CurvedConnectorShape extends ElbowConnectorShape {
 		Segment first = segments[0];
 		Segment last = segments[segments.length - 1];
 		path.moveTo(
-				(float)first.getStart().getX(), 
-				(float)first.getStart().getY()
+				(float)first.getVStart().getX(), 
+				(float)first.getVStart().getY()
 		);
 		
-		if(segments.length < 4) {
+		for(int i = 1; i < segments.length - 1; i++) {
+			Segment s = segments[i];
+			Point2D center = s.getVCenter();
+			Point2D start = s.getVStart();
 			path.curveTo(
-					(float)first.getEnd().getX(),
-					(float)first.getEnd().getY(),
-					(float)last.getStart().getX(),
-					(float)last.getStart().getY(),
-					(float)last.getEnd().getX(),
-					(float)last.getEnd().getY()
-			);
-		} else if(segments.length == 4) {
-			
-		} else {
-			Segment middle = segments[2];
-			Point2D center = new Point2D.Double(
-					middle.getStart().getX() + (middle.getEnd().getX() - middle.getStart().getX()) / 2,
-					middle.getStart().getY() + (middle.getEnd().getY() - middle.getStart().getY()) / 2
-			);
-			path.curveTo(
-					(float)first.getEnd().getX(),
-					(float)first.getEnd().getY(),
-					(float)middle.getStart().getX(),
-					(float)middle.getStart().getY(),
+					(float)start.getX(),
+					(float)start.getY(),
+					(float)start.getX(),
+					(float)start.getY(),
 					(float)center.getX(),
 					(float)center.getY()
 			);
-			path.curveTo(
-					(float)segments[3].getStart().getX(),
-					(float)segments[3].getStart().getY(),
-					(float)last.getStart().getX(),
-					(float)last.getStart().getY(),
-					(float)last.getEnd().getX(),
-					(float)last.getEnd().getY()
-			);
 		}
+		
+		path.curveTo(
+				(float)last.getVStart().getX(),
+				(float)last.getVStart().getY(),
+				(float)last.getVStart().getX(),
+				(float)last.getVStart().getY(),
+				(float)last.getVEnd().getX(),
+				(float)last.getVEnd().getY()
+		);
 		return path;
 	}
 }
