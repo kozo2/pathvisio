@@ -1191,11 +1191,14 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 	}
-//TODO: new values, add to clone and GpmlFormat
-	private String connectorType;
 	
-	public void setConnectorType(String type) {
-		if (connectorType == null || !connectorType.equals(type))
+	private ConnectorType connectorType = ConnectorType.STRAIGHT;
+	
+	public void setConnectorType(ConnectorType type) {
+		if(connectorType == null) {
+			throw new IllegalArgumentException();
+		}
+		if (!connectorType.equals(type))
 		{
 			connectorType = type;
 			fireObjectModifiedEvent(new PathwayEvent(this,
@@ -1203,7 +1206,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		}
 	}
 	
-	public String getConnectorType() {
+	public ConnectorType getConnectorType() {
 		return connectorType;
 	}
 	

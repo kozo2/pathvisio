@@ -3,6 +3,8 @@ package org.pathvisio.view;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.pathvisio.model.ConnectorType;
+
 /**
  * Keeps track of connector shapes. This class allows you to register
  * a custom connector shape.
@@ -13,9 +15,9 @@ public abstract class ConnectorShapeRegistry {
 	private static Map<String, ConnectorShape> shapes = new HashMap<String, ConnectorShape>();
 	
 	static {
-		shapes.put("straight", new StraightConnectorShape());
-		shapes.put("elbow", new ElbowConnectorShape());
-		shapes.put("curved", new CurvedConnectorShape());
+		shapes.put(ConnectorType.STRAIGHT.getName(), new StraightConnectorShape());
+		shapes.put(ConnectorType.ELBOW.getName(), new ElbowConnectorShape());
+		shapes.put(ConnectorType.CURVED.getName(), new CurvedConnectorShape());
 	}
 	
 	public static void registerShape(String name, ConnectorShape shape) {
