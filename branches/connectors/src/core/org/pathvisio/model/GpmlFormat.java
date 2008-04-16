@@ -163,6 +163,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		result.put("Line.Graphics@Color", new AttributeInfo ("gpml:ColorType", "Black", "optional"));
 		result.put("Line.Graphics.Segment@direction", new AttributeInfo ("gpml:string", null, "required"));
 		result.put("Line.Graphics.Segment@length", new AttributeInfo ("gpml:float", null, "required"));
+		result.put("Line.Graphics@ConnectorType", new AttributeInfo ("gpml:string", "Straight", "optional"));
 		result.put("Line@Style", new AttributeInfo ("xsd:string", "Solid", "optional"));
 		result.put("Label.Graphics@CenterX", new AttributeInfo ("xsd:float", null, "required"));
 		result.put("Label.Graphics@CenterY", new AttributeInfo ("xsd:float", null, "required"));
@@ -520,6 +521,9 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		o.setStartLineType (LineType.fromName(type1));
     	o.setEndLineType (LineType.fromName(type2));
     	
+    	String connType = getAttribute("Line.Graphics", "ConnectorType", graphics);
+    	o.setConnectorType(ConnectorType.fromName(connType));
+    	
     	//Map anchors
     	List<Element> anchors = graphics.getChildren("Anchor", e.getNamespace());
     	for(Element ae : anchors) {
@@ -577,6 +581,9 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 				updateGraphId(anchor, ae);
 				jdomGraphics.addContent(ae);
 			}
+			
+			ConnectorType ctype = o.getConnectorType();
+			setAttribute("Line.Graphics", "ConnectorType", jdomGraphics, ctype.getName());
 			
 			MSegment[] segments = o.getMSegments();
 			if(segments != null) {

@@ -7,6 +7,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.pathvisio.model.ConnectorType;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayElement.MSegment;
@@ -24,8 +25,6 @@ import org.pathvisio.view.ConnectorShape.Segment;
 public class Connector extends Line implements ConnectorRestrictions {
 	Graphics startGraphics; //graphics to which the start connects, may be null
 	Graphics endGraphics; //graphics to which the end connects, may be null
-
-	String connectorType = "curved"; //TODO: put in model
 
 	ArrayList<Handle> segmentHandles = new ArrayList<Handle>();
 
@@ -130,13 +129,20 @@ public class Connector extends Line implements ConnectorRestrictions {
 		}
 	}
 
+	private String getConnectorType() {
+		ConnectorType type = gdata.getConnectorType();
+		if(type == null) {
+			type = ConnectorType.STRAIGHT;
+		}
+		return type.getName();
+	}
+	
 	/**
 	 * Update the segment handles to be placed on the current
 	 * connector segments
 	 */
 	private void updateSegmentHandles() {
-		System.out.println("UpdateSegmentHandles");
-		ConnectorShape cs = ConnectorShapeRegistry.getShape(connectorType);
+		ConnectorShape cs = ConnectorShapeRegistry.getShape(getConnectorType());
 		Segment[] segments = cs.getSegments(this);
 		//Destroy and recreate the handles if the number
 		//doesn't match the segments number (minus 2, because we don't
@@ -169,7 +175,7 @@ public class Connector extends Line implements ConnectorRestrictions {
 	 */
 	protected void adjustToHandle(Handle h, double vx, double vy) {
 		int index = segmentHandles.indexOf(h) + 1;
-		ConnectorShape shape = ConnectorShapeRegistry.getShape(connectorType);
+		ConnectorShape shape = ConnectorShapeRegistry.getShape(getConnectorType());
 		Segment[] segments = shape.getSegments(this);
 		
 		if(index > -1) {
@@ -246,7 +252,7 @@ public class Connector extends Line implements ConnectorRestrictions {
 	}
 	
 	private Shape getShape() {
-		ConnectorShape cs = ConnectorShapeRegistry.getShape(connectorType);
+		ConnectorShape cs = ConnectorShapeRegistry.getShape(getConnectorType());
 		if(cs != null) {
 			return cs.getShape(this);
 		}

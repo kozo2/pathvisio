@@ -469,6 +469,8 @@
 						</xsd:sequence>
 						<xsd:attribute name="Color"
 							type="gpml:ColorType" default="Black" />
+						<xsd:attribute name="ConnectorType"
+							type="xsd:string" use="optional" default="Straight"/>
 					</xsd:complexType>
 				</xsd:element>
 
