@@ -27,7 +27,17 @@ public abstract class ConnectorShapeRegistry {
 		shapes.put(name, shape);
 	}
 	
+	/**
+	 * Get the connector shape by name
+	 * @param name The name of the connector shape
+	 * @return The connector shape, or the shape for {@link ConnectorType#STRAIGHT} when
+	 * a shape by the given name could not be found.
+	 */
 	public static ConnectorShape getShape(String name) {
-		return shapes.get(name);
+		ConnectorShape shape = shapes.get(name);
+		if(shape == null) {
+			shape = shapes.get(ConnectorType.STRAIGHT.getName());
+		}
+		return shape;
 	}
 }
