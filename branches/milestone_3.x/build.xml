@@ -1,0 +1,588 @@
+<?xml version="1.0"?>
+<project name="PathVisio" default="all" basedir=".">
+	
+	<property name="src.dir" value="src"/>
+        
+	<property name="build.core.dir" value="build/core"/>
+	<property name="build.v1.dir" value="build/v1"/>
+	<property name="build.v2.dir" value="build/v2"/>
+	<property name="build.plugins.dir" value="build/plugins"/>
+	<property name="build.wikipathways.dir" value="build/wikipathways"/>
+	<property name="build.wikipathways.swt.dir" value="build/wikipathways-swt"/>
+	
+    <property name="apidoc.dir" value="apidoc"/>
+	<!-- <property name="dist.dir" value="dist"/> -->
+	<property name="webstart.dir" value="webstart"/>
+	<property name="wikipathways.dir" value="wikipathways"/>
+	<property name="wikipathways.www.dir" value="build/wikipathways-www"/>
+	<property name="wikipathways.bin.dir" value="${wikipathways.www.dir}/wpi/bin"/>
+	<property name="wikipathways.webstart.dir" value="${wikipathways.bin.dir}"/>
+	<property name="wikipathways.applet.dir" value="${wikipathways.www.dir}/wpi/applet"/>
+	<property name="wikipathways.dest" value="/var/www/wikipathways"/>
+	<property name="wikipathways.bin.dest" value="${wikipathways.dest}/wpi/bin"/>
+	<property name="wikipathways.webstart.dest" value="${wikipathways.bin.dest}"/>
+	<property name="wikipathways.applet.dest" value="${wikipathways.dest}/wpi/applet"/>
+	<property name="diffview.applet.dir" value="applet"/>
+	<property name="diffview.applet.dest" value="${wikipathways.applet.dest}"/>
+	<property name="diffview.applet.class.path" value="lib/jdom.jar lib/derbyclient.jar lib/swing-worker-1.1.jar lib/resources.jar"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="exec.perl" value="perl"/>
+	<property name="svn.exec.svnversion" value="svnversion"/>
+	<property name="exec.inno.setup" value="iscc"/>
+
+	<property name="wikipathways.class.path" value="lib/jdom.jar lib/resources.jar lib/derbyclient.jar lib/swing-worker-1.1.jar lib/apache/commons-codec-1.3.jar lib/apache/commons-httpclient-3.0.1.jar lib/apache/commons-logging-1.1.jar lib/apache/ws-commons-util-1.0.1.jar lib/apache/xmlrpc-client-3.0.jar lib/apache/xmlrpc-common-3.0.jar"/>
+	<property name="jar.class.path" value="${wikipathways.class.path} lib/derby.jar lib/R-resources.jar lib/swt-linux-lib/swt.jar lib/swt-linux-lib/swt.jar lib/org.eclipse.core.commands.jar lib/org.eclipse.equinox.common.jar lib/org.eclipse.jface.jar lib/hsqldb.jar lib/JRI.jar lib/BrowserLauncher.jar lib/plugins.jar lib/batik/batik-awt-util.jar lib/batik/batik-bridge.jar lib/batik/batik-css.jar lib/batik/batik-dom.jar lib/batik/batik-ext.jar lib/batik/batik-extension.jar lib/batik/batik-gvt.jar lib/batik/batik-parser.jar lib/batik/batik-anim.jar lib/batik/xml-apis-ext.jar lib/batik/batik-script.jar lib/batik/batik-svg-dom.jar lib/batik/batik-svggen.jar lib/batik/batik-transcoder.jar lib/batik/batik-util.jar lib/batik/batik-xml.jar lib/batik/pdf-transcoder.jar lib/batik/xml-apis.jar"/>
+
+	<path id="project.core.class.path">
+      <pathelement location="${build.core.dir}"/>
+	  <fileset dir="lib">
+		<include name="batik/*.jar"/>
+		<include name="jdom.jar"/>
+	    <include name="derby.jar"/>
+		<include name="junit.jar"/>
+	    <include name="resources.jar"/> <!-- TODO: this is not necessary, only GPML.xsd !-->
+	  </fileset>
+	</path>
+
+	<path id="wikipathways.class.path2">
+	  <fileset dir="lib">
+		<include name="jdom.jar"/>
+		<include name="resources.jar"/>
+		<include name="derbyclient.jar"/>
+		<include name="swing-worker-1.1.jar"/>
+		<include name="apache/*.jar"/>
+	  </fileset>
+	</path>
+
+	<path id="jar.class.path2">
+	  <fileset dir="lib">
+		<include name="*.jar"/>
+		<include name="apache/*.jar"/>
+		<include name="swt-linux-lib/swt.jar"/>
+		<include name="batik/*.jar"/>
+		<include name="apache/*.jar"/>
+	  </fileset>
+	</path>
+	
+	<path id="project.v1.class.path">
+		<pathelement location="${build.core.dir}"/>
+		<pathelement location="${build.v1.dir}"/>
+		<fileset dir="lib">
+		        <include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="all.libs.class.path">
+	  <fileset dir="lib">
+		<include name="**/*.jar"/>
+	  </fileset>
+	</path>
+	<pathconvert refid="all.libs.class.path"
+				 property="all.libs.class.path.unix.prop"
+				 targetos="unix">
+	  <map from="${basedir}/" to=""/>
+	</pathconvert>
+	<pathconvert refid="all.libs.class.path"
+				 property="all.libs.class.path.windows.prop"
+				 targetos="windows">
+	  <map from="${basedir}/" to=""/>
+	</pathconvert>
+		
+	<path id="project.v2.class.path">
+	  <pathelement location="${build.core.dir}"/>
+	  <pathelement location="${build.v2.dir}"/>
+	  <fileset dir="lib">
+		<include name="**/*.jar"/>
+	  </fileset>
+	</path>
+	
+	<path id="project.wikipathways.class.path">
+		<pathelement location="${build.wikipathways.dir}"/>
+		<fileset dir="lib">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="svnversion">
+		<exec executable="${svn.exec.svnversion}" outputproperty="subversion_revision" failifexecutionfails="false">
+			<arg line="-n ."/>
+		</exec>
+	</target>
+	
+	<target name="prepare" depends="svnversion">
+		<mkdir dir="${build.core.dir}"/>
+		<mkdir dir="${build.v1.dir}"/>
+		<mkdir dir="${build.v2.dir}"/>
+		<mkdir dir="${build.plugins.dir}"/>
+		<mkdir dir="${build.wikipathways.dir}"/>
+		<mkdir dir="${build.wikipathways.swt.dir}"/>
+		<mkdir dir="${apidoc.dir}"/>
+		<mkdir dir="${wikipathways.www.dir}"/>
+		<mkdir dir="${wikipathways.bin.dir}"/>
+		<mkdir dir="${wikipathways.webstart.dir}"/>
+		<mkdir dir="${wikipathways.applet.dir}/lib"/>
+		<echo file="${src.dir}/core/org/pathvisio/Revision.java">
+package org.pathvisio;
+
+// Do not modify, this file is automatically generated
+public class Revision 
+{
+	public static final String REVISION = "${subversion_revision}";
+};
+	    </echo>
+<!--		<exec executable="${exec.perl}" failifexecutionfails="false" output="classpath.sh">
+		  <arg line="-e '$cp = &quot;.&quot;; foreach(@ARGV) { $cp .= &quot;:$_&quot;; } print &quot;export PATHVISIO_CP=\&quot;$cp\&quot;\n&quot;' ${jar.class.path}"/>
+		</exec> !-->
+		<echo file="classpath.sh">#!/bin/sh
+# Do not modify, this file is automatically generated
+export PATHVISIO_CP=${all.libs.class.path.unix.prop}
+		</echo>
+		
+		<echo file="classpath.bat">
+SET MY_CLASS_PATH=${all.libs.class.path.windows.prop};${build.v1.dir};${build.core.dir}
+' Do not modify, this file is automatically generated
+java -cp %MY_CLASS_PATH% org.pathvisio.gui.swt.GuiMain
+		  </echo>
+	</target>
+	
+	<target name="clean" description="Remove all generated files.">
+		<delete dir="${build.core.dir}"/>
+		<delete dir="${build.v1.dir}"/>
+		<delete dir="${build.v2.dir}"/>
+		<delete dir="${build.plugins.dir}"/>
+		<delete dir="${build.wikipathways.dir}"/>
+		<delete dir="${build.test.dir}"/>
+		<delete dir="${apidoc.dir}"/>
+		<delete dir="${webstart.dir}/www"/>
+		<delete dir="${wikipathways.www.dir}"/>
+	</target>
+	
+	<target name="compile-core" depends="prepare,resources-jar" description="Compile core sources">
+		<javac srcdir="src/core"
+			   includes="**"
+			   destdir="${build.core.dir}"
+			   debug="true"
+			   source="1.5">
+		  <classpath refid="project.core.class.path"/>
+		</javac>
+	</target>
+
+	<target name="compile-v1" depends="compile-core" description="Compile swt, v1 and swing sources">
+	  <javac srcdir="."
+			   includes="src/v1/**,src/swt/**,src/swing/**"
+			   destdir="${build.v1.dir}"
+			   debug="true"
+			   source="1.5">
+		  <classpath refid="project.v1.class.path"/>
+		</javac>
+	</target>
+
+	<target name="compile-v2" depends="compile-core" description="Compile swt, v2 and swing sources">
+		<javac srcdir="." 
+               includes="src/v2/**,src/swt/**,src/swing/**"			   
+               destdir="${build.v2.dir}"
+			   debug="true"
+			   source="1.5">
+          <classpath refid="project.v2.class.path"/>
+		</javac>
+		<javac srcdir="src" 
+               includes="plugins/**"
+               destdir="${build.plugins.dir}"
+			   debug="true"
+			   source="1.5">
+          <classpath refid="project.v2.class.path"/>
+		</javac>
+	</target>
+
+	<target name="all" depends="compile-v1,compile-v2,compile-wikipathways" description="Compile all versions of this project" />
+
+	<target name="compile-wikipathways" depends="prepare, resources-jar" description="Compile wikipathways version">
+		<!-- Include packages					Exceptions
+			src/swing
+				org.pathvisio.gui.swing.* 		(!MainPanel)
+				com.mammothsoftware.frwk.ddb
+			src/core
+				org.pathvisio
+				org.pathvisio.data 				(only DataSources)
+				org.pathvisio.data.debug
+				org.pathvisio.model
+				org.pathvisio.preferences
+				org.pathvisio.util
+				org.pathvisio.view
+				org.pathvisio.view.swing
+			src/wikipathways
+				org.pathvisio.gui.wikipathways
+				org.pathvisio.wikipathways
+		-->
+		<!-- compile applet -->
+		<javac srcdir="src"
+			includes="core/**,wikipathways/**,swing/**"
+			destdir="${build.wikipathways.dir}"
+			source="1.5">
+			<classpath refid="project.wikipathways.class.path"/>
+		</javac>
+	</target>
+	
+	<target name="resources-jar" depends="prepare" description="Generates jar with resources">
+		<jar jarfile="lib/resources.jar">
+			<fileset dir="." includes="backpage/*"/>
+			<fileset dir="." includes="icons/*"/>
+			<fileset dir="." includes="images/*"/>
+			<fileset dir="." includes="GPML.xsd"/>
+			<fileset dir="." includes="MAPPTmpl.gtp"/>
+			<fileset dir="." includes="biopax-level2.owl"/>
+		</jar>
+		<jar jarfile="lib/R-resources.jar">
+			<fileset dir="lib" includes="R/**/*"/>
+			<fileset dir="lib" includes="JRI-lib/*"/>
+		</jar>
+	</target>
+	
+	<target name="jar" depends="compile-v1,compile-v2" description="Generates executable jar file">
+		<jar jarfile="pathvisio_v2.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.pathvisio.gui.swt.GuiMain"/>
+				<attribute name="Class-Path" value="${jar.class.path}"/>
+			</manifest>
+			<fileset dir="${build.core.dir}" includes="**/*.class"/>			
+			<fileset dir="${build.v2.dir}" includes="**/*.class"/>			
+		</jar>
+		<jar jarfile="pathvisio_v1.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.pathvisio.gui.swt.GuiMain"/>
+				<attribute name="Class-Path" value="${jar.class.path}"/>
+			</manifest>
+			<fileset dir="${build.core.dir}" includes="**/*.class"/>			
+			<fileset dir="${build.v1.dir}" includes="**/*.class"/>			
+		</jar>
+		<jar jarfile="pathvisio_core.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.pathvisio.util.Converter"/>
+				<attribute name="Class-Path" value="${jar.class.path}"/>
+			</manifest>
+			<fileset dir="${build.core.dir}" includes="**/*.class"/>
+			<fileset dir="." includes="GPML.xsd"/>
+		</jar>
+		<jar jarfile="lib/plugins.jar">
+			<fileset dir="${build.plugins.dir}" includes="**/*.class"/>			
+		</jar>
+		<jar jarfile="gpmldiff.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.pathvisio.gpmldiff.GpmlDiff"/>
+				<attribute name="Class-Path" value="lib/jdom.jar"/>
+			</manifest>
+			<fileset dir="${build.v1.dir}" includes="**/*.class"/>	
+		</jar>
+    </target>
+
+	<target name="diffapplet" depends="compile-v1" description="Generate DiffViewer applet jar file">
+		<jar jarfile="diffview.jar">
+			<fileset dir="${build.core.dir}" includes="**/*.class"/>
+			<fileset dir="${build.v1.dir}" includes="**/*.class"/>			
+            <manifest>
+            	 <attribute name="Class-Path" value="${diffview.applet.class.path}"/>
+            </manifest>
+		</jar>
+
+	    <mkdir dir="${diffview.applet.dir}/lib"/>
+		<copy file="diffview.jar" toDir="${diffview.applet.dir}"/>
+		<copy toDir="${diffview.applet.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="jdom.jar"/>
+				<include name="swing-worker-1.1.jar"/>
+				<include name="derbyclient.jar"/>
+				<include name="resources.jar"/>
+			</fileset>
+		</copy>
+		<signjar alias="PV" lazy = "true" 
+			storepass="PathVisio" keystore="${lib.dir}/visioKeyStore">
+			<fileset dir="${diffview.applet.dir}" includes="**/*.jar"/>
+		</signjar>
+		<!-- copy to .../www/diffview -->
+		<copy toDir="${diffview.applet.dest}">
+			<fileset dir="${diffview.applet.dir}" includes="**/*.*" />
+		</copy>
+	</target>
+
+	<target name="jar-wikipathways" depends="compile-wikipathways" description="Generate wikipathways jar file">
+		<jar jarfile="wikipathways.jar" index="true">
+			<fileset dir="${build.wikipathways.dir}" includes="**/*.class">
+				<exclude name="org/pathvisio/wikipathways/Preloader.class"/>
+			</fileset>
+            <!--<manifest>
+            	 <attribute name="Class-Path" value="${wikipathways.class.path}"/>
+            </manifest>-->
+		</jar>
+		<jar jarfile="preloader.jar" index="true">
+			<fileset dir="${build.wikipathways.dir}" includes="org/pathvisio/wikipathways/Preloader.class"/>
+		</jar>
+		<!-- different resources.jar, only with minimal data -->
+		<jar jarfile="${wikipathways.applet.dir}/lib/resources.jar" index="true">
+			<fileset dir="." includes="backpage/*"/>
+			<fileset dir="." includes="icons/*"/>
+			<!--<fileset dir="." includes="images/*"/>-->
+			<fileset dir="." includes="GPML.xsd"/>
+			<fileset dir="." includes="MAPPTmpl.gtp"/>
+			<!--<fileset dir="." includes="biopax-level2.owl"/>-->
+		</jar>
+	</target>
+
+	<!-- create a source.tar.gz containing all sources necessary to build the project !-->
+	<target name="src-tar" depends="svnversion">
+	  <tar destfile="pathvisio_src_SVN${subversion_revision}.tar">
+		   <tarfileset dir="${src.dir}"
+					   prefix="pathvisio/${src.dir}">
+			 <include name="**/*.java"/>
+			 <exclude name="Revision.java"/>			 
+		   </tarfileset>
+		   <tarfileset dir="${lib.dir}"
+					   prefix="pathvisio/${lib.dir}">
+			 <include name="**/*"/>
+			 <exclude name="resources.jar"/>
+			 <exclude name="R-resources.jar"/>
+			 <exclude name="plugins.jar"/>
+		   </tarfileset>
+		   <tarfileset dir="icons"
+					   prefix="pathvisio/icons">
+			 <include name="*"/>
+		   </tarfileset>
+		   <tarfileset dir="images"
+					   prefix="pathvisio/images">
+			 <include name="*"/>
+		   </tarfileset>
+		   <tarfileset dir="backpage"
+					   prefix="pathvisio/backpage">
+			 <include name="*"/>
+		   </tarfileset>
+		   <tarfileset dir="."
+					   prefix="pathvisio">
+			 <include name="GPML.xsd"/>
+			 <include name="*.dll"/>
+			 <include name="pathvisio.sh"/>
+			 <include name="pathvisio.bat"/>
+			 <include name="pathvisio.iss"/>
+			 <include name="build.xml"/>
+			 <include name="run_webstart.sh"/>
+			 <include name="CHANGELOG.txt"/>
+			 <include name="CONTRIBUTORS.txt"/>
+			 <include name="NOTICE.txt"/>
+			 <include name="LICENSE-2.0.txt"/>
+			 <include name="readme.txt"/>
+		   </tarfileset>
+		</tar>
+	</target>
+	
+	<target name="prepare-webstart" depends="jar,resources-jar" description="prepares webstart">
+		<mkdir dir="${webstart.dir}/www"/>
+		<!-- Update latest version file -->
+		<echo file="${webstart.dir}/www/latestversion">${subversion_revision}</echo>
+		<!-- Copy files needed for webstart !-->
+		<copy file="pathvisio_v1.jar" toDir="${webstart.dir}/www"/>
+		<copy file="pathvisio_v2.jar" toDir="${webstart.dir}/www"/>
+		<signjar jar="pathvisio_v1.jar" lazy="true" 
+			alias="PV" storepass="PathVisio" keystore="${lib.dir}/visioKeyStore"/>
+		<signjar jar="pathvisio_v2.jar" lazy="true" 
+			alias="PV" storepass="PathVisio" keystore="${lib.dir}/visioKeyStore"/>
+		<copy toDir="${webstart.dir}/www/lib">
+			<fileset dir="${lib.dir}" includes="**/*.jar"/>
+		</copy>
+		<signjar alias="PV" lazy = "true" 
+			storepass="PathVisio" keystore="${lib.dir}/visioKeyStore">
+			<fileset dir="${webstart.dir}/www" includes="**/*.jar"/>
+		</signjar>
+		<copy file="${webstart.dir}/pathvisio_v1.jnlp" toDir="${webstart.dir}/www"/>
+		<copy file="${webstart.dir}/pathvisio_v2.jnlp" toDir="${webstart.dir}/www"/>
+	</target>
+	
+	<target name="webstart" depends="prepare-webstart" description="Upload webstart files">
+                <!-- Run perl script to upload to server !-->
+		<exec executable="${exec.perl}" dir="${webstart.dir}" failifexecutionfails="true">
+			<arg line="autoftp.pl"/>
+		</exec>
+	</target>
+	
+	<target name="wikipathways-dest" depends="jar, wikipathways-applet-dest" description="Build PathVisio for WikiPathways">
+	</target>
+	
+	<target name="wikipathways-applet-dest" depends="jar-wikipathways" description="Build the applet for WikiPathways">
+		<copy file="wikipathways.jar" toDir="${wikipathways.applet.dir}"/>
+		<copy file="preloader.jar" toDir="${wikipathways.applet.dir}"/>
+		<copy toDir="${wikipathways.applet.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="apache/*.jar"/>
+				<include name="jdom.jar"/>
+				<include name="swing-worker-1.1.jar"/>
+				<include name="derbyclient.jar"/>
+			</fileset>	
+		</copy>
+		<copy toDir="${wikipathways.bin.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="**/*.*"/>
+			</fileset>
+		</copy>
+		<signjar alias="PV" lazy = "true" 
+			storepass="PathVisio" keystore="${lib.dir}/visioKeyStore">
+			<fileset dir="${wikipathways.applet.dir}" includes="**/*.jar"/>
+			<fileset dir="${wikipathways.bin.dir}" includes="**/*.jar"/>
+		</signjar>
+		<!-- copy to /var/www/wikipathways -->
+		<copy toDir="${wikipathways.applet.dest}">
+			<fileset dir="${wikipathways.applet.dir}" includes="**/*.*" />			
+		</copy>
+		<copy toDir="${wikipathways.bin.dest}">
+			<fileset dir="${wikipathways.bin.dir}" includes="**/*.*" />
+		</copy>
+		<!-- Copy converter jar -->
+		<copy toDir="${wikipathways.bin.dest}">
+			<fileset dir=".">
+				<include name="pathvisio_core.jar"/>
+				<include name="GPML.xsd"/>
+			</fileset>
+		</copy>
+		<!-- Copy preloader class -->
+		<copy toDir="${wikipathways.applet.dest}/org/pathvisio/wikipathways" 
+			file="${build.wikipathways.dir}/org/pathvisio/wikipathways/Preloader.class"/>
+		<echo file="${wikipathways.applet.dest}/cache_archive" message="wikipathways.jar ${wikipathways.class.path}" />
+		<!-- Copy GPML.xsd -->
+		<copy toDir="${wikipathways.bin.dest}" file="GPML.xsd"/>
+	</target>
+	
+	<target name="docs" depends="prepare" description="generate api-docs">
+		<tstamp /> <!-- set ${TODAY} -->
+		<javadoc destdir="${apidoc.dir}" 
+			doctitle="PathVisio"
+			header="Revision ${subversion_revision}"
+			footer="Generated ${TODAY}">
+			<classpath refid="project.v2.class.path"/>
+			<package name="org.pathvisio"/>
+			<package name="org.pathvisio.R"/>
+			<package name="org.pathvisio.R.wizard"/>
+			<package name="org.pathvisio.biopax"/>
+			<package name="org.pathvisio.biopax.gui"/>
+			<package name="org.pathvisio.data"/>
+			<package name="org.pathvisio.debug"/>
+			<package name="org.pathvisio.gui"/>
+			<package name="org.pathvisio.gui.swing"/>
+			<package name="org.pathvisio.gui.swing.propertypanel"/>
+			<package name="org.pathvisio.gui.swt"/>
+			<package name="org.pathvisio.gui.swt.awt"/>
+			<package name="org.pathvisio.model"/>
+			<package name="org.pathvisio.preferences"/>
+			<package name="org.pathvisio.preferences.swing"/>
+			<package name="org.pathvisio.preferences.swt"/>
+			<package name="org.pathvisio.search"/>
+			<package name="org.pathvisio.util"/>
+			<package name="org.pathvisio.util.tableviewer"/>
+			<package name="org.pathvisio.view"/>
+			<package name="org.pathvisio.view.swing"/>
+			<package name="org.pathvisio.view.swt"/>
+			<package name="org.pathvisio.visualization"/>
+			<package name="org.pathvisio.visualization.colorset"/>
+			<package name="org.pathvisio.visualization.plugins"/>
+			<sourcepath>			
+				<pathelement location="${src.dir}/core"/>
+				<pathelement location="${src.dir}/plugins"/>
+				<pathelement location="${src.dir}/swing"/>
+				<pathelement location="${src.dir}/swt"/>
+				<pathelement location="${src.dir}/v2"/>
+			</sourcepath>
+		</javadoc>		
+	</target>
+
+        <!--
+	<target name="dist" depends="jar-v1, jar-v2" description="Creates distribution zip and installer">
+
+		--><!-- query the repository for the revision nr. !--><!--
+		<exec executable="${svn.exec.svnversion}" outputproperty="subversion_revision" failifexecutionfails="false">
+			<arg line="-n ."/>
+		</exec>
+		<echo>Current Revision ${subversion_revision}</echo>
+
+		--><!-- create a windows installer using inno-setup and pathvisio.iss!--><!--
+		<exec executable="${exec.inno.setup}">
+			<arg line="pathvisio.iss"/>
+		</exec>		
+		<move file="${dist.dir}/PathVisio-Setup.exe" 
+			tofile="${dist.dir}/PathVisio-Setup.${subversion_revision}.exe" 
+			overwrite="true"/>			
+	</target> -->
+		
+	<target name="test" depends="compile-v2">
+		<javac srcdir="src" debug="true" 
+					includes="test/**"
+					destdir="${build.v2.dir}"
+					source="1.5">
+					<classpath refid="project.v2.class.path"/>
+		</javac>
+		<junit printsummary="on" haltonfailure="true" fork="true">
+			<formatter type="brief" usefile="false"/>
+			<classpath refid="project.v2.class.path"/>
+			<batchtest>
+				<fileset dir="src/test">
+					<include name="**/Test.java"/>
+					<exclude name="**/view/Test.java"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<property name="ogretest.dir" value="temp_ogretest"/>
+	
+	<!--
+		test to find out if core is properly separated from the rest.
+		This copies the src/core and src/test to a temporary directory
+		and compiles + tests it with only the following libraries/resources:
+		- jdom
+		- batik
+		- junit
+		- derby
+		- GPML.xsd
+		!-->
+	<target name="ogretest">
+	  <!-- copy src/core to a separate dir !-->
+	  <delete dir="${ogretest.dir}"/>
+	  <mkdir dir="${ogretest.dir}"/>
+	  <mkdir dir="${ogretest.dir}/build"/>
+	  <copy toDir="${ogretest.dir}/src">
+		<fileset dir="${src.dir}/core"/>
+		<fileset dir="${src.dir}/test">
+		  <include name="*.java"/>
+		  <!-- note: packages visualization and visualization.colorset don't belong to
+			   core, so they don't need to be in the ogretest !-->
+		  <exclude name="**/visualization/**"/>
+		</fileset>
+		
+	  </copy>
+	  <copy toDir="${ogretest.dir}/build">
+		<fileset dir="." includes="GPML.xsd"/>
+	  </copy>
+	  <path id="ogretest.class.path">
+		<pathelement location="${ogretest.dir}/build"/>
+		<fileset dir="lib">
+		  <include name="batik/*.jar"/>
+		  <include name="jdom.jar"/>
+		  <include name="derby.jar"/>
+		  <include name="junit.jar"/>
+		  <include name="resources.jar"/> <!-- TODO: this is not necessary, only GPML.xsd !-->
+		</fileset>
+	  </path>
+	  <javac srcdir="${ogretest.dir}/src"
+			 debug="true"
+			 destdir="${ogretest.dir}/build"
+			 source="1.5">	  
+			 <classpath refid="ogretest.class.path"/>
+	  </javac>
+	  <junit printsummary="on" haltonfailure="true" fork="true">
+		<formatter type="brief" usefile="false"/>
+		<classpath refid="ogretest.class.path"/>
+		<batchtest>
+		  <fileset dir="${ogretest.dir}/src">
+			<include name="**/Test.java"/>
+			<exclude name="**/view/Test.java"/>
+		  </fileset>
+		</batchtest>
+	  </junit>
+	  <delete dir="${ogretest.dir}"/>
+	</target>
+	
+</project>
