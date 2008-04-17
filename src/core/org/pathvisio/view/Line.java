@@ -156,7 +156,7 @@ public class Line extends Graphics
 		}
 	}
 	
-	private void drawHead(Graphics2D g, ArrowShape head, Color c)
+	protected void drawHead(Graphics2D g, ArrowShape head, Color c)
 	{
 		if(head != null)
 		{

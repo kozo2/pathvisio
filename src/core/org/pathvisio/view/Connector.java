@@ -1,13 +1,17 @@
 package org.pathvisio.view;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.Area;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.pathvisio.model.ConnectorType;
+import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayElement.MSegment;
@@ -157,7 +161,7 @@ public class Connector extends Line implements ConnectorRestrictions {
 			if(segments.length > 2) {
 				for(int i = 1; i < segments.length - 1; i++) {
 					int direction = segments[i].getAxis() == Segment.AXIS_X ? 
-							Handle.DIRECTION_Y : Handle.DIRECTION_X;
+							Handle.DIRECTION_SEGMENT_HORIZONTAL : Handle.DIRECTION_SEGMENT_VERTICAL;
 					segmentHandles.add(new Handle(direction, this, this.canvas));
 				}
 			}
@@ -251,16 +255,54 @@ public class Connector extends Line implements ConnectorRestrictions {
 		}
 	}
 	
-	private Shape getShape() {
-		ConnectorShape cs = ConnectorShapeRegistry.getShape(getConnectorType());
-		if(cs != null) {
-			return cs.getShape(this);
-		}
-		return super.getVLine();
+	private ConnectorShape getConnectorShape() {
+		return ConnectorShapeRegistry.getShape(getConnectorType());
 	}
 
 	public void doDraw(Graphics2D g) {
-		g.draw(getShape());
+		Color c;
+		
+		if(isSelected())
+		{
+			c = selectColor;
+		}
+		else
+		{
+			c = gdata.getColor(); 
+		}
+		g.setColor(c);
+
+		int ls = gdata.getLineStyle();
+		if (ls == LineStyle.SOLID) {
+			g.setStroke(new BasicStroke());
+		}
+		else if (ls == LineStyle.DASHED)
+		{ 
+			g.setStroke	(new BasicStroke (
+				  1, 
+				  BasicStroke.CAP_SQUARE,
+				  BasicStroke.JOIN_MITER, 
+				  10, new float[] {4, 4}, 0));
+		}			
+
+		Shape l = getConnectorShape().getShape(this);
+
+		ArrowShape[] heads = getVHeads();
+		ArrowShape hs = heads[0];
+		ArrowShape he = heads[1];
+
+		g.draw(l);
+		drawHead(g, he, c);
+		drawHead(g, hs, c);
+		if (isHighlighted())
+		{
+			Color hc = getHighlightColor();
+			g.setColor(new Color (hc.getRed(), hc.getGreen(), hc.getBlue(), 128));
+			g.setStroke (new BasicStroke (HIGHLIGHT_STROKE_WIDTH));
+			g.draw(l);
+			if (he != null) g.draw(he.getShape());
+			if (hs != null) g.draw(hs.getShape());
+		}
 	}
 
 	public Shape mayCross(Point2D point) {
@@ -284,6 +326,42 @@ public class Connector extends Line implements ConnectorRestrictions {
 	}
 
 	protected Shape getVOutline() {
-		return new BasicStroke(5).createStrokedShape(getShape());
+		return new BasicStroke(5).createStrokedShape(getVShape(true));
+	}
+	
+	/**
+	 * Returns the properly sized and rotated arrowheads
+	 * @return An array with two arrowheads, for the start and end respectively
+	 */
+	protected ArrowShape[] getVHeads() {
+		Segment[] segments = getConnectorShape().getSegments(this);
+		
+		ArrowShape he = getVHead(
+				segments[segments.length - 1].getVStart(), 
+				segments[segments.length - 1].getVEnd(),
+				gdata.getEndLineType()
+		);
+		ArrowShape hs = getVHead(
+				segments[0].getVEnd(),
+				segments[0].getVStart(),
+				gdata.getStartLineType()
+		);
+		return new ArrowShape[] { hs, he };
+	}
+	protected Shape getVShape(boolean rotate) {
+		Shape l = getConnectorShape().getShape(this);
+
+		ArrowShape[] heads = getVHeads();
+		ArrowShape hs = heads[0];
+		ArrowShape he = heads[1];
+		
+		Area total = new Area(new BasicStroke(1).createStrokedShape(l));
+		if(hs != null) {
+			total.add(new Area(hs.getShape()));
+		}
+		if(he != null) {
+			total.add(new Area(he.getShape()));
+		}
+		return total;
 	}
 }
