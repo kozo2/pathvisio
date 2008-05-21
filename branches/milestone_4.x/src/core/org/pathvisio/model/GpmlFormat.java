@@ -155,8 +155,8 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		result.put("DataNode@Type", new AttributeInfo ("gpml:DataNodeType", "Unknown", "optional"));
 		result.put("Line.Graphics.Point@x", new AttributeInfo ("xsd:float", null, "required"));
 		result.put("Line.Graphics.Point@y", new AttributeInfo ("xsd:float", null, "required"));
-		result.put("Line.Graphics.Point@relX", new AttributeInfo ("xsd:float", "0", "optional"));
-		result.put("Line.Graphics.Point@relY", new AttributeInfo ("xsd:float", "0", "optional"));
+		result.put("Line.Graphics.Point@relX", new AttributeInfo ("xsd:float", null, "optional"));
+		result.put("Line.Graphics.Point@relY", new AttributeInfo ("xsd:float", null, "optional"));
 		result.put("Line.Graphics.Point@GraphRef", new AttributeInfo ("xsd:IDREF", null, "optional"));
 		result.put("Line.Graphics.Point@GraphId", new AttributeInfo ("xsd:ID", null, "optional"));
 		result.put("Line.Graphics.Point@Head", new AttributeInfo ("xsd:string", "Line", "optional"));
@@ -263,10 +263,12 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 					isDefault = true;
 			} else if (aInfo.schemaType.equals("xsd:float")
 					|| aInfo.schemaType.equals("Dimension")) {
-				Double x = Double.parseDouble(aInfo.def);
-				Double y = Double.parseDouble(value);
-				if (Math.abs(x - y) < 1e-6)
-					isDefault = true;
+				if(aInfo.def != null && value != null) {
+					Double x = Double.parseDouble(aInfo.def);
+					Double y = Double.parseDouble(value);
+					if (Math.abs(x - y) < 1e-6)
+						isDefault = true;
+				}
 			}
 		}
 		if (!isDefault)
@@ -504,8 +506,14 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     		);
     		mPoints.add(mp);
         	String ref = getAttribute("Line.Graphics.Point", "GraphRef", pe);
-        	if (ref == null) ref = "";
-        	mp.setGraphRef(ref);
+        	if (ref != null) {
+        		mp.setGraphRef(ref);
+        		String srx = pe.getAttributeValue("relX");
+        		String sry = pe.getAttributeValue("relY");
+        		if(srx != null && sry != null) {
+        			mp.setRelativePosition(Double.parseDouble(srx), Double.parseDouble(sry));
+        		}
+        	}
         	
         	if(i == 0) {
         		startType = getAttribute("Line.Graphics.Point", "ArrowHead", pe);		
@@ -1289,7 +1297,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			if(pe.getObjectType() == ObjectType.LINE) {
 				String sr = pe.getStartGraphRef();
 				String er = pe.getEndGraphRef();
-				if(sr != null && !"".equals(sr)) {
+				if(sr != null && !"".equals(sr) && !pe.getMStart().relativeSet()) {
 					GraphIdContainer idc = pathway.getGraphIdContainer(sr);
 					Point2D relative = idc.toRelativeCoordinate(
 							new Point2D.Double(
@@ -1299,7 +1307,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 					);
 					pe.getMStart().setRelativePosition(relative.getX(), relative.getY());
 				}
-				if(er != null && !"".equals(er)) {
+				if(er != null && !"".equals(er) && !pe.getMEnd().relativeSet()) {
 					GraphIdContainer idc = pathway.getGraphIdContainer(er);
 					Point2D relative = idc.toRelativeCoordinate(
 							new Point2D.Double(
