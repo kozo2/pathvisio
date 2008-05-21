@@ -520,6 +520,23 @@ public class VPathway implements PathwayListener
 		hideLinkAnchors();
 		
 		List<LinkProvider> objects = getLinkProvidersAt(p2d);
+		
+		//Fix for preventing grouped line to link to its own group
+		//Remove the group from the list of linkproviders
+		//Also remove the line anchors to prevent linking a line
+		//to it's own anchors
+		if(g.getParent() instanceof VPoint) {
+			Line l = ((VPoint)g.getParent()).getLine();
+			PathwayElement pe = l.getPathwayElement();
+			if(pe.getGroupRef() != null) {
+				PathwayElement group = getPathwayModel().getGroupById(pe.getGroupRef());
+				objects.remove(getPathwayElementView(group));
+			}
+			for(VAnchor va : l.getVAnchors()) {
+				objects.remove(va);
+			}
+		}
+		
 		VPoint p = (VPoint) g.parent;
 		GraphIdContainer idc = null;
 		for (LinkProvider lp : objects)
