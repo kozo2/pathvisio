@@ -23,7 +23,6 @@ import java.util.List;
 import org.pathvisio.data.DataDerby;
 import org.pathvisio.data.DataException;
 import org.pathvisio.data.SimpleGdb;
-import org.pathvisio.model.Organism;
 
 /**
  * Given a directory containing pgdb files,
@@ -33,10 +32,6 @@ public class LocalGdbManager
 {
 	private File dbDir;
 	
-	/**
-	 * Create a manager for a certain directory
-	 * The constructor will scan the directory, recursively, for pgdb files.
-	 */
 	public LocalGdbManager (File dbDir)
 	{
 		if (!(dbDir.exists() && dbDir.isDirectory()))
@@ -108,28 +103,6 @@ public class LocalGdbManager
 			return null;
 		}
 		return databases.get(index);
-	}
-	
-	/**
-	 * Guess the gene database that matches an Organism Object and return it
-	 */
-	public SimpleGdb getDatabaseForOrganism (Organism organism)
-	{
-		int i = 0;
-		int index = -1;
-		for (String databaseFilename : databasesFilenames)
-		{
-			if (databaseFilename.substring(0,2).equalsIgnoreCase(organism.code()))
-			{
-				index = i;
-			}
-			i++;
-		}
-		if (index == -1)
-		{
-			return null;
-		}
-		return databases.get(index);		
 	}
 		
 }

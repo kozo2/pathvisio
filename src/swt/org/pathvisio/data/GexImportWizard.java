@@ -320,7 +320,7 @@ public class GexImportWizard extends Wizard
 		 */
 		private void setDbName(String name) 
 		{
-			importInformation.setDbName (name);
+			importInformation.dbName = name;
 			setMessage("Expression dataset location: " + name + ".");
 			gexFileComplete = true;
 		}
@@ -383,7 +383,7 @@ public class GexImportWizard extends Wizard
 			startLabel.setText("Data starts at line: ");
 			startSpinner = new Spinner(composite, SWT.BORDER);
 			startSpinner.setMinimum(1);
-			startSpinner.setSelection(importInformation.getFirstDataRow());
+			startSpinner.setSelection(importInformation.firstDataRow);
 
 			//Widgets to give control over the delimiter
 			
@@ -522,7 +522,7 @@ public class GexImportWizard extends Wizard
 			}
 			
 			importInformation.headerRow = headerSpinner.getSelection();
-			importInformation.setFirstDataRow (startSpinner.getSelection());
+			importInformation.firstDataRow = startSpinner.getSelection();
 			importInformation.setNoHeader(headerButton.getSelection());
 			setColumnTableContent(columnTable);
 			setColumnControlsContent();
@@ -617,7 +617,7 @@ public class GexImportWizard extends Wizard
 			{
 				public void widgetSelected(SelectionEvent e) 
 				{
-					importInformation.setIdColumn (idCombo.getSelectionIndex());
+					importInformation.idColumn = idCombo.getSelectionIndex();
 				}
 			});
 			
@@ -636,8 +636,8 @@ public class GexImportWizard extends Wizard
 				public void widgetSelected(SelectionEvent e) 
 				{
 					if (codeRadio.getSelection()){
-						importInformation.setCodeColumn (
-							codeCombo.getSelectionIndex());
+						importInformation.codeColumn = 
+							codeCombo.getSelectionIndex();
 					}
 				}
 			});
@@ -694,9 +694,9 @@ public class GexImportWizard extends Wizard
 		columnList.setItems(colNames);
 		columnList.setSelection(importInformation.getStringCols());
 		idCombo.setItems(colNames);
-		idCombo.select(importInformation.getIdColumn());
+		idCombo.select(importInformation.idColumn);
 		codeCombo.setItems(colNames);
-		codeCombo.select(importInformation.getCodeColumn());
+		codeCombo.select(importInformation.codeColumn);
 	}
 
 	/**
@@ -747,7 +747,7 @@ public class GexImportWizard extends Wizard
 			int n = 50; // nr of lines to include in the preview
 			BufferedReader in = importInformation.getBufferedReader();
 			String line;
-			for (int i = 0; i < importInformation.getFirstDataRow() - 1; i++)
+			for (int i = 0; i < importInformation.firstDataRow - 1; i++)
 				in.readLine(); // Go to line where data starts
 			int j = 1;
 			
@@ -934,7 +934,7 @@ public class GexImportWizard extends Wizard
 				}
 				if (nrErrors > 0) 
 				{
-					println("\nSee errorfile '" + importInformation.getDbName() + ".ex.txt" + "' for details");
+					println("\nSee errorfile '" + importInformation.dbName + ".ex.txt" + "' for details");
 				}
 			}
 		}			

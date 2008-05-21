@@ -53,7 +53,6 @@ import org.pathvisio.util.ProgressKeeper;
  * In a head-less or test environment, you can bypass GexManager
  * to create or connect to one or more databases of any type.
  */
-//TODO: add function to query # of samples
 public class SimpleGex
 {
 	private static final int GEX_COMPAT_VERSION = 1; //Preferred schema version
@@ -324,7 +323,6 @@ public class SimpleGex
 	public SimpleGex(String dbName, boolean create, DBConnector connector) throws DataException
 	{
 		dbConnector = connector;
-		dbConnector.setDbType(DBConnector.TYPE_GEX);
 		if(create)
 		{
 			createNewGex(dbName);
@@ -334,14 +332,14 @@ public class SimpleGex
 			con = dbConnector.createConnection(dbName, DBConnector.PROP_NONE);
 			setSamples();
 		}
-//		try
-//		{
-//			con.setReadOnly( !create );
-//		}
-//		catch (SQLException e)
-//		{
-//			throw new DataException (e);
-//		}
+		try
+		{
+			con.setReadOnly( !create );
+		}
+		catch (SQLException e)
+		{
+			throw new DataException (e);
+		}
 	}
 	
 	/**
@@ -394,9 +392,9 @@ public class SimpleGex
 		{
 			con.setReadOnly(false);
 			Statement sh = con.createStatement();
-			try { sh.execute("DROP TABLE info"); } catch(SQLException e) { Logger.log.warn("Warning: unable to drop expression data tables: "+e.getMessage()); }
-			try { sh.execute("DROP TABLE samples"); } catch(SQLException e) { Logger.log.warn("Warning: unable to drop expression data tables: "+e.getMessage()); }
-			try { sh.execute("DROP TABLE expression"); } catch(SQLException e) { Logger.log.warn("Warning: unable to drop expression data tables: "+e.getMessage()); }
+			try { sh.execute("DROP TABLE info"); } catch(SQLException e) { Logger.log.error("Error: unable to drop expression data tables: "+e.getMessage(), e); }
+			try { sh.execute("DROP TABLE samples"); } catch(SQLException e) { Logger.log.error("Error: unable to drop expression data tables: "+e.getMessage(), e); }
+			try { sh.execute("DROP TABLE expression"); } catch(SQLException e) { Logger.log.error("Error: unable to drop expression data tables: "+e.getMessage(), e); }
 			
 			sh.execute(
 					"CREATE TABLE					" +

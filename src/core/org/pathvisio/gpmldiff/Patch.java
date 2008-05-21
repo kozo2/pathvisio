@@ -49,7 +49,7 @@ class Patch
 		public PathwayElement oldElt;
 		List<Change> changes = new ArrayList<Change> (); // only used when isDeletion == false
 
-		public PathwayElement makeNewElt()
+		public PathwayElement getNewElt()
 		{
 			if (isDeletion) throw new IllegalArgumentException();
 			PathwayElement result = oldElt.copy();
@@ -114,12 +114,6 @@ class Patch
 						mod.changes.add(chg);
 					}
 				}
-				if (mod.oldElt == null) 
-				{
-					// this doesn't have a valid gpml subelement. Ignore. 
-					Logger.log.warn ("Skipping one invalid Modify element");
-					continue; // skip
-				}
 				modifications.put (mod.oldElt, mod);
 			}
 			else if (e.getName().equals("Insert"))
@@ -153,19 +147,21 @@ class Patch
 		CostFunction costFun = new BasicCost();
 
 		PwyDoc newPwy = oldPwy;
-		
+
 		// scan modifications / deletions for correspondence
 		for (ModDel mod : modifications.values())
 		{
-			current = findCorrespondence (current, oldPwy, mod.oldElt, simFun, costFun);				
+			current = findCorrespondence (current, oldPwy, mod.oldElt, simFun, costFun);
 		}
 
+		// now remove deletions
+		
 		// insertions are easy, just add them
 		for (PathwayElement ins : insertions)
 		{
 			newPwy.add (ins);
 		}
-
+		
 	    // now modifications and deletions:
 		// Start back from current
 		while (current != null)
@@ -181,19 +177,12 @@ class Patch
 			}
 			else				
 			{
-				// remove the old element. 
-				
-				// Note that current.oldElt is the copy of the element in the Modification object,
-				// and current.newElt is the matching element in the pathway.
-				newPwy.remove (current.newElt);
-				
-				// create new elt with applied modifications
-				PathwayElement newElt = mod.makeNewElt();
-				
+				//TODO: we have a problem here, modification should take in-place
+				// apply modification to oldElt
+				PathwayElement newElt = mod.getNewElt();
 				// and add it to the pwy.
 				newPwy.add (newElt);
 			}
-						
 			current = current.getParent();
 		}
 	}

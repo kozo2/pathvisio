@@ -56,21 +56,12 @@ public class GdbManager
 	 * directory name.
 	 * The database type used for the connection
 	 * depends on the value of the DB_ENGINE_GDB value
-	 * 
-	 * use null to disconnect the current db
 	 */
 	public static void setMetaboliteDb(String dbName) throws DataException
 	{
-		if (dbName == null)
-		{
-			currentGdb.setMetaboliteDb(null);
-		}
-		else
-		{
-			SimpleGdb gdb = connect (dbName);
-			currentGdb.setMetaboliteDb(gdb);
-		}
-		
+		SimpleGdb gdb = connect (dbName);
+		currentGdb.setMetaboliteDb(gdb);
+
 		ApplicationEvent e =
 			new ApplicationEvent (Engine.getCurrent(), ApplicationEvent.GDB_CONNECTED);
 		Engine.getCurrent().fireApplicationEvent (e);
@@ -84,20 +75,12 @@ public class GdbManager
 	 * directory name.
 	 * The database type used for the connection
 	 * depends on the value of the DB_ENGINE_GDB value
-	 * 
-	 * use null to disconnect the current db.
 	 */
 	public static void setGeneDb(String dbName) throws DataException
 	{
-		if (dbName == null)
-		{
-			currentGdb.setGeneDb(null);
-		}
-		else
-		{
-			SimpleGdb gdb = connect (dbName);
-			currentGdb.setGeneDb(gdb);
-		}
+		SimpleGdb gdb = connect (dbName);
+		currentGdb.setGeneDb(gdb);
+
 		ApplicationEvent e =
 			new ApplicationEvent (Engine.getCurrent(), ApplicationEvent.GDB_CONNECTED);
 		Engine.getCurrent().fireApplicationEvent (e);

@@ -23,14 +23,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.pathvisio.plugins.project2008.WikiPathwaysClient.WikiPathwaysException;
+import org.apache.xmlrpc.XmlRpcException;
 
 /**
  * In this class the class 'WikiPathwaysClient' can be tested. 
  */
 public class WPClientTest 
 {
-	public static void main(String[] args) throws IOException, WikiPathwaysException
+	public static void main(String[] args) throws XmlRpcException, IOException
 	{
 		// make a new WikiPathwaysClient
 		WikiPathwaysClient wp = new WikiPathwaysClient();
@@ -76,8 +76,8 @@ public class WPClientTest
 			
 			
 			// download the pathway and give status in console
-				wp.downloadPathway(pathwayNames.get(i), 
-					new File (pathToDownload + code + "_" + namePathway + ".gpml"));
+			wp.downloadPathway(pathwayNames.get(i), 
+				new File (pathToDownload + code + "_" + namePathway + ".gpml"));
 			System.out.println("Downloaded: " + pathwayNames.get(i));
 		}
 	}

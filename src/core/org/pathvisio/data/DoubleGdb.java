@@ -53,13 +53,12 @@ public class DoubleGdb implements Gdb
 	/**
 	 * set the metabolite database
 	 * closes any pre-existing metabolite databases.
-	 * 
-	 * @param gdb pass null to close the connection.
 	 */
 	public void setMetaboliteDb (SimpleGdb gdb)
 	{
 		if (gdb == gdbs[METABOLITE_DB]) return;
 
+		if (gdb == null) throw new NullPointerException();
 		try
 		{
 			if (gdbs [METABOLITE_DB] != null) gdbs[METABOLITE_DB].close();
@@ -68,11 +67,8 @@ public class DoubleGdb implements Gdb
 		{
 			Logger.log.error ("Problem closing metabolite database", e);
 		}
-		gdbs [METABOLITE_DB] = gdb;
-		if (gdb != null)
-		{
-			GlobalPreference.DB_METABDB_CURRENT.setValue(gdb.getDbName());
-		}
+		gdbs [METABOLITE_DB] = gdb;		
+		GlobalPreference.DB_METABDB_CURRENT.setValue(gdb.getDbName());
 	}
 
 	/**
@@ -83,6 +79,7 @@ public class DoubleGdb implements Gdb
 	{
 		if (gdb == gdbs[GENE_DB]) return;
 		
+		if (gdb == null) throw new NullPointerException();
 		try
 		{
 			if (gdbs [GENE_DB] != null) gdbs[GENE_DB].close();
@@ -92,10 +89,7 @@ public class DoubleGdb implements Gdb
 			Logger.log.error ("Problem closing gene database", e);
 		}
 		gdbs [GENE_DB] = gdb;		
-		if (gdb != null)
-		{
-			GlobalPreference.DB_GDB_CURRENT.setValue(gdb.getDbName());
-		}
+		GlobalPreference.DB_GDB_CURRENT.setValue(gdb.getDbName());
 	}
 
 	/**

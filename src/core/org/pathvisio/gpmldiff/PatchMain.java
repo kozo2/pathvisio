@@ -17,18 +17,14 @@
 package org.pathvisio.gpmldiff;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 
-import org.jdom.JDOMException;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.*;
 
 /**
    Dgpml patch utility, main function
  */
-public class PatchMain
+class PatchMain
 {
 	static void printUsage()
 	{
@@ -64,22 +60,6 @@ public class PatchMain
 			printUsage();
 		}
 		return error == null;
-	}
-	
-	/** helper method to patch a pathway
-	 * newPwy is the result of oldPwy + patch
-	 * @throws ConverterException 
-	 * @throws JDOMException 
-	 */
-	public static void applyPatch (File oldFile, File patchFile, File newFile) throws IOException, JDOMException, ConverterException
-	{
-		PwyDoc pwy = PwyDoc.read (oldFile);
-		assert (pwy != null);
-
-		Patch patch = new Patch();
-		patch.readFromReader (new FileReader(patchFile));
-		patch.applyTo (pwy, fuzz);
-		pwy.write(newFile);
 	}
 	
 	public static void main(String argv[])
