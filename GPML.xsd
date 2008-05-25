@@ -396,12 +396,22 @@
 					<xsd:complexType>
 						<xsd:sequence>
 							<xsd:element name="Point" minOccurs="2"
-								maxOccurs="2">
+								maxOccurs="unbounded">
 								<xsd:complexType>
 									<xsd:attribute name="x"
 										type="xsd:float" use="required" />
 									<xsd:attribute name="y"
 										type="xsd:float" use="required" />
+									<!-- relX and relY are the coordinates used when
+									a point is linked to another object (when GraphRef
+									is defined). They represent he coordinates of the 
+									point relative to the object that it's linked to, where
+									0,0 lies at the center of the object and 1,1 at the bottom-right
+									corner -->
+									<xsd:attribute name="relX"
+										type="xsd:float" use="optional" />
+									<xsd:attribute name="relY"
+										type="xsd:float" use="optional" />
 									<xsd:attribute name="GraphRef"
 										type="xsd:IDREF" use="optional" />
 									<xsd:attribute name="GraphId"
@@ -455,6 +465,8 @@
 						</xsd:sequence>
 						<xsd:attribute name="Color"
 							type="gpml:ColorType" default="Black" />
+						<xsd:attribute name="ConnectorType"
+							type="xsd:string" use="optional" default="Straight"/>
 					</xsd:complexType>
 				</xsd:element>
 
