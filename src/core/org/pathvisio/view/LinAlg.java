@@ -16,8 +16,6 @@
 //
 package org.pathvisio.view;
 
-import java.awt.geom.Point2D;
-
 /**
  * Helper class for rotation calculations.
  *
@@ -39,12 +37,7 @@ public class LinAlg
 		//					p1.p2	
         //cos(angle) = --------------
         //          	||p1||*||p2||
-
 		double cos = dot(p1,p2) / (p1.len() * p2.len());
-		if(cos>1)
-		{
-			cos=1;
-		}
 		return direction(p1,p2) * Math.acos(cos);
 	}
 		
@@ -53,7 +46,6 @@ public class LinAlg
 	 */
 	public static double direction(Point p1, Point p2) 
 	{
-		
 		return Math.signum(p1.x * p2.y - p1.y * p2.x);
 	}
 	
@@ -87,26 +79,6 @@ public class LinAlg
 	}
 	
 	/**
-	 * Convert a 2-D point to 1-D line coordinates (relative position on the line, range {0,1})
-	 */
-	public static double toLineCoordinates (Point start, Point end, Point p) {
-		//Project v position on line and calculate relative position
-		Point direction = start.subtract(end);
-		Point projection = project(start, p, direction);
-		double lineLength = distance(start, end);
-		double anchorLength = distance(start, projection);
-		double position = anchorLength / lineLength;
-		
-		double ldir = direction(start, end);
-		double adir = direction(start, projection);
-		if(adir != ldir) {
-			position = 0;
-		}
-		if(position > 1) position = 1;
-		if(position < 0) position = 0;
-		return position;
-	}
-	/**
 	  Projection of p1 on p2:
 	  
 	   p1.p2
@@ -136,16 +108,7 @@ public class LinAlg
 	public static class Point 
 	{
 		public double x, y;
-		
 		public Point(double x, double y) { this.x = x; this.y = y;	}
-		
-		public Point(Point2D p2d) {
-			this(p2d.getX(), p2d.getY());
-		}
-		
-		public Point2D toPoint2D() {
-			return new Point2D.Double(x, y);
-		}
 		
 		public int[] asIntArray() { return new int[] { (int)x, (int)y }; }
 		

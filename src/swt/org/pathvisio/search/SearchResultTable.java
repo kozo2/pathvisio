@@ -16,7 +16,7 @@
 //
 package org.pathvisio.search;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -58,17 +58,17 @@ public class SearchResultTable extends PathwayTable implements ApplicationEventL
 		if(drawing == null) return; //No drawing open
 		
 		if(highlight) { 
-			Row sr = (Row) //Get selected search result
+			Row sr = (Row) //Get selected searchresult
 			((IStructuredSelection)tableViewer.getSelection()).getFirstElement();
 			if(sr == null) return; //Nothing selected
 			
 			try {
-				List<String> idsFound = sr.getCell(COLUMN_FOUND_IDS).getArray();
+				ArrayList idsFound = sr.getCell(COLUMN_FOUND_IDS).getArray();
 				GeneProduct gp = null;
 				for(VPathwayElement o : drawing.getDrawingObjects()) {
 					if(o instanceof GeneProduct) {
 						gp = (GeneProduct)o;
-						if(idsFound.contains(gp.getPathwayElement().getGeneID())) gp.highlight();
+						if(idsFound.contains(gp.getID())) gp.highlight();
 					}
 				}
 				drawing.redraw();
@@ -103,7 +103,7 @@ public class SearchResultTable extends PathwayTable implements ApplicationEventL
 	}
 
 	public void applicationEvent(ApplicationEvent e) {
-		if(e.getType() == ApplicationEvent.PATHWAY_OPENED) {
+		if(e.type == ApplicationEvent.PATHWAY_OPENED) {
 			highlightButton.getDisplay().asyncExec(new Runnable() {
 				public void run() {
 					highlightResults(highlightButton.getSelection());	

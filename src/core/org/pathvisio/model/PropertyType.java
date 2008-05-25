@@ -67,9 +67,9 @@ public enum PropertyType
 	ORIENTATION ("Orientation", "Orientation", PropertyClass.ORIENTATION),
 			
 	// gene product
-	GENEID ("GeneID", "Database Identifier", PropertyClass.DB_ID),  
-	DATASOURCE ("SystemCode", "Database Name", PropertyClass.DATASOURCE), 
-	GENMAPP_XREF ("Xref", "Xref", PropertyClass.STRING), // deprecated, maintained for backward compatibility with GenMAPP. 
+	GENEID ("GeneID", "Database Identifier", PropertyClass.DB_ID), //TODO: change tag 
+	SYSTEMCODE ("SystemCode", "Database Name", PropertyClass.DATASOURCE), 
+	XREF ("Xref", "Xref", PropertyClass.STRING), // unused 
 	BACKPAGEHEAD ("BackpageHead", "Backpage head", PropertyClass.STRING), 
 	TYPE ("Type", "Type", PropertyClass.GENETYPE),
 			
@@ -84,7 +84,7 @@ public enum PropertyType
 	// mappinfo
 	MAPINFONAME ("MapInfoName", "Map Info Name", PropertyClass.STRING),
 	ORGANISM ("Organism", "Organism", PropertyClass.ORGANISM), 
-	MAPINFO_DATASOURCE ("Data-Source", "Data-Source", PropertyClass.STRING),
+	DATA_SOURCE ("Data-Source", "Data-Source", PropertyClass.STRING),
 	VERSION ("Version", "Version", PropertyClass.STRING), 
 	AUTHOR ("Author", "Author", PropertyClass.STRING), 
 	MAINTAINED_BY ("Maintained-By", "Maintainer", PropertyClass.STRING),
@@ -102,8 +102,7 @@ public enum PropertyType
 	ENDGRAPHREF ("EndGraphRef", "EndGraphRef", PropertyClass.STRING),
 	GROUPID ("GroupId", "GroupId", PropertyClass.STRING),
 	GROUPREF ("GroupRef", "GroupRef", PropertyClass.STRING),
-	BIOPAXREF( "BiopaxRef", "BiopaxRef", PropertyClass.BIOPAXREF),
-	ZORDER ( "Z order", "ZOrder", PropertyClass.INTEGER);
+	BIOPAXREF( "BiopaxRef", "BiopaxRef", PropertyClass.BIOPAXREF);
 
 	private String tag, desc;
 	private PropertyClass type;

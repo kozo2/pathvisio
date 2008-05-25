@@ -18,39 +18,84 @@ package org.pathvisio.view;
 
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-
-import org.pathvisio.Engine;
+import java.util.HashSet;
+import java.util.Set;
+import org.pathvisio.view.LinAlg.Point;
 import org.pathvisio.model.PathwayElement.MPoint;
 import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.view.LinAlg.Point;
 
 public class VPoint extends VPathwayElement {
 	Handle handle;
-	Line line;
-	MPoint mPoint;
+	Set<Line> lines;
+	Set<MPoint> mPoints;
 	
-	VPoint(VPathway canvas, MPoint mPoint, Line line) {
+	VPoint(VPathway canvas) {
 		super(canvas);
-		this.mPoint = mPoint;
-		this.line = line;
+		mPoints = new HashSet<MPoint>();
+		lines = new HashSet<Line>();
 		handle = new Handle(Handle.DIRECTION_FREE, this, canvas);
 	}
-
-	protected void unlink() {
-		mPoint.setGraphRef(null);
+	
+	public int getDrawingOrder() {
+		return VPathway.DRAW_ORDER_LINE;
 	}
 	
+	protected void addMPoint(MPoint p) {
+		mPoints.add(p);
+	}
+	
+	protected void removeMPoint(MPoint p) {
+		mPoints.remove(p);
+	}
+	
+	protected void addLine(Line l) {
+		lines.add(l);
+	}
+	
+	protected void removeLine(Line l) {
+		lines.remove(l);
+		//Remove this VPoint when it links to no lines no more
+		if(lines.size() == 0) {
+			destroy();
+		}
+	}
+	
+	protected Set<Line> getLines() { return lines; }
+	
+	protected void link(Graphics g) {
+		if(lines.contains(g)) return; //Prevent linking to self
+		String id = g.getGmmlData().getGraphId();
+		if(id == null) id = g.getGmmlData().setGeneratedGraphId();
+		for(MPoint p : mPoints) p.setGraphRef(id);
+	}
+	
+	protected void link(VPoint p) {
+		if(p == this) return; //Already linked
+		for(MPoint mp : p.mPoints) {
+			mPoints.add(mp);
+		}
+		for(Line l : p.lines) {
+			l.swapPoint(p, this);
+			addLine(l);
+		}
+		p.lines.clear();
+		p.destroy();
+	}
+
 	protected double getVX() { return vFromM(getMPoint().getX()); }
 	protected double getVY() { return vFromM(getMPoint().getY()); }
 	
 	protected void setVLocation(double vx, double vy) {
-		mPoint.setX(mFromV(vx));
-		mPoint.setY(mFromV(vy));
+		for(MPoint p : mPoints) {
+			p.setX(mFromV(vx));
+			p.setY(mFromV(vy));
+		}
 	}
 	
 	protected void vMoveBy(double dx, double dy) {
-		mPoint.moveBy(mFromV(dx), mFromV(dy));
+		for(MPoint p : mPoints) {
+			p.moveBy(mFromV(dx), mFromV(dy));
+		}
 	}
 	
 	protected void setHandleLocation() {
@@ -58,12 +103,9 @@ public class VPoint extends VPathwayElement {
 		handle.setMLocation(mp.getX(), mp.getY());
 	}
 	
-	public MPoint getMPoint() {
-		return mPoint;
-	}
-	
-	public Line getLine() {
-		return line;
+	private MPoint getMPoint() {
+		for(MPoint p : mPoints) return p;
+		return null;
 	}
 	
 	protected void adjustToHandle(Handle h, double vnewx, double vnewy)
@@ -71,14 +113,14 @@ public class VPoint extends VPathwayElement {
 		double mcx = mFromV (vnewx);
 		double mcy = mFromV (vnewy);
 
-		if (Engine.getCurrent().getPreferences().getBoolean(GlobalPreference.SNAP_TO_ANGLE) ||
-			canvas.isSnapToAngle())
+		if (GlobalPreference.getValueBoolean(GlobalPreference.SNAP_TO_ANGLE))
 		{
 			// get global preference and convert to radians.
-			double lineSnapStep = Engine.getCurrent().getPreferences().getInt(
+			double lineSnapStep = GlobalPreference.getValueInt(
 				GlobalPreference.SNAP_TO_ANGLE_STEP) * Math.PI / 180;
-			VPoint p1 = line.getStart();
-			VPoint p2 = line.getEnd();
+			Line first = lines.iterator().next();
+			VPoint p1 = first.getStart();
+			VPoint p2 = first.getEnd();
 			double basex, basey;
 			// base is the static point the line rotates about.
 			// it is equal to the OTHER point, the one we're not moving.
@@ -102,8 +144,11 @@ public class VPoint extends VPathwayElement {
 			mcy = prj.y;
 		}
 		
-		mPoint.setX(mcx);
-		mPoint.setY(mcy);
+		for(MPoint p : mPoints)
+		{
+			p.setX(mcx);
+			p.setY(mcy);
+		}
 	}
 	
 	protected Handle getHandle() {
@@ -115,20 +160,11 @@ public class VPoint extends VPathwayElement {
 	}
 	
 	protected void doDraw(Graphics2D g2d) {
-		if(isHighlighted()) {
-			int size = 20;
-			g2d.setColor(getHighlightColor());
-			g2d.fill(new Ellipse2D.Double(
-					vFromM(mPoint.getX()) - size / 2,
-					vFromM(mPoint.getY()) - size / 2, 
-					size, 
-					size)
-			);
-		}
+		// TODO Auto-generated method stub
 	}
-	
-	protected Shape calculateVOutline() {
-		return handle.calculateVOutline();
+
+	protected Shape getVOutline() {
+		return handle.getVOutline();
 	}
 
 	protected void destroy() {
@@ -138,9 +174,5 @@ public class VPoint extends VPathwayElement {
 //			throw new RuntimeException("VPoint cannot be destroyed: still linked to " + lines);
 
 		super.destroy();
-	}
-	
-	protected int getZOrder() {
-		return line.getZOrder() + 1;
 	}
 }

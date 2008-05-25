@@ -17,8 +17,19 @@
 package org.pathvisio.visualization.colorset;
 import java.util.HashMap;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jdom.Element;
 import java.awt.Color;
+
+import org.pathvisio.visualization.VisualizationManager;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 
 /**
  * This class represent any object that can be present in a colorset
@@ -38,7 +49,6 @@ public abstract class ColorSetObject {
 	
 	/**
 	 * getter for name, the name of this colorSetObject
-	 * the Name does not need to be unique
 	 */
 	public void setName(String _name) 
 	{
@@ -47,7 +57,6 @@ public abstract class ColorSetObject {
 	
 	/**
 	 * setter for name, the name of this colorSetObject
-	 * The name does not need to be unique.
 	 */
 	public String getName() { return name; }
 	
@@ -87,13 +96,9 @@ public abstract class ColorSetObject {
 		return parent;
 	}
 
-	/**
-	 * let ColorSetManager fire an event to indicate this ColorSet has
-	 * changed. 
-	 */
 	protected void fireModifiedEvent() {
-		ColorSetManager.fireColorSetEvent(
-				new ColorSetEvent (this, ColorSetEvent.COLORSET_MODIFIED));
+		VisualizationManager.fireVisualizationEvent(
+				new VisualizationEvent(this, VisualizationEvent.COLORSET_MODIFIED));
 	}
 	
 	abstract String getXmlElementName();
@@ -110,4 +115,52 @@ public abstract class ColorSetObject {
 		name = xml.getAttributeValue(XML_ATTR_NAME);
 	}
 				
+	public static abstract class ConfigComposite extends Composite {
+		final int colorLabelSize = 15;
+		ColorSetObject input;
+		Text nameText;
+		
+		public ConfigComposite(Composite parent, int style) {
+			super(parent, style);
+			createContents();
+		}
+		
+		public void setInput(ColorSetObject input) {
+			this.input = input;
+			refresh();
+		}
+		
+		public boolean save() {
+			return true;
+		}
+		
+		void refresh() {
+			String nm = "";
+			if(input != null) nm = input.getName();
+			nameText.setText(nm);
+		}
+				
+		void changeName(String name) {
+			input.setName(name);
+		}
+		
+		abstract void createContents();
+		
+		protected Composite createNameComposite(Composite parent) {
+			Composite comp = new Composite(parent, SWT.NULL);
+			comp.setLayout(new GridLayout(2, false));
+			
+			Label nameLabel = new Label(comp, SWT.CENTER);
+			nameLabel.setText("Name:");
+		
+			nameText = new Text(comp, SWT.SINGLE | SWT.BORDER);
+			nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		    nameText.addModifyListener(new ModifyListener() {
+		    	public void modifyText(ModifyEvent e) {
+		    		changeName(nameText.getText());
+		    	}
+		    });
+		    return comp;
+		}
+	}
 }

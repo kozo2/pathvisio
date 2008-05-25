@@ -16,21 +16,16 @@
 //
 package org.pathvisio.view;
 
-import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.pathvisio.Engine;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
 import org.pathvisio.model.PathwayElement.MPoint;
-import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.view.LinAlg.Point;
 
 /**
@@ -38,7 +33,7 @@ import org.pathvisio.view.LinAlg.Point;
  * and provides implementation for containing 8 handles placed in a 
  * (rotated) rectangle around the shape and a rotation handle
  */
-public abstract class GraphicsShape extends Graphics implements LinkProvider {
+public abstract class GraphicsShape extends Graphics {
 
 	private static final double M_ROTATION_HANDLE_POSITION = 20.0 * 15;
 
@@ -83,15 +78,15 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider {
 	{
 		gdata.setMLeft(gdata.getMLeft()  + mFromV(vdx));
 		gdata.setMTop(gdata.getMTop() + mFromV(vdy));
-		//Redraw graphRefs
+		//Move graphRefs
+		//GraphLink.moveRefsBy(gdata, mFromV(vdx), mFromV(vdy));
+		Set<VPoint> toMove = new HashSet<VPoint>();
 		for(GraphRefContainer ref : gdata.getReferences()) {
 			if(ref instanceof MPoint) {
-				VPoint vp = canvas.getPoint((MPoint)ref);
-				if(vp != null) {
-					vp.getLine().recalculateConnector();
-				}
+				toMove.add(canvas.getPoint((MPoint)ref));
 			}
 		}
+		for(VPoint p : toMove) p.vMoveBy(vdx, vdy);
 	}
 		
 	public Handle[] getHandles()
@@ -167,18 +162,8 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider {
 		//Rotation
 		if 	(h == handleR)
 		{
-			Point cur = mRelativeToCenter(new Point(mFromV(vnewx), mFromV(vnewy)));
-			
-			double rotation = Math.atan2(cur.y, cur.x);
-			if (Engine.getCurrent().getPreferences().getBoolean(GlobalPreference.SNAP_TO_ANGLE) ||
-					canvas.isSnapToAngle())
-			{
-				//Snap the rotation angle
-				double snapStep = Engine.getCurrent().getPreferences().getInt(
-						GlobalPreference.SNAP_TO_ANGLE_STEP) * Math.PI / 180;
-				rotation = Math.round (rotation / snapStep) * snapStep;
-			}
-			setRotation (rotation);				
+			Point cur = mRelativeToCenter(new Point(mFromV(vnewx), mFromV(vnewy)));			
+			setRotation (Math.atan2(cur.y, cur.x));				
 			return;
 		}
 					
@@ -291,19 +276,12 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider {
 		for(Handle h : getHandles()) h.rotation = gdata.getRotation();
 	}
 	
-	protected Shape calculateVOutline()
+	protected Shape getVOutline()
 	{
 		//Include rotation and stroke
-		Area a = new Area(getShape(true, true));
-		//Include link anchors
-		if(showLinkAnchors) {
-			for(LinkAnchor la : getLinkAnchors()) {
-				a.add(new Area(la.getShape()));
-			}
-		}
-		return a;
+		return getShape(true, true);
 	}
-
+		
 	protected Shape getVShape(boolean rotate) {
 		return getShape(rotate, false); //Get the shape without border
 	}
@@ -352,70 +330,4 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider {
 		setHandleLocation();
 	}
 	
-	List<LinkAnchor> linkAnchors = new ArrayList<LinkAnchor>();
-	
-	private static final int MIN_SIZE_LA = 15 * 25;
-	private int num_linkanchors_h = -1;
-	private int num_linkanchors_v = -1;
-	
-	public List<LinkAnchor> getLinkAnchors() {
-		//Number of link anchors depends on the size of the object
-		//If the width/height is large enough, there will be three link anchors per side,
-		//Otherwise there will be only one link anchor per side
-		int n_h = gdata.getMWidth() >= MIN_SIZE_LA ? 3 : 1;
-		int n_v = gdata.getMHeight() >= MIN_SIZE_LA ? 3 : 1;
-		if(n_h != num_linkanchors_h || n_v != num_linkanchors_v) {
-			createLinkAnchors(n_h, n_v);
-		}
-		return linkAnchors;
-	}
-	
-	private void createLinkAnchors(int n_h, int n_v) {
-		linkAnchors.clear();
-		double d_h = 2.0/(n_h + 1);
-		for(int i = 1; i <= n_h; i++) {
-			linkAnchors.add(new LinkAnchor(canvas, gdata, -1 + i * d_h, -1));
-			linkAnchors.add(new LinkAnchor(canvas, gdata, -1 + i * d_h, 1));
-		}
-		double d_v = 2.0/(n_v + 1);
-		for(int i = 1; i <= n_v; i++) {
-			linkAnchors.add(new LinkAnchor(canvas, gdata, -1, -1 + i * d_v));
-			linkAnchors.add(new LinkAnchor(canvas, gdata, 1, -1 + i * d_v));
-		}
-		num_linkanchors_h = n_h;
-		num_linkanchors_v = n_v;
-	}
-	
-	boolean showLinkAnchors = false;
-	
-	public void showLinkAnchors() {
-		if(!showLinkAnchors) {
-			showLinkAnchors = true;
-			markDirty();
-		}
-	}
-	
-	public void hideLinkAnchors() {
-		if(showLinkAnchors) {
-			showLinkAnchors = false;
-			markDirty();
-		}
-	}
-	
-	public LinkAnchor getLinkAnchorAt(Point2D p) {
-		for(LinkAnchor la : getLinkAnchors()) {
-			if(la.getMatchArea().contains(p)) {
-				return la;
-			}
-		}
-		return null;
-	}
-	
-	protected void doDraw(Graphics2D g2d) {
-		if(showLinkAnchors) {
-			for(LinkAnchor la : getLinkAnchors()) {
-				la.draw((Graphics2D)g2d.create());
-			}
-		}
-	}
 }

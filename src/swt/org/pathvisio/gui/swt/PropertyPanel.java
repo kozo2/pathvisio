@@ -47,9 +47,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.pathvisio.ApplicationEvent;
 import org.pathvisio.Engine;
 import org.pathvisio.Engine.ApplicationEventListener;
+import org.pathvisio.data.DataSources;
 import org.pathvisio.gui.swt.dialogs.CommentsDialog;
 import org.pathvisio.model.DataNodeType;
-import org.pathvisio.model.DataSource;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
 import org.pathvisio.model.ObjectType;
@@ -181,7 +181,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 		{
 			// get attributes. Only get advanced attributes if the preferences say so.
 			for (PropertyType attr : o.getAttributes(
-					 Engine.getCurrent().getPreferences().getBoolean(GlobalPreference.SHOW_ADVANCED_ATTRIBUTES)))
+					 GlobalPreference.getValueBoolean(GlobalPreference.SHOW_ADVANCED_ATTRIBUTES)))
 			{
 				if (master.containsKey(attr))
 				{
@@ -273,17 +273,15 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 	 * a comboboxeditor will be set up with the proper values for
 	 * the drop down list.
 	 */
-	private final static String[] orientation_names = OrientationType.getNames();
-	private final static String[] linestyle_names = LineStyle.getNames();
-	private final static String[] boolean_names = {"false", "true"};
+	final static String[] orientation_names = OrientationType.getNames();
+	final static String[] linestyle_names = LineStyle.getNames();
+	final static String[] boolean_names = {"false", "true"};
 	// shapetype is dynamic: can be changed with preferences
 	private String[] shape_names = null;
     // linetypes is dynamic: can be changed with preferences
     private String[] linetype_names = null; 
-	private final static String[] outlinetype_names = OutlineType.getTags(); 
-	private final static String[] genetype_names = DataNodeType.getNames();
-	// datasourcetypes is dynamic, can be changed by plugins
-	private static String[] datasource_names = null;
+	final static String[] outlinetype_names = OutlineType.getTags(); 
+	final static String[] genetype_names = DataNodeType.getNames();
 	
 	private CellEditor getCellEditor(Object element)
 	{
@@ -308,19 +306,8 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 				shape_names = ShapeType.getNames();
 				comboBoxEditor.setItems(shape_names);
 				return comboBoxEditor;
-			case DATASOURCE:
-				//refresh datasource info.
-				//get a fresh list, get the full names and sort alphabetically.
-			{
-				List<String> fullNames = new ArrayList<String>();
-				for (String s : DataSource.getFullNames())
-				{
-					if (s != null) { fullNames.add (s); }
-				}
-				Collections.sort(fullNames);
-				datasource_names = fullNames.toArray (new String[0]);
-			}
-				comboBoxEditor.setItems(datasource_names);
+			case DATASOURCE:			
+				comboBoxEditor.setItems(DataSources.dataSources);
 				return comboBoxEditor;
 			case ORIENTATION:
 				comboBoxEditor.setItems(orientation_names);
@@ -388,10 +375,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 				case GENETYPE:
 					return Arrays.asList(genetype_names).indexOf(value.toString());
 				case DATASOURCE:
-					if (value == null)
-						return 0;
-					else
-						return Arrays.asList(datasource_names).indexOf(value.toString());				
+					return DataSources.lDataSources.indexOf(value.toString());				
 				// for all combobox types:
 				case BOOLEAN:
 					if(value instanceof Boolean)
@@ -499,7 +483,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 				}
 			case DATASOURCE:
 				if((Integer)value == -1) return; //Nothing selected
-				value = datasource_names[(Integer)value];
+				value = DataSources.lDataSources.get((Integer)value);
 				break;
 			case BOOLEAN:
 				if ((Integer)value == 0)
@@ -668,11 +652,11 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 		switch(e.type) {
 		case SelectionEvent.OBJECT_ADDED:
 			if(e.affectedObject instanceof Graphics)
-				addGmmlDataObject(((Graphics)e.affectedObject).getPathwayElement());
+				addGmmlDataObject(((Graphics)e.affectedObject).getGmmlData());
 			break;
 		case SelectionEvent.OBJECT_REMOVED:
 			if(e.affectedObject instanceof Graphics)
-				removeGmmlDataObject(((Graphics)e.affectedObject).getPathwayElement());
+				removeGmmlDataObject(((Graphics)e.affectedObject).getGmmlData());
 			break;
 		case SelectionEvent.SELECTION_CLEARED:
 			 clearGmmlDataObjects();
@@ -723,7 +707,7 @@ public class PropertyPanel extends Composite implements PathwayListener, Selecti
 	}
 
 	public void applicationEvent(ApplicationEvent e) {
-		if(e.getType() == ApplicationEvent.VPATHWAY_CREATED) {
+		if(e.type == ApplicationEvent.VPATHWAY_CREATED) {
 			((VPathway)e.getSource()).addSelectionListener(this);
 		}
 	}

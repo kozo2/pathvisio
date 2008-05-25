@@ -16,13 +16,12 @@
 //
 package org.pathvisio.view;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
-import java.util.HashMap;
 import java.util.Map;
-
+import java.util.HashMap;
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import org.pathvisio.debug.Logger;
 
 /**
@@ -32,16 +31,14 @@ import org.pathvisio.debug.Logger;
    by calling  registerShape() on BasicShapes, GenMAPPShapes and MIMShapes.
  */
 
-public class ShapeRegistry
+class ShapeRegistry
 {
 	private static Shape defaultShape = null;
 	private static ArrowShape defaultArrow = null;
-	private static AnchorShape defaultAnchor = null;
-	
+
 	private static Map <String, Shape> shapeMap = new HashMap <String, Shape>();
 	private static Map <String, ArrowShape> arrowMap = new HashMap <String, ArrowShape>();
-	private static Map <String, AnchorShape> anchorMap = new HashMap <String, AnchorShape>();
-	
+
 	static
 	{
 		GeneralPath temp = new GeneralPath();
@@ -80,31 +77,9 @@ public class ShapeRegistry
 		shapeMap.put (key, sh);
 	}
 
-	/**
-	 * Register an arrow shape
-	 * @param key The key used to identify the arrow shape
-	 * @param sh The shape used to draw the stroke
-	 * @param fillShape The shape used to draw the fill (in case fillType is open or closed
-	 * @param fillType The fill type, see {@link ArrowShape}
-	 */
-	static public void registerArrow (String key, Shape sh, Shape fillShape, int fillType) {
-		arrowMap.put(key, new ArrowShape (sh, fillShape, fillType));
-	}
-	
-	/**
-	 * Register an arrow shape
-	 * @param key The key used to identify the arrow shape
-	 * @param sh The shape used to draw the stroke and fill (in case fillType is open or closed)
-	 * @param fillType The fill type, see {@link ArrowShape}
-	 */
 	static public void registerArrow (String key, Shape sh, int fillType)
 	{
 		arrowMap.put (key, new ArrowShape (sh, fillType));
-	}
-	
-	static public void registerAnchor (String key, Shape sh)
-	{
-		anchorMap.put (key, new AnchorShape (sh));
 	}
 
 	/**
@@ -126,18 +101,6 @@ public class ShapeRegistry
 		// transform immediately after.
 	}
 
-	/**
-	 * Returns an anchor shape
-	 */
-	public static AnchorShape getAnchor(String name) {
-		AnchorShape sh = anchorMap.get (name);
-		if (sh == null)
-		{
-			sh = defaultAnchor;
-		}
-		return sh;
-	}
-	
 	/**
 	   Returns a named shape, scaled in such a way that it has a
 	   bounding rect equal to x, y, w, h.

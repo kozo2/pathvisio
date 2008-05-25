@@ -19,47 +19,36 @@ package org.pathvisio.view;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
-import org.pathvisio.model.ConnectorShape;
-import org.pathvisio.model.ConnectorShapeFactory;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
-import org.pathvisio.model.MLine;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
-import org.pathvisio.model.ConnectorShape.Segment;
-import org.pathvisio.model.ConnectorShape.WayPoint;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
-import org.pathvisio.model.PathwayElement.MAnchor;
 import org.pathvisio.model.PathwayElement.MPoint;
  
 /**
- * This class represents a line on the pathway.
- * The actual implementation of the path is done by implementations
- * of the {@link ConnectorShape} interface.
- * @see ConnectorShape
- * @see ConnectorShapeFactory
+ * This class implements and handles a line
  */
 public class Line extends Graphics
 {	
 	private static final long serialVersionUID = 1L;
 	
 	private List<VPoint> points;
-	private Map<MAnchor, VAnchor> anchors = new HashMap<MAnchor, VAnchor>();
-	
-	ArrayList<Handle> segmentHandles = new ArrayList<Handle>();
-
-	ConnectorShape shape;
 	
 	/**
 	 * Constructor for this class
@@ -70,103 +59,30 @@ public class Line extends Graphics
 		super(canvas, o);
 		
 		points = new ArrayList<VPoint>();
-		addPoint(o.getMStart());
-		addPoint(o.getMEnd());
-		setAnchors();
-		getConnectorShape().recalculateShape(getMLine());
-		updateSegmentHandles();
-	}
-	
-	private void addPoint(MPoint mp) {
-		VPoint vp = canvas.newPoint(mp, this);
-		points.add(vp);
-		vp.setHandleLocation();
-	}
-	
-	private MLine getMLine() {
-		return (MLine)gdata;
-	}
-	
-	/**
-	 * Update the segment handles to be placed on the current
-	 * connector segments
-	 */
-	private void updateSegmentHandles() {
-		ConnectorShape cs = getConnectorShape();
-		WayPoint[] waypoints = cs.getWayPoints();
-		
-		//Destroy and recreate the handles if the number
-		//doesn't match the waypoints number
-		if(waypoints.length != segmentHandles.size()) {
-			//Destroy the old handles
-			for(Handle h : segmentHandles) h.destroy();
-			segmentHandles.clear();
-			
-			//Create the new handles
-			for(int i = 0; i < waypoints.length; i++) {
-				Handle h = new Handle(Handle.DIRECTION_FREE, this, this.canvas);
-				h.setStyle(Handle.STYLE_SEGMENT);
-				segmentHandles.add(h);
-			}
+		for(MPoint mp : o.getMPoints()) {
+			VPoint vp = canvas.getPoint(mp);
+			points.add(vp);
+			vp.addLine(this);
+			vp.setHandleLocation();
 		}
-		//Put the handles in the right place
-		for(int i = 0; i < waypoints.length; i++) {
-			Handle h = segmentHandles.get(i);
-			h.setMLocation(waypoints[i].getX(), waypoints[i].getY());
+	}
+	
+	public int getNaturalOrder() 
+	{
+		return VPathway.DRAW_ORDER_LINE;
+	}
+	
+	protected void swapPoint(VPoint pOld, VPoint pNew) 
+	{
+		int i = points.indexOf(pOld);
+		if(i > -1) {
+			points.remove(pOld);
+			points.add(i, pNew);
 		}
 	}
 
-	/**
-	 * Updates the segment preferences to the new handle position
-	 */
-	protected void adjustToHandle(Handle h, double vx, double vy) {
-		WayPoint[] waypoints = getConnectorShape().getWayPoints();
-		int index = segmentHandles.indexOf(h);
-		if(index > -1) {
-			List<MPoint> points = gdata.getMPoints();
-			if(points.size() - 2 != (waypoints.length)) {
-				//Recreate points from segments
-				points = new ArrayList<MPoint>();
-				points.add(gdata.getMStart());
-				for(int i = 0; i < waypoints.length; i++) {
-					MPoint p = gdata.new MPoint(waypoints[i].getX(), waypoints[i].getY());
-					points.add(p);
-				}
-				points.add(gdata.getMEnd());
-				gdata.dontFireEvents(1);
-				gdata.setMPoints(points);
-			}
-			points.get(index + 1).moveTo(mFromV(vx), mFromV(vy));
-		}
-	}
-
-	public void select() {
-		super.select();
-		if(isSelected()) {
-			updateSegmentHandles();
-		}
-	}
-	
-	private List<Handle> getSegmentHandles() {
-		return segmentHandles;
-	}
-	
-	private ConnectorShape getConnectorShape() {
-		return getMLine().getConnectorShape();
-	}
-
-	/**
-	 * Get the connector shape translated to view coordinates
-	 */
-	private Shape getVConnector() {
-		Shape s = getConnectorShape().getShape();
-		AffineTransform t = new AffineTransform();
-		double scale = vFromM(1);
-		t.setToScale(scale, scale);
-		return t.createTransformedShape(s);
-	}
-	
-	public void doDraw(Graphics2D g) {
+	public void doDraw(Graphics2D g)
+	{
 		Color c;
 		
 		if(isSelected())
@@ -192,12 +108,12 @@ public class Line extends Graphics
 				  10, new float[] {4, 4}, 0));
 		}			
 
-		Shape l = getVConnector();
-
-		ArrowShape[] heads = getVHeads();
-		ArrowShape hs = heads[0];
-		ArrowShape he = heads[1];
-
+		Line2D l = getVLine();
+		Point2D start = l.getP1();
+		Point2D end = l.getP2();
+		
+		ArrowShape he = getVHead(start, end, gdata.getEndLineType());
+		ArrowShape hs = getVHead(end, start, gdata.getStartLineType());
 		g.draw(l);
 		drawHead(g, he, c);
 		drawHead(g, hs, c);
@@ -211,125 +127,8 @@ public class Line extends Graphics
 			if (hs != null) g.draw(hs.getShape());
 		}
 	}
-
-	/**
-	 * Be careful to prevent infinite recursion when
-	 * Line.getVOutline triggers recalculation of a connector.
-	 * 
-	 * For now, only check crossing of geneproducts and shapes.
-	 */
-	public Shape mayCross(Point2D point) 
-	{
-		Shape shape = null;
-		for (VPathwayElement o : canvas.getDrawingObjects())
-		{
-			if (o instanceof GeneProduct ||
-					o instanceof Shape)
-				if (o.vContains(point))
-				{
-					shape = o.getVOutline();
-				}
-		}
-
-		return shape;
-	}
-
-	public Point2D getStartPoint() {
-		return new Point2D.Double(getVStartX(), getVStartY());
-	}
-
-	public Point2D getEndPoint() {
-		return new Point2D.Double(getVEndX(), getVEndY());
-	}
-
-	protected Shape calculateVOutline() {
-		return new BasicStroke(5).createStrokedShape(getVShape(true));
-	}
 	
-	/**
-	 * Returns the properly sized and rotated arrowheads
-	 * @return An array with two arrowheads, for the start and end respectively
-	 */
-	protected ArrowShape[] getVHeads() {
-		Segment[] segments = getConnectorShape().getSegments();
-		
-		ArrowShape he = getVHead(
-				segments[segments.length - 1].getMStart(), 
-				segments[segments.length - 1].getMEnd(),
-				gdata.getEndLineType()
-		);
-		ArrowShape hs = getVHead(
-				segments[0].getMEnd(),
-				segments[0].getMStart(),
-				gdata.getStartLineType()
-		);
-		return new ArrowShape[] { hs, he };
-	}
-	
-	protected Shape getVShape(boolean rotate) {
-		Shape l = getVConnector();
-
-		ArrowShape[] heads = getVHeads();
-		ArrowShape hs = heads[0];
-		ArrowShape he = heads[1];
-		
-		Area total = new Area(new BasicStroke(1).createStrokedShape(l));
-		if(hs != null) {
-			total.add(new Area(hs.getShape()));
-		}
-		if(he != null) {
-			total.add(new Area(he.getShape()));
-		}
-		return total;
-	}
-	private void setAnchors() {
-		//Check for new anchors
-		List<MAnchor> manchors = gdata.getMAnchors();
-		for(MAnchor ma : manchors) {
-			if(!anchors.containsKey(ma)) {
-				anchors.put(ma, new VAnchor(ma, this));
-			}
-		}
-		//Check for deleted anchors
-		for(MAnchor ma : anchors.keySet()) {
-			if(!manchors.contains(ma)) {
-				anchors.get(ma).destroy();
-			}
-		}
-	}
-	
-	protected Collection<VAnchor> getVAnchors() {
-		return anchors.values();
-	}
-	
-	protected void markDirty() {
-		super.markDirty();
-		for(VAnchor va : anchors.values()) {
-			va.markDirty();
-		}
-	}
-	
-	void removeVAnchor(VAnchor va) {
-		anchors.remove(va.getMAnchor());
-		gdata.removeMAnchor(va.getMAnchor());
-	}
-	
-	private void updateAnchorPositions() {
-		for(VAnchor va : anchors.values()) {
-			va.updatePosition();
-		}
-	}
-	
-	protected void swapPoint(VPoint pOld, VPoint pNew) 
-	{
-		int i = points.indexOf(pOld);
-		if(i > -1) {
-			points.remove(pOld);
-			points.add(i, pNew);
-		}
-	}
-	
-	protected void drawHead(Graphics2D g, ArrowShape head, Color c)
+	private void drawHead(Graphics2D g, ArrowShape head, Color c)
 	{
 		if(head != null)
 		{
@@ -338,13 +137,13 @@ public class Line extends Graphics
 			{
 			case ArrowShape.OPEN:
 				g.setPaint (Color.WHITE);
-				g.fill (head.getFillShape());				
+				g.fill (head.getShape());				
 				g.setColor (c);
 				g.draw (head.getShape());
 				break;
 			case ArrowShape.CLOSED:
 				g.setPaint (c);
-				g.fill (head.getFillShape());				
+				g.fill (head.getShape());				
 				break;
 			case ArrowShape.WIRE:
 				g.setColor (c);
@@ -358,17 +157,14 @@ public class Line extends Graphics
 
 	/**
 	   Will return the arrowhead suitable for an arrow pointing from
-	   p1 to p2 (so the tip of the arrowhead will be at p2).
-	   @param mP1	The start point in model coordinates
-	   @param mP2	The end point in model coordinates
-	   @return The ArrowShape in view coordinates
+	   p1 to p2 (so the tip of the arrowhead will be at p2)
 	 */
-	protected ArrowShape getVHead(Point2D mP1, Point2D mP2, LineType type)
+	protected ArrowShape getVHead(Point2D p1, Point2D p2, LineType type)
 	{
-		double xs = vFromM(mP1.getX());
-		double ys = vFromM(mP1.getY());
-		double xe = vFromM(mP2.getX());
-		double ye = vFromM(mP2.getY());
+		double xs = p1.getX();
+		double ys = p1.getY();
+		double xe = p2.getX();
+		double ye = p2.getY();
 
 		ArrowShape h;
 		if (type == null)
@@ -392,10 +188,116 @@ public class Line extends Graphics
 			f.translate (xe, ye);
 			f.scale (scaleFactor, scaleFactor);		   
 			Shape sh = f.createTransformedShape(h.getShape());
-			Shape fsh = f.createTransformedShape(h.getFillShape());
-			h = new ArrowShape (sh, fsh, h.getFillType());
+			h = new ArrowShape (sh, h.getFillType());
 		}
 		return h;
+	}
+
+	/*
+	private Shape getArrowHead(double xs, double ys, double xe, double ye, double w, double h) {
+		int[] xpoints = new int[] { (int)xe, (int)(xe - w), (int)(xe - w) };
+		int[] ypoints = new int[] { (int)ye, (int)(ye - h), (int)(ye + h) };
+		
+		return new Polygon(xpoints, ypoints, 3);
+	}
+	
+	private Shape getTBar(double xs, double ys, double xe, double ye, double w, double h) {
+		return new Rectangle2D.Double(xe - w, ye - h/2, w, h);
+	}
+		
+	private Shape getLRound(double xe, double ye, double d) {	
+		return new Ellipse2D.Double(xe - d/2, ye - d/2, d, d);
+	}
+		
+	private Shape getRRound(double xs, double ys, double xe, double ye, double d) {
+		return new Arc2D.Double((int)xe, (int)(ye - d/2), d, d, 90, 180, Arc2D.OPEN);
+	}
+		
+	private Shape getReceptor(double xs, double ys, double xe, double ye, double w, double h) {					
+		GeneralPath rec = new GeneralPath();
+		rec.moveTo((int)(xe + w), (int)(ye + h/2));
+		rec.lineTo((int)xe, (int)(ye + h/2));
+		rec.lineTo((int)xe, (int)(ye - h/2));
+		rec.lineTo((int)(xe + w), (int)(ye - h/2));
+		return rec;
+	}
+	
+	private Shape getLigand(double xs, double ys, double xe, double ye, double w, double h) {
+		return new Rectangle2D.Double(xe - w, ye - h/2, w, h);
+	}
+	*/
+	
+//	TODO: create the real outline, by creating a shape that
+//  represents the whole line...use getArrow() etc.
+	protected Shape getVOutline()
+	{
+		Line2D l = getVLine();
+		Point2D start = l.getP1();
+		Point2D end = l.getP2();
+		
+		//TODO: take start arrowHead into account too.
+		//Wider stroke for line, for 'fuzzy' matching
+		Area line = new Area (new BasicStroke(5).createStrokedShape(l));
+		ArrowShape he = getVHead(start, end, gdata.getEndLineType());
+		if(he != null)
+		{
+			line.add(new Area(he.getShape()));
+		}
+		ArrowShape hs = getVHead(end, start, gdata.getStartLineType());
+		if(hs != null)
+		{
+			line.add(new Area(hs.getShape()));
+		}
+		return line;
+	}
+	
+//	/**
+//	 * If the line type is arrow, this method draws the arrowhead
+//	 */
+//	private void drawArrowhead(GC buffer) //TODO! clean up this mess.....
+//	{
+//		double angle = 25.0;
+//		double theta = Math.toRadians(180 - angle);
+//		double[] rot = new double[2];
+//		double[] p = new double[2];
+//		double[] q = new double[2];
+//		double a, b, norm;
+//		
+//		rot[0] = Math.cos(theta);
+//		rot[1] = Math.sin(theta);
+//		
+//		buffer.setLineStyle (SWT.LINE_SOLID);
+//		
+//		double vEndx = getVEndX();
+//		double vEndy = getVEndY();
+//		double vStartx = getVStartX();
+//		double vStarty = getVStartY();
+//		
+//		if(vStartx == vEndx && vStarty == vEndy) return; //Unable to determine direction
+//		
+//		a = vEndx-vStartx;
+//		b = vEndy-vStarty;
+//		norm = 8/(Math.sqrt((a*a)+(b*b)));				
+//		p[0] = ( a*rot[0] + b*rot[1] ) * norm + vEndx;
+//		p[1] = (-a*rot[1] + b*rot[0] ) * norm + vEndy;
+//		q[0] = ( a*rot[0] - b*rot[1] ) * norm + vEndx;
+//		q[1] = ( a*rot[1] + b*rot[0] ) * norm + vEndy;
+//		int[] points = {
+//			(int)vEndx, (int)vEndy,
+//			(int)(p[0]), (int)(p[1]),
+//			(int)(q[0]), (int)(q[1])
+//		};
+//		
+//		buffer.drawPolygon (points);
+//		buffer.fillPolygon (points);
+//	}
+
+	/**
+	 * Constructs the line for the coordinates stored in this class
+	 */
+	public Line2D getVLine()
+	{
+		return new Line2D.Double(getVStartX(), getVStartY(), getVEndX(), getVEndY());
 	}
 	
 	/**
@@ -406,7 +308,7 @@ public class Line extends Graphics
 	 * <DD>Double x2	- new endx
 	 * <DD>Double y2	- new endy
 	 */
-	private void setVLine(double vx1, double vy1, double vx2, double vy2)
+	public void setVLine(double vx1, double vy1, double vx2, double vy2)
 	{
 		getStart().setVLocation(vx1, vy1);
 		getEnd().setVLocation(vx2, vy2);
@@ -418,14 +320,11 @@ public class Line extends Graphics
 	
 	public Handle[] getHandles()
 	{
-		ArrayList<Handle> handles = new ArrayList<Handle>();
-		for(VPoint p : points) {
-			handles.add(p.getHandle());
+		Handle[] handles = new Handle[points.size()];
+		for(int i = 0; i < handles.length; i++) {
+			handles[i] = points.get(i).getHandle();
 		}
-		for(Handle h : segmentHandles) {
-			handles.add(h);
-		}
-		return handles.toArray(new Handle[handles.size()]);
+		return handles;
 	}
 		
 	public List<VPoint> getPoints() { return points; }
@@ -440,39 +339,48 @@ public class Line extends Graphics
 	
 	public double getVCenterX()
 	{
-		return vFromM(gdata.getMCenterX());
+		double start = gdata.getMStart().getX();
+		double end = gdata.getMEnd().getX();
+		return vFromM(start + (end - start) / 2);
 	}
 	
 	public double getVCenterY()
 	{
-		return vFromM(gdata.getMCenterY());
+		double start = gdata.getMStart().getY();
+		double end = gdata.getMEnd().getY();
+		return vFromM(start + (end - start) / 2);
 	}
 	
 	public double getVLeft()
 	{
-		return vFromM(gdata.getMLeft());
+		double start = gdata.getMStart().getX();
+		double end = gdata.getMEnd().getX();
+		return vFromM(Math.min(start, end));
 	}
 	
 	public double getVWidth()
 	{
-		return vFromM(gdata.getMWidth());
+		double start = gdata.getMStart().getX();
+		double end = gdata.getMEnd().getX();
+		return vFromM(Math.abs(start-end));
 	}
 	
 	public double getVHeight()
 	{
-		return vFromM(gdata.getMHeight());
+		double start = gdata.getMStart().getY();
+		double end = gdata.getMEnd().getY();
+		return vFromM(Math.abs(start-end));
 	}	
 	
 	public double getVTop()
 	{
-		return vFromM(gdata.getMTop());
+		double start = gdata.getMStart().getY();
+		double end = gdata.getMEnd().getY();
+		return vFromM(Math.min(start, end));
 	}
 	
-	protected void vMoveWayPointsBy(double vdx, double vdy) {
-		List<MPoint> mps = gdata.getMPoints();
-		for(int i = 1; i < mps.size() - 1; i++) {
-			mps.get(i).moveBy(mFromV(vdx), mFromV(vdy));
-		}
+	protected Shape getVShape(boolean rotate) {
+		return new Rectangle2D.Double(getVLeft(), getVTop(), getVWidth(), getVHeight());
 	}
 	
 	protected void vMoveBy(double vdx, double vdy)
@@ -480,68 +388,39 @@ public class Line extends Graphics
 		for(VPoint p : points) {
 			p.vMoveBy(vdx, vdy);
 		}
-		//Redraw graphRefs
+		//Move graphRefs
+		Set<VPoint> toMove = new HashSet<VPoint>();
 		for(GraphRefContainer ref : gdata.getReferences()) {
 			if(ref instanceof MPoint) {
-				VPoint vp = canvas.getPoint((MPoint)ref);
-				if(vp != null) {
-					vp.getLine().recalculateConnector();
-				}
+				toMove.add(canvas.getPoint((MPoint)ref));
 			}
 		}
-	}
-	
-	public void recalculateConnector() {
-		getConnectorShape().recalculateShape(getMLine());
-		updateAnchorPositions();
-		for(VPoint vp : points) {
-			vp.setHandleLocation();
-		}
-		markDirty();
+		toMove.removeAll(points);
+		for(VPoint p : toMove) p.vMoveBy(vdx, vdy);
 	}
 	
 	public void gmmlObjectModified(PathwayEvent e) {		
-		getConnectorShape().recalculateShape(getMLine());
-		
-		WayPoint[] wps = getConnectorShape().getWayPoints();
-		List<MPoint> mps = gdata.getMPoints();
-		if(wps.length == mps.size() - 2 && getConnectorShape().hasValidWaypoints(getMLine())) {
-			getMLine().adjustWayPointPreferences(wps);
-		} else {
-			getMLine().resetWayPointPreferences();
-		}
-
-		updateSegmentHandles();
 		markDirty();
 		for(VPoint p : points) {
 			p.markDirty();
 			p.setHandleLocation();
 		}
-		if(gdata.getMAnchors().size() != anchors.size()) {
-			setAnchors();
-		}
-		updateAnchorPositions();
 	}
 	
 	protected void destroyHandles() { 
-		//Point handles will be destroyed by VPoints
-		
-		for(Handle h : getSegmentHandles()) {
-			h.destroy();
-		}
+		//Do nothing, handles will be destroyed by VPoints
 	}
 	
 	protected void destroy() {
+		//don't call super.destroy(), this will destroy handles of VPoints
+		//which may be used by other lines
 		super.destroy();
 		
 		for(VPoint p : points) {
-			p.destroy();
+			p.removeLine(this);
 		}
 		for(MPoint p : gdata.getMPoints()) {
 			canvas.pointsMtoV.remove(p);
-		}
-		for(VAnchor a : anchors.values()) {
-			a.destroy();
 		}
 	}
 	
@@ -572,43 +451,4 @@ public class Line extends Graphics
 	 * @return
 	 */
 	protected double getVEndY() { return (int)(vFromM(gdata.getMEndY())); }
-
-	/**
-	 * Translate a line coordinate (1-dimensional) to
-	 * a view coordinate
-	 * @param l The line coordinate
-	 */
-	public Point2D vFromL(double l) {
-		Point2D m = getConnectorShape().fromLineCoordinate(l);
-		return new Point2D.Double(vFromM(m.getX()), vFromM(m.getY()));
-	}
-	
-	/**
-	 * Translate a view coordinate (2-dimensional) to
-	 * a line coordinate (1-dimensional)
-	 */
-	public double lFromV(Point2D v) {
-		Point2D m = new Point2D.Double(mFromV(v.getX()), mFromV(v.getY()));
-		return getConnectorShape().toLineCoordinate(m);
-	}
-	
-	/**
-	 * Get the segment on which the given line coordinate
-	 * lies
-	 */
-	public Segment getSegment(double lc) {
-		Segment[] segments = getConnectorShape().getSegments();
-		double length = 0;
-		for(Segment s : segments) {
-			length += s.getMLength();
-		}
-		double end = 0;
-		for(Segment s : segments) {
-			end += s.getMLength();
-			if(lc <= end) {
-				return s;
-			}
-		}
-		return segments[segments.length];
-	}
 }

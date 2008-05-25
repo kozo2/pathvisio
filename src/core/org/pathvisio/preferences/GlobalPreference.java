@@ -17,14 +17,12 @@
 package org.pathvisio.preferences;
 
 import java.awt.Color;
-import java.io.File;
 
 import org.pathvisio.Engine;
 import org.pathvisio.util.ColorConverter;
 
 public enum GlobalPreference implements Preference {
-	FILE_LOG(new File (Engine.getCurrent().getApplicationDir(), ".PathVisioLog")),
-	WP_FILE_LOG(new File (Engine.getCurrent().getApplicationDir(), ".wikipathwaysLog")),
+	FILE_LOG(""), //TODO
 	
 	COLOR_NO_CRIT_MET(new Color(200, 200, 200)),
 	COLOR_NO_GENE_FOUND(Color.WHITE),
@@ -37,20 +35,13 @@ public enum GlobalPreference implements Preference {
 	DB_ENGINE_GDB("org.pathvisio.data.DBConnDerby"),
 	DB_ENGINE_GEX("org.pathvisio.data.DBConnDerby"),
 	DB_GDB_CURRENT("none"),
-	DB_METABDB_CURRENT("none"),
 	
 	SHOW_ADVANCED_ATTRIBUTES(Boolean.toString(false)),
 	MIM_SUPPORT(Boolean.toString(true)),
 	SNAP_TO_ANGLE (Boolean.toString(false)),
 	SNAP_TO_ANGLE_STEP ("15"),
-	
-	SNAP_TO_ANCHOR(Boolean.toString(true)),
 
 	GUI_SIDEPANEL_SIZE("30"),
-	
-	DIR_PWFILES(new File(Engine.getCurrent().getDataDir().toString(), "pathways").toString()),
-	DIR_GDB(new File(Engine.getCurrent().getDataDir().toString(), "gene databases").toString()),
-	DIR_EXPR(new File(Engine.getCurrent().getDataDir().toString(), "expression datasets").toString())
 	
 	;
 	
@@ -58,17 +49,12 @@ public enum GlobalPreference implements Preference {
 		this.defaultValue = defaultValue;
 	}
 	
-	GlobalPreference(Color defaultValue) 
-	{
-		this.defaultValue = ColorConverter.getRgbString(defaultValue);
-	}
-	
-	GlobalPreference(File defaultValue)
-	{
-		this.defaultValue = "" + defaultValue;
+	GlobalPreference(Color defaultValue) {
+		this.defaultValue = color2String(defaultValue);
 	}
 	
 	private String defaultValue;
+	private String value;
 	
 	public String getDefault() {
 		return defaultValue;
@@ -77,5 +63,56 @@ public enum GlobalPreference implements Preference {
 	public void setDefault(String defValue) {
 		defaultValue = defValue;
 	}
+	
+	public void setValue(String newValue) {
+		value = newValue;
+		Engine.getCurrent().savePreferences();
+	}
+	
+	public String getValue() {
+		if(value != null) {
+			return value;
+		} else {
+			return defaultValue;
+		}
+	}
 		
+	public static boolean isDefault(Preference p) {
+		return p.getValue().equals(p.getDefault());
+	}
+	public static void setValue(Preference p, Color newValue) {
+		p.setValue(color2String(newValue));
+	}
+	
+	public static void setValue(Preference p, int newValue) {
+		p.setValue(Integer.toString(newValue));
+	}
+	
+	public static void setValue(Preference p, double newValue) {
+		p.setValue(Double.toString(newValue));
+	}
+	
+	public static Color getValueColor(Preference p) {
+		return string2Color(p.getValue());
+	}
+	
+	public static int getValueInt(Preference p) {
+		return Integer.parseInt(p.getValue());
+	}
+	
+	public static double getValueDouble(Preference p) {
+		return Double.parseDouble(p.getValue());
+	}
+	
+	public static boolean getValueBoolean(Preference p) {
+		return Boolean.parseBoolean(p.getValue());
+	}
+	
+	private static Color string2Color(String s) {
+		return ColorConverter.parseColorString(s);
+	}
+	
+	private static String color2String(Color c) {
+		return ColorConverter.getRgbString(c);
+	}
 }

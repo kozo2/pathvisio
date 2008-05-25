@@ -22,7 +22,6 @@ import java.util.List;
 
 public class ProgressKeeper {
 	public static final int PROGRESS_UNKNOWN = -1;
-	public static final int PROGRESS_FINISHED = -2;
 	volatile String taskName;
 	volatile boolean cancelled;
 	volatile String report;
@@ -35,13 +34,7 @@ public class ProgressKeeper {
 	}
 	
 	public void worked(int w) {
-		if(!isFinished()) {			
-			progress += w;
-			if(progress >= total) {
-				progress = total; //to trigger event
-				finished();
-			}
-		}
+		progress += w;
 	}
 	
 	public final void worked(double d) {
@@ -56,14 +49,8 @@ public class ProgressKeeper {
 	public String getTaskName() { return taskName; }
 	
 	public void finished() {
-		if(!isFinished()) { //Only fire event once
-			progress = PROGRESS_FINISHED;
-			fireProgressEvent(ProgressEvent.FINISHED);
-		}
-	}
-	
-	public boolean isFinished() {
-		return progress == PROGRESS_FINISHED;
+		progress = total;
+		fireProgressEvent(ProgressEvent.FINISHED);
 	}
 	
 	public void cancel() {
@@ -91,7 +78,7 @@ public class ProgressKeeper {
 	
 	void fireProgressEvent(int type) {
 		for(ProgressListener l : listeners)
-			l.progressEvent(new ProgressEvent(this, type));
+			l.progressFinished(new ProgressEvent(this, type));
 	}
 	
 	List<ProgressListener> listeners = new ArrayList<ProgressListener>();
@@ -100,13 +87,7 @@ public class ProgressKeeper {
 		if(!listeners.contains(l)) listeners.add(l);
 	}
 	
-	public List<ProgressListener> getListeners() {
-		return listeners;
-	}
-	
 	public class ProgressEvent extends EventObject {
-		private static final long serialVersionUID = 1L;
-
 		public static final int FINISHED = 0;
 		public static final int TASK_NAME_CHANGED = 1;
 		public static final int REPORT = 2;
@@ -121,6 +102,6 @@ public class ProgressKeeper {
 	}
 	
 	public interface ProgressListener {
-		public void progressEvent(ProgressEvent e);
+		public void progressFinished(ProgressEvent e);
 	}
 }

@@ -16,23 +16,18 @@
 //
 package org.pathvisio.view;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
+import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.GraphLink.GraphRefContainer;
-import org.pathvisio.model.PathwayElement.MPoint;
 
-public class Group extends Graphics implements LinkProvider
+public class Group extends Graphics
 {
 
 	public Group(VPathway canvas, PathwayElement pe)
@@ -193,134 +188,49 @@ public class Group extends Graphics implements LinkProvider
 	}
 
 	@Override
-	public void deselect() {
-		for (Graphics g : getGroupGraphics())
-		{
-			g.deselect();
-		}
-		super.deselect();
-	}
-	
-	@Override
 	protected void vMoveBy(double dx, double dy)
 	{
 		for (Graphics g : getGroupGraphics())
 		{
 			g.vMoveBy(dx, dy);
 		}
-		//Move graphRefs
-		//GraphLink.moveRefsBy(gdata, mFromV(vdx), mFromV(vdy));
-		Set<VPoint> toMove = new HashSet<VPoint>();
-		for(GraphRefContainer ref : gdata.getReferences()) {
-			if(ref instanceof MPoint) {
-				toMove.add(canvas.getPoint((MPoint)ref));
-			}
-		}
-		for(VPoint p : toMove) p.vMoveBy(dx, dy);
+		//super.vMoveBy(dx, dy);
 	}
 
+	@Override
+	public int getNaturalOrder()
+	{
+
+		return VPathway.DRAW_ORDER_GROUP;
+	}
+
+	@Override
 	protected void doDraw(Graphics2D g2d)
 	{
-		if(showLinkAnchors) {
-			for(LinkAnchor la : getLinkAnchors()) {
-				la.draw((Graphics2D)g2d.create());
-			}
-		}
+		// TODO make unique selection box for groups
+
 	}
 
-	public void highlight(Color c) {
-		super.highlight(c);
-		//Highlight the children
-		for(Graphics g : getGroupGraphics()) {
-			g.highlight();
-		}
+	@Override
+	protected Shape getVOutline()
+	{
+		// TODO Return outline of the Group members, distinct from global
+		// selection box
+
+		Rectangle rect = new Rectangle();
+
+		return rect;
 	}
-	
-	protected Shape calculateVOutline() {
-		//Include rotation and stroke
-		Area a = new Area(getVShape(true));
-		//Include link anchors
-		if(showLinkAnchors) {
-			for(LinkAnchor la : getLinkAnchors()) {
-				a.add(new Area(la.getShape()));
-			}
-		}
-		return a;
-	}
-	
+
 	protected Shape getVShape(boolean rotate)
 	{
-		Rectangle2D mb = null;
-		if(rotate) {
-			mb = gdata.getRBounds();
-		} else {
-			mb = gdata.getMBounds();
-		}
-		return canvas.vFromM(mb);
+		// TODO Auto-generated method stub
+		return new Rectangle();
 	}
 
 	protected void setVScaleRectangle(Rectangle2D r)
 	{
 		// TODO Auto-generated method stub
 
-	}
-
-	List<LinkAnchor> linkAnchors = new ArrayList<LinkAnchor>();
-	
-	private static final int MIN_SIZE_LA = 15 * 25;
-	private int num_linkanchors_h = -1;
-	private int num_linkanchors_v = -1;
-	
-	public List<LinkAnchor> getLinkAnchors() {
-		//Number of link anchors depends on the size of the object
-		//If the width/height is large enough, there will be three link anchors per side,
-		//Otherwise there will be only one link anchor per side
-		int n_h = gdata.getMWidth() >= MIN_SIZE_LA ? 3 : 1;
-		int n_v = gdata.getMHeight() >= MIN_SIZE_LA ? 3 : 1;
-		if(n_h != num_linkanchors_h || n_v != num_linkanchors_v) {
-			createLinkAnchors(n_h, n_v);
-		}
-		return linkAnchors;
-	}
-	
-	private void createLinkAnchors(int n_h, int n_v) {
-		linkAnchors.clear();
-		double d_h = 2.0/(n_h + 1);
-		for(int i = 1; i <= n_h; i++) {
-			linkAnchors.add(new LinkAnchor(canvas, gdata, -1 + i * d_h, -1));
-			linkAnchors.add(new LinkAnchor(canvas, gdata, -1 + i * d_h, 1));
-		}
-		double d_v = 2.0/(n_v + 1);
-		for(int i = 1; i <= n_v; i++) {
-			linkAnchors.add(new LinkAnchor(canvas, gdata, -1, -1 + i * d_v));
-			linkAnchors.add(new LinkAnchor(canvas, gdata, 1, -1 + i * d_v));
-		}
-		num_linkanchors_h = n_h;
-		num_linkanchors_v = n_v;
-	}
-	
-	boolean showLinkAnchors = false;
-	
-	public void showLinkAnchors() {
-		if(!showLinkAnchors) {
-			showLinkAnchors = true;
-			markDirty();
-		}
-	}
-	
-	public void hideLinkAnchors() {
-		if(showLinkAnchors) {
-			showLinkAnchors = false;
-			markDirty();
-		}
-	}
-	
-	public LinkAnchor getLinkAnchorAt(Point2D p) {
-		for(LinkAnchor la : getLinkAnchors()) {
-			if(la.getMatchArea().contains(p)) {
-				return la;
-			}
-		}
-		return null;
 	}
 }

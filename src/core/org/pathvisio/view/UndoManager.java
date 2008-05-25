@@ -18,7 +18,7 @@ package org.pathvisio.view;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.pathvisio.Engine;
 import org.pathvisio.model.Pathway;
 
 public class UndoManager 
@@ -27,12 +27,6 @@ public class UndoManager
 	
 	private List<UndoAction> undoList = new ArrayList<UndoAction>();
 
-	private Pathway pathway;
-	
-	public void setPathway (Pathway pathway) {
-		this.pathway = pathway;
-	}
-	
 	static final int MAX_UNDO_SIZE = 25;
 	/**
 	   Insert a new action into the Undo Queue based on an UndoAction
@@ -64,8 +58,9 @@ public class UndoManager
 	 */
 	public void newAction (String desc)
 	{
-		if(pathway != null) {
-			UndoAction x = new UndoAction (desc, (Pathway)pathway.clone());
+		Pathway pwy = Engine.getCurrent().getActivePathway();
+		if(pwy != null) {
+			UndoAction x = new UndoAction (desc, (Pathway)pwy.clone());
 			newAction (x);
 		}
 	}
@@ -118,7 +113,6 @@ public class UndoManager
 	/**
 	   debugging helper function
 	 */
-	@SuppressWarnings("unused")
 	private void printSummary()
 	{
 		System.out.println ("===============================");
@@ -130,7 +124,7 @@ public class UndoManager
 			System.out.println ();
 		}
 		System.out.println ("Current pathway");
-		System.out.print (pathway.summary());
+		System.out.print (Engine.getCurrent().getActivePathway().summary());
 		System.out.println();
 	}
 }

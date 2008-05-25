@@ -68,7 +68,7 @@ public class SvgFormat implements PathwayExporter
 		return doc;
 	}
 
-	private static class SvgComparator implements Comparator<PathwayElement> {		
+	private static class SvgComparator implements Comparator {		
 		List<Integer> order = Arrays.asList(
 			ObjectType.INFOBOX,
 			ObjectType.LEGEND,
@@ -80,8 +80,9 @@ public class SvgFormat implements PathwayExporter
 		List<ShapeType> shapeOrder = Arrays.asList(
 			ShapeType.BRACE //Everything not specified will be on top
 		);
-		public int compare(PathwayElement d1, PathwayElement d2) 
-		{
+		public int compare(Object o1, Object o2) {
+			PathwayElement d1 = (PathwayElement)o1;
+			PathwayElement d2 = (PathwayElement)o2;
 			int ot1 = d1.getObjectType();
 			int ot2 = d2.getObjectType();
 			if(ot1 == ObjectType.SHAPE && ot2 == ObjectType.SHAPE) {
@@ -125,7 +126,7 @@ public class SvgFormat implements PathwayExporter
 				{"Availability: ", o.getCopyright()},
 				{"Last modified: ", o.getLastModified()},
 				{"Organism: ", o.getOrganism()},
-				{"Data Source: ", o.getMapInfoDataSource()}};
+				{"Data Source: ", o.getDataSource()}};
 		
 		double fsize = toPixel(o.getMFontSize()) + 2;//TODO: find out why smaller in SVG
 		Element e = new Element("text", nsSVG);
@@ -282,7 +283,7 @@ public class SvgFormat implements PathwayExporter
 		return e;
 	}
 	
-	static String getColordMarker(LineType type, Color color, Set<String> markers, Element defs) {
+	static String getColordMarker(LineType type, Color color, Set markers, Element defs) {
 		Element marker = null;
 		String id = type.getGpmlName() + color.toString().hashCode();
 		

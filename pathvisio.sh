@@ -3,24 +3,24 @@
 # RUN_MODE can be "DIRECT" or "WEBSTART"
 RUN_MODE=DIRECT
 # MAIN_CLASS contains the main class to run when RUN_MODE is DIRECT
-MAIN_CLASS=org.pathvisio.gui.swing.GuiMain
+MAIN_CLASS=org.pathvisio.gui.swt.GuiMain
 # BASE_URL contains the webstart url (without pathvisio_v1.jnlp or pathvisio_v2.jnlp)
 BASE_URL=
-# USE_SWING = 1 for swing version, 0 for swt version
-USE_SWING=1
+# Set USE_EXPERIMENTAL to 1 if you want to run with Data visualizatoin and R mode
+USE_EXPERIMENTAL=0
 
-while getopts ":gerdsj" options; do
+while getopts ":gerds" options; do
 	case $options in
 		g )
-			USE_SWING=1
 			RUN_MODE=DIRECT
 			MAIN_CLASS=org.pathvisio.gui.swing.GuiMain
 			BASE_URL=
 			;;
+		e )
+			USE_EXPERIMENTAL=1
+			;;
 		s )
-			USE_SWING=0
-			RUN_MODE=DIRECT
-			MAIN_CLASS=org.pathvisio.gui.swt.GuiMain
+			USE_EXPERIMENTAL=0
 			;;
 		r )
 			RUN_MODE=WEBSTART
@@ -32,18 +32,13 @@ while getopts ":gerdsj" options; do
 			MAIN_CLASS=
 			BASE_URL=http://ftp2.bigcat.unimaas.nl/~martijn.vaniersel/pathvisio/daily/webstart
 			;;
-		j )
-			RUN_MODE=JAR
-			MAIN_CLASS=
-			BASE_URL=
-			;;
 		\? )
-			echo "Usage: `basename $0` [-g|-r|-d|-j] [-e|-s] [-?]"
-			echo "  -g : swing version instead of swt"
+			echo "Usage: `basename $0` [-g|-r|-d] [-e|-s] [-?]"
+			echo "  -g : Use swing instead of swt"
 			echo "  -r : Use webstart, latest stable release"
 			echo "  -d : Use webstart, daily build"
+			echo "  -e : Turn on experimental features (Data visualization, statistics)"
 			echo "  -s : Turn off experimental features (default)"
-			echo "  -j : Use jar"
 			echo "  -? : show this help message"
 			exit;
 			;;
@@ -56,21 +51,19 @@ source classpath.sh;
 export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/atlas:/usr/lib/firefox
 export MOZILLA_FIVE_HOME=/usr/lib/firefox
 
-MYCLASSPATH1=$PATHVISIO_CP:build/swt:build/gui:build/core
-MYCLASSPATH2=$PATHVISIO_CP:build/swing:build/gui:build/core
+MYCLASSPATH1=$PATHVISIO_CP:build/v1
+MYCLASSPATH2=$PATHVISIO_CP:build/v2
 
 if [ $RUN_MODE = "DIRECT" ]; then
-	if [ $USE_SWING = "0" ]; then
-		java -classpath $MYCLASSPATH1 $MAIN_CLASS "$@"
-	elif [ $USE_SWING = "1" ]; then
-		java -classpath $MYCLASSPATH2 $MAIN_CLASS "$@"
+	if [ $USE_EXPERIMENTAL = "0" ]; then
+		java -classpath $MYCLASSPATH1 $MAIN_CLASS
+	elif [ $USE_EXPERIMENTAL = "1" ]; then
+		java -classpath $MYCLASSPATH2 $MAIN_CLASS -ur
 	fi	
 elif [ $RUN_MODE = "WEBSTART" ]; then
-	javaws "$BASE_URL/pathvisio_v1.jnlp"
-elif [ $RUN_MODE = "JAR" ]; then
-	if [ $USE_SWING = "0" ]; then
-		java -jar pathvisio_v1.jar
-	elif [ $USE_SWING = "1" ]; then
-		java -jar pathvisio_v2.jar
-	fi	
+	if [ $USE_EXPERIMENTAL = "0" ]; then
+		javaws "$BASE_URL/pathvisio_v1.jnlp"
+	elif [ $USE_EXPERIMENTAL = "1" ]; then
+		javaws "$BASE_URL/pathvisio_v2.jnlp" -ur
+	fi
 fi

@@ -17,129 +17,20 @@
 package org.pathvisio.data;
 
 import junit.framework.TestCase;
-import org.pathvisio.ApplicationEvent;
-import org.pathvisio.Engine.ApplicationEventListener;
-import org.pathvisio.model.DataSource;
-import org.pathvisio.model.Xref;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
+public class Test extends TestCase {
 
-public class Test extends TestCase implements ApplicationEventListener
-{	
-	//TODO
-	static final String gdbHuman = 
-		System.getProperty ("user.home") + File.separator + 
-		"PathVisio-Data/gene databases/Hs_41_36c.pgdb";
-	static final String gdbRat = 
-		System.getProperty ("user.home") + File.separator + 
-		"PathVisio-Data/gene databases/Rn_39_34i.pgdb";
-
-	boolean eventReceived = false;
-
-	public void applicationEvent (ApplicationEvent e)
-	{
-		if (e.getType() == ApplicationEvent.GDB_CONNECTED)
-		{
-			eventReceived = true;
+	public void testPubMedQuery() {
+		String id = "17588266";
+		PubMedQuery pmq = new PubMedQuery(id);
+		try {
+			pmq.execute();
+		} catch (Exception e) {
+			fail(e.getMessage());
 		}
+		
+		PubMedResult pmr = pmq.getResult();
+		assertTrue(pmr.getId().equals(id));
+		assertTrue("GenMAPP 2: new features and resources for pathway analysis.".equals(pmr.getTitle()));
 	}
-	
-	public void testGdbConnect() throws DataException
-	{
-		//TODO: create test pgdb
-		// suitable for mapping Hs_Apoptosis genes.
-		
-		assertTrue (new File (gdbHuman).exists()); // if gdb can't be found, rest of test doesn't make sense. 
-		SimpleGdb gdb = new SimpleGdb (gdbHuman, new DataDerby(), 0);
-		gdb.close();
-		
-		// assertTrue (eventReceived);
-		// test reception of event...
-	}
-	
-	public void testImportSample1() throws IOException, DataException
-	{
-		ImportInformation info = new ImportInformation();
-		File f = new File ("example-data/sample_data_1.txt");
-		assertTrue (f.exists());
-		info.setTxtFile(f);
-		String dbFileName = System.getProperty("java.io.tmpdir") + File.separator + "tempgex2";
-		info.setDbName(dbFileName);
-		GdbManager.setGeneDb(gdbHuman);
-		GexTxtImporter.importFromTxt(info, null);
-		
-		// no errors if all genes could be looked up.
-		assertEquals (info.getErrorList().size(), 0);
-		
-		ImportInformation info2 = new ImportInformation();
-		info2.setTxtFile(f);
-		dbFileName = System.getProperty("java.io.tmpdir") + File.separator + "tempgex3";
-		info2.setDbName(dbFileName);
-		
-		GdbManager.setGeneDb(null); // disable gene database
-		GexTxtImporter.importFromTxt(info, null);
-		
-		// 91 errors expected if no genes can be looked up.
-		assertEquals (info.getErrorList().size(), 91);
-		
-	}
-
-	public void testImportSample2() throws IOException, DataException
-	{
-		ImportInformation info = new ImportInformation();
-		File f = new File ("example-data/sample_affymetrix.txt");
-		assertTrue (f.exists());
-		info.setTxtFile(f);
-		String dbFileName = System.getProperty("java.io.tmpdir") + File.separator + "tempgex2";
-		info.setDbName(dbFileName);
-		info.setSyscodeColumn(false);
-		info.setDataSource(DataSource.AFFY);
-		GdbManager.setGeneDb(gdbRat);
-		GexTxtImporter.importFromTxt(info, null);
-		
-		// just 10 errors if all goes well
-		assertEquals (info.getErrorList().size(), 10);		
-	}
-
-	public void gexHelper(DBConnector con, String filename) throws DataException, SQLException
-	{
-		String dbFileName = System.getProperty("java.io.tmpdir") + File.separator + filename;
-
-		// TODO: check if filename gets .pgex or .pgdb?
-		SimpleGex sgex = new SimpleGex (dbFileName, true, con);
-		
-		assertTrue (new File(dbFileName).exists());
-		
-		sgex.prepare();
-		sgex.addSample(55, "mysample", 99);
-		sgex.addExpr(new Xref ("abc_at", DataSource.AFFY), "link", "55", "3.141", 77);
-		
-		// TODO: this is messy. call finalize on writeable db, not close...
-		sgex.finalize();
-		
-		// read data back
-		sgex = new SimpleGex (dbFileName, false, con);
-		
-		Sample s = sgex.getSample(55);
-		assertEquals (s.getName(), "mysample");
-		assertEquals (s.getDataType(), 99);
-		
-		//TODO: test data value as well.
-		
-		sgex.close();
-	}
-	
-	public void testGexDerby() throws DataException, SQLException
-	{
-		gexHelper (new DataDerby(), "tempgex1a");
-	}
-
-	//TODO: re-enable
-	public void disabled_testGexDirectory() throws DataException, SQLException
-	{
-		gexHelper (new DataDerbyDirectory(), "tempgex1b");
-	}
-
 }

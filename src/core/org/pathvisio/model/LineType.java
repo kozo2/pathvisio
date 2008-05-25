@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.pathvisio.view.MIMShapes;
 
 public class LineType 
 {
@@ -96,7 +97,7 @@ public class LineType
 		return fromName (value);
 	}
 
-	public static LineType fromName(String value)
+	static LineType fromName(String value)
 	{
 		return nameMappings.get (value);
 	}

@@ -18,8 +18,8 @@ package org.pathvisio.view;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
@@ -53,10 +53,6 @@ public class Handle extends VPathwayElement
 	public static final int WIDTH 	= 8;
 	public static final int HEIGHT	= 8;
 	
-	public static final int STYLE_DEFAULT = 0;
-	public static final int STYLE_SEGMENT = 1;
-	public static final int STYLE_ROTATE = 2;
-	
 	VPathwayElement parent;
 	
 	double mCenterx;
@@ -65,8 +61,6 @@ public class Handle extends VPathwayElement
 	double rotation;
 	
 	boolean visible;
-	
-	int style = STYLE_DEFAULT;
 	
 	/**
 	 * Constructor for this class, creates a handle given the parent, direction and canvas
@@ -79,23 +73,16 @@ public class Handle extends VPathwayElement
 		super(canvas);		
 		this.direction = direction;
 		this.parent = parent;
-		if(direction == DIRECTION_ROT) {
-			setStyle(STYLE_ROTATE);
-		}
 	}
 
-	/**
-	 * Set the appearance style of the handle.
-	 * @param style One of the STYLE_* constants
-	 */
-	public void setStyle(int style) {
-		this.style = style;
-	}
-	
 	public VPathwayElement getParent() {
 		return parent;
 	}
-		
+	
+	public int getDrawingOrder() {
+		return VPathway.DRAW_ORDER_HANDLE;
+	}
+	
 	/**
 	 * Get the direction this handle is allowed to move in
 	 * @return one of DIRECTION_*
@@ -174,16 +161,10 @@ public class Handle extends VPathwayElement
 		
 		Shape fillShape = getFillShape();
 		
-		switch(style) {
-		case STYLE_ROTATE:
+		if(direction == DIRECTION_ROT) {
 			g.setColor(Color.GREEN);
-			break;
-		case STYLE_SEGMENT:
-			g.setColor(new Color(0, 128, 255));
-			break;
-		default:
+		} else {
 			g.setColor(Color.YELLOW);
-			break;
 		}
 		
 		g.fill(fillShape);
@@ -241,28 +222,24 @@ public class Handle extends VPathwayElement
 		markDirty();
 	}
 			
-	public Shape calculateVOutline() {
+	public Shape getVOutline() {
 		return getFillShape((int)Math.ceil(defaultStroke.getLineWidth())).getBounds();
 	}
-		
+	
+	public Rectangle getVBounds() {
+		return getVOutline().getBounds();
+	}
+	
 	private Shape getFillShape() {
 		return getFillShape(0);
 	}
 	
 	private Shape getFillShape(int sw) {
 		Shape s = null;
-		switch(style) {
-		case STYLE_ROTATE:
+		switch(direction) {
+		case DIRECTION_ROT:
 			s = new Ellipse2D.Double(getVCenterX() - WIDTH/2, getVCenterY() - HEIGHT/2, 
 					WIDTH + sw, HEIGHT + sw);
-			break;
-		case STYLE_SEGMENT:
-			s = new Rectangle2D.Double(getVCenterX() - WIDTH/2, getVCenterY() - HEIGHT/2, 
-					WIDTH + sw, HEIGHT + sw);
-			
-			s = AffineTransform.getRotateInstance(
-					Math.PI / 4, getVCenterX(), getVCenterY()
-			).createTransformedShape(s);
 			break;
 		default:
 			s = new Rectangle2D.Double(getVCenterX() - WIDTH/2, getVCenterY() - HEIGHT/2, 
@@ -276,11 +253,7 @@ public class Handle extends VPathwayElement
 		return 	"Handle with parent: " + parent.toString() +
 		" and direction " + direction; 
 	}
-
-	protected int getZOrder() {
-		return VPathway.ZORDER_HANDLE;
-	}
-	
+			
 } // end of class
 
 

@@ -18,9 +18,11 @@ package org.pathvisio.view;
 
 import java.awt.Font;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 
+import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PathwayListener;
@@ -74,9 +76,16 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 	public PathwayElement getPathwayElement() {
 		return gdata;
 	}
-		
+	
+	public final int getDrawingOrder() {
+		int zorder = gdata.getZOrder();
+		return getNaturalOrder() + (zorder <<= 32); 
+	}
+	
+	protected abstract int getNaturalOrder();
+	
 	boolean listen = true;
-	public void gmmlObjectModified(PathwayEvent e) {
+	public void gmmlObjectModified(PathwayEvent e) {	
 		if(listen) markDirty(); // mark everything dirty
 	}
 	
@@ -167,12 +176,12 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 	/**
 	 * Default implementation returns the rotated shape.
 	 * Subclasses may override (e.g. to include the stroke)
-	 * @see {@link VPathwayElement#calculateVOutline()}
+	 * @see {@link VPathwayElement#getVOutline()}
 	 */
-	protected Shape calculateVOutline() {
+	protected Shape getVOutline() {
 		return getVShape(true);
 	}
-		
+	
 	/**
 	 * Returns the fontstyle to create a java.awt.Font
 	 * @return the fontstyle, or Font.PLAIN if no font is available
@@ -199,10 +208,4 @@ public abstract class Graphics extends VPathwayElement implements PathwayListene
 //		if(parent != null) parent.remove(gdata);
 	}
 	
-	/**
-	 * Returns the z-order from the model
-	 */
-	protected int getZOrder() {
-		return gdata.getZOrder();
-	}
 }

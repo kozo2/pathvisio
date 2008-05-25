@@ -24,12 +24,12 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextAttribute;
-import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.text.AttributedString;
 
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.OutlineType;
 
 public class Label extends GraphicsShape
 {
@@ -58,6 +58,10 @@ public class Label extends GraphicsShape
 	{
 		super(canvas, o);
 		setHandleLocation();
+	}
+	
+	public int getNaturalOrder() {
+		return VPathway.DRAW_ORDER_LABEL;
 	}
 	
 	public String getLabelText() {
@@ -162,8 +166,8 @@ public class Label extends GraphicsShape
 		return new Font(name, style, size);
 	}
 	
-	AttributedString getVAttributedString(String text) {
-		AttributedString ats = new AttributedString(text);
+	AttributedString getVAttributedString() {
+		AttributedString ats = new AttributedString(gdata.getTextLabel());
 		if(gdata.isStrikethru()) {
 			ats.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
 		}
@@ -193,15 +197,15 @@ public class Label extends GraphicsShape
 		Rectangle area = getBoxBounds(true).getBounds();
 
 		Shape outline = null;
-		double lw = defaultStroke.getLineWidth();
 		switch (gdata.getOutline())
 		{
 		case RECTANGLE:
+			double lw = defaultStroke.getLineWidth();
 			outline = new Rectangle2D.Double(getVLeft(), getVTop(), getVWidth() - lw, getVHeight() - lw);
 			break;
 		case ROUNDED_RECTANGLE:
 			outline = new RoundRectangle2D.Double(
-				getVLeft(), getVTop(), getVWidth() - lw, getVHeight() - lw,
+				getVLeft(), getVTop(), getVWidth(), getVHeight(),
 				vFromM (M_ARCSIZE), vFromM (M_ARCSIZE));
 			break;
 		case NONE:
@@ -215,29 +219,13 @@ public class Label extends GraphicsShape
 
 		// don't draw label outside box
 		g.clip (new Rectangle (area.x - 1, area.y - 1, area.width + 1, area.height + 1));
-		
 		String label = gdata.getTextLabel();
-		if(label != null && !"".equals(label)) {
-			//Split by newline, to enable multi-line labels
-			String[] lines = label.split("\n");
-			for(int i = 0; i < lines.length; i++) {
-				if(lines[i].equals("")) continue; //Can't have attributed string with 0 length
-				AttributedString ats = getVAttributedString(lines[i]);
-				Rectangle2D tb = g.getFontMetrics().getStringBounds(ats.getIterator(), 0, lines[i].length(), g);
-				
-				int yoffset = area.y;
-				int xoffset = area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2);
-				//Align y-center when only one line, otherwise, align to y-top
-				if(lines.length == 1) {
-					yoffset += (int)(area.height / 2) + (int)(tb.getHeight() / 2);
-				} else {
-					yoffset += (int)tb.getHeight();
-				}
-				g.drawString(ats.getIterator(), xoffset, 
-						yoffset + (int)(i * tb.getHeight()));				
-			}
+		AttributedString ats = getVAttributedString();
+		
+		Rectangle2D tb = g.getFontMetrics().getStringBounds(ats.getIterator(), 0, label.length(), g);
+		g.drawString(ats.getIterator(), area.x + (int)(area.width / 2) - (int)(tb.getWidth() / 2), 
+					area.y + (int)(area.height / 2) + (int)(tb.getHeight() / 2));
 
-		}
 		if(isHighlighted())
 		{
 			Color hc = getHighlightColor();
@@ -246,7 +234,7 @@ public class Label extends GraphicsShape
 			Rectangle2D r = new Rectangle2D.Double(getVLeft(), getVTop(), getVWidth(), getVHeight());
 			g.fill(r);
 		}
-		super.doDraw(g2d);
+
 	}
 		
 //	public void gmmlObjectModified(PathwayEvent e) {
@@ -262,14 +250,11 @@ public class Label extends GraphicsShape
 	 * - size of the text
 	 * Because the text can sometimes be larger than the handles
 	 */
-	protected Shape calculateVOutline()
+	protected Shape getVOutline()
 	{
-		Shape outline = super.calculateVOutline();
 		Rectangle2D bb = getBoxBounds(true);
 		Rectangle2D tb = getTextBounds(g2d);
 		tb.add(bb);
-		Area a = new Area(outline);
-		a.add(new Area(tb));
-		return a;
+		return tb;
 	}
 }

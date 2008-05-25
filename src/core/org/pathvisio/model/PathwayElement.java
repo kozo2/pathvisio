@@ -17,19 +17,17 @@
 package org.pathvisio.model;
 
 import java.awt.Color;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.jdom.Document;
+import org.pathvisio.data.DataSources;
 import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
-import org.pathvisio.view.LinAlg;
-import org.pathvisio.view.LinAlg.Point;
 
 /**
  * PathwayElement is responsible for maintaining the data for all the individual
@@ -51,7 +49,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public class Comment implements Cloneable
 	{
-		public Comment(String _comment, String _source)
+		Comment(String _comment, String _source)
 		{
 			source = _source;
 			comment = _comment;
@@ -87,69 +85,73 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		}
 		
 		public String toString() {
-			String src = "";
-			if(src != null && !"".equals(src)) {
-				src = " (" + source + ")";
-			}
-			return comment + src;
+			return comment + " (" + source + ")";
 		}
 	}
 
-	/**
-	 * Represents a generic point in an coordinates.length dimensional space.
-	 * The point is automatically a {@link GraphIdContainer} and therefore lines
-	 * can link to the point.
-	 * @see MPoint
-	 * @see MAnchor
-	 * @author thomas
-	 *
-	 */
-	private abstract class GenericPoint implements Cloneable, GraphIdContainer
+	public class MPoint implements Cloneable, GraphIdContainer,
+			GraphRefContainer
 	{
-		private double[] coordinates;
+		private double x;
+
+		private double y;
+
+		private String graphRef;
 
 		private String graphId;
 
-		GenericPoint(double[] coordinates)
+		MPoint(double _x, double _y)
 		{
-			this.coordinates = coordinates;
+			x = _x;
+			y = _y;
 		}
 
-		GenericPoint(GenericPoint p)
+		MPoint(MPoint p)
 		{
-			coordinates = new double[p.coordinates.length];
-			for(int i = 0; i < coordinates.length; i++) {
-				coordinates[i] = p.coordinates[i];
-			}
+			x = p.x;
+			y = p.y;
+			if (p.graphRef != null)
+				graphRef = new String(p.graphRef);
 			if (p.graphId != null)
 				graphId = new String(p.graphId);
 		}
 
-		protected void moveBy(double[] delta)
+		public void moveBy(double dx, double dy)
 		{
-			for(int i = 0; i < coordinates.length; i++) {
-				coordinates[i] += delta[i];
-			}
+			x += dx;
+			y += dy;
 			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 
-		protected void moveTo(double[] coordinates)
+		public void moveTo(MPoint p)
 		{
-			this.coordinates = coordinates;
-			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
-					PathwayEvent.MODIFIED_GENERAL));
-		}
-		
-		protected void moveTo(GenericPoint p)
-		{
-			coordinates = p.coordinates;
+			x = p.x;
+			y = p.y;
 			fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 
-		protected double getCoordinate(int i) {
-			return coordinates[i];
+		public void setX(double nx)
+		{
+			if (nx != x)
+				moveBy(nx - x, 0);
+		}
+
+		public void setY(double ny)
+		{
+			if (ny != y)
+				moveBy(0, ny - y);
+		}
+
+		public double getX()
+		{
+			return x;
+		}
+
+		public double getY()
+		{
+			return y;
 		}
 
 		public String getGraphId()
@@ -159,7 +161,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 		public String setGeneratedGraphId()
 		{
-			setGraphId(parent.getUniqueGraphId());
+			setGraphId(parent.getUniqueId());
 			return graphId;
 		}
 
@@ -171,160 +173,11 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 
-		public Object clone() throws CloneNotSupportedException
-		{
-			GenericPoint p = (GenericPoint) super.clone();
-			if (graphId != null)
-				p.graphId = new String(graphId);
-			return p;
-		}
-
-		public Set<GraphRefContainer> getReferences()
-		{
-			return GraphLink.getReferences(this, parent);
-		}
-
-		public Pathway getPathway() {
-			return parent;
-		}
-		
-		/**
-		 * @deprecated use {@link #getPathway()} instead
-		 */
-		public Pathway getGmmlData()
-		{
-			return parent;
-		}
-
-		public PathwayElement getParent()
-		{
-			return PathwayElement.this;
-		}
-	}
-	
-	/**
-	 * This class represents the Line.Graphics.Point element in GPML.
-	 * @author thomas
-	 *
-	 */
-	public class MPoint extends GenericPoint implements GraphRefContainer
-	{
-		private String graphRef;
-		private boolean relativeSet;
-		
-		public MPoint(double x, double y)
-		{
-			super(new double[] { x, y, 0, 0 });
-		}
-
-		MPoint(MPoint p)
-		{
-			super(p);
-			if (p.graphRef != null)
-				graphRef = new String(p.graphRef);
-		}
-
-		public void moveBy(double dx, double dy)
-		{
-			super.moveBy(new double[] { dx, dy, 0, 0 });
-		}
-
-		public void moveTo(double x, double y) 
-		{
-			super.moveTo(new double[] { x, y, 0, 0 });
-		}
-		
-		public void setX(double nx)
-		{
-			if (nx != getX())
-				moveBy(nx - getX(), 0);
-		}
-
-		public void setY(double ny)
-		{
-			if (ny != getY())
-				moveBy(0, ny - getY());
-		}
-
-		public double getX()
-		{
-			if(isRelative()) {
-				return getAbsolute().getX();
-			} else {
-				return getCoordinate(0);
-			}
-		}
-
-		public double getY()
-		{
-			if(isRelative()) {
-				return getAbsolute().getY();
-			} else {
-				return getCoordinate(1);
-			}
-		}
-
-		protected double getRawX() {
-			return getCoordinate(0);
-		}
-		
-		protected double getRawY() {
-			return getCoordinate(1);
-		}
-		
-		public double getRelX() {
-			return getCoordinate(2);
-		}
-		
-		public double getRelY() {
-			return getCoordinate(3);
-		}
-		
-		private Point2D getAbsolute() {
-			return getGraphIdContainer().toAbsoluteCoordinate(
-					new Point2D.Double(getRelX(), getRelY())
-			);
-		}
-
-		
-		public void setRelativePosition(double rx, double ry) {
-			moveTo(new double[] { getX(), getY(), rx, ry });
-			relativeSet = true;
-		}
-		
-		/**
-		 * Checks if the position of this point should be stored
-		 * as relative or absolute coordinates
-		 * @return true if the coordinates are relative, false if not
-		 */
-		public boolean isRelative() {
-			Pathway p = getPathway();
-			if(p != null) {
-				GraphIdContainer gc = getPathway().getGraphIdContainer(graphRef);				
-				return gc != null;
-			}
-			return false;
-		}
-		
-		/**
-		 * Helper method for converting older GPML files without
-		 * relative coordinates.
-		 * @return true if {@link #setRelativePosition(double, double)} was called to
-		 * set the relative coordinates, false if not.
-		 */
-		protected boolean relativeSet() {
-			return relativeSet;
-		}
-		
-		private GraphIdContainer getGraphIdContainer() {
-			return getPathway().getGraphIdContainer(graphRef);
-		}
-		
 		public String getGraphRef()
 		{
 			return graphRef;
 		}
-		
+
 		/**
 		 * Set a reference to another object with a graphId. If a parent is set,
 		 * this will automatically deregister the previously held reference and
@@ -354,105 +207,52 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			}
 		}
 
+		public Set<MPoint> getEqualPoints()
+		{
+			Set<MPoint> links = new HashSet<MPoint>();
+			//TK: disable this for now, until we implemented poly-lines
+//			for (PathwayElement o : parent.getDataObjects())
+//			{
+//				if (o != PathwayElement.this && o.objectType == ObjectType.LINE)
+//				{
+//					for (MPoint p : o.getMPoints())
+//					{
+//						if (x == p.x && y == p.y)
+//							links.add(p);
+//					}
+//				}
+//			}
+			links.add(this); // equal to itself
+			return links;
+		}
+
 		public Object clone() throws CloneNotSupportedException
 		{
 			MPoint p = (MPoint) super.clone();
+			if (graphId != null)
+				p.graphId = new String(graphId);
 			if (graphRef != null)
 				p.graphRef = new String(graphRef);
 			return p;
 		}
 
-		public Point2D toPoint2D() {
-			return new Point2D.Double(getX(), getY());
+		public Set<GraphRefContainer> getReferences()
+		{
+			return GraphLink.getReferences(this, parent);
 		}
 
-		/**
-		 * Link to an object. Current absolute coordinates
-		 * will be converted to relative coordinates based on the
-		 * object to link to.
-		 */
-		public void linkTo(GraphIdContainer idc) {
-			Point2D rel = idc.toRelativeCoordinate(toPoint2D());
-			linkTo(idc, rel.getX(), rel.getY());
-		}
-		
-		/**
-		 * Link to an object using the given relative coordinates
-		 */
-		public void linkTo(GraphIdContainer idc, double relX, double relY) {
-			String id = idc.getGraphId();
-			if(id == null) id = idc.setGeneratedGraphId();
-			setGraphRef(idc.getGraphId());
-			setRelativePosition(relX, relY);
-		}
-		
-		public void unlink() {
-			setGraphRef(null);
+		public Pathway getGmmlData()
+		{
+			return parent;
 		}
 
-		public Point2D toAbsoluteCoordinate(Point2D p) {
-			return new Point2D.Double(p.getX() + getX(), p.getY() + getY());
+		public PathwayElement getParent()
+		{
+			return PathwayElement.this;
 		}
 
-		public Point2D toRelativeCoordinate(Point2D p) {
-			return new Point2D.Double(p.getX() - getX(), p.getY() - getY());
-		}
 	}
-	
-	/**
-	 * This class represents the Line.Graphics.Anchor element in GPML
-	 * @author thomas
-	 *
-	 */
-	public class MAnchor extends GenericPoint {
-		AnchorType shape = AnchorType.NONE;
-		
-		public MAnchor(double position) {
-			super(new double[] { position });
-		}
-		
-		public MAnchor(MAnchor a) {
-			super(a);
-			shape = a.shape;
-		}
-		
-		public void setShape(AnchorType type) {
-			if(!this.shape.equals(type) && type != null) {
-				this.shape = type;
-				fireObjectModifiedEvent(new PathwayEvent(
-						PathwayElement.this, PathwayEvent.MODIFIED_GENERAL));
-			}
-		}
-		
-		public AnchorType getShape() {
-			return shape;
-		}
-		
-		public double getPosition() {
-			return getCoordinate(0);
-		}
 
-		public void setPosition(double position) {
-			if(position != getPosition()) {
-				moveBy(position - getPosition());
-			}
-		}
-		
-		public void moveBy(double delta) {
-			super.moveBy(new double[] { delta });
-		}
-
-		public Point2D toAbsoluteCoordinate(Point2D p) {
-			Point2D l = ((MLine)getParent()).getConnectorShape().fromLineCoordinate(getPosition());
-			return new Point2D.Double(p.getX() + l.getX(), p.getY() + l.getY());
-		}
-
-		public Point2D toRelativeCoordinate(Point2D p) {
-			Point2D l = ((MLine)getParent()).getConnectorShape().fromLineCoordinate(getPosition());
-			return new Point2D.Double(p.getX() - l.getX(), p.getY() - l.getY());
-		}
-	}
-	
 	private static final int M_INITIAL_SHAPE_SIZE = 30 * 15; // initial
 																// Radius for
 																// rect and oval
@@ -465,78 +265,21 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	private static final int M_INITIAL_GENEPRODUCT_HEIGHT = 20 * 15;
 
-	// groups always have to be on top because
-	// then the mouse hits the group before the individual elements
-	// when clicking.
-	private static final int Z_ORDER_GROUP = 0x9000;
-	// default order of geneproduct, label, shape and line determined
-	// by GenMAPP legacy
-	private static final int Z_ORDER_GENEPRODUCT = 0x8000;
-	private static final int Z_ORDER_LABEL = 0x7000;
-	private static final int Z_ORDER_SHAPE = 0x4000;
-	private static final int Z_ORDER_LINE = 0x3000;
-	// default order of uninteresting elements.
-	private static final int Z_ORDER_DEFAULT = 0x0000;
-
 	/**
-	 * default z order for newly created objects
-	 */
-	private static int getDefaultZOrder(int value)
-	{
-		switch (value)
-		{
-		case ObjectType.SHAPE:
-			return Z_ORDER_SHAPE;
-		case ObjectType.DATANODE:
-			return Z_ORDER_GENEPRODUCT;
-		case ObjectType.LABEL:
-			return Z_ORDER_LABEL;
-		case ObjectType.LINE:
-			return Z_ORDER_LINE;
-		case ObjectType.LEGEND:
-		case ObjectType.INFOBOX:
-		case ObjectType.MAPPINFO:
-		case ObjectType.BIOPAX:
-			return Z_ORDER_DEFAULT;
-		case ObjectType.GROUP:
-			return Z_ORDER_GROUP;
-		default: 
-			throw new IllegalArgumentException("Invalid object type " + value);
-		}
-	}
-	
-	/**
-	 * Instantiate a pathway element.
 	 * The required parameter objectType ensures only objects with a valid type
 	 * can be created.
 	 * 
 	 * @param ot
 	 *            Type of object, one of the ObjectType.* fields
 	 */
-	public static PathwayElement createPathwayElement(int ot) {
-		PathwayElement e = null;
-		switch(ot) {
-		case ObjectType.GROUP:
-			e = new MGroup();
-			break;
-		case ObjectType.LINE:
-			e = new MLine();
-			break;
-		default:
-			e = new PathwayElement(ot);
-			break;
-		}
-		return e;
-	}
-	
-	protected PathwayElement(int ot)
+	public PathwayElement(int ot)
 	{
 		if (ot < ObjectType.MIN_VALID || ot > ObjectType.MAX_VALID)
 		{
 			throw new IllegalArgumentException("Trying to set objectType to "
 					+ ot);
 		}
-		/* set default value for transparency */
+		/* set default value for transparancy */
 		if (ot == ObjectType.LINE || ot == ObjectType.LABEL)
 		{
 			setTransparent (false);
@@ -546,23 +289,17 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			setTransparent (true);
 		}
 		objectType = ot;
-		zOrder = getDefaultZOrder (ot);
 	}
-		
+
 	int zOrder;
 	
-	public int getZOrder() 
-	{
+	public int getZOrder() {
 		return zOrder;
 	}
 	
 	public void setZOrder(int z) {
-		if(z != zOrder) {
-			zOrder = z;
-			fireObjectModifiedEvent(new PathwayEvent(this, PathwayEvent.MODIFIED_GENERAL));
-		}
+		zOrder = z;
 	}
-	
 	/**
 	 * Parent of this object: may be null (for example, when object is in
 	 * clipboard)
@@ -596,25 +333,10 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 						parent.removeGraphRef(p.getGraphRef(), p);
 					}
 				}
-				if(getGroupRef() != null)
-				{
-					parent.removeGroupRef(getGroupRef(), this);
-				}
-				for (MAnchor a : anchors) {
-					if (a.getGraphId() != null)
-					{
-						parent.removeId(a.getGraphId());
-					}
-				}
 				if (graphId != null)
 				{
 					parent.removeId(graphId);
 				}
-				if (groupId != null)
-				{
-					parent.removeGroupId(groupId);
-				}
-				zOrder = parent.getMaxZOrder() + 1;
 			}
 			parent = v;
 			if (v != null)
@@ -626,24 +348,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 						v.addGraphRef(p.getGraphRef(), p);
 					}
 				}
-				if(getGroupRef() != null)
-				{
-					v.addGroupRef(getGroupRef(), this);
-				}
-				for (MAnchor a : anchors) 
-				{
-					if(a.getGraphId() != null)
-					{
-						parent.addGraphId(a.getGraphId(), a);
-					}
-				}
 				if (graphId != null)
 				{
-					parent.addGraphId(graphId, this);
-				}
-				if (groupId != null)
-				{
-					parent.addGroupId(groupId, this);
+					parent.addId(graphId);
 				}
 			}
 		}
@@ -673,7 +380,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			result.add(PropertyType.COMMENTS);
 			result.add(PropertyType.MAPINFONAME);
 			result.add(PropertyType.ORGANISM);
-			result.add(PropertyType.MAPINFO_DATASOURCE);
+			result.add(PropertyType.DATA_SOURCE);
 			result.add(PropertyType.VERSION);
 			result.add(PropertyType.AUTHOR);
 			result.add(PropertyType.MAINTAINED_BY);
@@ -699,7 +406,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			result.add(PropertyType.HEIGHT);
 			result.add(PropertyType.COLOR);
 			result.add(PropertyType.GENEID);
-			result.add(PropertyType.DATASOURCE);
+			result.add(PropertyType.SYSTEMCODE);
 			result.add(PropertyType.TEXTLABEL);
 			// PropertyType.XREF,
 			result.add(PropertyType.BACKPAGEHEAD);
@@ -751,7 +458,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			break;
 		case ObjectType.LABEL:
 			result.add(PropertyType.COMMENTS);
-			result.add(PropertyType.GENMAPP_XREF);
+			result.add(PropertyType.XREF);
 			result.add(PropertyType.CENTERX);
 			result.add(PropertyType.CENTERY);
 			result.add(PropertyType.WIDTH);
@@ -787,10 +494,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			result.add(PropertyType.CENTERX);
 			result.add(PropertyType.CENTERY);
 			break;
-		}
-		if (fAdvanced)
-		{
-			result.add (PropertyType.ZORDER);
 		}
 		return result;
 	}
@@ -886,18 +589,11 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		case GENEID:
 			setGeneID((String) value);
 			break;
-		case DATASOURCE:
-			if (value instanceof DataSource)
-			{
-				setDataSource((DataSource) value);
-			}
-			else
-			{
-				setDataSource(DataSource.getByFullName((String)value));
-			}			
+		case SYSTEMCODE:
+			setDataSource((String) value);
 			break;
-		case GENMAPP_XREF:
-			setGenMappXref((String) value);
+		case XREF:
+			setXref((String) value);
 			break;
 		case BACKPAGEHEAD:
 			setBackpageHead((String) value);
@@ -927,8 +623,8 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		case ORGANISM:
 			setOrganism((String) value);
 			break;
-		case MAPINFO_DATASOURCE:
-			setMapInfoDataSource((String)value);
+		case DATA_SOURCE:
+			setDataSource((String) value);
 			break;
 		case VERSION:
 			setVersion((String) value);
@@ -982,9 +678,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 		case BIOPAXREF:
 			setBiopaxRefs((List<String>) value);
-			break;
-		case ZORDER:
-			setZOrder((Integer)value);
 			break;
 		}
 	}
@@ -1056,11 +749,11 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		case GENEID:
 			result = getGeneID();
 			break;
-		case DATASOURCE:
+		case SYSTEMCODE:
 			result = getDataSource();
 			break;
-		case GENMAPP_XREF:
-			result = getGenMappXref();
+		case XREF:
+			result = getXref();
 			break;
 		case BACKPAGEHEAD:
 			result = getBackpageHead();
@@ -1091,8 +784,8 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		case ORGANISM:
 			result = getOrganism();
 			break;
-		case MAPINFO_DATASOURCE:
-			result = getMapInfoDataSource();
+		case DATA_SOURCE:
+			result = getDataSource();
 			break;
 		case VERSION:
 			result = getVersion();
@@ -1147,9 +840,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		case BIOPAXREF:
 			result = getBiopaxRefs();
 			break;
-		case ZORDER:
-			result = getZOrder();
-			break;
 		}
 
 		return result;
@@ -1201,32 +891,25 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		{
 			mPoints.add(new MPoint(p));
 		}
-		for (MAnchor a : src.anchors) {
-			anchors.add(new MAnchor(a));
-		}
 		comments = new ArrayList<Comment>();
 		for (Comment c : src.comments)
 		{
 			try
 			{
 				comments.add((Comment) c.clone());
-			}
-			catch (CloneNotSupportedException e)
-			{
-				assert (false);
-				/* not going to happen */
+			} catch (CloneNotSupportedException e)
+			{ /* not going to happen */
 			}
 		}
 		version = src.version;
 		mWidth = src.mWidth;
 		windowHeight = src.windowHeight;
 		windowWidth = src.windowWidth;
-		genmappxref = src.genmappxref;
+		xref = src.xref;
 		graphId = src.graphId;
 		groupId = src.groupId;
 		groupRef = src.groupRef;
-		connectorType = src.connectorType;
-		biopaxRefs = (List<String>)((ArrayList<String>)src.biopaxRefs).clone();
+		biopaxRefs = (List<String>)((ArrayList)src.biopaxRefs).clone();
 		if(src.biopax != null) {
 			System.out.println("Copying " + biopax);
 			biopax = (Document)src.biopax.clone();			
@@ -1243,7 +926,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	 */
 	public PathwayElement copy()
 	{
-		PathwayElement result = PathwayElement.createPathwayElement(objectType);
+		PathwayElement result = new PathwayElement(objectType);
 		result.copyValuesFrom(this);
 		result.parent = null;
 		return result;
@@ -1261,16 +944,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	private List<MPoint> mPoints = Arrays.asList(defaultPoints);
 
-	public void setMPoints(List<MPoint> points) {
-		if(points != null) {
-			if(points.size() < 2) {
-				throw new IllegalArgumentException("Points array should at least have two elements");
-			}
-			mPoints = points;
-			fireObjectModifiedEvent(new PathwayEvent(this, PathwayEvent.MODIFIED_GENERAL));
-		}
-	}
-	
 	public MPoint getMStart()
 	{
 		return mPoints.get(0);
@@ -1298,7 +971,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMStartX()
 	{
-		return getMStart().getX();
+		return getMStart().x;
 	}
 
 	public void setMStartX(double v)
@@ -1308,7 +981,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMStartY()
 	{
-		return getMStart().getY();
+		return getMStart().y;
 	}
 
 	public void setMStartY(double v)
@@ -1318,7 +991,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMEndX()
 	{
-		return mPoints.get(mPoints.size() - 1).getX();
+		return mPoints.get(mPoints.size() - 1).x;
 	}
 
 	public void setMEndX(double v)
@@ -1328,7 +1001,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public double getMEndY()
 	{
-		return getMEnd().getY();
+		return getMEnd().y;
 	}
 
 	public void setMEndY(double v)
@@ -1385,62 +1058,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 					PathwayEvent.MODIFIED_GENERAL));
 		}
 	}
-	
-	private ConnectorType connectorType = ConnectorType.STRAIGHT;
-	
-	public void setConnectorType(ConnectorType type) {
-		if(connectorType == null) {
-			throw new IllegalArgumentException();
-		}
-		if (!connectorType.equals(type))
-		{
-			connectorType = type;
-			fireObjectModifiedEvent(new PathwayEvent(this,
-					PathwayEvent.MODIFIED_GENERAL));
-		}
-	}
-	
-	public ConnectorType getConnectorType() {
-		return connectorType;
-	}
-	
-//TODO: end of new elements
-	protected List<MAnchor> anchors = new ArrayList<MAnchor>();
-	
-	/**
-	 * Get the anchors for this line.
-	 * @return A list with the anchors, or an empty list, if no anchors are defined
-	 */
-	public List<MAnchor> getMAnchors() {
-		return anchors;
-	}
-	
-	/**
-	 * Add a new anchor to this line at the given position.
-	 * @param position The relative position on the line, between 0 (start) to 1 (end).
-	 */
-	public MAnchor addMAnchor(double position) {
-		if(position < 0 || position > 1) {
-			throw new IllegalArgumentException(
-					"Invalid position value '" + position + 
-					"' must be between 0 and 1");
-		}
-		MAnchor anchor = new MAnchor(position);
-		anchors.add(anchor);
-		fireObjectModifiedEvent(new PathwayEvent(
-				this, PathwayEvent.MODIFIED_GENERAL));
-		return anchor;
-	}
-	
-	/**
-	 * Remove the given anchor
-	 */
-	public void removeMAnchor(MAnchor anchor) {
-		anchors.remove(anchor);
-		fireObjectModifiedEvent(new PathwayEvent(
-				this, PathwayEvent.MODIFIED_GENERAL));
-	}
-	
+
 	protected Color color = new Color(0, 0, 0);
 
 	public Color getColor()
@@ -1481,31 +1099,22 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	}
 
 	/**
-	   checks if fill color is equal to null or the alpha value is equal to 0.
+	   checks if fill color is equal to null.
 	 */
 	public boolean isTransparent()
 	{
-		return fillColor == null || fillColor.getAlpha() == 0;
+		return fillColor == null;
 	}
 
 	/**
-	   sets the alpha component of fillColor to 0 if true
-	   sets the alpha component of fillColor to 255 if true
+	   sets fillColor to null if true,
+	   sets fillColor to white if false
 	 */
 	public void setTransparent(boolean v)
 	{
 		if (isTransparent() != v)
 		{
-			if(fillColor == null) {
-				fillColor = Color.WHITE;
-			}
-			int alpha = v ? 0 : 255;
-			fillColor = new Color(
-					fillColor.getRed(), 
-					fillColor.getGreen(), 
-					fillColor.getBlue(), 
-					alpha);
-
+			fillColor = (v ? null : Color.WHITE);
 			fireObjectModifiedEvent(new PathwayEvent(this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
@@ -1531,11 +1140,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public void addComment(String comment, String source)
 	{
-		addComment(new Comment(comment, source));
-	}
-	
-	public void addComment(Comment comment) {
-		comments.add(comment);
+		comments.add(new Comment(comment, source));
 		fireObjectModifiedEvent(new PathwayEvent(this,
 				PathwayEvent.MODIFIED_GENERAL));
 	}
@@ -1582,26 +1187,18 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		}
 	}
 
-	protected String genmappxref = null;
+	protected String xref = null;
 
-	/**
-	   access to the Label/Xref and DataNode/GenMAPPXref attributes
-	   For backwards compatibility with GenMAPP only.
-	 */
-	public String getGenMappXref()
+	public String getXref()
 	{
-		return genmappxref;
+		return xref;
 	}
 
-	/**
-	   access to the Label/Xref and DataNode/GenMAPPXref attributes
-	   For backwards compatibility with GenMAPP only.
-	 */
-	public void setGenMappXref(String v)
+	public void setXref(String v)
 	{
-		if (genmappxref != v)
+		if (xref != v)
 		{
-			genmappxref = v;
+			xref = v;
 			fireObjectModifiedEvent(new PathwayEvent(this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
@@ -1650,10 +1247,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		return dataNodeType;
 	}
 
-	public void setDataNodeType(DataNodeType type) {
-		setDataNodeType(type.getGpmlName());
-	}
-	
 	public void setDataNodeType(String v)
 	{
 		if (v == null)
@@ -1669,15 +1262,17 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	/**
 	 * The pathway datasource
 	 */
-	protected DataSource dataSource = null;
+	protected String dataSource = "";
 
-	public DataSource getDataSource()
+	public String getDataSource()
 	{
 		return dataSource;
 	}
 
-	public void setDataSource(DataSource v)
+	public void setDataSource(String v)
 	{
+		if (v == null)
+			throw new IllegalArgumentException();
 		if (dataSource != v)
 		{
 			dataSource = v;
@@ -1687,33 +1282,15 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	}
 
 	/**
-	 * returns GeneID and datasource combined in an Xref.
-	 * Only meaningful for datanodes.
-	 * 
-	 * Same as 
-	 * new Xref (
-	 * 		pathwayElement.getGeneID(), 
-	 * 		pathwayElement.getDataSource()
-	 * );
-	 */
-	public Xref getXref()
-	{
-		//TODO: Store Xref by default, derive setGeneID and dataSource from it.
-		return new Xref (setGeneID, dataSource);
-	}
-	
-	/**
 	 * SystemCode is a one- or two-letter abbreviation of datasource, used in
 	 * the MappFormat but also in databases.
-	 * @deprecated Use getDataSource().getSystemCode() instead.
 	 */
 	public String getSystemCode()
 	{
-		if (dataSource == null)
-		{
-			return null;
-		}
-		return dataSource.getSystemCode();
+		String systemCode = "";
+		if (DataSources.sysName2Code.containsKey(dataSource))
+			systemCode = DataSources.sysName2Code.get(dataSource);
+		return systemCode;
 	}
 
 	protected double mCenterx = 0;
@@ -1759,9 +1336,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public void setMWidth(double v)
 	{
-		if(mWidth < 0) {
-			throw new IllegalArgumentException("Tried to set dimension < 0: " + v);
-		}
 		if (mWidth != v)
 		{
 			mWidth = v;
@@ -1776,12 +1350,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	{
 		return mHeight;
 	}
-	
+
 	public void setMHeight(double v)
 	{
-		if(mWidth < 0) {
-			throw new IllegalArgumentException("Tried to set dimension < 0: " + v);
-		}
 		if (mHeight != v)
 		{
 			mHeight = v;
@@ -1884,64 +1455,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	}
 
-	/**
-	 * Get the rectangular bounds of the object
-	 * after rotation is applied
-	 */
-	public Rectangle2D getRBounds() {
-		Rectangle2D bounds = getMBounds();
-		AffineTransform t = new AffineTransform();
-		t.rotate(getRotation(), getMCenterX(), getMCenterY());
-		bounds = t.createTransformedShape(bounds).getBounds2D();
-		return bounds;
-	}
-	
-	/**
-	 * Get the rectangular bounds of the object
-	 * without rotation taken into accound
-	 */
-	public Rectangle2D getMBounds() {
-		return new Rectangle2D.Double(getMLeft(), getMTop(), getMWidth(), getMHeight());
-	}
-	
-	/**
-	 * Translate the given point to internal coordinate system
-	 * (origin in center and axis direction rotated with this objects rotation
-	 * @param MPoint p
-	 */
-	private Point mToInternal(Point p)
-	{
-		Point pt = mRelativeToCenter(p);
-		Point pr = LinAlg.rotate(pt, getRotation());
-		return pr;
-	}
-	
-	/**
-	 * Get the coordinates of the given point relative
-	 * to this object's center
-	 * @param p
-	 */
-	private Point mRelativeToCenter(Point p)
-	{
-		return p.subtract(new Point(getMCenterX(), getMCenterY()));
-	}
-	
-	/**
-	 * Transla	/**
-	 * Translate the given coordinates to external coordinate system (of the
-	 * drawing canvas)
-	 * @param x
-	 * @param y
-	 */
-	private Point mToExternal(double x, double y)
-	{
-		Point p = new Point(x, y);
-		Point pr = LinAlg.rotate(p, -getRotation());
-		pr.x += getMCenterX();
-		pr.y += getMCenterY();
-		return pr;
-	}
-	
 	// for labels
 	protected boolean fBold = false;
 
@@ -2088,7 +1601,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		{
 			if (v.length() > MAP_TITLE_MAX_LEN)
 			{
-				throw new IllegalArgumentException("Map info name exceeds maximum length of " + MAP_TITLE_MAX_LEN);				
+				// TODO: ideally we throw illegal argument exception here, passing an error to the user.
+				// right now it is just silently truncated.
+				mapInfoName = v.substring (0, MAP_TITLE_MAX_LEN);
 			}
 			else
 			{
@@ -2378,12 +1893,12 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			{
 				if (groupRef != null)
 				{
-					parent.removeGroupRef(groupRef, this);
+					parent.removeRef(groupRef, this);
 				}
 				// Check: move add before remove??
 				if (s != null)
 				{
-					parent.addGroupRef(s, this);
+					parent.addRef(s, this);
 				}
 			}
 			groupRef = s;
@@ -2401,7 +1916,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	{
 		if (groupId == null)
 		{
-			setGroupId(parent.getUniqueGroupId());
+			setGroupId(parent.getUniqueId());
 		}
 		return groupId;
 	}
@@ -2467,7 +1982,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public String setGeneratedGraphId()
 	{
-		setGraphId(parent.getUniqueGraphId());
+		setGraphId(parent.getUniqueId());
 		return graphId;
 	}
 
@@ -2630,9 +2145,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		return GraphLink.getReferences(this, parent);
 	}
 
-	/**
-	   @deprecated Use getParent() instead
-	 */
 	public Pathway getGmmlData()
 	{
 		return parent;
@@ -2640,31 +2152,5 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 
 	public int compareTo(PathwayElement o) {
 		return getZOrder() - o.getZOrder();
-	}
-
-	public Point2D toAbsoluteCoordinate(Point2D p) {
-		double x = p.getX();
-		double y = p.getY();
-		Rectangle2D bounds = getRBounds();
-		//Scale
-		x *= bounds.getWidth() / 2;
-		y *= bounds.getHeight() / 2;
-		//Translate
-		x += bounds.getCenterX();
-		y += bounds.getCenterY();
-		return new Point2D.Double(x, y);
-	}
-
-	public Point2D toRelativeCoordinate(Point2D p) {
-		double relX = p.getX();
-		double relY = p.getY();
-		Rectangle2D bounds = getRBounds();
-		//Translate
-		relX -= bounds.getCenterX();
-		relY -= bounds.getCenterY();
-		//Scale
-		relX /= bounds.getWidth() / 2;
-		relY /= bounds.getHeight() / 2;
-		return new Point2D.Double(relX, relY);
 	}
 }

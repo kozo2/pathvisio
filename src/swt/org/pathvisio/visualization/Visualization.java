@@ -27,38 +27,44 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.jdom.Element;
 import org.pathvisio.Engine;
+import org.pathvisio.data.Gex;
+import org.pathvisio.data.Gex.ExpressionDataEvent;
+import org.pathvisio.data.Gex.ExpressionDataListener;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.view.VPathway;
-import org.pathvisio.visualization.plugins.PluginManager;
-import org.pathvisio.visualization.colorset.ColorSetEvent;
-import org.pathvisio.visualization.colorset.ColorSetManager;
-import org.pathvisio.visualization.colorset.ColorSetManager.ColorSetListener;
-import org.pathvisio.visualization.plugins.VisualizationPlugin;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
+import org.pathvisio.visualization.plugins.PluginManager;
+import org.pathvisio.visualization.plugins.VisualizationPlugin;
 
 /**
  * Represents a set of configured visualization plugins
  * @author thomas
  */
-public class Visualization implements
-						   VisualizationListener,
-						   ColorSetListener
-{
+public class Visualization implements ExpressionDataListener, VisualizationListener {
 	public static final String XML_ELEMENT = "visualization";
 	public static final String XML_ATTR_NAME = "name";
 	
 	String name;
-	HashMap<Class<?>, PluginSet> plugins;
+	HashMap<Class, PluginSet> plugins;
 	List<PluginSet> pluginPlacement;
 	
 	Composite sidePanel;
@@ -71,8 +77,8 @@ public class Visualization implements
 	public Visualization(String name) {
 		initPlugins();
 		this.name = name;
+		Gex.addListener(this);
 		VisualizationManager.addListener(this);
-		ColorSetManager.addListener(this);
 	}
 	
 	/**
@@ -80,9 +86,9 @@ public class Visualization implements
 	 * plugin class
 	 */
 	void initPlugins() {
-		plugins = new HashMap<Class<?>, PluginSet>();
+		plugins = new HashMap<Class, PluginSet>();
 		pluginPlacement = new ArrayList<PluginSet>();
-		for(Class<?> c : PluginManager.getPlugins()) {
+		for(Class c : PluginManager.getPlugins()) {
 			addPluginClass(c);
 		}
 	}
@@ -91,7 +97,7 @@ public class Visualization implements
 	 * Refresh the available subclasses of {@link VisualizationPlugin}.
 	 */
 	void refreshPluginClasses() {
-		for(Class<?> c : PluginManager.getPlugins()) {
+		for(Class c : PluginManager.getPlugins()) {
 			if(!plugins.containsKey(c)) {
 				addPluginClass(c);
 			}
@@ -103,7 +109,7 @@ public class Visualization implements
 	 * visualization plugin classes
 	 * @param c	The class of the visualization plugin to add
 	 */
-	void addPluginClass(Class<?> c) {
+	void addPluginClass(Class c) {
 		try {
 			PluginSet pr = new PluginSet(c, this);
 			plugins.put(c, pr);
@@ -160,7 +166,7 @@ public class Visualization implements
 	/**
 	 * Get the {@link PluginSet} for the given plugin class
 	 */
-	public PluginSet getPluginSet(Class<?> c) {
+	public PluginSet getPluginSet(Class c) {
 		return plugins.get(c);
 	}
 	
@@ -169,7 +175,7 @@ public class Visualization implements
 	 * @param pluginClass	The class to set the given {@link PluginSet} for
 	 * @param ps			The {@link PluginSet} to set
 	 */
-	private void setPluginSet(Class<?> pluginClass, PluginSet ps) {
+	private void setPluginSet(Class pluginClass, PluginSet ps) {
 		pluginPlacement.remove(ps);
 		plugins.put(pluginClass, ps);
 		pluginPlacement.add(ps);
@@ -405,29 +411,23 @@ public class Visualization implements
 		return false;
 	}
 
+	public void expressionDataEvent(ExpressionDataEvent e) {
+		switch(e.type) {
+		case ExpressionDataEvent.CONNECTION_OPENED:
+			refreshPluginClasses();
+		}
+		
+	}
+
 	public void visualizationEvent(VisualizationEvent e) {
-		switch(e.getType()) {
+		switch(e.type) {
 		case VisualizationEvent.PLUGIN_ADDED: 
 			refreshPluginClasses();
 			break;
+		case(VisualizationEvent.COLORSET_MODIFIED):
 		case(VisualizationEvent.VISUALIZATION_SELECTED):
 		case(VisualizationEvent.VISUALIZATION_MODIFIED):
 		case(VisualizationEvent.PLUGIN_MODIFIED):
-			//TODO: this event should be caught by the pathway or engine...
-			VPathway p = Engine.getCurrent().getActiveVPathway();
-			if(p != null) {
-				p.redraw();
-			}
-			break;
-		}
-	}
-
-	public void colorSetEvent(ColorSetEvent e)
-	{
-		switch(e.getType())
-		{
-			//TODO: this event should be caught by the pathway or engine...
-		case(ColorSetEvent.COLORSET_MODIFIED):
 			VPathway p = Engine.getCurrent().getActiveVPathway();
 			if(p != null) {
 				p.redraw();
@@ -449,7 +449,7 @@ public class Visualization implements
 		static final int SIDEPANEL = 2;
 		
 		Visualization vis;
-		Class<?> pluginClass;
+		Class pluginClass;
 		VisualizationPlugin[] reps;
 		
 		private PluginSet(Visualization v) {
@@ -463,7 +463,7 @@ public class Visualization implements
 		 * @param v The visualization this plugin-set belongs to
 		 * @throws Throwable
 		 */
-		public PluginSet(Class<?> pluginClass, Visualization v) throws Throwable {
+		public PluginSet(Class pluginClass, Visualization v) throws Throwable {
 			this(v);
 			this.pluginClass = pluginClass;
 			for(int i = 0; i < NR; i++) {
@@ -471,7 +471,7 @@ public class Visualization implements
 			}
 		}
 		
-		void setPluginClass(Class<?> pluginClass) throws Throwable {
+		void setPluginClass(Class pluginClass) throws Throwable {
 			this.pluginClass = pluginClass;
 			for(int i = 0; i < reps.length; i++) {
 				if(reps[i] == null || !pluginClass.isInstance(reps[i]))

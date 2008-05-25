@@ -21,12 +21,16 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.widgets.Composite;
+import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 
 public class PreferenceDlg extends PreferenceManager {
 	
@@ -52,7 +56,7 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			StringFieldEditor f1 = new StringFieldEditor(GlobalPreference.FILE_LOG.name(), "Log file:", getFieldEditorParent());
+			FileFieldEditor f1 = new FileFieldEditor(GlobalPreference.FILE_LOG.name(), "Log file:", getFieldEditorParent());
 			addField(f1);
 		}
 	}
@@ -75,21 +79,29 @@ public class PreferenceDlg extends PreferenceManager {
 		}
 		
 		protected void createFieldEditors() {
-			DirectoryFieldEditor d1 = new CustomDirectoryFieldEditor(GlobalPreference.DIR_PWFILES.name(),
+			DirectoryFieldEditor d1 = new CustomDirectoryFieldEditor(SwtPreference.SWT_DIR_PWFILES.name(),
 					"Gpml pathways:", getFieldEditorParent());
 			addField(d1);
 						
-			DirectoryFieldEditor d2 = new CustomDirectoryFieldEditor(GlobalPreference.DIR_GDB.name(),
+			DirectoryFieldEditor d2 = new CustomDirectoryFieldEditor(SwtPreference.SWT_DIR_GDB.name(),
 					"Gene databases:", getFieldEditorParent());
 			addField(d2);
 			
-			DirectoryFieldEditor d3 = new CustomDirectoryFieldEditor(GlobalPreference.DIR_EXPR.name(),
+			DirectoryFieldEditor d3 = new CustomDirectoryFieldEditor(SwtPreference.SWT_DIR_EXPR.name(),
 					"Expression datasets:", getFieldEditorParent());
 			addField(d3);
 
 			d1.setEmptyStringAllowed(false);
 			d2.setEmptyStringAllowed(false);
-			d3.setEmptyStringAllowed(false);			
+			d3.setEmptyStringAllowed(false);
+			
+			if(SwtEngine.getCurrent().isUseR()) {
+				DirectoryFieldEditor d4 = new DirectoryFieldEditor(SwtPreference.SWT_DIR_RDATA.name(),
+						"Results from pathway statistics:", getFieldEditorParent());
+				addField(d4);
+				d4.setEmptyStringAllowed(false);
+				d4.setValidateStrategy(StringFieldEditor.VALIDATE_ON_KEY_STROKE);
+			}
 		}
 	}
 	
@@ -111,7 +123,7 @@ public class PreferenceDlg extends PreferenceManager {
 			
 			BooleanFieldEditor fsnap = new BooleanFieldEditor (
 				GlobalPreference.SNAP_TO_ANGLE.name(),
-				"Snap to angle when moving line and rotation handles", getFieldEditorParent());
+				"Snap to angle when moving line handles", getFieldEditorParent());
 			addField(fsnap);
 			
 			IntegerFieldEditor fsnapstep = new IntegerFieldEditor (

@@ -16,12 +16,16 @@
 //
 package org.pathvisio.gui.swt;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -30,13 +34,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
+import org.pathvisio.data.DataSources;
 import org.pathvisio.data.Gdb;
-import org.pathvisio.data.GdbManager;
+import org.pathvisio.debug.Logger;
 import org.pathvisio.gui.swt.PropertyPanel.AutoFillData;
-import org.pathvisio.model.DataSource;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
-import org.pathvisio.model.Xref;
 import org.pathvisio.util.swt.SuggestCellEditor;
 import org.pathvisio.util.swt.SuggestCombo;
 import org.pathvisio.util.swt.SuggestCombo.SuggestionListener;
@@ -47,6 +50,9 @@ public class GdbCellEditor extends SuggestCellEditor implements SuggestionProvid
 	public static final int TYPE_SYMBOL = 1;
 	int type;
 	
+	public static final int NO_LIMIT = 0;
+	public static final int NO_TIMEOUT = 0;
+	public static int query_timeout = 5; //seconds
 	
 	HashMap<String, PropertyPanel.AutoFillData> suggested;
 	
@@ -116,7 +122,7 @@ public class GdbCellEditor extends SuggestCellEditor implements SuggestionProvid
 
     public String getLabel(AutoFillData adf) {
     	String iddb = adf.getProperty(PropertyType.GENEID) + " (" +
-    	adf.getProperty(PropertyType.DATASOURCE) + ")";
+    	adf.getProperty(PropertyType.SYSTEMCODE) + ")";
     	switch(type) {
     	case TYPE_IDENTIFIER:
     		return 	iddb;
@@ -153,60 +159,59 @@ public class GdbCellEditor extends SuggestCellEditor implements SuggestionProvid
 		}
 	}
 	
-	public String[] getSuggestions(String text, SuggestCombo suggestCombo) 
-	{
+	public String[] getSuggestions(String text, SuggestCombo suggestCombo) {
 		int limit = getLimit();
 		
-		List<Map<PropertyType, String>> data = new ArrayList<Map<PropertyType, String>>();
 		List<String> sugg = new ArrayList<String>();
-
-		Gdb gdb = GdbManager.getCurrentGdb();
-		switch(type) {
-		case TYPE_IDENTIFIER:
-			List<Xref> refs = gdb.getIdSuggestions (text, limit);
-			for(Xref r : refs) {
-				Map<PropertyType, String> item = new HashMap<PropertyType, String>();
-				item.put (PropertyType.GENEID, r.getId());
-				item.put (PropertyType.DATASOURCE, r.getDatabaseName());
-				data.add (item);
-			}
-			break;
-		case TYPE_SYMBOL:
-		default:
-			List<String> symbols = gdb.getSymbolSuggestions (text, limit);
-			for(String s : symbols) {
-				List<Xref> xrefs = gdb.getCrossRefsByAttribute("Symbol", s);	
-				for(Xref r : xrefs) {
-					Map<PropertyType, String> item = new HashMap<PropertyType, String>();
-					item.put (PropertyType.GENEID, r.getId());
-					item.put (PropertyType.DATASOURCE, r.getDatabaseName());
-					data.add (item);
-				}
-			}
-			break;
-		}
-		
-		// copy the data returned from getSymbolSuggestions or getIdSuggestions
-		// into an AutoFillData list expected by the cell editor.
-		for (Map<PropertyType, String> item : data)
-		{
-			AutoFillData adf = null;
+		try {
+			Statement s = Gdb.getCon().createStatement();
+			
+			s.setQueryTimeout(query_timeout);
+			if(limit > NO_LIMIT) s.setMaxRows(limit);
+			
+			String query = "";
 			switch(type) {
 			case TYPE_IDENTIFIER:
-				adf = new GdbAutoFillData(PropertyType.GENEID, item.get(PropertyType.GENEID));
-				adf.setProperty(PropertyType.DATASOURCE, item.get(PropertyType.DATASOURCE));
+				query =
+						"SELECT id, code FROM gene WHERE " +
+						"id LIKE '" + text + "%'";
 				break;
 			case TYPE_SYMBOL:
 			default:
-				adf = new GdbAutoFillData(PropertyType.TEXTLABEL, item.get(PropertyType.TEXTLABEL));
-				adf.setProperty(PropertyType.DATASOURCE, item.get(PropertyType.DATASOURCE));
-				adf.setProperty(PropertyType.GENEID, item.get(PropertyType.GENEID));
+				query =
+						"SELECT id, code, backpageText FROM gene WHERE " +
+						"backpageText LIKE '%<TH>Gene Name:<TH>" + text + "%'";
 			}
-			String label = getLabel(adf);
-			suggested.put(label, adf);
-			sugg.add(label);
-		}
 			
+			ResultSet r = s.executeQuery(query);
+	
+			while(r.next()) {
+				String sysCode = r.getString("code");
+				String sysName = DataSources.sysCode2Name.get(sysCode);
+				
+				AutoFillData adf = null;
+				switch(type) {
+				case TYPE_IDENTIFIER:
+					adf = new GdbAutoFillData(PropertyType.GENEID, r.getString("id"));
+					adf.setProperty(PropertyType.SYSTEMCODE, sysName);
+					break;
+				case TYPE_SYMBOL:
+				default:
+					String symbol = Gdb.parseGeneSymbol(r.getString("backpageText"));
+					adf = new GdbAutoFillData(PropertyType.TEXTLABEL, symbol);
+					adf.setProperty(PropertyType.SYSTEMCODE, sysName);
+					adf.setProperty(PropertyType.GENEID, r.getString("id"));
+					
+				}
+				
+				String label = getLabel(adf);
+				suggested.put(label, adf);
+				sugg.add(label);
+			}
+		} catch (SQLException e) {
+			Logger.log.error("Unable to query suggestions", e);
+		}
+		if(limit > NO_LIMIT && sugg.size() == limit) sugg.add("...results limited to " + limit);
 		return sugg.toArray(new String[sugg.size()]);
 	}
 
@@ -228,17 +233,17 @@ public class GdbCellEditor extends SuggestCellEditor implements SuggestionProvid
 		protected void guessData(PathwayElement o) {
 			//Fetch info from self
 			String id = getProperty(PropertyType.GENEID);
-			String sysName = getProperty(PropertyType.DATASOURCE);
-			Xref ref = new Xref (id, DataSource.getBySystemCode(sysName));
+			String sysName = getProperty(PropertyType.SYSTEMCODE);
+			
 			//If null, fetch from dataobject
 			if(id == null) id = (String)o.getProperty(PropertyType.GENEID);
-			if(sysName == null) sysName = (String)o.getProperty(PropertyType.DATASOURCE);
+			if(sysName == null) sysName = (String)o.getProperty(PropertyType.SYSTEMCODE);
 			
-			String code = sysName == null ? null : DataSource.getByFullName(sysName).getSystemCode();
+			String code = sysName == null ? null : DataSources.sysName2Code.get(sysName);
 			
 			//Guess symbol
 			if(id != null && code != null) {
-				String symbol = GdbManager.getCurrentGdb().getGeneSymbol(ref);
+				String symbol = Gdb.getGeneSymbol(id, code);
 				if(symbol != null) {
 					setProperty(PropertyType.TEXTLABEL, symbol);
 				}

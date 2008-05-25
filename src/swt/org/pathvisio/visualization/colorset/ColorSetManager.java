@@ -20,12 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.EventListener;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.pathvisio.visualization.VisualizationManager;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 
 public class ColorSetManager {
 	public final static String XML_ELEMENT = "color-sets";
@@ -57,13 +58,10 @@ public class ColorSetManager {
 		
 	}
 	
-	public static void addColorSet(ColorSet cs)
-	{
+	public static void addColorSet(ColorSet cs) {
 		colorSets.add(cs);
-		fireColorSetEvent (
-			new ColorSetEvent (
-				ColorSetManager.class,
-				ColorSetEvent.COLORSET_ADDED));
+		VisualizationManager.fireVisualizationEvent(
+				new VisualizationEvent(null, VisualizationEvent.COLORSET_ADDED));
 	}
 
 	/**
@@ -71,11 +69,10 @@ public class ColorSetManager {
 	 * @param cs Colorset to remove
 	 */
 	public static void removeColorSet(ColorSet cs) {
-		if(colorSets.contains(cs))
-		{
+		if(colorSets.contains(cs)) {
 			colorSets.remove(cs);
-			fireColorSetEvent(
-				new ColorSetEvent(ColorSetManager.class, ColorSetEvent.COLORSET_REMOVED));
+			VisualizationManager.fireVisualizationEvent(
+					new VisualizationEvent(null, VisualizationEvent.COLORSET_REMOVED));
 		}
 	}
 	
@@ -84,8 +81,8 @@ public class ColorSetManager {
 	 */
 	public static void clearColorSets() {
 		colorSets.clear();
-		fireColorSetEvent(
-				new ColorSetEvent (ColorSetManager.class, ColorSetEvent.COLORSET_REMOVED));
+		VisualizationManager.fireVisualizationEvent(
+				new VisualizationEvent(null, VisualizationEvent.COLORSET_REMOVED));
 	}
 	
 	public static ColorSet getColorSet(int index) {
@@ -138,49 +135,5 @@ public class ColorSetManager {
 	static Document parseInput(InputStream in) throws JDOMException, IOException {
 		SAXBuilder parser = new SAXBuilder();
 		return parser.build(in);
-	}
-
-	/**
-	 * Fire a {@link ColorSetEvent} to notify all {@link VisualizationListener}s registered
-	 * to this class
-	 * //TODO, should be private...
-	 */
-	static void fireColorSetEvent(ColorSetEvent e)
-	{
-		for(ColorSetListener l : listeners)
-		{
-			l.colorSetEvent(e);
-		}
-	}
-
-	/**
-	   List of listeners
-	 */
-	private static List<ColorSetListener> listeners = new ArrayList<ColorSetListener>();
-
-	/**
-	 * Add a {@link ColorSetListener}, that will be notified if an
-	 * event related to visualizations occurs
-	 */
-	public static void addListener(ColorSetListener l)
-	{
-		if(listeners == null)
-			listeners = new ArrayList<ColorSetListener>();
-		listeners.add(l);
-	}
-
-	public static void removeListener (ColorSetListener l)
-	{
-		if (listeners == null)
-			return;
-		listeners.remove (l);				
-	}
-	
-	/**
-	 * Interface for classes that want to receive a ColorSetEvent
-	 */
-	public static interface ColorSetListener extends EventListener
-	{
-		public void colorSetEvent (ColorSetEvent e);
 	}
 }

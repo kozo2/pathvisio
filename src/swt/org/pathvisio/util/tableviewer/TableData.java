@@ -18,7 +18,6 @@ package org.pathvisio.util.tableviewer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * This class holds a collection of {@link Row}s sharing the same {@link Cell}s
@@ -88,7 +87,7 @@ public class TableData {
 			if(c != null) c.setNumeric(value);
 		}
 		
-		public void setCell(String name, List<String> value) {
+		public void setCell(String name, ArrayList value) {
 			Cell c = cells.get(colByName(name));
 			if(c != null) c.setArray(value);
 		}
@@ -125,7 +124,7 @@ public class TableData {
 	 * This class represents a cell, which can either
 	 * have a numeric or text value
 	 */
-	public class Cell implements Comparable<Cell> {
+	public class Cell implements Comparable {
 		Column col;
 		
 		public static final int TYPE_TEXT = 0;
@@ -134,7 +133,7 @@ public class TableData {
 				
 		private String textValue;
 		private double numValue;
-		private List<String> arrayValue;
+		private ArrayList arrayValue;
 		
 		private int type;
 		
@@ -161,7 +160,7 @@ public class TableData {
 		}
 		
 		public double getNumeric() { return numValue; }
-		public List<String> getArray() { return arrayValue; }
+		public ArrayList getArray() { return arrayValue; }
 		
 		public void setText(String value) {
 			setType(TYPE_TEXT);
@@ -171,12 +170,13 @@ public class TableData {
 			setType(TYPE_NUM);
 			numValue = value; 
 		}
-		public void setArray(List<String> value) { 
+		public void setArray(ArrayList value) { 
 			setType(TYPE_ARRAYLIST);
 			arrayValue = value; 
 		}
 				
-		public int compareTo(Cell c) {
+		public int compareTo(Object o) {
+			Cell c = (Cell)o;
 						
 			if(type == c.type) {
 				switch(type) {

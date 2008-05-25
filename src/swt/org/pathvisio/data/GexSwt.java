@@ -17,7 +17,8 @@
 package org.pathvisio.data;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.util.ArrayList;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizard;
@@ -27,14 +28,13 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.pathvisio.data.GexImportWizard.ImportPage;
 import org.pathvisio.gui.swt.SwtEngine;
-import org.pathvisio.model.Xref;
 import org.pathvisio.util.ProgressKeeper;
 import org.pathvisio.util.swt.SwtProgressKeeper;
 
-public class GexSwt
-{
+public class GexSwt {
+	
 	public static DBConnectorSwt getDBConnector() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-		return SwtEngine.getCurrent().getSwtDbConnector(DBConnector.TYPE_GEX);
+		return SwtEngine.getCurrent().getSwtDbConnector(DBConnectorSwt.TYPE_GEX);
 	}
 	
 	public static class ProgressWizardDialog extends WizardDialog {
@@ -59,18 +59,19 @@ public class GexSwt
 	}
 	
 	public static class CacheProgressKeeper extends SwtProgressKeeper implements IRunnableWithProgress {
-		List<Xref> refs;
+		ArrayList<String> ids;
+		ArrayList<String> codes;
 		
-		public CacheProgressKeeper(List<Xref> refs) 
-		{
-			super(refs.size());
-			this.refs = refs;
+		public CacheProgressKeeper(ArrayList<String> ids, ArrayList<String> codes) {
+			super(ids.size());
+			this.ids = ids;
+			this.codes = codes;
 		}
 		
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 			super.run(monitor);
 			monitor.beginTask("Loading data", getTotalWork());
-			GexManager.getCurrentGex().cacheData(refs, this);
+			Gex.cacheData(ids, codes, this);
 		}
 	}
 	
@@ -87,7 +88,7 @@ public class GexSwt
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 			super.run(monitor);
 			monitor.beginTask("Importing data", getTotalWork());
-			GexTxtImporter.importFromTxt(info, this);
+			Gex.importFromTxt(info, this);
 		}
 	}	
 }

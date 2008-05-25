@@ -16,14 +16,11 @@
 //
 package org.pathvisio.util;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
+import org.pathvisio.data.DataSources;
+import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.DataSource;
-import org.pathvisio.model.XrefWithSymbol;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -36,51 +33,27 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class PathwayParser extends DefaultHandler 
 {
-	public static class ParseException extends Exception
-	{
-		private static final long serialVersionUID = 1L;
-		
-		public ParseException (Exception e)
-		{
-			super (e);
-		}
-	}
-	
 	String name;
-	private ArrayList<XrefWithSymbol> genes;
+	private ArrayList<Gene> genes;
 	
 	public PathwayParser() 
 	{
 		name = "";
-		genes = new ArrayList<XrefWithSymbol>();
+		genes = new ArrayList<Gene>();
 	}
 	
-	public PathwayParser(File f, XMLReader xmlReader) throws ParseException
+	public PathwayParser(XMLReader xmlReader) 
 	{
 		this();
 		xmlReader.setContentHandler(this);
 		xmlReader.setEntityResolver(this);
-		
-		try
-		{
-			xmlReader.parse(f.getAbsolutePath());
-		}
-		catch (IOException e) 
-		{ 
-			throw new ParseException (e);
-		}
-		catch (SAXException e)
-		{
-			throw new ParseException (e);
-			// ignore pathways that generate an exception (return empty list)
-		}
 	}
-		
-	public List<XrefWithSymbol> getGenes() { return genes; }
+	
+	public ArrayList<Gene> getGenes() { return genes; }
 	
 	public String getName() { return name; }
 	
-	XrefWithSymbol currentGene = null;
+	Gene currentGene = null;
 	
 	public void startElement(String uri, String localName, String qName, Attributes attributes)
 			throws SAXException 
@@ -90,7 +63,7 @@ public class PathwayParser extends DefaultHandler
 			// the only way this can be not null
 			// is when two consecutive DataNode opening tags don't have an Xref in between
 			assert (currentGene != null);				
-			currentGene = new XrefWithSymbol(null, null, null);
+			currentGene = new Gene();
 
 			String symbol = attributes.getValue("TextLabel");
 			currentGene.setSymbol(symbol);		
@@ -103,11 +76,12 @@ public class PathwayParser extends DefaultHandler
 		{
 			String sysName = attributes.getValue("Database");
 			assert (sysName != null);
-			DataSource ds = DataSource.getByFullName (sysName);
+			String code = DataSources.sysName2Code.get(sysName);
+			assert (code != null);
 			String geneId = attributes.getValue("ID");
 			assert (geneId != null);
 			
-			currentGene.setDataSource(ds);
+			currentGene.setCode(code);
 			currentGene.setId(geneId);
 			
 			if(!genes.contains(currentGene)) //Don't add duplicate genes
@@ -130,6 +104,17 @@ public class PathwayParser extends DefaultHandler
 	public void warning(SAXParseException e) 
 	{ 
 		Logger.log.error("Warning while parsing xml document", e);
-	}	
+	}
+	
+	public class Gene extends IdCodePair 
+	{
+		String symbol;
+		
+		public Gene() { super (null, null); }			
+		
+		public String toString() { return getId(); }
+		public String getSymbol() { return symbol; }
+		public void setSymbol(String value) { symbol = value; }
+	}
 }
 

@@ -27,7 +27,6 @@ import org.pathvisio.ApplicationEvent;
 import org.pathvisio.Engine;
 import org.pathvisio.Globals;
 import org.pathvisio.Engine.ApplicationEventListener;
-import org.pathvisio.debug.Logger;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.preferences.swt.PreferenceDlg;
 import org.pathvisio.preferences.swt.SwtPreferences;
@@ -50,7 +49,7 @@ public class CommonActions
 			setText ("&Undo@Ctrl+Z");
 			setToolTipText ("Undo last action");
 			setImageDescriptor(ImageDescriptor.createFromURL(
-					Engine.getCurrent().getResourceURL("undo.gif")));
+					Engine.getCurrent().getResourceURL("icons/undo.gif")));
 			setEnabled(false);
 			Engine.getCurrent().addApplicationEventListener(this);
 		}
@@ -69,8 +68,8 @@ public class CommonActions
 		}
 
 		public void applicationEvent(ApplicationEvent e) {
-			if(e.getType() == ApplicationEvent.VPATHWAY_CREATED) {
-				((VPathway)e.getSource()).getUndoManager().addListener(this);
+			if(e.type == ApplicationEvent.VPATHWAY_CREATED) {
+				((VPathway)e.source).getUndoManager().addListener(this);
 				setEnabled(false);
 			}
 		}
@@ -88,7 +87,7 @@ public class CommonActions
 			setText ("&New pathway@Ctrl+N");
 			setToolTipText ("Create new pathway");
 			setImageDescriptor(ImageDescriptor.createFromURL(
-					Engine.getCurrent().getResourceURL("new.gif")));
+					Engine.getCurrent().getResourceURL("icons/new.gif")));
 		}
 		public void run ()
 		{			
@@ -110,7 +109,7 @@ public class CommonActions
 			window = w;
 			setText ("&Open pathway@Ctrl+O");
 			setToolTipText ("Open pathway");
-			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getCurrent().getResourceURL("open.gif")));
+			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getCurrent().getResourceURL("icons/open.gif")));
 		}
 		public void run () 
 		{
@@ -206,9 +205,8 @@ public class CommonActions
 		public void run () {
 			PreferenceManager pg = new PreferenceDlg();
 			PreferenceDialog pd = new PreferenceDialog(window.getShell(), pg);
-			pd.setPreferenceStore(new SwtPreferences(Engine.getCurrent().getPreferences()));
+			pd.setPreferenceStore((SwtPreferences)Engine.getCurrent().getPreferenceCollection());
 			pd.open();
-			Engine.getCurrent().getPreferences().store();
 		}
 	}
 
@@ -229,50 +227,21 @@ public class CommonActions
 		{
 			window = w;
 			pctZoomFactor = newPctZoomFactor;
-			setText (pctZoomFactor + " %");
-			setToolTipText ("Zoom mapp to " + pctZoomFactor + " %");
-		}
-
-		public void run () 
-		{
-			VPathway drawing = Engine.getCurrent().getActiveVPathway();
-			if (drawing != null)
+			if(pctZoomFactor == MainWindowBase.ZOOM_TO_FIT) 
 			{
-				drawing.setPctZoom(pctZoomFactor);
+				setText ("Zoom to fit");
+				setToolTipText("Zoom mapp to fit window");
 			}
 			else
 			{
-				MessageDialog.openError (window.getShell(), "Error", 
-					"No gpml file loaded! Open or create a new gpml file first");
+				setText (pctZoomFactor + " %");
+				setToolTipText ("Zoom mapp to " + pctZoomFactor + " %");
 			}
 		}
-	}
-
-	/**
-	 * {@link Action} that zooms a mapp to the specified zoomfactor
-	 */
-	static class ZoomToFitAction extends Action 
-	{
-		MainWindowBase window;
-		
-		/**
-		 * Constructor for this class
-		 * @param w {@link MainWindow} window this action belongs to
-		 * @param newPctZoomFactor the zoom factor as percentage of original
-		 */
-		public ZoomToFitAction (MainWindowBase w)
-		{
-			window = w;
-			setText ("Zoom to fit");
-			setToolTipText("Zoom pathway to fit window");
-		}
-		
-		public void run () 
-		{
+		public void run () {
 			VPathway drawing = Engine.getCurrent().getActiveVPathway();
 			if (drawing != null)
 			{
-				double pctZoomFactor = drawing.getFitZoomFactor();
 				drawing.setPctZoom(pctZoomFactor);
 			}
 			else
@@ -293,7 +262,7 @@ public class CommonActions
 		{
 			window = w;
 			setText ("&About");
-			setToolTipText ("About " + Engine.getApplicationName());
+			setToolTipText ("About " + Globals.APPLICATION_VERSION_NAME);
 		}
 		public void run () {
 			AboutDlg gmmlAboutBox = new AboutDlg(window.getShell(), SWT.NONE);
@@ -311,7 +280,7 @@ public class CommonActions
 		{
 			window = w;
 			setText ("&Help@F1");
-			setToolTipText ("Opens " + Engine.getApplicationName()+ " help in your web browser");
+			setToolTipText ("Opens " + Globals.APPLICATION_VERSION_NAME + " help in your web browser");
 		}
 		public void run ()
 		{
@@ -369,7 +338,7 @@ public class CommonActions
 			window = w;
 			setText ("&Save pathway@Ctrl+S");
 			setToolTipText ("Save pathway");
-			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getCurrent().getResourceURL("save.gif")));
+			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getCurrent().getResourceURL("icons/save.gif")));
 		}
 		
 		public void run ()
@@ -406,7 +375,7 @@ public class CommonActions
 		public SwitchEditModeAction (MainWindowBase w)
 		{
 			super("&Edit mode", IAction.AS_CHECK_BOX);
-			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getCurrent().getResourceURL("edit.gif")));
+			setImageDescriptor(ImageDescriptor.createFromURL(Engine.getCurrent().getResourceURL("icons/edit.gif")));
 			setToolTipText(ttUnChecked);
 			window = w;
 			
@@ -415,7 +384,7 @@ public class CommonActions
 
 		public void run ()
 		{
-			if(Engine.getCurrent().hasVPathway())
+			if(Engine.getCurrent().isDrawingOpen())
 			{
 				VPathway drawing = Engine.getCurrent().getActiveVPathway();
 				Pathway pathway = Engine.getCurrent().getActivePathway();
@@ -459,10 +428,10 @@ public class CommonActions
 		}
 
 		public void applicationEvent(ApplicationEvent e) {
-			if(e.getType() == ApplicationEvent.VPATHWAY_OPENED) {
+			if(e.type == ApplicationEvent.VPATHWAY_OPENED) {
 				Engine.getCurrent().getActiveVPathway().setEditMode(isChecked());
 			}
-			else if(e.getType() == ApplicationEvent.VPATHWAY_NEW) {
+			else if(e.type == ApplicationEvent.VPATHWAY_NEW) {
 				switchEditMode(true);
 			}
 		}

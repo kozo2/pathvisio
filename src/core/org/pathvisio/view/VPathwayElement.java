@@ -23,7 +23,6 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.pathvisio.Engine;
 import org.pathvisio.preferences.GlobalPreference;
 
 public abstract class VPathwayElement implements Comparable<VPathwayElement>
@@ -38,35 +37,13 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 		canvas.addObject(this);
 	}
 	
-	public static Color selectColor = Engine.getCurrent().getPreferences().getColor(GlobalPreference.COLOR_SELECTED);
+	public static Color selectColor = GlobalPreference.getValueColor(GlobalPreference.COLOR_SELECTED);
 	public static final float HIGHLIGHT_STROKE_WIDTH = 5.0f;
 
 	private Rectangle2D oldrect = null;
 	
 	private boolean isSelected;
-	
-	/**
-	 * Will be called by VPathway whenever the zoom factor
-	 * is changed. Default implementation refreshes the cache
-	 * of VBounds and VOutline.
-	 */
-	void zoomChanged() { 
-		resetShapeCache();
-	}
-	
-	private Shape vOutlineCache;
-	private Rectangle2D vBoundsCache;
-	
-	/**
-	 * Resets cache for VOutline and VBounds so that
-	 * they will be recalculated on the next call to
-	 * getVOutline or getVBounds.
-	 */
-	protected void resetShapeCache() {
-		vOutlineCache = null;
-		vBoundsCache = null;
-	}
-	
+		
 	public final void draw(Graphics2D g2d)
 	{
 		//Create a copy to ensure that the state of this Graphics2D will be intact
@@ -95,7 +72,6 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 		{
 			canvas.addDirtyRect(oldrect);
 		}
-		resetShapeCache();
 		Rectangle2D newrect = getVBounds();
 		canvas.addDirtyRect(newrect);
 		oldrect = newrect;
@@ -154,7 +130,7 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	 */
 	public void highlight()
 	{
-		highlight (Engine.getCurrent().getPreferences().getColor(GlobalPreference.COLOR_HIGHLIGHTED));
+		highlight (GlobalPreference.getValueColor(GlobalPreference.COLOR_HIGHLIGHTED));
 	}
 	
 	/**
@@ -173,38 +149,21 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	 */
 	protected boolean vIntersects(Rectangle2D r)
 	{
-		// first use getVBounds as a rough approximation
-		if (getVBounds().intersects(r))
-		{
-			// Yes, the vbounds intersects, now try to be more precise
-			return getVOutline().intersects(r);
-		}
-		else
-		{
-			return false;
-		}
+		return getVOutline().intersects(r);
 	}
 	
 	/**
-	 * Determines whether a Graphics object contains
+	 * Determines wheter a Graphics object contains
 	 * the point specified
 	 * @param point - the point to check
 	 * @return True if the object contains the point, false otherwise
 	 */
 	protected boolean vContains(Point2D point)
 	{
-		// first use getVBounds as a rough approximation
-		if (getVBounds().contains(point))
-		{
-			// Yes, the vbounds contains, now try to be more precise
-			return getVOutline().contains(point);
-		}
-		else 
-		{
-			return false;
-		}
+		return getVOutline().contains(point);
 	}	
-	
+
+
 	public boolean isSelected()
 	{
 		return isSelected;
@@ -260,52 +219,24 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	}
 	
 	/**
-	 * Gets the cached rectangular bounds of this object
+	 * Gets the rectangular bounds of this object
 	 * This method is equivalent to {@link #getVOutline()}.getBounds2D()
 	 * @return
 	 */
-	public final Rectangle2D getVBounds()
-	{
-		if(vBoundsCache == null) {
-			vBoundsCache = calculateVBounds();
-		}
-		return vBoundsCache;
-	}
-	
-	/**
-	 * Calculates the rectangular bounds of this object
-	 * This method is equivalent to {@link #getVOutline()}.getBounds2D()
-	 * @return
-	 */
-	public Rectangle2D calculateVBounds()
+	public Rectangle2D getVBounds()
 	{
 		return getVOutline().getBounds2D();
 	}
 	
 	/**
-	 * Get the cached outline of this element. The outline is used to check 
+	 * Get the outline of this element. The outline is used to check 
 	 * whether a point is contained in this element or not and includes the stroke
 	 * and takes into account rotation.
 	 * Because it includes the stroke, it is not a direct model to view mapping of
 	 * the model outline!
 	 * @return the outline of this element
 	 */
-	protected final Shape getVOutline() {
-		if(vOutlineCache == null) {
-			vOutlineCache = calculateVOutline();
-		}
-		return vOutlineCache;
-	}
-	
-	/**
-	 * Calculate the outline of this element. The outline is used to check 
-	 * whether a point is contained in this element or not and includes the stroke
-	 * and takes into account rotation.
-	 * Because it includes the stroke, it is not a direct model to view mapping of
-	 * the model outline!
-	 * @return the outline of this element
-	 */
-	abstract protected Shape calculateVOutline();
+	abstract protected Shape getVOutline();
 	
 	/**
 	 * Scales the object to the given rectangle
@@ -317,45 +248,67 @@ public abstract class VPathwayElement implements Comparable<VPathwayElement>
 	 * Gets the rectangle used to scale the object
 	 */
 	protected Rectangle2D getVScaleRectangle() { return new Rectangle2D.Double(); }
+
+	public int getDrawingOrder() {
+		return VPathway.DRAW_ORDER_DEFAULT;
+	}
 	
 	/**
-	 * returns the z-order that defines in what order to draw the element.
-	 */
-	protected abstract int getZOrder();
-	
-	/**
-	 * Orders VPathwayElements
-	 * 
-	 * non-Graphics objects always sort above graphics objects
-	 * selected Graphics objects sort above non-selected graphics objects
-	 * finally, non-selected graphics objects are sorted by their z-order.
-	 * The z-order is determined by the type of object by default,
-	 * but can be overridden by the user.
-	 * 
+	 * Orders GmmlDrawingObjects by their drawingOrder.
 	 * The comparison is consistent with "equals", i.e. it doesn't return 0 if
 	 * the objects are different, even if their drawing order is the same.
 	 * 
-	 * @param d VPathwayElement that this is compared to. 
+	 * @param d
+	 * @see #getDrawingOrder()
 	 */
 	public int compareTo(VPathwayElement d)
 	{
 		// same object? easy...
 		if (d == this)
 			return 0;
-
-		int a, b;
-		// if only one of two is selected (XOR):
-
-		a = getZOrder();
-		b = d.getZOrder();
-
-		// if sorting order is equal, use hash code
-		if (b == a)
-		{
-			return hashCode() - d.hashCode();
+		
+		int a, b, an, bn, az, bz;
+		a = getDrawingOrder();
+		b = d.getDrawingOrder();
+		//Natural order in first bits
+		an = a & 0xFF00;
+		bn = b & 0xFF00;
+		//z-order in last bits
+		az = a & 0x00FF;
+		bz = b & 0x00FF;
+		
+		if(isSelected() && d.isSelected()) {
+			; //objects are both selected, keep original sort order
 		}
+		else if(isSelected() || isHighlighted())
+		{
+			an = VPathway.DRAW_ORDER_SELECTED;
+		}
+		else if(d.isSelected() || d.isHighlighted())
+		{
+			bn = VPathway.DRAW_ORDER_SELECTED;
+		}
+		
+//		System.out.println(this + ": " + a + ", " + an + ", " + az);
+//		System.out.println(d + ": " + b + ", " + bn + ", " + bz);
+		
+		// note, if the drawing order is equal, that doesn't mean the objects are equal
+		// the construct with hashcodes give objects a defined sort order, even if their
+		// drawing orders are equal.
+		// The z-ordering takes care of the order of objects of the same type
+		// note that the when the z-order is higher, the object is drawn later and should be
+		// sorted below. Therefore the bz and az are switched.
+		if (an == bn)
+		{
+			an = bz;
+			bn = az;		
+		}
+		// there is still a remote possibility that although the objects are not the same,
+		// the hashcode is the same. Even still, we shouldn't return 0.
+		if (an != bn) 
+			return bn - an; 
 		else
-			return a - b;
+			return -1;
 	}
 	
 	/** 

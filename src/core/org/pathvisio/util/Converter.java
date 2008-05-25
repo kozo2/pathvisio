@@ -28,13 +28,9 @@ import org.pathvisio.Engine;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.BatikImageExporter;
 import org.pathvisio.model.ConverterException;
-import org.pathvisio.model.DataNodeListExporter;
-import org.pathvisio.model.EUGeneExporter;
 import org.pathvisio.model.GpmlFormat;
 import org.pathvisio.model.ImageExporter;
 import org.pathvisio.model.MappFormat;
-import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.view.MIMShapes;
 
 /**
  * @author Thomas Kelder (t.a.j.kelder@student.tue.nl)
@@ -76,13 +72,7 @@ public class Converter {
 		engine.addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_PNG));
 		engine.addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_TIFF));
 		engine.addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_PDF));
-		engine.addPathwayExporter(new DataNodeListExporter());
-		engine.addPathwayExporter(new EUGeneExporter());
     	
-		//Enable MiM support (for export to graphics formats)
-		engine.getPreferences().setBoolean(GlobalPreference.MIM_SUPPORT, true);
-		MIMShapes.registerShapes();
-		
         File inputFile = null;
         File outputFile = null;
         
@@ -109,7 +99,9 @@ public class Converter {
 			outputFile = new File(args[1]);
 			if(inputFile == null || !inputFile.canRead()) {
 				Logger.log.error("Unable to read inputfile: " + inputFile);
-				error = true;
+			}
+			if(outputFile == null || !outputFile.canWrite()) {
+				Logger.log.error("Unable to write outputfile: " + outputFile);
 			}
 		}		
 		

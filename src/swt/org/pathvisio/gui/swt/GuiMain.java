@@ -17,8 +17,10 @@
 package org.pathvisio.gui.swt;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.regex.Matcher;
@@ -34,20 +36,21 @@ import org.eclipse.swt.widgets.Shell;
 import org.pathvisio.Engine;
 import org.pathvisio.Globals;
 import org.pathvisio.Revision;
-import org.pathvisio.data.DataException;
-import org.pathvisio.data.GdbManager;
-import org.pathvisio.data.GexManager;
+import org.pathvisio.data.Gdb;
+import org.pathvisio.data.Gex;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.BatikImageExporter;
-import org.pathvisio.model.DataNodeListExporter;
-import org.pathvisio.model.EUGeneExporter;
 import org.pathvisio.model.ImageExporter;
 import org.pathvisio.model.MappFormat;
 import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.Preference;
+import org.pathvisio.preferences.swt.SwtPreferences;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.swt.SwtUtils;
 import org.pathvisio.visualization.VisualizationManager;
 import org.pathvisio.visualization.plugins.PluginManager;
 import org.pathvisio.view.MIMShapes;
+import edu.stanford.ejalbert.BrowserLauncher;
 
 /**
  * This class contains the main method and is responsible for initiating 
@@ -74,7 +77,6 @@ public class GuiMain {
 				
 		//Setup the application window
 		MainWindow window = null;
-		Engine.init();
 		if(debugHandles)	window = SwtEngine.getCurrent().getSleakWindow();
 		else				window = SwtEngine.getCurrent().getWindow();
 				
@@ -87,16 +89,11 @@ public class GuiMain {
 		window.open();
 		Logger.log.trace ("Window closed");
 		
-		GexManager.close();
-		try
-		{
-			GdbManager.getCurrentGdb().close();
-		}
-		catch (DataException e)
-		{
-			Logger.log.error ("Problem during GdbManager.close()", e);
-		}
-		
+		//Perform exit operations
+		//TODO: implement PropertyChangeListener and fire exit property when closing
+		// make classes themself responsible for closing when exit property is changed
+		Gex.close();
+		Gdb.close();
 		//Close log stream
 		Logger.log.getStream().close();
 		
@@ -151,9 +148,11 @@ public class GuiMain {
 	 */
 	public static void initiate()
 	{
-		String logDest = Engine.getCurrent().getPreferences().get(GlobalPreference.FILE_LOG);
-		Logger.log.setDest(logDest);
-		
+		//initiate logger
+		try { 
+			GlobalPreference.FILE_LOG.setDefault(new File(SwtEngine.getCurrent().getApplicationDir(), ".PathVisioLog").toString());
+			Logger.log.setStream(new PrintStream(GlobalPreference.FILE_LOG.getValue())); 
+		} catch(Exception e) {}
 		Logger.log.setLogLevel(true, true, true, true, true, true);//Modify this to adjust log level
 
 		Logger.log.info ("Revision: " + Revision.REVISION);
@@ -166,9 +165,11 @@ public class GuiMain {
 		Logger.log.info ("Username: " + System.getProperty ("user.name"));
 		
 		Logger.log.trace ("Log initialized");
+		//load the preferences
+		loadPreferences();
 
 		// preferences loaded, now we can register mim shapes
-		if (Engine.getCurrent().getPreferences().getBoolean (GlobalPreference.MIM_SUPPORT))
+		if (GlobalPreference.getValueBoolean (GlobalPreference.MIM_SUPPORT))
 		{
 			MIMShapes.registerShapes();
 		}
@@ -176,14 +177,14 @@ public class GuiMain {
 		Logger.log.trace ("Preferences loaded");
 		
 		//initiate Gene database (to load previously used gdb)
-		GdbManager.init();
+		Gdb.init();
 		
 		//load visualizations and plugins
 		loadVisualizations();
 		Logger.log.trace ("Plugins loaded");
 		
 		//create data directories if they don't exist yet
-//		createDataDirectories();
+		createDataDirectories();
 		
 		//register listeners for static classes
 		registerListeners();
@@ -195,26 +196,29 @@ public class GuiMain {
 		//since the window has to be opened first (need an active Display)
 	}
 	
-//	/**
-//	 * Creates data directories stored in preferences (if not exist)
-//	 */
-//	static void createDataDirectories() {
-//		Preference[] dirPrefs = new Preference[] {
-//				SwtPreference.SWT_DIR_EXPR,
-//				SwtPreference.SWT_DIR_GDB,
-//				SwtPreference.SWT_DIR_PWFILES,
-//				SwtPreference.SWT_DIR_RDATA,
-//		};
-//		for(Preference p : dirPrefs) {
-//			File dir = new File(p.getValue());
-//			if(!dir.exists()) dir.mkdir();
-//		}
-//	}
+	/**
+	 * Creates data directories stored in preferences (if not exist)
+	 */
+	static void createDataDirectories() {
+		Preference[] dirPrefs = new Preference[] {
+				SwtPreference.SWT_DIR_EXPR,
+				SwtPreference.SWT_DIR_GDB,
+				SwtPreference.SWT_DIR_PWFILES,
+				SwtPreference.SWT_DIR_RDATA,
+		};
+		for(Preference p : dirPrefs) {
+			File dir = new File(p.getValue());
+			if(!dir.exists()) dir.mkdir();
+		}
+	}
 	
 			
 	static void registerListeners() {
-		VisualizationManager vmgr = new VisualizationManager();		
+		VisualizationManager vmgr = new VisualizationManager();
+		Gex gex = new Gex();
+		
 		Engine.getCurrent().addApplicationEventListener(vmgr);
+		Engine.getCurrent().addApplicationEventListener(gex);
 	}
 	
 	static void registerExporters() {
@@ -223,8 +227,6 @@ public class GuiMain {
 		Engine.getCurrent().addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_PNG));
 		Engine.getCurrent().addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_TIFF));
 		Engine.getCurrent().addPathwayExporter(new BatikImageExporter(ImageExporter.TYPE_PDF));
-		Engine.getCurrent().addPathwayExporter(new DataNodeListExporter());
-		Engine.getCurrent().addPathwayExporter(new EUGeneExporter());
 	}
 	
 	static void registerImporters() {
@@ -240,6 +242,10 @@ public class GuiMain {
 		}
 		
 		VisualizationManager.loadGeneric();
+	}
+	
+	static void loadPreferences() {
+		Engine.getCurrent().setPreferenceCollection(new SwtPreferences());
 	}
 	
 	/**
@@ -261,23 +267,23 @@ public class GuiMain {
 		imageRegistry.put("data.protein",
 				new Image(display, img));
 		imageRegistry.put("sidepanel.minimize",
-				ImageDescriptor.createFromURL(cl.getResource("minimize.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/minimize.gif")));
 		imageRegistry.put("sidepanel.hide",
-				ImageDescriptor.createFromURL(cl.getResource("close.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/close.gif")));
 		imageRegistry.put("shell.icon", 
 				ImageDescriptor.createFromURL(cl.getResource("images/bigcateye.gif")));
 		imageRegistry.put("about.logo",
 				ImageDescriptor.createFromURL(cl.getResource("images/logo.jpg")));
 						imageRegistry.put("checkbox.unchecked",
-				ImageDescriptor.createFromURL(cl.getResource("unchecked.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/unchecked.gif")));
 		imageRegistry.put("checkbox.unavailable",
-				ImageDescriptor.createFromURL(cl.getResource("unchecked_unavailable.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/unchecked_unavailable.gif")));
 		imageRegistry.put("checkbox.checked",
-				ImageDescriptor.createFromURL(cl.getResource("checked.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/checked.gif")));
 		imageRegistry.put("tree.collapsed",
-				ImageDescriptor.createFromURL(cl.getResource("tree_collapsed.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/tree_collapsed.gif")));
 		imageRegistry.put("tree.expanded",
-				ImageDescriptor.createFromURL(cl.getResource("tree_expanded.gif")));
+				ImageDescriptor.createFromURL(cl.getResource("icons/tree_expanded.gif")));
 		SwtEngine.getCurrent().setImageRegistry(imageRegistry);
 	}
 	

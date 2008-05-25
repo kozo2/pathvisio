@@ -18,6 +18,7 @@ package org.pathvisio.view;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -25,6 +26,11 @@ import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.GraphLink.GraphRefContainer;
+import org.pathvisio.model.PathwayElement.MPoint;
 
 /**
  * This class implements a selectionbox
@@ -53,7 +59,7 @@ public class SelectionBox extends VPathwayElement
 
 	private static final long serialVersionUID = 1L;
 
-	private Set<VPathwayElement> selection;
+	private ArrayList<VPathwayElement> selection;
 
 	boolean isSelecting;
 
@@ -68,7 +74,7 @@ public class SelectionBox extends VPathwayElement
 	{
 		super(canvas);
 
-		selection = new HashSet<VPathwayElement>();
+		selection = new ArrayList<VPathwayElement>();
 
 		handleNE = new Handle(Handle.DIRECTION_FREE, this, canvas);
 		handleSE = new Handle(Handle.DIRECTION_FREE, this, canvas);
@@ -76,12 +82,17 @@ public class SelectionBox extends VPathwayElement
 		handleNW = new Handle(Handle.DIRECTION_FREE, this, canvas);
 	}
 
-	public Set<VPathwayElement> getSelection()
+	public int getDrawingOrder()
+	{
+		return VPathway.DRAW_ORDER_SELECTIONBOX;
+	}
+
+	public ArrayList<VPathwayElement> getSelection()
 	{
 		return selection;
 	}
 
-	public Rectangle2D calculateVOutline()
+	public Rectangle2D getVOutline()
 	{
 		return new Rectangle2D.Double(vFromM(mLeft), vFromM(mTop),
 				vFromM(mWidth), vFromM(mHeight));
@@ -98,9 +109,11 @@ public class SelectionBox extends VPathwayElement
 			return; // Is selectionbox or already in selection
 		if (o instanceof VPoint)
 		{
-			Line l = ((VPoint)o).getLine();
-			l.select();
-			doAdd(l);
+			for (Line l : ((VPoint) o).getLines())
+			{
+				l.select();
+				doAdd(l);
+			}
 		} else
 		{
 			o.select();
@@ -302,7 +315,7 @@ public class SelectionBox extends VPathwayElement
 		}
 		if (!hasMultipleSelection())
 		{ // Only one object in selection, hide selectionbox
-			VPathwayElement passTo = selection.iterator().next();
+			VPathwayElement passTo = selection.get(0);
 			passTo.select();
 			return;
 		}
@@ -320,7 +333,6 @@ public class SelectionBox extends VPathwayElement
 		mHeight = mFromV(vr.getHeight());
 		mLeft = mFromV(vr.getX());
 		mTop = mFromV(vr.getY());
-		markDirty();
 	}
 
 	/**
@@ -355,7 +367,6 @@ public class SelectionBox extends VPathwayElement
 	{
 		for (Handle h : getHandles())
 			h.hide();
-		markDirty();
 		isVisible = false;
 		if (reset)
 			reset();
@@ -399,6 +410,8 @@ public class SelectionBox extends VPathwayElement
 			mdw = -mdx;
 		}
 
+		markDirty();
+
 		mWidth += mdw;
 		mHeight += mdh;
 		mLeft += mdx;
@@ -423,26 +436,43 @@ public class SelectionBox extends VPathwayElement
 
 		if (isSelecting)
 		{ // Selecting, so add containing objects to selection
-			Rectangle2D bounds = getVBounds();
+			Rectangle2D vr = getVBounds();
+			Rectangle2D.Double bounds = new Rectangle2D.Double(vr.getX(), vr
+					.getY(), vr.getWidth(), vr.getHeight());
 			for (VPathwayElement o : canvas.getDrawingObjects())
 			{
-				if ((o == this) || (o instanceof Handle)) {
+				if ((o == this) || (o instanceof Handle))
 					continue;
-				}
-				
-				String groupRef = null;
-				if(o instanceof Graphics) {
-					groupRef = ((Graphics)o).getPathwayElement().getGroupRef();
-				}
-				
-				if(o.vIntersects(bounds)) {
-					//Only add objects that are not part of a group
-					if(groupRef == null || "".equals(groupRef)) {
-						addToSelection(o);
-					}
-				} else if (o.isSelected() && 
-						(groupRef == null || "".equals(groupRef))) {
+				if (o.vIntersects(bounds) && !(o instanceof Group))
+				{
+					addToSelection(o);
+
+				} else if (o.isSelected())
 					removeFromSelection(o);
+
+				// Special case when selecting groups
+				if (o.vIntersects(bounds) && (o instanceof Group))
+				{
+					// Need to remove members of group first, to avoid duplicate
+					// selection and resulting funky move behavior
+					for (VPathwayElement vpe : canvas.getDrawingObjects())
+					{
+						if (vpe instanceof Graphics && !(vpe instanceof Group))
+						{
+							PathwayElement pe = ((Graphics) vpe)
+									.getPathwayElement();
+							String ref = pe.getGroupRef();
+							if (ref != null
+									&& ref.equals(((Group) o)
+											.getPathwayElement().getGroupId())
+									&& vpe.isSelected())
+							{
+								removeFromSelection(vpe);
+							}
+						}
+					}
+					addToSelection(o);
+					// fitToSelection();
 				}
 			}
 		}
@@ -515,50 +545,46 @@ public class SelectionBox extends VPathwayElement
 		setHandleLocation();
 		markDirty();
 
-		for (VPathwayElement o : selection) {
-			if(o instanceof Graphics) {
-				o.vMoveBy(vdx, vdy);
+		// Move selected object and their references
+		Set<GraphRefContainer> not = new HashSet<GraphRefContainer>(); // Will
+		// be
+		// moved
+		// by
+		// linking
+		// object
+		Set<VPoint> points = new HashSet<VPoint>(); // Will not be moved by
+		// linking object
+
+		for (VPathwayElement o : selection)
+		{
+			if (o instanceof Graphics)
+			{
+				PathwayElement g = ((Graphics) o).getGmmlData();
+				if (!(o instanceof Line))
+				{
+					o.vMoveBy(vdx, vdy);
+					not.addAll(g.getReferences());
+				}
+				if (g.getObjectType() == ObjectType.LINE)
+				{
+					points.addAll(((Line) o).getPoints());
+				}
+			}
+
+		}
+
+		for (GraphRefContainer ref : not)
+		{
+			if (ref instanceof MPoint)
+			{
+				points.remove(canvas.getPoint((MPoint) ref));
 			}
 		}
-//		// Move selected object and their references
-//		Set<GraphRefContainer> not = new HashSet<GraphRefContainer>(); // Will
-//		// be moved by linking object
-//		Set<VPoint> points = new HashSet<VPoint>(); // Will not be moved by
-//		// linking object
-//
-//		for (VPathwayElement o : selection)
-//		{
-//			if (o instanceof Graphics)
-//			{
-//				PathwayElement g = ((Graphics) o).getPathwayElement();
-//				if (!(o instanceof Line))
-//				{
-//					o.vMoveBy(vdx, vdy);
-//					not.addAll(g.getReferences());
-//				}
-//				if (g.getObjectType() == ObjectType.LINE)
-//				{
-//					points.addAll(((Line) o).getPoints());
-//				}
-//			} else if (o instanceof VAnchor) {
-//				MAnchor m = ((VAnchor)o).getMAnchor();
-//				not.addAll(m.getReferences());
-//			}
-//
-//		}
 
-//		for (GraphRefContainer ref : not)
-//		{
-//			if (ref instanceof MPoint)
-//			{
-//				points.remove(canvas.getPoint((MPoint) ref));
-//			}
-//		}
-//
-//		for (VPoint p : points)
-//		{
-//			p.vMoveBy(vdx, vdy);
-//		}
+		for (VPoint p : points)
+		{
+			p.vMoveBy(vdx, vdy);
+		}
 	}
 
 	public void doDraw(Graphics2D g)
@@ -629,7 +655,7 @@ public class SelectionBox extends VPathwayElement
 
 		public int type;
 
-		public Set<VPathwayElement> selection;
+		public List<VPathwayElement> selection;
 
 		public SelectionEvent(SelectionBox source, int type,
 				VPathwayElement affectedObject)
@@ -647,7 +673,4 @@ public class SelectionBox extends VPathwayElement
 		}
 	}
 
-	protected int getZOrder() {
-		return VPathway.ZORDER_SELECTIONBOX;
-	}
 }

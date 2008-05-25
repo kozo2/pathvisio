@@ -18,6 +18,7 @@ package org.pathvisio.view;
 
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
@@ -48,6 +49,10 @@ public class InfoBox extends Graphics {
 	public InfoBox (VPathway canvas, PathwayElement o) {
 		super(canvas, o);
 		canvas.setMappInfo(this);	
+	}
+	
+	public int getNaturalOrder() {
+		return VPathway.DRAW_ORDER_MAPPINFO;
 	}
 	
 	//public Point getBoardSize() { return new Point((int)gdata.getMBoardWidth(), (int)gdata.getMBoardHeight()); }
@@ -82,14 +87,15 @@ public class InfoBox extends Graphics {
 				{"Availability: ", gdata.getCopyright()},
 				{"Last modified: ", gdata.getLastModified()},
 				{"Organism: ", gdata.getOrganism()},
-				{"Data Source: ", gdata.getMapInfoDataSource()}
-			};
+				{"Data Source: ", gdata.getDataSource()}};
 
 
 		int shift = 0;
 		int vLeft = (int)vFromM(gdata.getMLeft());
 		int vTop = (int)vFromM(gdata.getMTop());
 
+		boolean drawnCorrectly = false;
+		
 		int newSizeX = sizeX;
 		int newSizeY = sizeY;
 		

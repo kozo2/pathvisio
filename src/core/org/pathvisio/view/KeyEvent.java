@@ -18,8 +18,6 @@ package org.pathvisio.view;
 
 
 public class KeyEvent extends InputEvent {
-	private static final long serialVersionUID = 1L;
-
 	//Types
 	public static final int KEY_PRESSED = 0;
 	public static final int KEY_RELEASED = 1;
@@ -33,6 +31,8 @@ public class KeyEvent extends InputEvent {
 	public static final int DEL = MIN_VALUE + 4;
 	public static final int INSERT = MIN_VALUE + 5;
 	
+	private static int twoPower(int p) { return (int)Math.pow(2, p); }
+
 	private int keyCode;
 	private int type;
 	

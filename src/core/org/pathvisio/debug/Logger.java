@@ -16,8 +16,6 @@
 //
 package org.pathvisio.debug;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 /**
@@ -45,36 +43,6 @@ public class Logger
 	public PrintStream getStream () { return s; }	
 	public void setStream (PrintStream _s) { s = _s; }
 
-	/**
-	 * if dest is "STDERR" or "STDOUT", the
-	 * standard error / output are used.
-	 * Otherwise, dest is interpreted as a filename
-	 */
-	public void setDest(String dest)
-	{
-		if (dest.equals ("STDERR"))
-		{
-			s = System.err;
-		}
-		else if (dest.equals("STDOUT"))
-		{
-			s = System.out;
-		}
-		else
-		{
-			try
-			{
-				s = new PrintStream (new File (dest));
-			}
-			catch (FileNotFoundException e)
-			{
-				s = System.err;
-				error ("Could not open log file " + dest + " for writing", e);
-			}
-		}
-		
-	}
-	
 	StopWatch logTimer;
 
 	public Logger()

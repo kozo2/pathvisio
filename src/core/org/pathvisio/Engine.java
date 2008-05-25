@@ -18,12 +18,12 @@ package org.pathvisio;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.pathvisio.data.BackpageTextProvider;
 import org.pathvisio.data.DBConnector;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.model.ConverterException;
@@ -31,34 +31,26 @@ import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayExporter;
 import org.pathvisio.model.PathwayImporter;
 import org.pathvisio.preferences.GlobalPreference;
-import org.pathvisio.preferences.PreferenceManager;
+import org.pathvisio.preferences.PreferenceCollection;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayWrapper;
 
-public class Engine 
-{	
+public class Engine {
 	private VPathway vPathway; // may be null
 	//TODO: standalone below is a hack to make Converter work
 	private Pathway standalone = null; // only used when vPathway is null
 	private VPathwayWrapper wrapper; // may also be null in case you
 									 // don't need to interact with
 									 // the pathway.
-		
+	
 	public static final String SVG_FILE_EXTENSION = "svg";
 	public static final String SVG_FILTER_NAME = "Scalable Vector Graphics (*." + SVG_FILE_EXTENSION + ")";
 	public static final String PATHWAY_FILE_EXTENSION = "gpml";
 	public static final String PATHWAY_FILTER_NAME = "PathVisio Pathway (*." + PATHWAY_FILE_EXTENSION + ")";
 	public static final String GENMAPP_FILE_EXTENSION = "mapp";
 	public static final String GENMAPP_FILTER_NAME = "GenMAPP Pathway (*." + GENMAPP_FILE_EXTENSION + ")";
-	
-	// use Engine.init() to create an Engine
-	private Engine()
-	{
-		preferences = new PreferenceManager();
-		preferences.load();
-	}
-	
+		
 	/**
 	 * the transparent color used in the icons for visualization of protein/mrna data
 	 */
@@ -70,22 +62,9 @@ public class Engine
 	 * Get the current instance of Engine
 	 * @return
 	 */
-	public static Engine getCurrent() 
-	{
-		if(currentEngine == null) 
-		{
-			throw new IllegalArgumentException ("Current Engine was not initialized!");
-		}
+	public static Engine getCurrent() {
+		if(currentEngine == null) currentEngine = new Engine();
 		return currentEngine;
-	}
-	
-	public static void init()
-	{
-		if (currentEngine != null)
-		{
-			throw new IllegalArgumentException ("Engine initialized twice");
-		}
-		currentEngine = new Engine();
 	}
 	
 	/**
@@ -97,28 +76,6 @@ public class Engine
 		currentEngine = e;
 	}
 
-	private File DIR_APPLICATION;
-	private File DIR_DATA;
-	
-	/**
-	 * Get the working directory of this application
-	 */
-	public File getApplicationDir() {
-		if(DIR_APPLICATION == null) {
-			DIR_APPLICATION = new File(System.getProperty("user.home"), ".PathVisio");
-			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdir();
-		}
-		return DIR_APPLICATION;
-	}
-		
-	public File getDataDir() {
-		if(DIR_DATA == null) {
-			DIR_DATA = new File(System.getProperty("user.home"), "PathVisio-Data");
-			if(!DIR_DATA.exists()) DIR_DATA.mkdir();
-		}
-		return DIR_DATA;
-	}
-	
 	/**
 	   Set this to the toolkit-specific wrapper before opening or
 	   creating a new pathway otherwise Engine can't create a vPathway.
@@ -157,17 +114,31 @@ public class Engine
 		}
 		else
 		{
-			return vPathway.getPathwayModel();
+			return vPathway.getGmmlData();
 		}
 	}
 	
-	PreferenceManager preferences = null;
+	PreferenceCollection preferences;
 	
-	public PreferenceManager getPreferences()
-	{
-		return preferences;
+	public void savePreferences() {
+		if(preferences != null) {
+			try {
+				preferences.save();
+			} catch(IOException e) {
+				Logger.log.error("Unable to save preferences", e);
+			}
+		}
 	}
 	
+	public void setPreferenceCollection(PreferenceCollection pc)
+	{
+		preferences = pc;
+	}
+	
+	public PreferenceCollection getPreferenceCollection() {
+		return preferences;
+	}
+
 	public void exportPathway(File file) throws ConverterException {
 		Logger.log.trace("Exporting pathway to " + file);
 		String fileName = file.toString();
@@ -176,11 +147,6 @@ public class Engine
 		String ext = null;
 		if(dot >= 0) {
 			ext = fileName.substring(dot + 1, fileName.length());
-		}
-		if (ext.toLowerCase().equals("mapp") &&
-				!System.getProperty("os.name").contains("Windows"))
-		{
-			throw new ConverterException ("MAPP format is only available on Windows operating systems");
 		}
 		PathwayExporter exporter = getPathwayExporter(ext);
 
@@ -251,27 +217,12 @@ public class Engine
 		}
 		return f;
 	}
-	
-	/**
-	 * Save the pathway
-	 * @param p	The pathway to save
-	 * @param toFile The file to save to
-	 * @throws ConverterException
-	 */
-	public void savePathway(Pathway p, File toFile) throws ConverterException {
-		// make sure there are no problems with references.
-		p.fixReferences();
-		p.writeToXml(toFile, true);
-	}
-	
-	/**
-	 * Save the currently active pathway
-	 * @param toFile	The file to save to
-	 * @throws ConverterException
-	 */
+		
 	public void savePathway(File toFile) throws ConverterException
 	{
-		savePathway(getActivePathway(), toFile);
+		// make sure there are no problems with references.
+		getActivePathway().fixReferences();
+		getActivePathway().writeToXml(toFile, true);
 	}
 
 	/**
@@ -372,24 +323,9 @@ public class Engine
 		return importers;
 	}
 	
-	private BackpageTextProvider backpageTextProvider;
-	
-	/**
-	 * Get the backpage text provider for this Engine.
-	 * @return the backpage text provider
-	 * @see BackpageTextProvider
-	 */
-	public BackpageTextProvider getBackpageTextProvider() {
-		if(backpageTextProvider == null) {
-			backpageTextProvider = new BackpageTextProvider(this);
-		}
-		return backpageTextProvider;
-	}
-	
 	private HashMap<Integer, DBConnector> connectors = new HashMap<Integer, DBConnector>();
 	
-	public DBConnector getDbConnector(int type) throws ClassNotFoundException, InstantiationException, IllegalAccessException 
-	{
+	public DBConnector getDbConnector(int type) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		//Try to get the DBConnector from the hashmap first
 		DBConnector connector = connectors.get(type);
 		if(connector != null) return connector;
@@ -398,15 +334,15 @@ public class Engine
 		String className = null;
 		switch(type) {
 		case DBConnector.TYPE_GDB:
-			className = getPreferences().get(GlobalPreference.DB_ENGINE_GDB);
+			className = GlobalPreference.DB_ENGINE_GDB.getValue();
 			break;
 		case DBConnector.TYPE_GEX:
-			className = getPreferences().get(GlobalPreference.DB_ENGINE_GEX);
+			className = GlobalPreference.DB_ENGINE_GEX.getValue();
 			break;
 		}
 		if(className == null) return null;
 		
-		Class<?> dbc = Class.forName(className);
+		Class dbc = Class.forName(className);
 		Object o = dbc.newInstance();
 		if(o instanceof DBConnector) {
 			connector = (DBConnector)dbc.newInstance();
@@ -433,9 +369,7 @@ public class Engine
 	 * property changes that has an effect throughout the program (e.g. opening a pathway)
 	 * @param l The {@link ApplicationEventListener} to add
 	 */
-	public void addApplicationEventListener(ApplicationEventListener l) 
-	{
-		if (l == null) throw new NullPointerException();
+	public void addApplicationEventListener(ApplicationEventListener l) {
 		applicationEventListeners.add(l);
 	}
 	
@@ -455,33 +389,4 @@ public class Engine
 	public interface ApplicationEventListener {
 		public void applicationEvent(ApplicationEvent e);
 	}
-
-	/**
-	 * Return full application name, including version No.
-	 */
-	public static String getApplicationName()
-	{
-		//TODO
-		return "Application name Undefined"; 
-	}
-	
-	//TODO:
-	// Constants for swing version.
-	//public static final String APPLICATION_VERSION_NAME = "PathVisio (swing version)";
-//	public static final boolean fUseExperimentalFeatures = false;
-//	public static final boolean IS_APPLET = false;
-
-	// Constants for swt version, v1
-	//public static final String APPLICATION_VERSION_NAME = "PathVisio 1.1 (trunk)";
-//	public static final boolean fUseExperimentalFeatures = false;
-//	public static final String HELP_URL = "http://wiki.bigcat.unimaas.nl/pathvisio/Help";
-
-	// Constants for applet:
-//	public static final String APPLICATION_VERSION_NAME = "PathVisio.WikiPathways";
-//	public static final String HELP_URL = "http://wiki.bigcat.unimaas.nl/pathvisio/Help";
-//	public static final String SERVER_NAME = "WikiPathways.org";
-	// for inclusion in certain error messages.
-//	public static final String DEVELOPER_EMAIL = "thomas.kelder@bigcat.unimaas.nl";
-//	public static final boolean IS_APPLET = true;
-
 }

@@ -45,7 +45,7 @@ import org.pathvisio.model.ConverterException;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayExporter;
 import org.pathvisio.model.PathwayImporter;
-import org.pathvisio.preferences.GlobalPreference;
+import org.pathvisio.preferences.swt.SwtPreferences.SwtPreference;
 import org.pathvisio.util.swt.SwtUtils.SimpleRunnableWithProgress;
 import org.pathvisio.view.VPathwayWrapper;
 import org.pathvisio.view.swt.VPathwaySwtAwt;
@@ -74,7 +74,7 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 		String result = null;
 		if (pathwayDir == null)
 		{
-			result = Engine.getCurrent().getPreferences().get (GlobalPreference.DIR_PWFILES);
+			result = SwtPreference.SWT_DIR_PWFILES.getValue();
 		}
 	    else
 		{
@@ -96,7 +96,9 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 	private MainWindow window;
 	
 	private ImageRegistry imageRegistry;
-
+	
+	private File DIR_APPLICATION;
+	private File DIR_DATA;
 	boolean USE_R;
 		
 	private static SwtEngine current;
@@ -120,8 +122,8 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 		/**
 		   register ourselves as listener if there is a new pathway.
 		 */
-		if (e.getType() == ApplicationEvent.PATHWAY_OPENED ||
-			e.getType() == ApplicationEvent.PATHWAY_NEW)
+		if (e.type == ApplicationEvent.PATHWAY_OPENED ||
+			e.type == ApplicationEvent.PATHWAY_NEW)
 		{
 			Engine.getCurrent().getActivePathway().addStatusFlagListener (this);
 			//TODO: listener is never unregistered
@@ -151,7 +153,7 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 	{
 		if (Engine.getCurrent().getActivePathway() == null)
 		{
-			window.getShell().setText(Engine.getApplicationName());
+			window.getShell().setText(Globals.APPLICATION_VERSION_NAME);
 		}
 		else
 		{
@@ -161,7 +163,7 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 				Engine.getCurrent().getActivePathway().getSourceFile().getName();
 			window.getShell().setText(
 				(changeStatus ? "*" : "") + fname + " - " +
-				Engine.getApplicationName()
+				Globals.APPLICATION_VERSION_NAME
 				);
 		}
 	}
@@ -451,6 +453,8 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 	   This should always be called before you change pathway
 
 	   @return returns false if the user pressed cancel. 
+	   
+	   TODO: Currently always asks, even if there were no changes since last save.
 	 */
 	public boolean canDiscardPathway()
 	{
@@ -650,17 +654,21 @@ public class SwtEngine implements Pathway.StatusFlagListener, Engine.Application
 	}
 	/**
 	 * Get the working directory of this application
-	 * @deprecated use {@link Engine#getCurrent()#getApplicationDir()} instead
 	 */
 	public File getApplicationDir() {
-		return Engine.getCurrent().getApplicationDir();
+		if(DIR_APPLICATION == null) {
+			DIR_APPLICATION = new File(System.getProperty("user.home"), "." + Globals.APPLICATION_NAME);
+			if(!DIR_APPLICATION.exists()) DIR_APPLICATION.mkdir();
+		}
+		return DIR_APPLICATION;
 	}
-	
-	/**
-	 * @deprecated use {@link Engine#getCurrent()#getDataDir()} instead
-	 */
+		
 	public File getDataDir() {
-		return Engine.getCurrent().getDataDir();
+		if(DIR_DATA == null) {
+			DIR_DATA = new File(System.getProperty("user.home"), Globals.APPLICATION_NAME + "-Data");
+			if(!DIR_DATA.exists()) DIR_DATA.mkdir();
+		}
+		return DIR_DATA;
 	}
 			
 	public boolean isUseR() { return USE_R; }

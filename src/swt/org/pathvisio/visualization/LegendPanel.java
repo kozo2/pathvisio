@@ -49,16 +49,14 @@ import org.pathvisio.gui.swt.SwtEngine;
 import org.pathvisio.util.swt.SwtUtils;
 import org.pathvisio.visualization.LegendPanel.CollapseGroup.CollapseListener;
 import org.pathvisio.visualization.Visualization.PluginSet;
-import org.pathvisio.visualization.VisualizationEvent;
+import org.pathvisio.visualization.VisualizationManager.VisualizationEvent;
 import org.pathvisio.visualization.VisualizationManager.VisualizationListener;
-import org.pathvisio.visualization.colorset.ColorRule;
-import org.pathvisio.visualization.colorset.ColorGradient.ColorValuePair;
+import org.pathvisio.visualization.colorset.ColorCriterion;
 import org.pathvisio.visualization.colorset.ColorGradient;
 import org.pathvisio.visualization.colorset.ColorSet;
-import org.pathvisio.visualization.colorset.ColorSetEvent;
 import org.pathvisio.visualization.colorset.ColorSetManager;
-import org.pathvisio.visualization.colorset.ColorSetManager.ColorSetListener;
 import org.pathvisio.visualization.colorset.ColorSetObject;
+import org.pathvisio.visualization.colorset.ColorGradient.ColorValuePair;
 import org.pathvisio.visualization.plugins.VisualizationPlugin;
 
 /**
@@ -66,9 +64,7 @@ import org.pathvisio.visualization.plugins.VisualizationPlugin;
  * @author Thomas
  *
  */
-public class LegendPanel
-	extends ScrolledComposite implements VisualizationListener, ColorSetListener
-{
+public class LegendPanel extends ScrolledComposite implements VisualizationListener {
 	static final String FONT = "arial narrow";
 	static final int FONTSIZE = 8;
 
@@ -92,7 +88,6 @@ public class LegendPanel
 		createContents();
 		rebuildContent();
 		VisualizationManager.addListener(this);
-		ColorSetManager.addListener(this);
 	}
 
 	/**
@@ -392,7 +387,7 @@ public class LegendPanel
 	}
 	
 	/**
-	 * This class shows the legend for all {@link ColorRule} in a color-set as well as
+	 * This class shows the legend for all {@link ColorCriterion} in a color-set as well as
 	 * the 'special colors' ({@link ColorSet#COLOR_NO_GENE_FOUND}, {@link COLORSET#COLOR_NO_DATA_FOUND},
 	 * {@link ColorSet#COLOR_NO_CRITERIA_MET})
 	 * @author Thomas
@@ -452,8 +447,8 @@ public class LegendPanel
 			//Draw CLabel for every criterion
 			for(ColorSetObject co : colorSet.getObjects())
 			{
-				if(!(co instanceof ColorRule)) continue; //skip objects other than criretia
-				ColorRule cc = (ColorRule)co;
+				if(!(co instanceof ColorCriterion)) continue; //skip objects other than criretia
+				ColorCriterion cc = (ColorCriterion)co;
 				c = SwtUtils.changeColor(c, cc.getColor(), getDisplay());
 				createCriterionLabel(parent, cc.getName() + "\n(" + cc.getCriterion().getExpression() + ")", c);
 			}
@@ -617,30 +612,18 @@ public class LegendPanel
 		}
 	}
 
-	public void colorSetEvent (final ColorSetEvent e)
-	{
+	public void visualizationEvent(final VisualizationEvent e) {
 		getDisplay().asyncExec(new Runnable() {
 			public void run() {
-				switch(e.getType()) {
-				case ColorSetEvent.COLORSET_ADDED:
-				case ColorSetEvent.COLORSET_REMOVED:
+				switch(e.type) {
+				case VisualizationEvent.COLORSET_ADDED:
+				case VisualizationEvent.COLORSET_REMOVED:
 					rebuildContent();
 					break;
 				default:
 					refreshContent();
 				}
 			}
-		});
-	}
-	
-	public void visualizationEvent(final VisualizationEvent e)
-	{
-		getDisplay().asyncExec(new Runnable()
-		{
-			public void run()
-			{
-				refreshContent();
-			}			
 		});
 	}
 

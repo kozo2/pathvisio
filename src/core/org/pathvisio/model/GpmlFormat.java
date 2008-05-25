@@ -17,14 +17,12 @@
 package org.pathvisio.model;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,9 +50,6 @@ import org.jdom.output.Format;
 import org.jdom.output.SAXOutputter;
 import org.jdom.output.XMLOutputter;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.GraphLink.GraphIdContainer;
-import org.pathvisio.model.PathwayElement.MAnchor;
-import org.pathvisio.model.PathwayElement.MPoint;
 import org.xml.sax.SAXException;
 
 /**
@@ -68,15 +63,6 @@ import org.xml.sax.SAXException;
  */
 public class GpmlFormat implements PathwayImporter, PathwayExporter
 {
-	/**
-	 * The factor that is used to convert pixel coordinates
-	 * to the GPML model coordinates. E.g. if you want to convert the
-	 * width from pixels to GPML model coordinates you use:
-	 * 
-	 * double mWidth = width * pixel2model;
-	 */
-	public static final double pixel2model = 15;
-	
 	public static final Namespace GPML = Namespace.getNamespace("http://genmapp.org/GPML/2007");
 	public static final Namespace RDF = Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 	public static final Namespace RDFS = Namespace.getNamespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
@@ -155,19 +141,11 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		result.put("DataNode@Type", new AttributeInfo ("gpml:DataNodeType", "Unknown", "optional"));
 		result.put("Line.Graphics.Point@x", new AttributeInfo ("xsd:float", null, "required"));
 		result.put("Line.Graphics.Point@y", new AttributeInfo ("xsd:float", null, "required"));
-		result.put("Line.Graphics.Point@relX", new AttributeInfo ("xsd:float", null, "optional"));
-		result.put("Line.Graphics.Point@relY", new AttributeInfo ("xsd:float", null, "optional"));
 		result.put("Line.Graphics.Point@GraphRef", new AttributeInfo ("xsd:IDREF", null, "optional"));
 		result.put("Line.Graphics.Point@GraphId", new AttributeInfo ("xsd:ID", null, "optional"));
 		result.put("Line.Graphics.Point@Head", new AttributeInfo ("xsd:string", "Line", "optional"));
 		result.put("Line.Graphics.Point@ArrowHead", new AttributeInfo ("xsd:string", "Line", "optional"));
-		result.put("Line.Graphics.Anchor@position", new AttributeInfo ("xsd:float", null, "required"));
-		result.put("Line.Graphics.Anchor@Shape", new AttributeInfo ("xsd:string", "LigandRound", "required"));
-		result.put("Line.Graphics.Anchor@GraphId", new AttributeInfo ("xsd:ID", null, "optional"));
 		result.put("Line.Graphics@Color", new AttributeInfo ("gpml:ColorType", "Black", "optional"));
-		result.put("Line.Graphics.Segment@direction", new AttributeInfo ("gpml:string", null, "required"));
-		result.put("Line.Graphics.Segment@length", new AttributeInfo ("gpml:float", null, "required"));
-		result.put("Line.Graphics@ConnectorType", new AttributeInfo ("gpml:string", "Straight", "optional"));
 		result.put("Line@Style", new AttributeInfo ("xsd:string", "Solid", "optional"));
 		result.put("Label.Graphics@CenterX", new AttributeInfo ("xsd:float", null, "required"));
 		result.put("Label.Graphics@CenterY", new AttributeInfo ("xsd:float", null, "required"));
@@ -263,12 +241,10 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 					isDefault = true;
 			} else if (aInfo.schemaType.equals("xsd:float")
 					|| aInfo.schemaType.equals("Dimension")) {
-				if(aInfo.def != null && value != null) {
-					Double x = Double.parseDouble(aInfo.def);
-					Double y = Double.parseDouble(value);
-					if (Math.abs(x - y) < 1e-6)
-						isDefault = true;
-				}
+				Double x = Double.parseDouble(aInfo.def);
+				Double y = Double.parseDouble(value);
+				if (Math.abs(x - y) < 1e-6)
+					isDefault = true;
 			}
 		}
 		if (!isDefault)
@@ -290,7 +266,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		if (!attributeInfo.containsKey(key))
 				throw new ConverterException("Trying to get invalid attribute " + key);
 		AttributeInfo aInfo = attributeInfo.get(key);
-		String result = ((el == null) ? aInfo.def : el.getAttributeValue(name, aInfo.def));
+		String result = el.getAttributeValue(name, aInfo.def);
 		return result;
 	}
 	
@@ -419,7 +395,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			return null;
 		}
 		
-		PathwayElement o = PathwayElement.createPathwayElement(ot);
+		PathwayElement o = new PathwayElement(ot);
 		if (p != null)
 		{
 			p.add (o);
@@ -492,67 +468,40 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 	{
     	Element graphics = e.getChild("Graphics", e.getNamespace());
     	
-    	List<MPoint> mPoints = new ArrayList<MPoint>();
+    	Element p1 = (Element)graphics.getChildren().get(0);
+    	Element p2 = (Element)graphics.getChildren().get(1);
     	
-    	String startType = null;
-    	String endType = null;
+    	o.setMStartX (Double.parseDouble(getAttribute("Line.Graphics.Point", "x", p1)));
+    	o.setMStartY (Double.parseDouble(getAttribute("Line.Graphics.Point", "y", p1)));
     	
-    	List<Element> pointElements = graphics.getChildren("Point", e.getNamespace());
-    	for(int i = 0; i < pointElements.size(); i++) {
-    		Element pe = pointElements.get(i);
-    		MPoint mp = o.new MPoint(
-    		    	Double.parseDouble(getAttribute("Line.Graphics.Point", "x", pe)),
-    		    	Double.parseDouble(getAttribute("Line.Graphics.Point", "y", pe))
-    		);
-    		mPoints.add(mp);
-        	String ref = getAttribute("Line.Graphics.Point", "GraphRef", pe);
-        	if (ref != null) {
-        		mp.setGraphRef(ref);
-        		String srx = pe.getAttributeValue("relX");
-        		String sry = pe.getAttributeValue("relY");
-        		if(srx != null && sry != null) {
-        			mp.setRelativePosition(Double.parseDouble(srx), Double.parseDouble(sry));
-        		}
-        	}
-        	
-        	if(i == 0) {
-        		startType = getAttribute("Line.Graphics.Point", "ArrowHead", pe);		
-        		endType = getAttribute("Line.Graphics.Point", "Head", pe);		
-        	} else if(i == pointElements.size() - 1) {
-        		/**
-     		   	read deprecated Head attribute for backwards compatibility.
-     		   	If an arrowhead attribute is present on the other point,
-     		   	it overrides this one.
-        		 */
-        		if (pe.getAttributeValue("ArrowHead") != null)
-        		{
-        			endType = getAttribute("Line.Graphics.Point", "ArrowHead", pe);
-        		}
-        	}
-    	}
+    	String ref1 = getAttribute("Line.Graphics.Point", "GraphRef", p1);
+    	if (ref1 == null) ref1 = "";
+    	o.setStartGraphRef (ref1);
+
+    	o.setMEndX (Double.parseDouble(getAttribute("Line.Graphics.Point", "x", p2)));
+    	o.setMEndY (Double.parseDouble(getAttribute("Line.Graphics.Point", "y", p2))); 
     	
-    	o.setMPoints(mPoints);
+    	String ref2 = getAttribute("Line.Graphics.Point", "GraphRef", p2);
+    	if (ref2 == null) ref2 = "";
+    	o.setEndGraphRef (ref2);
 
     	String style = getAttribute("Line", "Style", e);
 
+		String type1 = getAttribute("Line.Graphics.Point", "ArrowHead", p1);		
+		/**
+		   read deprecated Head attribute for backwards compatibility.
+		   If an arrowhead attribute is present on the other point,
+		   it overrides this one.
+		 */
+		String type2 = getAttribute("Line.Graphics.Point", "Head", p1);		
+		if (p2.getAttributeValue("ArrowHead") != null)
+		{
+			type2 = getAttribute("Line.Graphics.Point", "ArrowHead", p2);
+		}
+		
     	o.setLineStyle ((style.equals("Solid")) ? LineStyle.SOLID : LineStyle.DASHED);
-		o.setStartLineType (LineType.fromName(startType));
-    	o.setEndLineType (LineType.fromName(endType));
-    	
-    	String connType = getAttribute("Line.Graphics", "ConnectorType", graphics);
-    	o.setConnectorType(ConnectorType.fromName(connType));
-    	
-    	//Map anchors
-    	List<Element> anchors = graphics.getChildren("Anchor", e.getNamespace());
-    	for(Element ae : anchors) {
-    		double position = Double.parseDouble(getAttribute("Line.Graphics.Anchor", "position", ae));
-    		MAnchor anchor = o.addMAnchor(position);
-    		mapGraphId(anchor, ae);
-    		String shape = getAttribute("Line.Graphics.Anchor", "Shape", ae);
-    		if(shape != null) {
-    			anchor.setShape(AnchorType.fromName(shape));
-    		}
-    	}
+		o.setStartLineType (LineType.fromName(type1));
+    	o.setEndLineType (LineType.fromName(type2));
 	}
 	
 	private static void updateLineData(PathwayElement o, Element e) throws ConverterException
@@ -561,37 +510,24 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			setAttribute("Line", "Style", e, o.getLineStyle() == LineStyle.SOLID ? "Solid" : "Broken");
 			
 			Element jdomGraphics = e.getChild("Graphics", e.getNamespace());
-			List<MPoint> mPoints = o.getMPoints();
-			
-			for(int i = 0; i < mPoints.size(); i++) {
-				MPoint mp = mPoints.get(i);
-				Element pe = new Element("Point", e.getNamespace());
-				jdomGraphics.addContent(pe);
-				setAttribute("Line.Graphics.Point", "x", pe, Double.toString(mp.getX()));
-				setAttribute("Line.Graphics.Point", "y", pe, Double.toString(mp.getY()));
-				if (mp.getGraphRef() != null && !mp.getGraphRef().equals(""))
-				{
-					setAttribute("Line.Graphics.Point", "GraphRef", pe, mp.getGraphRef());
-					setAttribute("Line.Graphics.Point", "relX", pe, Double.toString(mp.getRelX()));
-					setAttribute("Line.Graphics.Point", "relY", pe, Double.toString(mp.getRelY()));
-				}
-				if(i == 0) {
-					setAttribute("Line.Graphics.Point", "ArrowHead", pe, o.getStartLineType().getName());
-				} else if(i == mPoints.size() - 1) {
-					setAttribute("Line.Graphics.Point", "ArrowHead", pe, o.getEndLineType().getName());
-				}
+			Element p1 = new Element("Point", e.getNamespace());
+			jdomGraphics.addContent(p1);
+			setAttribute("Line.Graphics.Point", "x", p1, Double.toString(o.getMStartX()));
+			setAttribute("Line.Graphics.Point", "y", p1, Double.toString(o.getMStartY()));
+			setAttribute("Line.Graphics.Point", "ArrowHead", p1, o.getStartLineType().getName());
+			if (o.getStartGraphRef() != null && !o.getStartGraphRef().equals(""))
+			{
+				setAttribute("Line.Graphics.Point", "GraphRef", p1, o.getStartGraphRef());
 			}
-			
-			for(MAnchor anchor : o.getMAnchors()) {
-				Element ae = new Element("Anchor", e.getNamespace());
-				setAttribute("Line.Graphics.Anchor", "position", ae, Double.toString(anchor.getPosition()));
-				setAttribute("Line.Graphics.Anchor", "Shape", ae, anchor.getShape().getName());
-				updateGraphId(anchor, ae);
-				jdomGraphics.addContent(ae);
+			Element p2 = new Element("Point", e.getNamespace());
+			jdomGraphics.addContent(p2);
+			setAttribute("Line.Graphics.Point", "x", p2, Double.toString(o.getMEndX()));
+			setAttribute("Line.Graphics.Point", "y", p2, Double.toString(o.getMEndY()));
+			setAttribute("Line.Graphics.Point", "ArrowHead", p2, o.getEndLineType().getName());
+			if (o.getEndGraphRef() != null && !o.getEndGraphRef().equals(""))
+			{
+				setAttribute("Line.Graphics.Point", "GraphRef", p2, o.getEndGraphRef());
 			}
-			
-			ConnectorType ctype = o.getConnectorType();
-			setAttribute("Line.Graphics", "ConnectorType", jdomGraphics, ctype.getName());
 		}
 	}
 	
@@ -663,16 +599,16 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		}
 	}
 	
-	private static void mapGraphId (GraphIdContainer o, Element e)
+	private static void mapGraphId (PathwayElement o, Element e)
 	{
 		String id = e.getAttributeValue("GraphId");
-		if((id == null || id.equals("")) && o.getGmmlData() != null) {
-			id = o.getGmmlData().getUniqueGraphId();
+		if((id == null || id.equals("")) && o.getParent() != null) {
+			id = o.getParent().getUniqueId();
 		}
 		o.setGraphId (id);
 	}
 	
-	private static void updateGraphId (GraphIdContainer o, Element e)
+	private static void updateGraphId (PathwayElement o, Element e)
 	{
 		String id = o.getGraphId();
 		// id has to be unique!
@@ -705,12 +641,8 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		//ID
 		String id = e.getAttributeValue("GroupId");
 		if((id == null || id.equals("")) && o.getParent() != null) 
-			{id = o.getParent().getUniqueGroupId();}
+			{id = o.getParent().getUniqueId();}
 		o.setGroupId (id);
-		
-		//GraphId
-		mapGraphId(o, e);
-		
 		//Style
 		o.setGroupStyle(GroupStyle.fromGpmlName(getAttribute("Group", "Style", e)));
 		//Label
@@ -723,10 +655,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		String id = o.createGroupId();
 		if (id != null && !id.equals(""))
 			{e.setAttribute("GroupId", o.createGroupId());}
-		
-		//GraphId
-		updateGraphId(o, e);
-		
 		//Style
 		setAttribute("Group", "Style", e, GroupStyle.toGpmlName(o.getGroupStyle()));
 		//Label
@@ -736,25 +664,24 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 	private static void mapDataNode(PathwayElement o, Element e) throws ConverterException
 	{
 		o.setTextLabel    (getAttribute("DataNode", "TextLabel", e));
-		o.setGenMappXref         (getAttribute("DataNode", "GenMAPP-Xref", e));
+		o.setXref         (getAttribute("DataNode", "GenMAPP-Xref", e));
 		o.setDataNodeType (getAttribute("DataNode", "Type", e));
 		o.setBackpageHead (getAttribute("DataNode", "BackpageHead", e));
 		Element xref = e.getChild ("Xref", e.getNamespace());
 		o.setGeneID (getAttribute("DataNode.Xref", "ID", xref));
-		o.setDataSource (DataSource.getByFullName (getAttribute("DataNode.Xref", "Database", xref)));
+		o.setDataSource (getAttribute("DataNode.Xref", "Database", xref));
 	}
 
 	private static void updateDataNode(PathwayElement o, Element e) throws ConverterException
 	{
 		if(e != null) {
 			setAttribute ("DataNode", "TextLabel", e, o.getTextLabel());
-			setAttribute ("DataNode", "GenMAPP-Xref", e, o.getGenMappXref());
+			setAttribute ("DataNode", "GenMAPP-Xref", e, o.getXref());
 			setAttribute ("DataNode", "Type", e, o.getDataNodeType());
 			setAttribute ("DataNode", "BackpageHead", e, o.getBackpageHead());
 			Element xref = e.getChild("Xref", e.getNamespace());
-			String database = o.getDataSource() == null ? "" : o.getDataSource().getFullName();
-			setAttribute ("DataNode.Xref", "Database", xref, database == null ? "" : database);
-			setAttribute ("DataNode.Xref", "ID", xref, o.getGeneID());
+			setAttribute ("DataNode.Xref", "Database", xref, o.getDataSource());
+			setAttribute ("DataNode.Xref", "ID", xref, o.getGeneID());			
 		}
 	}
 
@@ -865,7 +792,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     	
     	String xref = getAttribute("Label", "Xref", e);
     	if (xref == null) xref = "";
-    	o.setGenMappXref(xref);
+    	o.setXref(xref);
     	String outline = getAttribute("Label", "Outline", e);
 		o.setOutline (OutlineType.fromTag (outline));
 	}
@@ -875,7 +802,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		if(e != null) 
 		{
 			setAttribute("Label", "TextLabel", e, o.getTextLabel());
-			setAttribute("Label", "Xref", e, o.getGenMappXref() == null ? "" : o.getGenMappXref());
+			setAttribute("Label", "Xref", e, o.getXref() == null ? "" : o.getXref());
 			setAttribute("Label", "Outline", e, o.getOutline().getTag());
 			Element graphics = e.getChild("Graphics", e.getNamespace());
 			if(graphics !=null) 
@@ -1116,7 +1043,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
     	return s;
     }
     
-	public static final List<double[]> rgbMappings = Arrays.asList(new double[][] {
+	public static final List rgbMappings = Arrays.asList(new double[][] {
 			{0, 1, 1},		// aqua 
 			{0, 0, 0},	 	// black
 			{0, 0, 1}, 		// blue
@@ -1136,7 +1063,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 			{0, 0, 0}		// transparent (actually irrelevant)
 		});
 	
-	public static final List<String> colorMappings = Arrays.asList(new String[]{
+	public static final List colorMappings = Arrays.asList(new String[]{
 			"Aqua", "Black", "Blue", "Fuchsia", "Gray", "Green", "Lime",
 			"Maroon", "Navy", "Olive", "Purple", "Red", "Silver", "Teal",
 			"White", "Yellow", "Transparent"
@@ -1192,36 +1119,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		}
 	}
 	
-	/**
-	 * Writes the JDOM document to the outputstream specified
-	 * @param out	the outputstream to which the JDOM document should be writed
-	 * @param validate if true, validate the dom structure before writing. If there is a validation error, 
-	 * 		or the xsd is not in the classpath, an exception will be thrown. 
-	 * @throws ConverterException 
-	 */
-	static public void writeToXml(Pathway pwy, OutputStream out, boolean validate) throws ConverterException {
-		Document doc = createJdom(pwy);
-		
-		//Validate the JDOM document
-		if (validate) validateDocument(doc);
-		//			Get the XML code
-		XMLOutputter xmlcode = new XMLOutputter(Format.getPrettyFormat());
-		Format f = xmlcode.getFormat();
-		f.setEncoding("ISO-8859-1");
-		f.setTextMode(Format.TextMode.PRESERVE);
-		xmlcode.setFormat(f);
-
-		try
-		{
-			//Send XML code to the outputstream
-			xmlcode.output(doc, out);
-		}
-		catch (IOException ie)
-		{
-			throw new ConverterException(ie);
-		}
-	}
-	
 	static public void readFromXml(Pathway pwy, File file, boolean validate) throws ConverterException
 	{		
 		FileReader inf;
@@ -1263,9 +1160,6 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 				mapElement((Element)e, pwy);
 			}			
 			Logger.log.trace ("End copying map elements");
-			//Convert absolute point coordinates of linked points to
-			//relative coordinates
-			convertPointCoordinates(pwy);
 		}
 		catch(JDOMParseException pe) 
 		{
@@ -1283,44 +1177,8 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		{
 			throw new ConverterException (e);
 		}
-		catch(IllegalArgumentException e) {
-			throw new ConverterException (e);
-		}
-		catch(Exception e) { //Make all types of exceptions a ConverterException
-			throw new ConverterException (e);
-		}
 	}
 
-	private static void convertPointCoordinates(Pathway pathway) throws ConverterException
-	{
-		for(PathwayElement pe : pathway.getDataObjects()) {
-			if(pe.getObjectType() == ObjectType.LINE) {
-				String sr = pe.getStartGraphRef();
-				String er = pe.getEndGraphRef();
-				if(sr != null && !"".equals(sr) && !pe.getMStart().relativeSet()) {
-					GraphIdContainer idc = pathway.getGraphIdContainer(sr);
-					Point2D relative = idc.toRelativeCoordinate(
-							new Point2D.Double(
-								pe.getMStart().getRawX(),
-								pe.getMStart().getRawY()
-							)
-					);
-					pe.getMStart().setRelativePosition(relative.getX(), relative.getY());
-				}
-				if(er != null && !"".equals(er) && !pe.getMEnd().relativeSet()) {
-					GraphIdContainer idc = pathway.getGraphIdContainer(er);
-					Point2D relative = idc.toRelativeCoordinate(
-							new Point2D.Double(
-								pe.getMEnd().getRawX(),
-								pe.getMEnd().getRawY()
-							)
-					);
-					pe.getMEnd().setRelativePosition(relative.getX(), relative.getY());
-				}
-			}
-		}
-	}
-	
 	/**
 	 * validates a JDOM document against the xml-schema definition specified by 'xsdFile'
 	 * @param doc the document to validate
@@ -1339,6 +1197,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 				SAXOutputter so = new SAXOutputter(vh);
 				so.output(doc);
 				// If no errors occur, the file is valid according to the gpml xml schema definition
+				//TODO: open dialog to report error
 				Logger.log.info("Document is valid according to the xml schema definition '" + 
 						xsdFile.toString() + "'");
 			} catch (SAXException se) {

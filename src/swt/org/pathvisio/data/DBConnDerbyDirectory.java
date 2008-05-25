@@ -16,21 +16,36 @@
 //
 package org.pathvisio.data;
 
+import java.sql.DriverManager;
+
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.util.FileUtils;
 
 /**
- * user interface functions for directory-based Derby databases
- */
-public class DBConnDerbyDirectory extends DataDerbyDirectory implements DBConnectorSwt
-{
+   Implementation of DBConnector using the Derby Driver,
+   with the database stored as multiple files in a directory
+*/
+public class DBConnDerbyDirectory extends DBConnDerby {	
+	String lastDbName;
+		
+	public String finalizeNewDatabase(String dbName) throws Exception {
+		try {
+			DriverManager.getConnection("jdbc:derby:" + FileUtils.removeExtension(dbName) + ";shutdown=true");
+		} catch(Exception e) {
+			Logger.log.error("Database closed", e);
+		}
+		return dbName;
+	}
+	
 	public String openChooseDbDialog(Shell shell) {
-		DirectoryDialog dd = DBConnectorUtils.createDirectoryDialog(this, shell);
+		DirectoryDialog dd = createDirectoryDialog(shell);
 		return dd.open();
 	}
 
 	public String openNewDbDialog(Shell shell, String defaultName) {
-		DirectoryDialog dd = DBConnectorUtils.createDirectoryDialog(this, shell);
+		DirectoryDialog dd = createDirectoryDialog(shell);
 		if(defaultName != null) dd.setFilterPath(defaultName);
 		return dd.open();
 	}

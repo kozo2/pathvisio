@@ -23,13 +23,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.pathvisio.Engine;
-import org.pathvisio.data.GdbManager;
-import org.pathvisio.model.Xref;
-import org.pathvisio.model.XrefWithSymbol;
+import org.pathvisio.data.Gdb;
+import org.pathvisio.data.Gdb.IdCodePair;
 import org.pathvisio.search.PathwaySearchComposite.SearchRunnableWithProgress;
 import org.pathvisio.util.FileUtils;
 import org.pathvisio.util.PathwayParser;
-import org.pathvisio.util.PathwayParser.ParseException;
 import org.pathvisio.util.tableviewer.PathwayTable;
 import org.pathvisio.util.tableviewer.TableData;
 import org.pathvisio.util.tableviewer.TableData.Row;
@@ -50,10 +48,23 @@ public abstract class SearchMethods {
 	 * @param code	System code of the gene identifier
 	 * @param folder	Directory to search (includes sub-directories)
 	 * @param srt	{@link SearchResultTable} to display the results in
+	 * @return string with message to display. if null, no message is displayed
+	 */
+	public static String pathwaysContainingGene(String id, String code, File folder, 
+			SearchResultTable srt) throws SearchException {
+		return pathwaysContainingGene(id, code, folder, srt);
+	}
+	
+	/**
+	 * Search for pathways containing the given gene and display result in given result table
+	 * @param id	Gene identifier to search for
+	 * @param code	System code of the gene identifier
+	 * @param folder	Directory to search (includes sub-directories)
+	 * @param srt	{@link SearchResultTable} to display the results in
 	 * @param runnable	{@link SearchRunnableWithProgress} containing the monitor responsible for
 	 * displaying the progress
 	 */
-	public static void pathwaysContainingGeneID(Xref ref, File folder, 
+	public static void pathwaysContainingGeneID(String id, String code, File folder, 
 			SearchResultTable srt, SearchRunnableWithProgress runnable) 
 			throws SearchException, SAXException {
 		
@@ -65,7 +76,7 @@ public abstract class SearchMethods {
 
 		srt.setTableData(srs);
 		//Get all cross references
-		List<Xref> refs = GdbManager.getCurrentGdb().getCrossRefs(ref);
+		List<IdCodePair> refs = Gdb.getCrossRefs(id, code);
 		if(refs.size() == 0) throw new NoGdbException();
 		
 		SearchRunnableWithProgress.monitorWorked((int)(TOTAL_WORK * 0.2));
@@ -77,29 +88,23 @@ public abstract class SearchMethods {
 		for(File f : pathways) {
 			if(SearchRunnableWithProgress.getMonitor().isCanceled()) return;
 			//Get all genes in the pathway
-			try 
-			{ 
-				PathwayParser parser = new PathwayParser(f, xmlReader);
-				List<XrefWithSymbol> genes = parser.getGenes();
-				for(XrefWithSymbol gene : genes) {
-					if(refs.contains(gene)) {//Gene found, add pathway to search result and break
-						Row sr = srs.new Row();
-						sr.setCell("pathway", f.getName());
-						sr.setCell("directory", f.getParentFile().getName());
-						sr.setCell(PathwayTable.COLNAME_FILE, f.getAbsolutePath());
-						ArrayList<String> idsFound = new ArrayList<String>();
-						idsFound.add(gene.getId());
-						sr.setCell(SearchResultTable.COLUMN_FOUND_IDS, idsFound);
-						srt.refreshTableViewer(true);
-						break;
-					}
-				}
-			} 
-			catch(ParseException e) 
-			{ 
-				//ignore faulty pathways 
-			}
+			PathwayParser parser = new PathwayParser(xmlReader);
+			try { xmlReader.parse(f.getAbsolutePath()); } catch(Exception e) { }
+			ArrayList<PathwayParser.Gene> genes = parser.getGenes();
 			//Check if one of the given ids is in the pathway
+			for(PathwayParser.Gene gene : genes) {
+				if(refs.contains(new IdCodePair(gene.getId(), gene.getCode()))) {//Gene found, add pathway to search result and break
+					Row sr = srs.new Row();
+					sr.setCell("pathway", f.getName());
+					sr.setCell("directory", f.getParentFile().getName());
+					sr.setCell(PathwayTable.COLNAME_FILE, f.getAbsolutePath());
+					ArrayList<String> idsFound = new ArrayList<String>();
+					idsFound.add(gene.getId());
+					sr.setCell(SearchResultTable.COLUMN_FOUND_IDS, idsFound);
+					srt.refreshTableViewer(true);
+					break;
+				}
+			}
 			SearchRunnableWithProgress.monitorWorked((int)Math.ceil(TOTAL_WORK / pathways.size()));
 		}
 		if(srs.getResults().size() == 0) throw new NothingFoundException();
@@ -128,37 +133,30 @@ public abstract class SearchMethods {
 		for(File f : pathways) {
 			if(SearchRunnableWithProgress.getMonitor().isCanceled()) return;
 			//Get all genes in the pathway
-			
-			try 
-			{ 
-				PathwayParser parser = new PathwayParser(f, xmlReader); 
-				List<XrefWithSymbol> genes = parser.getGenes();
-				//Find what symbols match
-				List<XrefWithSymbol> matched = new ArrayList<XrefWithSymbol>();
-				List<String> idsFound = new ArrayList<String>();
-				List<String> namesFound = new ArrayList<String>();
-				for(XrefWithSymbol gene : genes) {
-					Matcher m = pattern.matcher(gene.getSymbol());
-					if(m.find()) {
-						matched.add(gene);
-						idsFound.add(gene.getId());
-						namesFound.add(gene.getSymbol());
-					}
+			PathwayParser parser = new PathwayParser(xmlReader);
+			try { xmlReader.parse(f.getAbsolutePath()); } catch(Exception e) { }
+			ArrayList<PathwayParser.Gene> genes = parser.getGenes();
+			//Find what symbols match
+			ArrayList<PathwayParser.Gene> matched = new ArrayList<PathwayParser.Gene>();
+			ArrayList<String> idsFound = new ArrayList<String>();
+			ArrayList<String> namesFound = new ArrayList<String>();
+			for(PathwayParser.Gene gene : genes) {
+				Matcher m = pattern.matcher(gene.getSymbol());
+				if(m.find()) {
+					matched.add(gene);
+					idsFound.add(gene.getId());
+					namesFound.add(gene.getSymbol());
 				}
-				if(matched.size() > 0) {
-					Row sr = srs.new Row();
-					sr.setCell("pathway", f.getName());
-					sr.setCell("directory", f.getParentFile().getName());
-					sr.setCell(PathwayTable.COLNAME_FILE, f.getAbsolutePath());
-					sr.setCell(SearchResultTable.COLUMN_FOUND_IDS, idsFound);
-					sr.setCell("namesFound", namesFound);
+			}
+			if(matched.size() > 0) {
+				Row sr = srs.new Row();
+				sr.setCell("pathway", f.getName());
+				sr.setCell("directory", f.getParentFile().getName());
+				sr.setCell(PathwayTable.COLNAME_FILE, f.getAbsolutePath());
+				sr.setCell(SearchResultTable.COLUMN_FOUND_IDS, idsFound);
+				sr.setCell("namesFound", namesFound);
 
-					srt.refreshTableViewer(true);
-				}
-			} 
-			catch (ParseException e) 
-			{ 
-				// ignore faulty pathways
+				srt.refreshTableViewer(true);
 			}
 			SearchRunnableWithProgress.monitorWorked((int)Math.ceil(TOTAL_WORK / pathways.size()));
 		}

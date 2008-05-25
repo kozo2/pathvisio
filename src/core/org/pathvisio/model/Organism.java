@@ -29,12 +29,11 @@ public enum Organism {
 	BosTaurus("Bos taurus", "Bt"),
 	CaenorhabditisElegans("Caenorhabditis elegans", "Ce"),
 	GallusGallus("Gallus gallus", "Gg"),
-	DanioRero("Danio rerio", "Dr"),
+	DanioRero("Danio rero", "Dr"),
 	DrosophilaMelanogaster("Drosophila melanogaster", "Dm"),
 	CanisFamiliaris("Canis familiaris", "Cf"),
 	XenopusTropicalis("Xenopus tropicalis", "Xt"),
 	ArabidopsisThaliana("Arabidopsis thaliana", "At"),
-	SaccharomycesCerevisiae("Saccharomyces cerevisiae", "Sc"),
 	;
 	
 	String latinName;

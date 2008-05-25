@@ -25,14 +25,11 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.pathvisio.debug.Logger;
-import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
 
 /**
@@ -58,7 +55,7 @@ public class Pathway implements PathwayListener
 	   pathway is known to be the same as the one on disk. This
 	   happens when you just opened it, or when you just saved it.
 	*/
-	public void clearChangedFlag()
+	private void clearChangedFlag()
 	{
 		if (changed)
 		{
@@ -105,47 +102,9 @@ public class Pathway implements PathwayListener
 		return dataObjects;
 	}
 	
-	/**
-	 * Get a pathway element by it's GraphId
-	 * @param graphId The graphId of the element
-	 * @return The pathway element with the given id, or null when no element was found
-	 */
-	public PathwayElement getElementById(String graphId) {
-		//TODO: dataobject should be stored in a hashmap, with the graphId as key!
-		if(graphId != null) {
-			for(PathwayElement e : dataObjects) {
-				if(graphId.equals(e.getGraphId())) {
-					return e;
-				}
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Takes the Xref of all DataNodes in this pathway
-	 * and returns them as a List.
-	 * 
-	 * returns an empty arraylist if there are no datanodes in
-	 * this pathway.
-	 */
-	public List<Xref> getDataNodeXrefs()
-	{
-		List<Xref> result = new ArrayList<Xref>();
-		for (PathwayElement e : dataObjects)
-		{
-			if (e.getObjectType() == ObjectType.DATANODE)
-			{
-				result.add(e.getXref());
-			}
-		}
-		return result;
-	}
-	
 	private PathwayElement mappInfo = null;
 	private PathwayElement infoBox = null;
 	private PathwayElement biopax = null;
-	private PathwayElement legend = null;
 	
 	/**
 	 * get the one and only MappInfo object.
@@ -177,7 +136,7 @@ public class Pathway implements PathwayListener
 	
 	public void createBiopax()
 	{
-		biopax = PathwayElement.createPathwayElement(ObjectType.BIOPAX);
+		biopax = new PathwayElement(ObjectType.BIOPAX);
 		this.add(biopax);
 	}
 
@@ -223,16 +182,6 @@ public class Pathway implements PathwayListener
 			}
 			biopax = o;
 		}
-		// There can be only one Legend object, so if we're trying to add it, remove the old one.
-		if (o.getObjectType() == ObjectType.LEGEND && o != legend)
-		{
-			if(legend != null) {
-				replaceUnique (legend, o);
-				legend = o;
-				return;
-			}
-			legend = o;
-		}
 		if (o.getParent() == this) return; // trying to re-add the same object
 		forceAddObject(o);
 	}
@@ -242,39 +191,18 @@ public class Pathway implements PathwayListener
 		dataObjects.add(o);
 		o.addListener(this);
 		o.setParent(this);
+		o.setZOrder(getMaxZOrder() + 1);
 		fireObjectModifiedEvent(new PathwayEvent(o, PathwayEvent.ADDED));
 	}
-	
-	/**
-	 * get the highest z-order of all objects
-	 */
-	public int getMaxZOrder() 
-	{
-		if (dataObjects.size() == 0) return 0;
-		
-		int zmax = dataObjects.get(0).getZOrder();
-		for(PathwayElement e : dataObjects) 
-		{
+
+	public int getMaxZOrder() {
+		int zmax = 0;
+		for(PathwayElement e : dataObjects) {
 			if(e.getZOrder() > zmax) zmax = e.getZOrder();
 		}
 		return zmax;
 	}
-
-	/**
-	 * get the lowest z-order of all objects
-	 */
-	public int getMinZOrder() 
-	{
-		if (dataObjects.size() == 0) return 0;
-
-		int zmin = dataObjects.get(0).getZOrder();
-		for(PathwayElement e : dataObjects) 
-		{
-			if(e.getZOrder() < zmin) zmin = e.getZOrder();
-		}
-		return zmin;
-	}
-
+	
 	public void gmmlObjectModified (PathwayEvent e)
 	{
 		markChanged();
@@ -322,7 +250,7 @@ public class Pathway implements PathwayListener
 		dataObjects.remove(o);
 		List<GraphRefContainer> references = getReferringObjects(o.getGraphId());
 		for(GraphRefContainer refc : references) {
-			refc.unlink();
+			refc.setGraphRef(null);
 		}
 		fireObjectModifiedEvent(new PathwayEvent(o, PathwayEvent.DELETED));
 		o.setParent(null);
@@ -332,16 +260,15 @@ public class Pathway implements PathwayListener
 		if(bpnew == null) return;
 		
 		Document dNew = bpnew.getBiopax();
-		Document dOld = biopax == null ? null : biopax.getBiopax();
+		Document dOld = biopax.getBiopax();
+		
+		if(dOld == null) {
+			biopax.setBiopax(dNew);
+			return;
+		}
 		
 		if(dNew == null) {
 			return; //Nothing to merge
-		}
-		
-		if(dOld == null) {
-			createBiopax();
-			biopax.setBiopax(dNew);
-			return;
 		}
 		
 		//Create a map of existing biopax elements with an id
@@ -369,39 +296,11 @@ public class Pathway implements PathwayListener
 	}
 	
 	/**
-	 * Stores references of graph ids to other GraphRefContainers
+	 * Stores references of line endpoints to other objects
 	 */
 	private HashMap<String, List<GraphRefContainer>> graphRefs = new HashMap<String, List<GraphRefContainer>>();
-	private Map<String, GraphIdContainer> graphIds = new HashMap<String, GraphIdContainer>();
-
-	public Set<String> getGraphIds() {
-		return graphIds.keySet();
-	}
+	private Set<String> ids = new HashSet<String>();
 	
-	public GraphIdContainer getGraphIdContainer(String id) {
-		return graphIds.get(id);
-	}
-	
-	/**
-	 * Returns all GraphRefContainers that refer to an object with a 
-	 * particular graphId.
-	 */
-	public List<GraphRefContainer> getReferringObjects (String id)
-	{
-		List<GraphRefContainer> refs = graphRefs.get(id);
-		if(refs != null) {
-			refs = new ArrayList<GraphRefContainer>(refs);
-		} else {
-			refs = new ArrayList<GraphRefContainer>();
-		}
-		return refs;
-	}
-	
-	/**
-	 * Register a link from a graph id to a graph ref
-	 * @param id The graph id
-	 * @param target The target GraphRefContainer
-	 */
 	public void addGraphRef (String id, GraphRefContainer target)
 	{
 		if (graphRefs.containsKey(id))
@@ -417,71 +316,9 @@ public class Pathway implements PathwayListener
 		}
 	}
 	
-	/**
-	 * Remove a reference to another Id. 
-	 * @param id
-	 * @param target
-	 */
-	public void removeGraphRef (String id, GraphRefContainer target)
-	{
-		if (!graphRefs.containsKey(id)) throw new IllegalArgumentException();
-		
-		graphRefs.get(id).remove(target);
-		if (graphRefs.get(id).size() == 0)
-			graphRefs.remove(id);
-	}
-	
-	/**
-	 * Registers an id that can subsequently be used for
-	 * referral. It is tested for uniqueness.
-	 * @param id
-	 */
-	public void addGraphId (String id, GraphIdContainer idc)
-	{
-		if (idc == null || id == null)
-		{
-			throw new IllegalArgumentException ("unique id can't be null");
-		}
-		if (graphIds.containsKey(id))
-		{
-			throw new IllegalArgumentException ("id '" + id + "' is not unique");
-		}
-		graphIds.put(id, idc);
-	}
-	
-	public void removeId (String id)
-	{
-		graphIds.remove(id);
-	}
-	
-	private Map<String, PathwayElement> groupIds = new HashMap<String, PathwayElement>();
 	private HashMap<String, Set<PathwayElement>> groupRefs = new HashMap<String, Set<PathwayElement>>();
 	
-	public Set<String> getGroupIds() {
-		return groupIds.keySet();
-	}
-	
-	public void addGroupId(String id, PathwayElement group) {
-		if (id == null)
-		{
-			throw new IllegalArgumentException ("unique id can't be null");
-		}
-		if (graphIds.containsKey(id))
-		{
-			throw new IllegalArgumentException ("id '" + id + "' is not unique");
-		}
-		groupIds.put(id, group);
-	}
-	
-	public void removeGroupId(String id) {
-		groupIds.remove(id);
-	}
-	
-	public PathwayElement getGroupById(String id) {
-		return groupIds.get(id);
-	}
-	
-	public void addGroupRef (String ref, PathwayElement child)
+	public void addRef (String ref, PathwayElement child)
 	{
 		if (groupRefs.containsKey(ref))
 		{
@@ -497,7 +334,7 @@ public class Pathway implements PathwayListener
 		}
 	}
 	
-	public void removeGroupRef (String id, PathwayElement child)
+	public void removeRef (String id, PathwayElement child)
 	{
 		if (!groupRefs.containsKey(id)) throw new IllegalArgumentException();
 		
@@ -506,42 +343,77 @@ public class Pathway implements PathwayListener
 			groupRefs.remove(id);
 	}
 	
+	
 	/**
-	 * Get the pathway elements that are part of the given group
-	 * @param id The id of the group
-	 * @return The set of pathway elements part of the group
+	 * Remove a reference to another Id. 
+	 * @param id
+	 * @param target
 	 */
-	public Set<PathwayElement> getGroupElements(String id) {
-		Set<PathwayElement> result = groupRefs.get(id);
-		//Return an empty set if the group is empty
-		return result == null ? new HashSet<PathwayElement>() : result;
+	public void removeGraphRef (String id, GraphRefContainer target)
+	{
+		if (!graphRefs.containsKey(id)) throw new IllegalArgumentException();
+		
+		graphRefs.get(id).remove(target);
+		if (graphRefs.get(id).size() == 0)
+			graphRefs.remove(id);
 	}
 	
-	public String getUniqueGraphId() {
-		return getUniqueId(graphIds.keySet());
+	private HashMap<String, PathwayElement> groups = new HashMap<String, PathwayElement>();
+	
+	/**
+	 * Registers an id that can subsequently be used for
+	 * referrral. It is tested for uniqueness.
+	 * @param id
+	 */
+	public void addId (String id)
+	{
+		if (id == null)
+		{
+			throw new IllegalArgumentException ("unique id can't be null");
+		}
+		if (ids.contains(id))
+		{
+			throw new IllegalArgumentException ("id '" + id + "' is not unique");
+		}
+		ids.add (id);
+	
 	}
 	
-	public String getUniqueGroupId() {
-		return getUniqueId(groupIds.keySet());
+	public void removeId (String id)
+	{
+		ids.remove(id);
+	}
+
+	public void addGroupId(String id, PathwayElement group) {
+		addId(id);
+		groups.put(id, group);
 	}
 	
+	public void removeGroupId(String id) {
+		groups.remove(id);
+	}
+	
+	public PathwayElement getGroupById(String id) {
+		return groups.get(id);
+	}
+	
+	/*AP20070508*/	
 	/**
 	 * Generate random ids, based on strings of hex digits (0..9 or a..f)
 	 * Ids are unique across both graphIds and groupIds per pathway
-	 * @param ids The collection of already existing ids
 	 * @return an Id unique for this pathway
 	 */
-	public String getUniqueId (Set<String> ids)
+	public String getUniqueId ()
 	{
 		String result;
 		Random rn = new Random();
-		int mod = 0x60000; // 3 hex letters
-		int min = 0xa0000; // has to start with a letter
+		int mod = 0x600; // 3 hex letters
+		int min = 0xa00; // has to start with a letter
 		// in case this map is getting big, do more hex letters
-		if ((ids.size()) > 0x10000) 
+		if ((ids.size()) > 1000) 
 		{
-			mod = 0x60000000;
-			min = 0xa0000000;
+			mod = 0x60000;
+			min = 0xa0000;
 		}
 				
 		do
@@ -551,6 +423,20 @@ public class Pathway implements PathwayListener
 		while (ids.contains(result));
 		
 		return result;
+	}
+	
+	/**
+	 * Returns all lines that refer to an object with a particular graphId.
+	 */
+	public List<GraphRefContainer> getReferringObjects (String id)
+	{
+		List<GraphRefContainer> refs = graphRefs.get(id);
+		if(refs != null) {
+			refs = new ArrayList<GraphRefContainer>(refs);
+		} else {
+			refs = new ArrayList<GraphRefContainer>();
+		}
+		return refs;
 	}
 	
 	protected double[] calculateMBoardSize() {
@@ -587,9 +473,9 @@ public class Pathway implements PathwayListener
 	 */
 	public Pathway() 
 	{
-		mappInfo = PathwayElement.createPathwayElement(ObjectType.MAPPINFO);
+		mappInfo = new PathwayElement(ObjectType.MAPPINFO);
 		this.add (mappInfo);
-		infoBox = PathwayElement.createPathwayElement(ObjectType.INFOBOX);
+		infoBox = new PathwayElement(ObjectType.INFOBOX);
 		this.add (infoBox);
 	}
 	
@@ -665,10 +551,7 @@ public class Pathway implements PathwayListener
 	public static class StatusFlagEvent
 	{
 		private boolean newStatus;
-		public StatusFlagEvent (boolean newStatus) { this.newStatus = newStatus; }
-		public boolean getNewStatus() {
-			return newStatus;
-		}
+		StatusFlagEvent (boolean newStatus) { this.newStatus = newStatus; }
 	}
 
 	private List<StatusFlagListener> statusFlagListeners = new ArrayList<StatusFlagListener>();
@@ -711,7 +594,24 @@ public class Pathway implements PathwayListener
 		{
 			g.gmmlObjectModified(e);
 		}
-	}	
+	}
+	
+	/**
+	 * Get the systemcodes of all genes in this pathway
+	 * @return	a list of systemcodes for every gene on the mapp
+	 */
+	public ArrayList<String> getSystemCodes()
+	{
+		ArrayList<String> systemCodes = new ArrayList<String>();
+		for(PathwayElement o : dataObjects)
+		{
+			if(o.getObjectType() == ObjectType.DATANODE)
+			{
+				systemCodes.add(o.getSystemCode());
+			}
+		}
+		return systemCodes;
+	}
 	
 	public Pathway clone()
 	{
@@ -757,14 +657,6 @@ public class Pathway implements PathwayListener
 			if (id != null)
 			{
 				graphIds.add (id);
-			}
-			for (PathwayElement.MAnchor pp : pe.getMAnchors())
-			{
-				String pid = pp.getGraphId();
-				if (pid != null)
-				{
-					graphIds.add (pid);
-				}
 			}
 		}
 		for (PathwayElement pe : dataObjects)

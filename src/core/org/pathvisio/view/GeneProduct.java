@@ -20,12 +20,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 
-import org.pathvisio.Engine;
+import org.pathvisio.data.DataSources;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.preferences.GlobalPreference;
 
@@ -46,6 +47,10 @@ public class GeneProduct extends GraphicsShape
 		super(canvas, o);		
 		setHandleLocation();
 	}
+		
+	public int getNaturalOrder() {
+		return VPathway.DRAW_ORDER_GENEPRODUCT;
+	}
 	
 	/**
 	 * @deprecated get this info from PathwayElement directly
@@ -55,7 +60,21 @@ public class GeneProduct extends GraphicsShape
 		//Looks like the wrong way around, but in gpml the ID is attribute 'Name'
 		//NOTE: maybe change this in gpml?
 		return gdata.getGeneID();
-	}		
+	}
+		
+	/**
+	 * Looks up the systemcode for this gene in Pathway.sysName2Code
+	 * @return	The system code or an empty string if the system is not found
+	 * 
+	 * @deprecated use PathwayElement.getSystemCode()
+	 */
+	public String getSystemCode()
+	{
+		String systemCode = "";
+		if(DataSources.sysName2Code.containsKey(gdata.getDataSource())) 
+			systemCode = DataSources.sysName2Code.get(gdata.getDataSource());
+		return systemCode;
+	}
 			
 	/**
 	 * Calculate the font size adjusted to the canvas zoom factor.
@@ -67,10 +86,9 @@ public class GeneProduct extends GraphicsShape
 
 	public void doDraw(Graphics2D g)
 	{
-		java.awt.Shape origClip = g.getClip();
 		RectangularShape area = new Rectangle2D.Double(
 			getVLeft(), getVTop(), getVWidth(), getVHeight());
-		boolean rounded = Engine.getCurrent().getPreferences().getBoolean(GlobalPreference.DATANODES_ROUNDED);
+		boolean rounded = GlobalPreference.getValueBoolean(GlobalPreference.DATANODES_ROUNDED);
 		if(rounded) {
 			double r = Math.max(area.getWidth(), area.getHeight()) * 0.2;
 			area = new RoundRectangle2D.Double(area.getX(), area.getY(), 
@@ -104,9 +122,7 @@ public class GeneProduct extends GraphicsShape
 			tl.draw(g, 	(int)area.getX() + (int)(area.getWidth() / 2) - (int)(tb.getWidth() / 2), 
 					(int)area.getY() + (int)(area.getHeight() / 2) + (int)(tb.getHeight() / 2));
 		}
-		g.setClip(origClip); //Reset clipping
 		drawHighlight(g);
-		super.doDraw((Graphics2D)g.create());
 	}
 	
 	public void drawHighlight(Graphics2D g)

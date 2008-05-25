@@ -16,39 +16,34 @@
 //
 package org.pathvisio.gui.wikipathways;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
 import java.net.URL;
 
 import javax.swing.JApplet;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+
+import org.pathvisio.debug.Logger;
 
 public class AppletUserInterfaceHandler extends SwingUserInterfaceHandler {
-	PathwayPageApplet applet;
+	JApplet applet;
 	
-	public AppletUserInterfaceHandler(PathwayPageApplet applet) {
+	public AppletUserInterfaceHandler(JApplet applet) {
 		super(JOptionPane.getFrameForComponent(applet));
 		this.applet = applet;
 	}
 	
-	public Component getParent() {
-		parent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-		parent = SwingUtilities.getRoot(parent);
-		return parent;
-	}
-	
 	public void showExitMessage(String msg) {
-		if(applet.isFullScreen()) {
-			applet.toEmbedded();
-		}
 		JLabel label = new JLabel(msg, JLabel.CENTER);
-		applet.getContentPane().removeAll();
-		applet.getContentPane().add(label, BorderLayout.CENTER);
+		applet.getContentPane().add(label);
 		applet.getContentPane().validate();
-		applet.getContentPane().repaint();
+		
+		URL url = applet.getDocumentBase();
+	        try {
+			url = new URL("javascript:window.location.reload();");
+		} catch(Exception ex) {
+			Logger.log.error("Unable to create javascript url", ex);
+		}
+		applet.getAppletContext().showDocument(url, "_top");
 	}
 
 	public void showDocument(URL url, String target) {
