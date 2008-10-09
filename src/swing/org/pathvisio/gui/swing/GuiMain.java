@@ -311,7 +311,7 @@ public class GuiMain
 			public void run() {
 				Engine engine = Engine.init();
 				initLog(engine);
-				engine.setApplicationName("PathVisio 1.1");
+				engine.setApplicationName("PathVisio 1.1.1");
 				engine.setUrlBrowser(new Browser() {
 					public void openUrl(URL url) {
 						try {
