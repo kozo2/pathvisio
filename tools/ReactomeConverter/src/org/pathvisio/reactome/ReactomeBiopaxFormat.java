@@ -16,19 +16,21 @@
 //
 package org.pathvisio.reactome;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
+import org.biopax.paxtools.io.jena.JenaIOHandler;
 import org.biopax.paxtools.model.level2.conversion;
 import org.biopax.paxtools.model.level2.pathway;
 import org.biopax.paxtools.model.level2.physicalEntityParticipant;
 import org.biopax.paxtools.model.level2.xref;
-import org.jdom.JDOMException;
 import org.pathvisio.Engine;
 import org.pathvisio.biopax.BiopaxFormat;
 import org.pathvisio.debug.Logger;
@@ -37,12 +39,6 @@ import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayElement.MPoint;
 
-/**
- * Converts Reactome pathways based on the BioPAX converter.
- * This converter queries the Reactome database for coordinates
- * of the pathway entities.
- * @author thomas
- */
 public class ReactomeBiopaxFormat extends BiopaxFormat {
 	static final int BORDER_OFFSET = 50 * Pathway.OLD_GMMLZOOM;
 	static final double PADDING = 5 * Pathway.OLD_GMMLZOOM;
@@ -56,7 +52,7 @@ public class ReactomeBiopaxFormat extends BiopaxFormat {
 	
 	public static void main(String[] args) {
 		Engine.init();
-		Logger.log.setLogLevel(true, true, true, true, true, true);
+		
 		if(args.length < 2) {
 			printHelp();
 		}
@@ -74,10 +70,11 @@ public class ReactomeBiopaxFormat extends BiopaxFormat {
 			int i = 0;
 			for(Pathway p : pathways) {
 				File f = p.getSourceFile();
-				if(f == null) {
+				if(f == null || !f.canWrite()) {
 					f = new File("untitled-" + i++ + ".gpml");
 				}
 				p.writeToXml(f, true);
+				p.writeToSvg(new File(f.getAbsolutePath() + ".svg"));
 			}
 		} catch(Exception e) {
 			printHelp();
@@ -103,7 +100,7 @@ public class ReactomeBiopaxFormat extends BiopaxFormat {
         return DriverManager.getConnection (url, user, pass);
 	}
 	
-	public ReactomeBiopaxFormat(Query query, File biopaxFile) throws JDOMException, IOException {
+	public ReactomeBiopaxFormat(Query query, File biopaxFile) throws FileNotFoundException {
 		super(biopaxFile);
 		this.query = query;
 	}
@@ -116,6 +113,7 @@ public class ReactomeBiopaxFormat extends BiopaxFormat {
 	
 	protected void layoutPathway(Pathway gpmlPathway, pathway bpPathway) {
 		super.layoutPathway(gpmlPathway, bpPathway);
+		JenaIOHandler ioh = new JenaIOHandler();
 		shiftCoordinates(gpmlPathway);
 	}
 	
@@ -159,13 +157,11 @@ public class ReactomeBiopaxFormat extends BiopaxFormat {
 		int i = 1;
 		y = coordinate(y);
 		for(physicalEntityParticipant p : participants) {
-			PathwayElement pwe = getConverted(p);
+			PathwayElement pwe = getPhysicalEntityElement(p);
 			if(pwe != null) {
 				pwe.setMCenterX(coordinate(x));
 				pwe.setMCenterY(y);
 				y += i * PADDING + pwe.getMHeight();
-			} else {
-				Logger.log.warn("setCoordinates: converted entity not found for " + p);
 			}
 		}
 	}

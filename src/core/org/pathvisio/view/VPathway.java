@@ -218,8 +218,6 @@ public class VPathway implements PathwayListener
 		case ObjectType.GROUP:
 			result = new Group(this, o);
 			break;
-		case ObjectType.STATE:
-			result = new State (this, o);
 		}
 		return result;
 	}
