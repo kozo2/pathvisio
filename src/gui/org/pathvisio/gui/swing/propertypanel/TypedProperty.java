@@ -251,8 +251,7 @@ public class TypedProperty {
 		case DATASOURCE:
 		{
 			List<DataSource> dataSources = new ArrayList<DataSource>();
-			dataSources.addAll (DataSource.getFilteredSet(true, null, 
-					Organism.fromLatinName(vPathway.getPathwayModel().getMappInfo().getOrganism())));
+			dataSources.addAll (DataSource.getFilteredSet(true, null, null));
 			if(dataSources.size() != datasourceEditor.getItemCount()) 
 			{
 				Collections.sort (dataSources, new Comparator<DataSource>() {

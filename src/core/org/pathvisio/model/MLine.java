@@ -26,11 +26,9 @@ import org.pathvisio.model.ConnectorShape.WayPoint;
 import org.pathvisio.model.GraphLink.GraphIdContainer;
 
 /**
- * MLine - basically a PathwayElement, but overrides some methods
- * to calculate coordinates dynamically. For example getMCenterX(). 
- * 
- * For other shapes, the centerX coordinate is stored in GPML. Lines however
- * store the end-points, the center can be calculated based on that.  
+ * Line specific implementation of methods that calculate derived
+ * coordinates that are not stored in GPML directly
+ * @author thomas
  */
 public class MLine extends PathwayElement implements ConnectorRestrictions {
 	ConnectorShape shape;
@@ -39,11 +37,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		super(ObjectType.LINE);
 	}
 	
-	/**
-	 * the Connector Shape for this line - the connector shape
-	 * can calculate a Shape based on the connector type (straight, elbow or curved)
-	 * and possibly way points
-	 */
 	public ConnectorShape getConnectorShape() {
 		String type = getConnectorType().getName();
 		
@@ -56,9 +49,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return shape;
 	}
 	
-	/**
-	 * returns the center x coordinate of the bounding box around (start, end)
-	 */
 	public double getMCenterX()
 	{
 		double start = getMStart().getX();
@@ -66,9 +56,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return start + (end - start) / 2;
 	}
 	
-	/**
-	 * returns the center y coordinate of the bounding box around (start, end)
-	 */
 	public double getMCenterY()
 	{
 		double start = getMStart().getY();
@@ -76,9 +63,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return start + (end - start) / 2;
 	}
 	
-	/**
-	 * returns the left x coordinate of the bounding box around (start, end)
-	 */
 	public double getMLeft()
 	{
 		double start = getMStart().getX();
@@ -86,9 +70,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return Math.min(start, end);
 	}
 	
-	/**
-	 * returns the width of the bounding box around (start, end)
-	 */
 	public double getMWidth()
 	{
 		double start = getMStart().getX();
@@ -96,9 +77,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return Math.abs(start-end);
 	}
 	
-	/**
-	 * returns the height of the bounding box around (start, end)
-	 */
 	public double getMHeight()
 	{
 		double start = getMStart().getY();
@@ -106,9 +84,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return Math.abs(start-end);
 	}	
 	
-	/**
-	 * returns the top y coordinate of the bounding box around (start, end)
-	 */
 	public double getMTop()
 	{
 		double start = getMStart().getY();
@@ -141,8 +116,7 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 	}
 	
 	/**
-	 * Sets the x position of the center of the line. This makes
-	 * the line move as a whole
+	 * Sets the x position of the center of the line
 	 */
 	public void setMCenterX(double v) {
 		double dx = v - getMCenterX();
@@ -151,8 +125,7 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 	}
 	
 	/**
-	 * Sets the y position of the center of the line. This makes the line
-	 * move as a whole.
+	 * Sets the y position of the center of the line
 	 */
 	public void setMCenterY(double v) {
 		double dy = v - getMCenterY();
@@ -161,27 +134,22 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 	}
 	
 	
-	/** returns the sign of end.x - start.x */
 	private int getDirectionX() {
 		return (int)Math.signum(getMEndX() - getMStartX());
 	}
 	
-	/** returns the sign of end.y - start.y */
 	private int getDirectionY() {
 		return (int)Math.signum(getMEndY() - getMStartY());
 	}
 
-	/** converts end point from MPoint to Point2D */
 	public Point2D getEndPoint() {
 		return getMEnd().toPoint2D();
 	}
 	
-	/** converts start point from MPoint to Point2D */
 	public Point2D getStartPoint() {
 		return getMStart().toPoint2D();
 	}
 	
-	/** converts all points from MPoint to Point2D */
 	public List<Point2D> getPoints() {
 		List<Point2D> pts = new ArrayList<Point2D>();
 		for(MPoint p : getMPoints()) {
@@ -190,9 +158,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return pts;
 	}
 	
-	/**
-	 * Returns the element that the start of this line is connected to. Returns null if there isn't any.
-	 */
 	private GraphIdContainer getStartElement() {
 		Pathway parent = getParent();
 		if(parent != null) {
@@ -201,9 +166,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return null;
 	}
 	
-	/**
-	 * Returns the element that the end of this line is connected to. Returns null if there isn't any.
-	 */
 	private GraphIdContainer getEndElement() {
 		Pathway parent = getParent();
 		if(parent != null) {
@@ -212,12 +174,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return null;
 	}
 	
-	/**
-	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST, SIDE_SOUTH or SIDE_WEST) 
-	 * the start of this line is connected to.
-	 * 
-	 * If the start is not connected to anything, returns SIDE_WEST
-	 */
 	public int getStartSide() {
 		int side = SIDE_WEST;
 		
@@ -234,12 +190,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return side;
 	}
 
-	/**
-	 * Calculate on which side of a PathwayElement (SIDE_NORTH, SIDE_EAST, SIDE_SOUTH or SIDE_WEST) 
-	 * the end of this line is connected to.
-	 * 
-	 * If the end is not connected to anything, returns SIDE_EAST
-	 */
 	public int getEndSide() {
 		int side = SIDE_EAST;
 		
@@ -275,11 +225,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		}
 	}
 	
-	/**
-	 * Get the preferred waypoints, to which the connector must draw
-	 * it's path. The waypoints returned by this method are preferences
-	 * and the connector shape may decide not to use them if they are invalid.
-	 */
 	public WayPoint[] getWayPointPreferences() {
 		List<MPoint> pts = getMPoints();
 		WayPoint[] wps = new WayPoint[pts.size() - 2];
@@ -319,9 +264,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return direction;
 	}
 	
-	/**
-	 * Returns the opposite for a SIDE_* constant (e.g. SIDE_EAST <-> SIDE_WEST)
-	 */
 	private int getOppositeSide(int side) {
 		switch(side) {
 		case SIDE_EAST:
@@ -336,15 +278,6 @@ public class MLine extends PathwayElement implements ConnectorRestrictions {
 		return -1;
 	}
 	
-	/**
-	 * Check if the connector may cross this point
-	 * Optionally, returns a shape that defines the boundaries of the area  around this
-	 * point that the connector may not cross.
-	 * This method can be used for advanced connectors that route along other objects
-	 * on the drawing
-	 * @return A shape that defines the boundaries of the area around this point that 
-	 * the connector may not cross. Returning null is allowed for implementing classes.
-	 */
 	public Shape mayCross(Point2D point) {
 		Pathway parent = getParent();
 		Rectangle2D rect = null;

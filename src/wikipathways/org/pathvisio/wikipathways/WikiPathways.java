@@ -653,7 +653,6 @@ public class WikiPathways implements StatusFlagListener, ApplicationEventListene
 		Action exitAction = new Actions.ExitAction(uiHandler, this, false, null);
 
 		mainPanel = new MainPanel(swingEngine, hide);
-		mainPanel.createAndShowGUI();
 
 		mainPanel.getToolBar().addSeparator();
 

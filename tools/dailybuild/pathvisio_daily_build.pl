@@ -373,7 +373,7 @@ eval
 		);
 	}
 
-	if ($repos{BRIDGEDB}->{newer})
+	if ($repos{BRIGDEDB}->{newer})
 	{		
 		my $subdir = $repos{BRIDGEDB}->{wc};
 		chdir ("$subdir/corelib");
@@ -404,7 +404,7 @@ eval
 				
 				scp_dir (
 					src => "$subdir/corelib/doc/*",
-					dest => "bridgedb\@www.bridgedb.org:/home/bridgedb/apidoc",
+					dest => "pathvisio\@www.pathvisio.org:/home/pathvisio/apidoc/bridgedb",
 					log => "$subdir/docs.txt",
 				);
 			}

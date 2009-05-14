@@ -76,7 +76,7 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	
 	private MainPanelStandalone mainPanel;
 	
-	private PvDesktop pvDesktop;
+	private PvDesktop standaloneEngine;
 	private SwingEngine swingEngine;
 	
 	private static void initLog(Engine engine)
@@ -156,9 +156,10 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	{
 		//Create a plugin manager that loads the plugins
 		if(pluginLocations.size() > 0) {
-			pvDesktop.initPlugins(pluginLocations);
+			PluginManager pluginManager = new PluginManager(
+					pluginLocations, standaloneEngine
+			);
 		}
-		
 		
 		if (pathwayFile != null)
 		{
@@ -173,8 +174,8 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 			try
 			{
 				
-				pvDesktop.getGexManager().setCurrentGex(pgexFile, false);
-				pvDesktop.loadGexCache();
+				standaloneEngine.getGexManager().setCurrentGex(pgexFile, false);
+				standaloneEngine.loadGexCache();
 				Logger.log.info ("Loaded pgex " + pgexFile);
 			}
 			catch (DataException e)
@@ -218,7 +219,7 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		if(e.getType() == GexManagerEvent.CONNECTION_OPENED ||
 				e.getType() == GexManagerEvent.CONNECTION_CLOSED) 
 		{
-			SimpleGex gex = pvDesktop.getGexManager().getCurrentGex();
+			SimpleGex gex = standaloneEngine.getGexManager().getCurrentGex();
 			if(gex != null && gex.isConnected()) {
 				gexLabel.setText(" | Dataset: " + shortenString(gex.getDbName()));
 				gexLabel.setToolTipText(gex.getDbName());
@@ -261,7 +262,7 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		
 		swingEngine.getGdbManager().addGdbEventListener(this);
 		
-		pvDesktop.getGexManager().addListener(this);
+		standaloneEngine.getGexManager().addListener(this);
 		
 		frame.setJMenuBar(mainPanel.getMenuBar());
 		frame.pack();
@@ -324,8 +325,8 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 			}
 		}
 		swingEngine.getGdbManager().removeGdbEventListener(this);
-		pvDesktop.getGexManager().removeListener(this);
-		pvDesktop.dispose();
+		standaloneEngine.getGexManager().removeListener(this);
+		standaloneEngine.dispose();
 		swingEngine.getEngine().dispose();
 		swingEngine.dispose();
 		Logger.log.info ("PathVisio was shut down cleanly");
@@ -371,11 +372,9 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 			}
 		});
 		swingEngine.getGdbManager().initPreferred();
-		pvDesktop = new PvDesktop (swingEngine);
+		standaloneEngine = new PvDesktop (swingEngine);
 		
-		MainPanelStandalone mps = new MainPanelStandalone(pvDesktop);
-		mps.createAndShowGUI();
-
+		MainPanelStandalone mps = new MainPanelStandalone(engine, swingEngine);
 		JFrame frame = createAndShowGUI(mps, swingEngine);
 		initImporters(engine);
 		initExporters(engine, swingEngine.getGdbManager());
@@ -411,10 +410,10 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	{
 		engine.addPathwayExporter(new MappFormat());
 		engine.addPathwayExporter(new GpmlFormat());
-		engine.addPathwayExporter(new RasterImageWithDataExporter(ImageExporter.TYPE_PNG, pvDesktop.getVisualizationManager()));
-		engine.addPathwayExporter(new BatikImageWithDataExporter(ImageExporter.TYPE_SVG, pvDesktop.getVisualizationManager()));
-		engine.addPathwayExporter(new BatikImageWithDataExporter(ImageExporter.TYPE_TIFF, pvDesktop.getVisualizationManager()));
-		engine.addPathwayExporter(new BatikImageWithDataExporter(ImageExporter.TYPE_PDF, pvDesktop.getVisualizationManager()));	
+		engine.addPathwayExporter(new RasterImageWithDataExporter(ImageExporter.TYPE_PNG, standaloneEngine.getVisualizationManager()));
+		engine.addPathwayExporter(new BatikImageWithDataExporter(ImageExporter.TYPE_SVG, standaloneEngine.getVisualizationManager()));
+		engine.addPathwayExporter(new BatikImageWithDataExporter(ImageExporter.TYPE_TIFF, standaloneEngine.getVisualizationManager()));
+		engine.addPathwayExporter(new BatikImageWithDataExporter(ImageExporter.TYPE_PDF, standaloneEngine.getVisualizationManager()));	
 		engine.addPathwayExporter(new DataNodeListExporter(gdbManager));
 		engine.addPathwayExporter(new EUGeneExporter());
 	}

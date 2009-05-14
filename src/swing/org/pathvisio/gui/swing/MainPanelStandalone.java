@@ -37,6 +37,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 
 import org.pathvisio.ApplicationEvent;
+import org.pathvisio.Engine;
 import org.pathvisio.gex.BackpageExpression;
 import org.pathvisio.gex.GexManager;
 import org.pathvisio.preferences.GlobalPreference;
@@ -49,7 +50,7 @@ import org.pathvisio.util.Resources;
 public class MainPanelStandalone extends MainPanel 
 {
 	protected JMenuBar menuBar;
-
+	
 	private StandaloneActions standaloneActions = null;
 	private List<File> recent;
 	public static GlobalPreference[] mostRecentArray = new GlobalPreference[] {
@@ -102,7 +103,6 @@ public class MainPanelStandalone extends MainPanel
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.add(actions.aboutAction);
-		helpMenu.add(standaloneActions.pluginManagerAction);
 		helpMenu.add(standaloneActions.helpAction);
 		
 		mb.add(fileMenu);
@@ -112,19 +112,11 @@ public class MainPanelStandalone extends MainPanel
 		mb.add(helpMenu);
 	}
 	
-	public MainPanelStandalone(PvDesktop desktop)
+	public MainPanelStandalone(Engine engine, final SwingEngine swingEngine)
 	{
-		super(desktop.getSwingEngine(), null);
+		super(swingEngine, null);
 		
-		standaloneActions = new StandaloneActions(desktop);
-	}
-	
-	@Override
-	public void createAndShowGUI()
-	{
-		super.createAndShowGUI();
-
-		SearchPane searchPane = new SearchPane(swingEngine);
+		SearchPane searchPane = new SearchPane(engine, swingEngine);
 		sidebarTabbedPane.addTab ("Search", searchPane); 
 
 		// backpage hook for showing expression data.
@@ -179,8 +171,10 @@ public class MainPanelStandalone extends MainPanel
 	
 	@Override
 	protected void addToolBarActions(final SwingEngine swingEngine, JToolBar tb) 
-	{		
+	{
 		tb.setLayout(new WrapLayout(1, 1));
+
+		standaloneActions = new StandaloneActions(swingEngine);		
 
 		addToToolbar(standaloneActions.newAction);
 		addToToolbar(standaloneActions.openAction);

@@ -49,11 +49,9 @@ public class StandaloneActions
 	public final Action selectMetaboliteDbAction;
 	public final Action preferencesAction;
 	public final Action searchAction;
-	public final Action pluginManagerAction;
-	
-	StandaloneActions (PvDesktop desktop)
+
+	StandaloneActions (SwingEngine swingEngine)
 	{
-		SwingEngine swingEngine = desktop.getSwingEngine();
 		openAction = new OpenAction(swingEngine);
 		helpAction = new HelpAction();
 		newAction = new NewAction(swingEngine);
@@ -61,7 +59,6 @@ public class StandaloneActions
 		selectMetaboliteDbAction = new SelectGeneDbAction(swingEngine, "Metabolite");
 		preferencesAction = new PreferencesAction(swingEngine);
 		searchAction = new SearchAction(swingEngine);
-		pluginManagerAction = new PluginManagerAction(desktop);
 	}
 	
 	/**
@@ -93,30 +90,6 @@ public class StandaloneActions
 			{
 				ex.printStackTrace();
 			}
-		}
-	}
-
-	/**
-	 * Help -> Plugin Manager
-	 * Show a list of active plugins and errors that 
-	 * occurred while initializing the plugin manager.
-	 */
-	public static class PluginManagerAction extends AbstractAction 
-	{
-		PvDesktop pvDesktop;
-		
-		public PluginManagerAction(PvDesktop desktop)
-		{
-			super();
-			this.pvDesktop = desktop;
-			putValue(NAME, "Plugin manager");
-			putValue(SHORT_DESCRIPTION, "Information about active plugins");
-		}
-
-		public void actionPerformed(ActionEvent e) 
-		{
-			PluginManagerDlg dlg = new PluginManagerDlg (pvDesktop);
-			dlg.createAndShowGUI();
 		}
 	}
 
