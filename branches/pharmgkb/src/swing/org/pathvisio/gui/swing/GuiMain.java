@@ -49,13 +49,7 @@ import org.pathvisio.gex.GexManager.GexManagerEvent;
 import org.pathvisio.gex.GexManager.GexManagerListener;
 import org.pathvisio.gex.SimpleGex;
 import org.pathvisio.gui.swing.SwingEngine.Browser;
-import org.pathvisio.model.BatikImageWithDataExporter;
-import org.pathvisio.model.DataNodeListExporter;
-import org.pathvisio.model.EUGeneExporter;
-import org.pathvisio.model.GpmlFormat;
-import org.pathvisio.model.ImageExporter;
-import org.pathvisio.model.MappFormat;
-import org.pathvisio.model.RasterImageWithDataExporter;
+import org.pathvisio.model.*;
 import org.pathvisio.plugin.PluginManager;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.PreferenceManager;
@@ -346,6 +340,7 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	private void init()
 	{
 		PreferenceManager.init();
+        PropertyManager.init();
 		Engine engine = new Engine();
 		initLog(engine);
 		engine.setApplicationName("PathVisio 1.1");

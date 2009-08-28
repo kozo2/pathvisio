@@ -100,8 +100,7 @@ public class Test extends TestCase implements PathwayListener, PathwayElementLis
 		assertNull (o.getDynamicProperty("NonExistingProperty"));
 
 		// check that we have 10 dynamic properties, no more, no less.
-		Set<String> dynamicKeys = o.getDynamicPropertyKeys();
-		assertEquals (10, dynamicKeys.size());
+		assertEquals (10, o.getDynamicPropertyKeys().size());
 
 		// check that superset dynamic + static also contains dynamic properties 
 		assertEquals("World0", o.getPropertyEx("Hello0"));

@@ -16,7 +16,7 @@
 //
 package org.pathvisio.gpmldiff;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.pathvisio.model.ObjectType;
 import org.pathvisio.model.PathwayElement;
@@ -34,19 +34,12 @@ class BetterSim extends SimilarityFunction
 	*/
 	public int getSimScore (PathwayElement oldE, PathwayElement newE)
 	{
-		ObjectType oldOt = oldE.getObjectType();
-		ObjectType newOt = newE.getObjectType();
-		Set<PropertyType> oldProps = oldE.getStaticPropertyKeys();
-		Set<PropertyType> newProps = newE.getStaticPropertyKeys();
-
-		int oldN = oldProps.size();
-		//int newN = newProps.size();
 
 		int possibleScore = 0;
 		int actualScore = 0;
-
-		
 		{
+            ObjectType oldOt = oldE.getObjectType();
+            ObjectType newOt = newE.getObjectType();
 			int max;
 			if (oldOt == ObjectType.LEGEND || oldOt == ObjectType.INFOBOX)
 			{
@@ -65,6 +58,10 @@ class BetterSim extends SimilarityFunction
 			actualScore += score;
 		}
 		
+        Collection<PropertyType> oldProps = oldE.getStaticPropertyKeys();
+        Collection<PropertyType> newProps = newE.getStaticPropertyKeys();
+        int oldN = oldProps.size();
+        //int newN = newProps.size();
 		for (PropertyType newProp : newProps)
 		{
 			if (oldProps.contains(newProp))

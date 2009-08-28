@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<pathvisio>
+    <modes>
+        <mode id="biopax" name="BioPAX"/>
+        <mode id="mim" name="MIM"/>
+        <mode id="pharmgkb" name="PharmGKB"/>
+        <mode id="adv" name="Advanced"/>
+    </modes>
+
+    <properties>
+        <property id="nodeType" name="Type" type="ENUM">
+            <propertyMode/>
+            <option name="Unknown"/>
+            <option name="Rna"/>
+            <option name="Protein"/>
+            <option name="Complex"/>
+            <option name="GeneProduct"/>
+            <option name="metabolite"/>
+            <option name="Drug"/>
+            <option name="Prodrug">
+                <optionMode>pharmgkb</optionMode>
+            </option>
+            <option name="DrugClass">
+                <optionMode>pharmgkb</optionMode>
+            </option>
+            <option name="Biological Intermediate">
+                <optionMode>pharmgkb</optionMode>
+            </option>
+        </property>
+
+
+        <property id="cellularLocation" name="Cellular Location" type="ENUM">
+            <propertyMode>biopax</propertyMode>
+            <option name="Unknown"/>
+            <option name="Extracellular"/>
+            <option name="Transmembrane"/>
+            <option name="Intracellular"/>
+        </property>
+
+        <property id="modification" name="Modification" type="ENUM">
+            <option name="None"/>
+            <option name="Phosporylation"/>
+            <option name="Ubiquitination"/>
+            <option name="Methylation"/>
+        </property>
+
+        <property id="role" name="Role" type="ENUM">
+            <propertyMode>pharmgkb</propertyMode>
+            <option name="Primary Metabolizing Enzyme"/>
+            <option name="Secondary Metabolizing Enzyme"/>
+        </property>
+
+        <property id="state" name="State" type="ENUM">
+            <option name="Active"/>
+            <option name="Inactive"/>
+        </property>
+
+        <property id="phenotype" name="Phenotype" type="BOOLEAN">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="accessionId" name="Phenotype" type="STRING">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="classification" name="Classification" type="DICTIONARY">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="coe" name="COE" type="ENUM">
+            <propertyMode>pharmgkb</propertyMode>
+            <option name="PD"/>
+            <option name="PK"/>
+            <option name="PD and PK"/>
+        </property>
+
+        <property id="descriptionUrl" name="Description Wiki URL" type="STRING">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="diseases" name="Diseases" type="DICTIONARY">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="path" name="path" type="STRING">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="relatedGenes" name="Related Genes" type="DICTIONARY" multiSelect="true">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="relatedDrugs" name="Related Drugs" type="DICTIONARY" multiSelect="true">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+
+        <property id="relatedDiseases" name="Related Diseases" type="DICTIONARY" multiSelect="true">
+            <propertyMode>pharmgkb</propertyMode>
+        </property>
+    </properties>
+
+    <objects>
+        <!-- static lists -->
+        <staticPropertyList id="propsCommon" name="Common Properties List">
+            <staticProperty>Comments</staticProperty>
+            <staticProperty>GraphId</staticProperty>
+            <staticProperty>GroupRef</staticProperty>
+            <staticProperty>BiopaxRef</staticProperty>
+            <staticProperty>Z order</staticProperty>
+        </staticPropertyList>
+
+        <staticPropertyList id="propsCommonShape" name="Common Properties List for Shapes">
+            <staticProperty>CenterX</staticProperty>
+            <staticProperty>CenterY</staticProperty>
+            <staticProperty>Width</staticProperty>
+            <staticProperty>Height</staticProperty>
+            <staticProperty>Color</staticProperty>
+        </staticPropertyList>
+
+        <!-- objects -->
+
+        <object id="pathway" name="Pathway" type="Pathway">
+            <property>accessionId</property>
+            <property>classification</property>
+            <property>coe</property>
+            <property>descriptionUrl</property>
+            <property>diseases</property>
+            <property>path</property>
+            <property>relatedGenes</property>
+            <property>relatedDiseases</property>
+            <property>relatedDrugs</property>
+
+            <!-- static properties -->
+            <staticProperty>Comments</staticProperty>
+            <staticProperty>MapInfoName</staticProperty>
+            <staticProperty>Organism</staticProperty>
+            <staticProperty>Data-Source</staticProperty>
+            <staticProperty>Version</staticProperty>
+            <staticProperty>Author</staticProperty>
+            <staticProperty>Maintained-By</staticProperty>
+            <staticProperty>Email</staticProperty>
+            <staticProperty>Last-Modified</staticProperty>
+            <staticProperty>Availability</staticProperty>
+            <staticProperty>BoardWidth</staticProperty>
+            <staticProperty>BoardHeight</staticProperty>
+            <staticProperty>WindowWidth</staticProperty>
+            <staticProperty>WindowHeight</staticProperty>
+        </object>
+        <!-- end pathway -->
+
+        <object id="state" name="State" type="State">
+            <staticProperty>relX</staticProperty>
+            <staticProperty>relY</staticProperty>
+            <staticProperty>Width</staticProperty>
+            <staticProperty>Height</staticProperty>
+            <staticProperty>Color</staticProperty>
+            <staticProperty>FillColor</staticProperty>
+            <staticProperty>Transparent</staticProperty>
+            <staticProperty>TextLabel</staticProperty>
+            <staticProperty>ModificationType</staticProperty>
+            <staticProperty>LineStyle</staticProperty>
+            <staticProperty>StartGraphRef</staticProperty>
+            <staticPropertyListId>propsCommon</staticPropertyListId>
+        </object>
+        <!-- end state -->
+
+        <object id="shape" name="Shape" type="Shape">
+            <staticProperty>FillColor</staticProperty>
+            <staticProperty>ShapeType</staticProperty>
+            <staticProperty>Rotation</staticProperty>
+            <staticProperty>Transparent</staticProperty>
+            <staticProperty>LineStyle</staticProperty>
+            <staticPropertyListId>propsCommon</staticPropertyListId>
+            <staticPropertyListId>propsCommonShape</staticPropertyListId>
+        </object>
+        <!-- end shape -->
+
+        <object id="dataNode" name="Data Node" type="DataNode">
+            <property>nodeType</property>
+            <property>cellularLocation</property>
+            <property>modification</property>
+            <subType prop="nodeType" value="Protein">
+                <subProperty>role</subProperty>
+                <subProperty>state</subProperty>
+            </subType>
+            <!-- static properties-->
+            <staticProperty>GeneID</staticProperty>
+            <staticProperty>SystemCode</staticProperty>
+            <staticProperty>TextLabel</staticProperty>
+            <staticProperty>BackpageHead</staticProperty>
+            <staticPropertyListId>propsCommon</staticPropertyListId>
+            <staticPropertyListId>propsCommonShape</staticPropertyListId>
+        </object>
+        <!-- end dataNode -->
+
+        <object id="line" name="Line" type="Line">
+            <staticProperty>Color</staticProperty>
+            <staticProperty>StartX</staticProperty>
+            <staticProperty>StartY</staticProperty>
+            <staticProperty>EndX</staticProperty>
+            <staticProperty>EndY</staticProperty>
+            <staticProperty>StartLineType</staticProperty>
+            <staticProperty>EndLineType</staticProperty>
+            <staticProperty>LineStyle</staticProperty>
+            <staticProperty>StartGraphRef</staticProperty>
+            <staticProperty>EndGraphRef</staticProperty>
+            <staticPropertyListId>propsCommon</staticPropertyListId>
+        </object>
+        <!-- end line -->
+
+
+        <object id="label" name="Label" type="Label">
+            <property>phenotype</property>
+            <!-- static properties -->
+            <staticProperty>Xref</staticProperty>
+            <staticProperty>TextLabel</staticProperty>
+            <staticProperty>FontName</staticProperty>
+            <staticProperty>FontWeight</staticProperty>
+            <staticProperty>FontStyle</staticProperty>
+            <staticProperty>FontSize</staticProperty>
+            <staticProperty>Outline</staticProperty>
+            <staticPropertyListId>propsCommon</staticPropertyListId>
+            <staticPropertyListId>propsCommonShape</staticPropertyListId>
+        </object>
+        <!-- end label -->
+
+        <object id="group" name="group" type="Group">
+            <staticProperty>GroupId</staticProperty>
+            <staticProperty>GroupRef</staticProperty>
+            <staticProperty>BiopaxRef</staticProperty>
+            <staticProperty>GroupStyle</staticProperty>
+            <staticProperty>TextLabel</staticProperty>
+            <staticProperty>Comments</staticProperty>
+            <staticProperty>Z order</staticProperty>
+        </object>
+        <!-- end group -->
+
+        <object id="infoBox" name="Info Box" type="InfoBox">
+            <staticProperty>CenterX</staticProperty>
+            <staticProperty>CenterY</staticProperty>
+            <staticProperty>Z order</staticProperty>
+        </object>
+        <!-- end infobox -->
+
+        <object id="legend" name="Legend" type="Legend">
+            <staticProperty>CenterX</staticProperty>
+            <staticProperty>CenterY</staticProperty>
+            <staticProperty>Z order</staticProperty>
+        </object>
+        <!-- end legend -->
+
+        <object id="biopax" name="BioPAX" type="Biopax">
+            <!-- XXX: WHAT IS THIS FOR? -->
+        </object>
+
+    </objects>
+</pathvisio>

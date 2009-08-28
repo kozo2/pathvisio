@@ -53,15 +53,7 @@ import org.bridgedb.DataSource;
 import org.bridgedb.bio.Organism;
 import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
-import org.pathvisio.model.DataNodeType;
-import org.pathvisio.model.GroupStyle;
-import org.pathvisio.model.LineStyle;
-import org.pathvisio.model.LineType;
-import org.pathvisio.model.OrientationType;
-import org.pathvisio.model.OutlineType;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.PropertyType;
-import org.pathvisio.model.ShapeType;
+import org.pathvisio.model.*;
 import org.pathvisio.view.VPathway;
 
 /**
@@ -75,16 +67,16 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	boolean different;
 
 	/**
-	 * @param type is either String for a dynamic property,
+	 * @param aType is either String for a dynamic property,
 	 * or PropertyType for a static property;
 	 * @param aVPathway is used to register undo actions when setting a value
 	 * to this property. May be null, in which case no undo actions are registered.
 	 */
 	public TypedProperty(VPathway aVPathway, Object aType) {
 		type = aType;
-		if (!(type instanceof String || type instanceof PropertyType))
+		if (!(type instanceof Property || type instanceof PropertyType))
 		{
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Property must be Property or PropertyType");
 		}
 		vPathway = aVPathway;
 		elements = new HashSet<PathwayElement>();
@@ -140,7 +132,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		else
 		{
-			return type.toString();
+			return ((Property)type).getName();
 		}
 	}
 	
@@ -171,7 +163,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	}
 	
 	/**
-	 * The type of the property being edited. This is a String
+	 * The type of the property being edited. This is a {@link Property}
 	 * if the property is dynamic, or a PropertyType is the property
 	 * is static. (See PathwayElement for an explanation of static / dynamic)
 	 */
@@ -192,132 +184,146 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	 */
 	public TableCellRenderer getCellRenderer() 
 	{
-		if(hasDifferentValues()) return differentRenderer;
-		if (type instanceof PropertyType) switch(((PropertyType)type).type()) {
-		case COLOR:
-			return colorRenderer;
-		case LINETYPE:
-			return lineTypeRenderer;
-		case LINESTYLE:
-			return lineStyleRenderer;
-		case DATASOURCE:
-		{
-			//TODO Make use of DataSourceModel for datasources
-			Set<DataSource> dataSources = DataSource.getFilteredSet(true, null, null);
-			if(dataSources.size() != datasourceRenderer.getItemCount()) {
-				Object[] labels = new Object[dataSources.size()];
-				Object[] values = new Object[dataSources.size()];
-				int i = 0;
-				for(DataSource s : dataSources) {
-					labels[i] = s.getFullName();
-					values[i] = s;
-					i++;
-				}
-				datasourceRenderer.updateData(labels, values);
-			}
-			return datasourceRenderer;
-		}
-		case BOOLEAN:
-			return checkboxRenderer;
-		case ORIENTATION:
-			return orientationRenderer;
-		case ORGANISM:
-			return organismRenderer;
-		case ANGLE:
-			return angleRenderer;
-		case DOUBLE:
-			return doubleRenderer;
-		case FONT:
-			return fontRenderer;
-		case SHAPETYPE:
-			return shapeTypeRenderer;
-		case OUTLINETYPE:
-			return outlineTypeRenderer;
-		case GENETYPE:
-			return datanodeTypeRenderer;
-		}
-		return null;
-	}
+		if(hasDifferentValues()) {
+            return differentRenderer;
+        }
+        PropertyClass propClass = null;
+		if (type instanceof PropertyType) {
+            propClass = ((PropertyType)type).type();
+        } else if (type instanceof Property){
+            propClass = ((Property)type).getType();
+        }
+        if (propClass != null) {
+            switch(propClass) {
+                case COLOR:
+                    return colorRenderer;
+                case LINETYPE:
+                    return lineTypeRenderer;
+                case LINESTYLE:
+                    return lineStyleRenderer;
+                case DATASOURCE:
+                {
+                    //TODO Make use of DataSourceModel for datasources
+                    Set<DataSource> dataSources = DataSource.getFilteredSet(true, null, null);
+                    if(dataSources.size() != datasourceRenderer.getItemCount()) {
+                        Object[] labels = new Object[dataSources.size()];
+                        Object[] values = new Object[dataSources.size()];
+                        int i = 0;
+                        for(DataSource s : dataSources) {
+                            labels[i] = s.getFullName();
+                            values[i] = s;
+                            i++;
+                        }
+                        datasourceRenderer.updateData(labels, values);
+                    }
+                    return datasourceRenderer;
+                }
+                case BOOLEAN:
+                    return checkboxRenderer;
+                case ORIENTATION:
+                    return orientationRenderer;
+                case ORGANISM:
+                    return organismRenderer;
+                case ANGLE:
+                    return angleRenderer;
+                case DOUBLE:
+                    return doubleRenderer;
+                case FONT:
+                    return fontRenderer;
+                case SHAPETYPE:
+                    return shapeTypeRenderer;
+                case OUTLINETYPE:
+                    return outlineTypeRenderer;
+                case GENETYPE:
+                    return datanodeTypeRenderer;
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * Returns a TableCellEditor suitable for editing this property.
-	 * 
-	 * @param swingEngine: the comments editor requires a connection to swingEngine, so you need to pass it here.
-	 */
-	public TableCellEditor getCellEditor(SwingEngine swingEngine) {
-		if (type instanceof PropertyType) switch(((PropertyType)type).type()) {
-		case BOOLEAN:
-			return checkboxEditor;
-		case DATASOURCE:
-		{
-			List<DataSource> dataSources = new ArrayList<DataSource>();
-			dataSources.addAll (DataSource.getFilteredSet(true, null, 
-					Organism.fromLatinName(vPathway.getPathwayModel().getMappInfo().getOrganism())));
-			if(dataSources.size() != datasourceEditor.getItemCount()) 
-			{
-				Collections.sort (dataSources, new Comparator<DataSource>() {
+    /**
+     * Returns a TableCellEditor suitable for editing this property.
+     *
+     * @param swingEngine: the comments editor requires a connection to swingEngine, so you need to pass it here.
+     */
+    public TableCellEditor getCellEditor(SwingEngine swingEngine) {
 
-					public int compare(DataSource arg0, DataSource arg1) 
-					{
-						return ("" + arg0.getFullName()).toLowerCase().compareTo(("" + arg1.getFullName()).toLowerCase());
-					}});
+        PropertyClass propClass = null;
+		if (type instanceof PropertyType) {
+            propClass = ((PropertyType)type).type();
+        } else if (type instanceof Property){
+            propClass = ((Property)type).getType();
+        }
+        if (propClass != null) {
+            switch(propClass) {
+                case BOOLEAN:
+                    return checkboxEditor;
+                case DATASOURCE:
+                {
+                    List<DataSource> dataSources = new ArrayList<DataSource>();
+                    dataSources.addAll (DataSource.getFilteredSet(true, null,
+                            Organism.fromLatinName(vPathway.getPathwayModel().getMappInfo().getOrganism())));
+                    if(dataSources.size() != datasourceEditor.getItemCount())
+                    {
+                        Collections.sort (dataSources, new Comparator<DataSource>() {
+
+                            public int compare(DataSource arg0, DataSource arg1)
+                            {
+                                return ("" + arg0.getFullName()).toLowerCase().compareTo(("" + arg1.getFullName()).toLowerCase());
+                            }});
 				
-				Object[] labels = new Object[dataSources.size()];
-				Object[] values = new Object[dataSources.size()];
-				int i = 0;
-				for(DataSource s : dataSources) {
-					labels[i] = s.getFullName() == null ? s.getSystemCode() : s.getFullName();
-					values[i] = s;
-					i++;
-				}
-				datasourceEditor.updateData(labels, values);
-			}
-			return datasourceEditor;
-		}
-		case COLOR:
-			return colorEditor;
-		case LINETYPE:
-			return lineTypeEditor;
-		case LINESTYLE:
-			return lineStyleEditor;
-		case ORIENTATION:
-			return orientationEditor;
-		case ORGANISM:
-			return organismEditor;
-		case ANGLE:
-			return angleEditor;
-		case DOUBLE:
-			return doubleEditor;
-		case INTEGER:
-			return integerEditor;
-		case FONT:
-			return fontEditor;
-		case SHAPETYPE:
-			return shapeTypeEditor;
-		case COMMENTS:
-			CommentsEditor commentsEditor = new CommentsEditor(swingEngine);
-			commentsEditor.setInput(this);
-			return commentsEditor;
-		case OUTLINETYPE:
-			return outlineTypeEditor;
-		case GENETYPE:
-			return datanodeTypeEditor;
-		case GROUPSTYLETYPE:
-			return groupStyleEditor;
-		default:
-			return null;
-		}
-		else return null;
-	}
-	
-	/**
-	 * Return the first of the set of PathwayElement's
+                        Object[] labels = new Object[dataSources.size()];
+                        Object[] values = new Object[dataSources.size()];
+                        int i = 0;
+                        for(DataSource s : dataSources) {
+                            labels[i] = s.getFullName() == null ? s.getSystemCode() : s.getFullName();
+                            values[i] = s;
+                            i++;
+                        }
+                        datasourceEditor.updateData(labels, values);
+                    }
+                    return datasourceEditor;
+                }
+                case COLOR:
+                    return colorEditor;
+                case LINETYPE:
+                    return lineTypeEditor;
+                case LINESTYLE:
+                    return lineStyleEditor;
+                case ORIENTATION:
+                    return orientationEditor;
+                case ORGANISM:
+                    return organismEditor;
+                case ANGLE:
+                    return angleEditor;
+                case DOUBLE:
+                    return doubleEditor;
+                case INTEGER:
+                    return integerEditor;
+                case FONT:
+                    return fontEditor;
+                case SHAPETYPE:
+                    return shapeTypeEditor;
+                case COMMENTS:
+                    CommentsEditor commentsEditor = new CommentsEditor(swingEngine);
+                    commentsEditor.setInput(this);
+                    return commentsEditor;
+                case OUTLINETYPE:
+                    return outlineTypeEditor;
+                case GENETYPE:
+                    return datanodeTypeEditor;
+                case GROUPSTYLETYPE:
+                    return groupStyleEditor;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the first of the set of PathwayElement's
 	 */
 	private PathwayElement getFirstElement() {
-		PathwayElement first;
-		//TODO: weird way of getting first element?
-		for(first = (PathwayElement)elements.iterator().next();;) break;
-		return first;
+		return elements.iterator().next();
 	}
 	
 	private static class DoubleEditor extends DefaultCellEditor {
@@ -326,7 +332,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Double d = new Double(0);
+			Double d = 0.0;
 			try {
 				d = Double.parseDouble(value);
 			} catch(Exception e) {
@@ -343,7 +349,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Integer i = new Integer(0);
+			Integer i = 0;
 			try {
 				i = Integer.parseInt(value);
 			} catch(Exception e) {
@@ -360,7 +366,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Double d = new Double(0);
+			Double d = 0.0;
 			try {
 				d = Double.parseDouble(value) * Math.PI / 180;
 			} catch(Exception e) {
