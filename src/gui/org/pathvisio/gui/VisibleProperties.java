@@ -20,10 +20,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
 import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyManager;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.PreferenceManager;
 
@@ -47,9 +49,9 @@ public class VisibleProperties
 	 * 	returns only static properties, and excludes certain properties considered "advanced"
 	 * 	such as graphId and graphRef.
 	 */
-	public static Set<Object> getVisiblePropertyKeys (PathwayElement e)
+	public static List<Object> getVisiblePropertyKeys (PathwayElement e)
 	{
-		Set<Object> result = new HashSet<Object>();
+		List<Object> result = new ArrayList<Object>();
 		
 		boolean advanced = PreferenceManager.getCurrent().getBoolean(GlobalPreference.SHOW_ADVANCED_PROPERTIES);
 		
@@ -78,13 +80,15 @@ public class VisibleProperties
 		// add dynamic properties
         // XXX: NEED TO TAKE MODES INTO ACCOUNT
         List<Property> dynamicProperties = e.getDynamicPropertyKeys();
-		if (advanced)
+		if (!advanced) //for now, but will change once modes is added
 		{
-            // ???
+            List<Property> advProperties = e.getDynamicPropertyKeys(PropertyManager.getProperty("Advanced"));
+            result.removeAll(advProperties);
 		}
         result.addAll(e.getDynamicPropertyKeys());
 
 
 		return result;
 	}
+
 }

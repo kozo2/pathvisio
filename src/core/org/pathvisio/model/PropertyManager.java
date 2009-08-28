@@ -319,7 +319,7 @@ public class PropertyManager {
     /**
      * Gets all modes.
      */
-    public static Set<Property> getMode() {
+    public static Set<Property> getModes() {
         return MODES;
     }
 }

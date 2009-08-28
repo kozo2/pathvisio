@@ -83,8 +83,7 @@ import org.pathvisio.util.Utils;
  */
 public class PathwayElement implements GraphIdContainer, Comparable<PathwayElement>
 {
-	//TreeMap has better performance than HashMap
-    //in the (common) case where no attributes are present
+	// TreeMap has better performance than HashMap in the (common) case where no attributes are present
     private Map<Property, Object> dynamicProperties = new TreeMap<Property, Object>();
 
     /**
@@ -94,6 +93,11 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
     public List<Property> getDynamicPropertyKeys()
     {
         return PropertyManager.getObjectProperties(objectType).getProperties();
+    }
+
+    public List<Property> getDynamicPropertyKeys(Property mode)
+    {
+        return PropertyManager.getObjectProperties(objectType).getProperties(mode);
     }
 
     /**
@@ -1107,10 +1111,10 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case BACKPAGEHEAD:
             result = getBackpageHead();
             break;
-        case TYPE:
+/*        case TYPE:
             result = getDataNodeType();
             break;
-
+*/
         case TEXTLABEL:
             result = getTextLabel();
             break;

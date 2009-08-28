@@ -58,6 +58,21 @@ public class ObjectProperties {
         return properties;
     }
 
+    /**
+     * returns all properties with a given mode
+     * @param mode
+     * @return
+     */
+    public List<Property> getProperties(Property mode) {
+        List<Property> props = new ArrayList<Property>();
+        for (Property p: properties){
+            if (p.getModes().contains(mode)){
+                props.add(p);
+            }
+        }
+        return props;
+    }
+
     public void addProperty(Property prop) {
         if (properties == null) {
             properties = new ArrayList<Property>();

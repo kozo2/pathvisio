@@ -182,7 +182,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	/**
 	 * Returns a TableCellRenderer suitable for rendering this property
 	 */
-	public TableCellRenderer getCellRenderer() 
+	public TableCellRenderer getCellRenderer() throws Exception
 	{
 		if(hasDifferentValues()) {
             return differentRenderer;
@@ -234,19 +234,31 @@ public class TypedProperty implements Comparable<TypedProperty> {
                     return shapeTypeRenderer;
                 case OUTLINETYPE:
                     return outlineTypeRenderer;
-                case GENETYPE:
-                    return datanodeTypeRenderer;
+                /*case GENETYPE:
+                    return datanodeTypeRenderer;*/
+                case ENUM:
+                    List<PropertyEnum> values = ((Property)type).getValues();
+                    String[] enumValues = new String[values.size()];
+                    int i=0;
+                    for (PropertyEnum pe: values){
+                        enumValues[i++] = pe.getValue();
+                    }
+                    return new ComboRenderer(enumValues);
+                case DICTIONARY:
+                    return null;
+                case MODE:
+                    throw new Exception ("Requesting a renderer for MODE");
             }
         }
         return null;
-    }
+	}
 
-    /**
-     * Returns a TableCellEditor suitable for editing this property.
-     *
-     * @param swingEngine: the comments editor requires a connection to swingEngine, so you need to pass it here.
-     */
-    public TableCellEditor getCellEditor(SwingEngine swingEngine) {
+	/**
+	 * Returns a TableCellEditor suitable for editing this property.
+	 *
+	 * @param swingEngine: the comments editor requires a connection to swingEngine, so you need to pass it here.
+	 */
+	public TableCellEditor getCellEditor(SwingEngine swingEngine) throws Exception{
 
         PropertyClass propClass = null;
 		if (type instanceof PropertyType) {
@@ -310,20 +322,37 @@ public class TypedProperty implements Comparable<TypedProperty> {
                     return commentsEditor;
                 case OUTLINETYPE:
                     return outlineTypeEditor;
-                case GENETYPE:
-                    return datanodeTypeEditor;
+                /*case GENETYPE:
+                    return datanodeTypeEditor;*/
                 case GROUPSTYLETYPE:
                     return groupStyleEditor;
+                case ENUM:
+                    List<PropertyEnum> values = ((Property)type).getValues();
+                    String[] enumValues = new String[values.size()];
+                    int i=0;
+                    for (PropertyEnum pe: values){
+                        enumValues[i++] = pe.getValue();
+                    }
+                    return new ComboEditor(enumValues, false);
+                case DICTIONARY:
+                    return null;
+                case MODE:
+                    throw new Exception ("Requesting editor for MODE");
+                default:
+                    return null;
             }
         }
         return null;
     }
 
-    /**
-     * Return the first of the set of PathwayElement's
+	/**
+	 * Return the first of the set of PathwayElement's
 	 */
 	private PathwayElement getFirstElement() {
-		return elements.iterator().next();
+		PathwayElement first;
+		//TODO: weird way of getting first element?
+		for(first = (PathwayElement)elements.iterator().next();;) break;
+		return first;
 	}
 	
 	private static class DoubleEditor extends DefaultCellEditor {
@@ -332,7 +361,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Double d = 0.0;
+			Double d = new Double(0.0);
 			try {
 				d = Double.parseDouble(value);
 			} catch(Exception e) {
@@ -349,7 +378,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Integer i = 0;
+			Integer i = new Integer(0);
 			try {
 				i = Integer.parseInt(value);
 			} catch(Exception e) {
@@ -366,7 +395,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Double d = 0.0;
+			Double d = new Double(0.0);
 			try {
 				d = Double.parseDouble(value) * Math.PI / 180;
 			} catch(Exception e) {
@@ -557,7 +586,8 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	private static FontRenderer fontRenderer = new FontRenderer();
 	private static ComboRenderer shapeTypeRenderer = new ComboRenderer(ShapeType.getNames(), ShapeType.getValues());
 	private static ComboRenderer outlineTypeRenderer = new ComboRenderer(OutlineType.getTags(), OutlineType.values());
-	private static ComboRenderer datanodeTypeRenderer = new ComboRenderer(DataNodeType.getNames());
+	//private static ComboRenderer datanodeTypeRenderer = new ComboRenderer(DataNodeType.getNames());
+
 	private static ColorEditor colorEditor = new ColorEditor();
 	private static ComboEditor lineTypeEditor = new ComboEditor(LineType.getNames(), LineType.getValues());
 	private static ComboEditor lineStyleEditor = new ComboEditor(LineStyle.getNames(), true);
@@ -581,7 +611,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 	};
 	
-	private static ComboEditor datanodeTypeEditor = new ComboEditor(DataNodeType.getNames(), false);
+	//private static ComboEditor datanodeTypeEditor = new ComboEditor(DataNodeType.getNames(), false);
 	
 	private static DefaultTableCellRenderer doubleRenderer = new DefaultTableCellRenderer() {
 
@@ -699,7 +729,10 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 	}
 
-	public int compareTo(TypedProperty arg0) 
+    /**
+     * Alphabetically sort dynamic properties
+     */
+	public int compareTo(TypedProperty arg0)
 	{
 		if (arg0 == null) throw new NullPointerException();
 		
@@ -709,7 +742,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		else
 		{
-			if (type instanceof PropertyType)
+			if (type instanceof PropertyType) //static property go by sort order
 			{
 				return ((PropertyType)type).getOrder() - ((PropertyType)arg0.type).getOrder();
 			}
