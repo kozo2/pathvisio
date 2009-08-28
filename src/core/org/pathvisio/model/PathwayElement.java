@@ -22,9 +22,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,41 +84,51 @@ import org.pathvisio.util.Utils;
 public class PathwayElement implements GraphIdContainer, Comparable<PathwayElement>
 {
 	//TreeMap has better performance than HashMap
-	//in the (common) case where no attributes are present
-	private Map<String, String> attributes = new TreeMap<String, String>();
-	
-	/**
-	 * Get a map of arbitrary key / value pairs
-	 * @deprecated should be private
-	 */
-	public Map<String, String> getAttributeMap() { return attributes; }
-	
-	/**
-	 * get a set of all dynamic property keys
-	 */
-	public Set<String> getDynamicPropertyKeys()
-	{
-		return attributes.keySet();
-	}
-	
-	/**
-	 * set a dynamic property.
-	 */
-	public void setDynamicProperty (String key, String value)
-	{
-		attributes.put (key, value);
-		fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this,
-				PathwayEvent.MODIFIED_GENERAL));
-	}
-	
-	/**
-	 * get a dynamic property
-	 */
-	public String getDynamicProperty (String key)
-	{
-		return attributes.get (key);
-	}
-	
+    //in the (common) case where no attributes are present
+    private Map<Property, Object> dynamicProperties = new TreeMap<Property, Object>();
+
+    /**
+     * Gets a set of all dynamic property keys
+     * XXX: SIGNATURE CHANGE! (Set<String> to List<Property>)
+     */
+    public List<Property> getDynamicPropertyKeys()
+    {
+        return PropertyManager.getObjectProperties(objectType).getProperties();
+    }
+
+    /**
+     * Sets the value of a dynamic property.
+     */
+    public void setDynamicProperty(Property prop, Object value) {
+        dynamicProperties.put(prop, value);
+        fireObjectModifiedEvent(new PathwayEvent(PathwayElement.this, PathwayEvent.MODIFIED_GENERAL));
+    }
+
+    /**
+     * Sets the value of a dynamic property.
+     * @deprecated use {@link #setDynamicProperty(Property, Object)} instead
+     */
+    public void setDynamicProperty (String key, String value)
+    {
+        setDynamicProperty(PropertyManager.getProperty(key), value);
+    }
+
+    /**
+     * Gets the value of a dynamic property.
+     */
+    public Object getDynamicProperty(Property prop) {
+        return dynamicProperties.get(prop);
+    }
+
+    /**
+     * Gets the value of a dynamic property.
+     * @deprecated use {@link #getDynamicProperty(Property)} instead
+     */
+    public String getDynamicProperty (String key)
+    {
+        return (String)getDynamicProperty(PropertyManager.getProperty(key));
+    }
+
 	/**
 	 * A comment in a pathway element: each 
 	 * element can have zero or more comments with it, and
@@ -457,8 +464,10 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		 */
 		public void linkTo(GraphIdContainer idc, double relX, double relY) {
 			String id = idc.getGraphId();
-			if(id == null) id = idc.setGeneratedGraphId();
-			setGraphRef(idc.getGraphId());
+			if (id == null) {
+                id = idc.setGeneratedGraphId();
+            }
+			setGraphRef(id);
 			setRelativePosition(relX, relY);
 		}
 		
@@ -573,7 +582,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	/**
 	 * default z order for newly created objects
 	 */
-	private static int getDefaultZOrder(ObjectType value)
+	private int getDefaultZOrder(ObjectType value)
 	{
 		switch (value)
 		{
@@ -741,615 +750,455 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		}
 	}
 
-	/**
-	 * Returns keys of available static properties and dynamic properties as an object list
-	 */
-	public Set<Object> getPropertyKeys()
-	{
-		Set<Object> keys = new HashSet<Object>();
-		keys.addAll(getStaticPropertyKeys());
-		keys.addAll(getDynamicPropertyKeys());
-		return keys;
-	}
-	
-	/**
-	 * get all attributes, also the advanced ones
-	 * @deprecated use getStaticPropertyKeys or preferably rewrite to use getPropertyKeys
-	 */
-	public List<PropertyType> getAttributes()
-	{
-		List<PropertyType> result = new ArrayList<PropertyType>();
-		result.addAll (getStaticPropertyKeys());
-		return result;
-	}
-	
-	/**
-	 * @deprecated PathwayElement doesn't distinguish between advanced / not advanced attributes anymore, 
-	 * that distinction is made at the UI level.
-	 */
-	public List<PropertyType> getAttributes(boolean fAdvanced)
-	{
-		List<PropertyType> result = new ArrayList<PropertyType>();
-		result.addAll (getStaticPropertyKeys());
-		return result;
-	}
 
-	private static final Map<ObjectType, Set<PropertyType>> ALLOWED_PROPS;
+    /**
+     * Returns keys of available static properties and dynamic properties as an object list
+     */
+    public Set<Object> getPropertyKeys()
+    {
+        // XXX: NOT USED, CAN REMOVE?
+        return null;
+    }
 
-	static {		
-		Set<PropertyType> propsCommon = EnumSet.of(
-				PropertyType.COMMENTS,
-				PropertyType.GRAPHID,
-				PropertyType.GROUPREF,
-				PropertyType.BIOPAXREF,
-				PropertyType.ZORDER
-			);
-		Set<PropertyType> propsCommonShape = EnumSet.of(
-				PropertyType.CENTERX,
-				PropertyType.CENTERY,
-				PropertyType.WIDTH,
-				PropertyType.HEIGHT,
-				PropertyType.COLOR
-			);
-		ALLOWED_PROPS = new EnumMap<ObjectType, Set<PropertyType>>(ObjectType.class);
-		{
-			Set<PropertyType> propsMappinfo = EnumSet.of (
-					PropertyType.COMMENTS,
-					PropertyType.MAPINFONAME,
-					PropertyType.ORGANISM,
-					PropertyType.MAPINFO_DATASOURCE,
-					PropertyType.VERSION,
-					PropertyType.AUTHOR,
-					PropertyType.MAINTAINED_BY,
-					PropertyType.EMAIL,
-					PropertyType.LAST_MODIFIED,
-					PropertyType.AVAILABILITY,
-					PropertyType.BOARDWIDTH,
-					PropertyType.BOARDHEIGHT,
-					PropertyType.WINDOWWIDTH,
-					PropertyType.WINDOWHEIGHT
-				);
-			ALLOWED_PROPS.put (ObjectType.MAPPINFO, propsMappinfo);
-		}
-		{
-			Set<PropertyType> propsState = EnumSet.of(
-					PropertyType.RELX,
-					PropertyType.RELY,
-					PropertyType.WIDTH,
-					PropertyType.HEIGHT,
-					PropertyType.COLOR,
-					PropertyType.FILLCOLOR,
-					PropertyType.TRANSPARENT,
-					PropertyType.TEXTLABEL,
-					PropertyType.MODIFICATIONTYPE,
-					PropertyType.LINESTYLE,
-					PropertyType.GRAPHREF
-				);
-			propsState.addAll (propsCommon);
-			ALLOWED_PROPS.put (ObjectType.STATE, propsState);
-		}
-		{			
-			Set<PropertyType> propsShape = EnumSet.of(
-					PropertyType.FILLCOLOR,
-					PropertyType.SHAPETYPE,
-					PropertyType.ROTATION,
-					PropertyType.TRANSPARENT,
-					PropertyType.LINESTYLE
-				);
-			propsShape.addAll (propsCommon);
-			propsShape.addAll (propsCommonShape);
-			ALLOWED_PROPS.put (ObjectType.SHAPE, propsShape);
-		}
-		{
-			Set<PropertyType> propsDatanode = EnumSet.of (
-					PropertyType.GENEID,
-					PropertyType.DATASOURCE,
-					PropertyType.TEXTLABEL,
-					// PropertyType.XREF,
-					PropertyType.BACKPAGEHEAD,
-					PropertyType.TYPE
-				);
-			propsDatanode.addAll (propsCommon);
-			propsDatanode.addAll (propsCommonShape);
-			ALLOWED_PROPS.put (ObjectType.DATANODE, propsDatanode);
-		}
-		{
-			Set<PropertyType> propsLine = EnumSet.of(
-					PropertyType.COLOR,
-					PropertyType.STARTX,
-					PropertyType.STARTY,
-					PropertyType.ENDX,
-					PropertyType.ENDY,
-					PropertyType.STARTLINETYPE,
-					PropertyType.ENDLINETYPE,
-					PropertyType.LINESTYLE,
-					PropertyType.STARTGRAPHREF,
-					PropertyType.ENDGRAPHREF
-				);
-			propsLine.addAll (propsCommon);
-			ALLOWED_PROPS.put (ObjectType.LINE, propsLine);
-		}
-		{
-			Set<PropertyType> propsLabel = EnumSet.of(
-					PropertyType.GENMAPP_XREF,
-					PropertyType.TEXTLABEL,
-					PropertyType.FONTNAME,
-					PropertyType.FONTWEIGHT,
-					PropertyType.FONTSTYLE,
-					PropertyType.FONTSIZE,
-					PropertyType.OUTLINE
-				);
-			propsLabel.addAll (propsCommon);
-			propsLabel.addAll (propsCommonShape);
-			ALLOWED_PROPS.put (ObjectType.LABEL, propsLabel);
-		}
-		{			
-			Set<PropertyType> propsGroup = EnumSet.of(						
-					PropertyType.GROUPID,
-					PropertyType.GROUPREF,
-					PropertyType.BIOPAXREF,
-					PropertyType.GROUPSTYLE,
-					PropertyType.TEXTLABEL,
-					PropertyType.COMMENTS,
-					PropertyType.ZORDER
-				);
-			ALLOWED_PROPS.put (ObjectType.GROUP, propsGroup);
-		}
-		{			
-			Set<PropertyType> propsInfobox = EnumSet.of(						
-					PropertyType.CENTERX,
-					PropertyType.CENTERY,
-					PropertyType.ZORDER
-				);
-			ALLOWED_PROPS.put (ObjectType.INFOBOX, propsInfobox);
-		}
-		{			
-			Set<PropertyType> propsLegend = EnumSet.of(						
-					PropertyType.CENTERX,
-					PropertyType.CENTERY,
-					PropertyType.ZORDER
-				);
-			ALLOWED_PROPS.put (ObjectType.LEGEND, propsLegend);
-		}
-		{
-			Set<PropertyType> propsBiopax = EnumSet.noneOf(PropertyType.class);
-			ALLOWED_PROPS.put(ObjectType.BIOPAX, propsBiopax);
-		}
-	};
-	
-	
-	
-	/**
-	 * get all attributes that are stored as static members.
-	 */
-	public Set<PropertyType> getStaticPropertyKeys()
-	{
-		return ALLOWED_PROPS.get (getObjectType());
-	}
-	
-	/**
-	 * Set dynamic or static properties at the same time
-	 * Will be replaced with setProperty in the future.
-	 */
-	public void setPropertyEx (Object key, Object value)
-	{
-		if (key instanceof PropertyType)
-		{
-			setStaticProperty((PropertyType)key, value);
-		}
-		else if (key instanceof String)
-		{
-			setDynamicProperty((String)key, value.toString());
-		}
-		else
-		{
-			throw new IllegalArgumentException();
-		}		
-	}
-	
-	public Object getPropertyEx (Object key)
-	{
-		if (key instanceof PropertyType)
-		{
-			return getStaticProperty((PropertyType)key);
-		}
-		else if (key instanceof String)
-		{
-			return getDynamicProperty ((String)key);
-		}
-		else
-		{
-			throw new IllegalArgumentException();
-		}
-	}
-	
-	/**
-	 * @deprecated use setStaticProperty
-	 */
-	public void setProperty(PropertyType key, Object value)
-	{
-	}
 
-	/**
-	 * This works so that o.setNotes(x) is the equivalent of
-	 * o.setProperty("Notes", x);
-	 * 
-	 * Value may be null in some cases, e.g. graphRef
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public void setStaticProperty(PropertyType key, Object value)
-	{
-		if (!getStaticPropertyKeys().contains(key)) 
-			throw new IllegalArgumentException("Property " + key.name() + " is not allowed for objects of type " + getObjectType());
-		switch (key)
-		{
-		case COMMENTS:
-			setComments((List<Comment>) value);
-			break;
-		case COLOR:
-			setColor((Color) value);
-			break;
+    /**
+     * Get all attributes that are stored as static members.
+     * XXX: SIGNATURE CHANGE!  (Set to List)
+     * XXX: WOULD BE GOOD TO REMOVE
+     */
+    public List<PropertyType> getStaticPropertyKeys()
+    {
+        return PropertyManager.getObjectProperties(objectType).getStaticProperties();
+    }
 
-		case CENTERX:
-			setMCenterX((Double) value);
-			break;
-		case CENTERY:
-			setMCenterY((Double) value);
-			break;
-		case WIDTH:
-			setMWidth((Double) value);
-			break;
-		case HEIGHT:
-			setMHeight((Double) value);
-			break;
+    /**
+     * Set dynamic or static properties at the same time
+     * Will be replaced with setProperty in the future.
+     */
+    public void setPropertyEx (Object key, Object value)
+    {
+        if (key instanceof PropertyType)
+        {
+            setStaticProperty((PropertyType)key, value);
+        }
+        else if (key instanceof Property)
+        {
+            setDynamicProperty((Property)key, value);
+        }
+        else if (key instanceof String)
+        {
+            setDynamicProperty((String)key, value.toString());
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
+    }
 
-		case FILLCOLOR:
-			setFillColor((Color) value);
-			break;
-		case SHAPETYPE:
-			if(value instanceof ShapeType)
-			{
-				setShapeType((ShapeType)value);
-			}
-			else
-			{
-				setShapeType(ShapeType.fromOrdinal ((Integer) value));
-			}
-			break;
-		case ROTATION:
-			setRotation((Double) value);
-			break;
+    public Object getPropertyEx (Object key)
+    {
+        if (key instanceof PropertyType)
+        {
+            return getStaticProperty((PropertyType)key);
+        }
+        else if (key instanceof Property) {
+            return getDynamicProperty((Property)key);
+        }
+        else if (key instanceof String)
+        {
+            return getDynamicProperty ((String)key);
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
+    }
 
-		case STARTX:
-			setMStartX((Double) value);
-			break;
-		case STARTY:
-			setMStartY((Double) value);
-			break;
-		case ENDX:
-			setMEndX((Double) value);
-			break;
-		case ENDY:
-			setMEndY((Double) value);
-			break;
-		case ENDLINETYPE:
-			if(value instanceof LineType)
-				setEndLineType((LineType)value);
-			else
-				setEndLineType(LineType.fromOrdinal ((Integer) value));
-			break;
-		case STARTLINETYPE:
-			if(value instanceof LineType)
-				setStartLineType((LineType)value);
-			else
-				setStartLineType(LineType.fromOrdinal ((Integer) value));
-			break;
-		case OUTLINE:
-			if(value instanceof OutlineType)
-				setOutline((OutlineType)value);
-			else
-				setOutline(OutlineType.values()[(Integer) value]);
-		    break;
-		case LINESTYLE:
-			setLineStyle((Integer) value);
-			break;
+    public void setProperty(Property prop, Object value)
+    {
+        setDynamicProperty(prop, value);
+    }
 
-		case ORIENTATION:
-			setOrientation((Integer) value);
-			break;
+    public void setProperty(PropertyType prop, Object value) {
+        setStaticProperty(prop, value);
+    }
 
-		case GENEID:
-			setGeneID((String) value);
-			break;
-		case DATASOURCE:
-			if (value instanceof DataSource)
-			{
-				setDataSource((DataSource) value);
-			}
-			else
-			{
-				setDataSource(DataSource.getByFullName((String)value));
-			}			
-			break;
-		case GENMAPP_XREF:
-			setGenMappXref((String) value);
-			break;
-		case BACKPAGEHEAD:
-			setBackpageHead((String) value);
-			break;
-		case TYPE:
-			setDataNodeType((String) value);
-			break;
 
-		case TEXTLABEL:
-			setTextLabel((String) value);
-			break;
-		case FONTNAME:
-			setFontName((String) value);
-			break;
-		case FONTWEIGHT:
-			setBold((Boolean) value);
-			break;
-		case FONTSTYLE:
-			setItalic((Boolean) value);
-			break;
-		case FONTSIZE:
-			setMFontSize((Double) value);
-			break;
-		case MAPINFONAME:
-			setMapInfoName((String) value);
-			break;
-		case ORGANISM:
-			setOrganism((String) value);
-			break;
-		case MAPINFO_DATASOURCE:
-			setMapInfoDataSource((String)value);
-			break;
-		case VERSION:
-			setVersion((String) value);
-			break;
-		case AUTHOR:
-			setAuthor((String) value);
-			break;
-		case MAINTAINED_BY:
-			setMaintainer((String) value);
-			break;
-		case EMAIL:
-			setEmail((String) value);
-			break;
-		case LAST_MODIFIED:
-			setLastModified((String) value);
-			break;
-		case AVAILABILITY:
-			setCopyright((String) value);
-			break;
-		case BOARDWIDTH:
-			//ignore, board width is calculated automatically
-			break;
-		case BOARDHEIGHT:
-			//ignore, board width is calculated automatically
-			break;
-		case WINDOWWIDTH:
-			setWindowWidth((Double) value);
-			break;
-		case WINDOWHEIGHT:
-			setWindowHeight((Double) value);
-			break;
+    /**
+     * This works so that o.setNotes(x) is the equivalent of
+     * o.setProperty("Notes", x);
+     *
+     * Value may be null in some cases, e.g. graphRef
+     * XXX: NEED TO UPDATE?
+     *
+     * @param key
+     * @param value
+     */
+    public void setStaticProperty(PropertyType key, Object value)
+    {
+        if (!getStaticPropertyKeys().contains(key))
+            throw new IllegalArgumentException("Property " + key.name() + " is not allowed for objects of type " + getObjectType());
+        switch (key)
+        {
+        case COMMENTS:
+            setComments((List<Comment>) value);
+            break;
+        case COLOR:
+            setColor((Color) value);
+            break;
 
-		case GRAPHID:
-			setGraphId((String) value);
-			break;
-		case STARTGRAPHREF:
-			setStartGraphRef((String) value);
-			break;
-		case ENDGRAPHREF:
-			setEndGraphRef((String) value);
-			break;
-		case GROUPID:
-			setGroupId((String) value);
-			break;
-		case GROUPREF:
-			setGroupRef((String) value);
-			break;
-		case TRANSPARENT:
-			setTransparent((Boolean) value);
-			break;
+        case CENTERX:
+            setMCenterX((Double) value);
+            break;
+        case CENTERY:
+            setMCenterY((Double) value);
+            break;
+        case WIDTH:
+            setMWidth((Double) value);
+            break;
+        case HEIGHT:
+            setMHeight((Double) value);
+            break;
 
-		case BIOPAXREF:
-			setBiopaxRefs((List<String>) value);
-			break;
-		case ZORDER:
-			setZOrder((Integer)value);
-			break;
-		case GROUPSTYLE:
-			if(value instanceof GroupStyle) {
-				setGroupStyle((GroupStyle)value);
-			} else {
-				setGroupStyle(GroupStyle.fromName((String)value));
-			}
-		}
-	}
+        case FILLCOLOR:
+            setFillColor((Color) value);
+            break;
+        case SHAPETYPE:
+            if(value instanceof ShapeType)
+            {
+                setShapeType((ShapeType)value);
+            }
+            else
+            {
+                setShapeType(ShapeType.fromOrdinal ((Integer) value));
+            }
+            break;
+        case ROTATION:
+            setRotation((Double) value);
+            break;
 
-	/**
-	 * @deprecated use getStaticProperty
-	 */
-	public Object getProperty(PropertyType x)
-	{
-		return getStaticProperty(x);
-	}
-	
-	public Object getStaticProperty(PropertyType key)
-	{
-		if (!getStaticPropertyKeys().contains(key)) 
-			throw new IllegalArgumentException("Property " + key.name() + " is not allowed for objects of type " + getObjectType());
-		Object result = null;
-		switch (key)
-		{
-		case COMMENTS:
-			result = getComments();
-			break;
-		case COLOR:
-			result = getColor();
-			break;
+        case STARTX:
+            setMStartX((Double) value);
+            break;
+        case STARTY:
+            setMStartY((Double) value);
+            break;
+        case ENDX:
+            setMEndX((Double) value);
+            break;
+        case ENDY:
+            setMEndY((Double) value);
+            break;
+        case ENDLINETYPE:
+            if(value instanceof LineType)
+                setEndLineType((LineType)value);
+            else
+                setEndLineType(LineType.fromOrdinal ((Integer) value));
+            break;
+        case STARTLINETYPE:
+            if(value instanceof LineType)
+                setStartLineType((LineType)value);
+            else
+                setStartLineType(LineType.fromOrdinal ((Integer) value));
+            break;
+        case OUTLINE:
+            if(value instanceof OutlineType)
+                setOutline((OutlineType)value);
+            else
+                setOutline(OutlineType.values()[(Integer) value]);
+            break;
+        case LINESTYLE:
+            setLineStyle((Integer) value);
+            break;
 
-		case CENTERX:
-			result = getMCenterX();
-			break;
-		case CENTERY:
-			result = getMCenterY();
-			break;
-		case WIDTH:
-			result = getMWidth();
-			break;
-		case HEIGHT:
-			result = getMHeight();
-			break;
+        case ORIENTATION:
+            setOrientation((Integer) value);
+            break;
 
-		case FILLCOLOR:
-			result = getFillColor();
-			break;
-		case SHAPETYPE:
-			result = getShapeType();
-			break;
-		case ROTATION:
-			result = getRotation();
-			break;
+        case GENEID:
+            setGeneID((String) value);
+            break;
+        case DATASOURCE:
+            if (value instanceof DataSource)
+            {
+                setDataSource((DataSource) value);
+            }
+            else
+            {
+                setDataSource(DataSource.getByFullName((String)value));
+            }
+            break;
+        case GENMAPP_XREF:
+            setGenMappXref((String) value);
+            break;
+        case BACKPAGEHEAD:
+            setBackpageHead((String) value);
+            break;
+        case TYPE:
+            setDataNodeType((String) value);
+            break;
 
-		case STARTX:
-			result = getMStartX();
-			break;
-		case STARTY:
-			result = getMStartY();
-			break;
-		case ENDX:
-			result = getMEndX();
-			break;
-		case ENDY:
-			result = getMEndY();
-			break;
-		case ENDLINETYPE:
-			result = getEndLineType();
-			break;
-		case STARTLINETYPE:
-			result = getStartLineType();
-			break;
-		case OUTLINE:
-			result = getOutline();
-			break;
-		case LINESTYLE:
-			result = getLineStyle();
-			break;
+        case TEXTLABEL:
+            setTextLabel((String) value);
+            break;
+        case FONTNAME:
+            setFontName((String) value);
+            break;
+        case FONTWEIGHT:
+            setBold((Boolean) value);
+            break;
+        case FONTSTYLE:
+            setItalic((Boolean) value);
+            break;
+        case FONTSIZE:
+            setMFontSize((Double) value);
+            break;
+        case MAPINFONAME:
+            setMapInfoName((String) value);
+            break;
+        case ORGANISM:
+            setOrganism((String) value);
+            break;
+        case MAPINFO_DATASOURCE:
+            setMapInfoDataSource((String)value);
+            break;
+        case VERSION:
+            setVersion((String) value);
+            break;
+        case AUTHOR:
+            setAuthor((String) value);
+            break;
+        case MAINTAINED_BY:
+            setMaintainer((String) value);
+            break;
+        case EMAIL:
+            setEmail((String) value);
+            break;
+        case LAST_MODIFIED:
+            setLastModified((String) value);
+            break;
+        case AVAILABILITY:
+            setCopyright((String) value);
+            break;
+        case BOARDWIDTH:
+            //ignore, board width is calculated automatically
+            break;
+        case BOARDHEIGHT:
+            //ignore, board width is calculated automatically
+            break;
+        case WINDOWWIDTH:
+            setWindowWidth((Double) value);
+            break;
+        case WINDOWHEIGHT:
+            setWindowHeight((Double) value);
+            break;
 
-		case ORIENTATION:
-			result = getOrientation();
-			break;
+        case GRAPHID:
+            setGraphId((String) value);
+            break;
+        case STARTGRAPHREF:
+            setStartGraphRef((String) value);
+            break;
+        case ENDGRAPHREF:
+            setEndGraphRef((String) value);
+            break;
+        case GROUPID:
+            setGroupId((String) value);
+            break;
+        case GROUPREF:
+            setGroupRef((String) value);
+            break;
+        case TRANSPARENT:
+            setTransparent((Boolean) value);
+            break;
 
-		case GENEID:
-			result = getGeneID();
-			break;
-		case DATASOURCE:
-			result = getDataSource();
-			break;
-		case GENMAPP_XREF:
-			result = getGenMappXref();
-			break;
-		case BACKPAGEHEAD:
-			result = getBackpageHead();
-			break;
-		case TYPE:
-			result = getDataNodeType();
-			break;
+        case BIOPAXREF:
+            setBiopaxRefs((List<String>) value);
+            break;
+        case ZORDER:
+            setZOrder((Integer)value);
+            break;
+        case GROUPSTYLE:
+            if(value instanceof GroupStyle) {
+                setGroupStyle((GroupStyle)value);
+            } else {
+                setGroupStyle(GroupStyle.fromName((String)value));
+            }
+        }
+    }
 
-		case TEXTLABEL:
-			result = getTextLabel();
-			break;
-		case FONTNAME:
-			result = getFontName();
-			break;
-		case FONTWEIGHT:
-			result = isBold();
-			break;
-		case FONTSTYLE:
-			result = isItalic();
-			break;
-		case FONTSIZE:
-			result = getMFontSize();
-			break;
 
-		case MAPINFONAME:
-			result = getMapInfoName();
-			break;
-		case ORGANISM:
-			result = getOrganism();
-			break;
-		case MAPINFO_DATASOURCE:
-			result = getMapInfoDataSource();
-			break;
-		case VERSION:
-			result = getVersion();
-			break;
-		case AUTHOR:
-			result = getAuthor();
-			break;
-		case MAINTAINED_BY:
-			result = getMaintainer();
-			break;
-		case EMAIL:
-			result = getEmail();
-			break;
-		case LAST_MODIFIED:
-			result = getLastModified();
-			break;
-		case AVAILABILITY:
-			result = getCopyright();
-			break;
-		case BOARDWIDTH:
-			result = getMBoardSize()[0];
-			break;
-		case BOARDHEIGHT:
-			result = getMBoardSize()[1];
-			break;
-		case WINDOWWIDTH:
-			result = getWindowWidth();
-			break;
-		case WINDOWHEIGHT:
-			result = getWindowHeight();
-			break;
+    // XXX: NEED TO UPDATE?
+    public Object getStaticProperty(PropertyType key)
+    {
+        if (!getStaticPropertyKeys().contains(key))
+            throw new IllegalArgumentException("Property " + key.name() + " is not allowed for objects of type " + getObjectType());
+        Object result = null;
+        switch (key)
+        {
+        case COMMENTS:
+            result = getComments();
+            break;
+        case COLOR:
+            result = getColor();
+            break;
 
-		case GRAPHID:
-			result = getGraphId();
-			break;
-		case STARTGRAPHREF:
-			result = getStartGraphRef();
-			break;
-		case ENDGRAPHREF:
-			result = getEndGraphRef();
-			break;
-		case GROUPID:
-			result = createGroupId();
-			break;
-		case GROUPREF:
-			result = getGroupRef();
-			break;
-		case TRANSPARENT:
-			result = isTransparent();
-			break;
+        case CENTERX:
+            result = getMCenterX();
+            break;
+        case CENTERY:
+            result = getMCenterY();
+            break;
+        case WIDTH:
+            result = getMWidth();
+            break;
+        case HEIGHT:
+            result = getMHeight();
+            break;
 
-		case BIOPAXREF:
-			result = getBiopaxRefs();
-			break;
-		case ZORDER:
-			result = getZOrder();
-			break;
-		case GROUPSTYLE:
-			result = getGroupStyle().toString();
-			break;
-		}
+        case FILLCOLOR:
+            result = getFillColor();
+            break;
+        case SHAPETYPE:
+            result = getShapeType();
+            break;
+        case ROTATION:
+            result = getRotation();
+            break;
 
-		return result;
-	}
+        case STARTX:
+            result = getMStartX();
+            break;
+        case STARTY:
+            result = getMStartY();
+            break;
+        case ENDX:
+            result = getMEndX();
+            break;
+        case ENDY:
+            result = getMEndY();
+            break;
+        case ENDLINETYPE:
+            result = getEndLineType();
+            break;
+        case STARTLINETYPE:
+            result = getStartLineType();
+            break;
+        case OUTLINE:
+            result = getOutline();
+            break;
+        case LINESTYLE:
+            result = getLineStyle();
+            break;
+
+        case ORIENTATION:
+            result = getOrientation();
+            break;
+
+        case GENEID:
+            result = getGeneID();
+            break;
+        case DATASOURCE:
+            result = getDataSource();
+            break;
+        case GENMAPP_XREF:
+            result = getGenMappXref();
+            break;
+        case BACKPAGEHEAD:
+            result = getBackpageHead();
+            break;
+        case TYPE:
+            result = getDataNodeType();
+            break;
+
+        case TEXTLABEL:
+            result = getTextLabel();
+            break;
+        case FONTNAME:
+            result = getFontName();
+            break;
+        case FONTWEIGHT:
+            result = isBold();
+            break;
+        case FONTSTYLE:
+            result = isItalic();
+            break;
+        case FONTSIZE:
+            result = getMFontSize();
+            break;
+
+        case MAPINFONAME:
+            result = getMapInfoName();
+            break;
+        case ORGANISM:
+            result = getOrganism();
+            break;
+        case MAPINFO_DATASOURCE:
+            result = getMapInfoDataSource();
+            break;
+        case VERSION:
+            result = getVersion();
+            break;
+        case AUTHOR:
+            result = getAuthor();
+            break;
+        case MAINTAINED_BY:
+            result = getMaintainer();
+            break;
+        case EMAIL:
+            result = getEmail();
+            break;
+        case LAST_MODIFIED:
+            result = getLastModified();
+            break;
+        case AVAILABILITY:
+            result = getCopyright();
+            break;
+        case BOARDWIDTH:
+            result = getMBoardSize()[0];
+            break;
+        case BOARDHEIGHT:
+            result = getMBoardSize()[1];
+            break;
+        case WINDOWWIDTH:
+            result = getWindowWidth();
+            break;
+        case WINDOWHEIGHT:
+            result = getWindowHeight();
+            break;
+
+        case GRAPHID:
+            result = getGraphId();
+            break;
+        case STARTGRAPHREF:
+            result = getStartGraphRef();
+            break;
+        case ENDGRAPHREF:
+            result = getEndGraphRef();
+            break;
+        case GROUPID:
+            result = createGroupId();
+            break;
+        case GROUPREF:
+            result = getGroupRef();
+            break;
+        case TRANSPARENT:
+            result = isTransparent();
+            break;
+
+        case BIOPAXREF:
+            result = getBiopaxRefs();
+            break;
+        case ZORDER:
+            result = getZOrder();
+            break;
+        case GROUPSTYLE:
+            result = getGroupStyle().toString();
+            break;
+        }
+
+        return result;
+    }
 
 	/**
 	 * Note: doesn't change parent, only fields
@@ -1360,7 +1209,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	 */
 	public void copyValuesFrom(PathwayElement src)
 	{
-		attributes = new TreeMap<String, String>(src.attributes); // create copy
+		dynamicProperties = new TreeMap<Property, Object>(src.dynamicProperties); // create copy
 		author = src.author;
 		copyright = src.copyright;
 		backpageHead = src.backpageHead;
@@ -1752,28 +1601,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			}
 		}
 		return null;
-	}
-
-	/** @deprecated */
-	protected String comment = "";
-
-	/** @deprecated */
-	public String getComment()
-	{
-		return comment;
-	}
-
-	/** @deprecated */
-	public void setComment(String v)
-	{
-		if (v == null)
-			throw new IllegalArgumentException();
-		if (!Utils.stringEquals(comment, v))
-		{
-			comment = v;
-			fireObjectModifiedEvent(new PathwayEvent(this,
-					PathwayEvent.MODIFIED_GENERAL));
-		}
 	}
 
 	protected String genmappxref = null;

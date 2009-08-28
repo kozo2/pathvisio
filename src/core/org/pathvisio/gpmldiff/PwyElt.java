@@ -18,7 +18,7 @@ package org.pathvisio.gpmldiff;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
@@ -32,7 +32,7 @@ class PwyElt
 	{
 		if (elt == null) return "null"; // TODO, why is this necessary?
 		String result = "[" + elt.getObjectType().getTag();
-		Set<PropertyType> props = elt.getStaticPropertyKeys();
+		Collection<PropertyType> props = elt.getStaticPropertyKeys();
 		if (props.contains(PropertyType.TEXTLABEL))
 			result += ",lbl=" + elt.getStaticProperty(PropertyType.TEXTLABEL);
 		if (props.contains(PropertyType.WIDTH))

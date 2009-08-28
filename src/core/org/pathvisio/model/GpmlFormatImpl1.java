@@ -741,11 +741,11 @@ public class GpmlFormatImpl1
 	{
 		if(e != null) 
 		{
-			for (String key : o.getDynamicPropertyKeys())
+			for (Property key : o.getDynamicPropertyKeys())
 			{
 				Element a = new Element ("Attribute", e.getNamespace());
-				setAttribute ("Attribute", "Key", a, key);				
-				setAttribute ("Attribute", "Value", a, o.getDynamicProperty(key));	
+				setAttribute ("Attribute", "Key", a, key.getName());
+				setAttribute ("Attribute", "Value", a, o.getDynamicProperty(key).toString());	
 				e.addContent (a);
 			}
 		}

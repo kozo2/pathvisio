@@ -19,9 +19,11 @@ package org.pathvisio.gui;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
+import org.pathvisio.model.Property;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.PreferenceManager;
 
@@ -74,12 +76,15 @@ public class VisibleProperties
 		}
 		
 		// add dynamic properties
+        // XXX: NEED TO TAKE MODES INTO ACCOUNT
+        List<Property> dynamicProperties = e.getDynamicPropertyKeys();
 		if (advanced)
 		{
-			result.addAll(e.getDynamicPropertyKeys());
+            // ???
 		}
-		
+        result.addAll(e.getDynamicPropertyKeys());
+
+
 		return result;
 	}
-
 }

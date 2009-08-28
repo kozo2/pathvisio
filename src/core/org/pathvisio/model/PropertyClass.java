@@ -43,4 +43,7 @@ public enum PropertyClass
 	BIOPAXREF,
 	COMMENTS,
 	GROUPSTYLETYPE,
+    MODE,
+    DICTIONARY,
+    ENUM
 }
