@@ -184,13 +184,26 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 
 		propertyTable = new JTable(model) {
 
-			public TableCellRenderer getCellRenderer(int row, int column) {
-				TableCellRenderer r = model.getCellRenderer(row, column);
-				return r == null ? super.getCellRenderer(row, column) : r;
+			public TableCellRenderer getCellRenderer(int row, int column){
+                TableCellRenderer r = null;
+                try{
+                    r = model.getCellRenderer(row, column);
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                    //TODO how to show error
+                }
+                return r == null ? super.getCellRenderer(row, column) : r;
 			}
 
 			public TableCellEditor getCellEditor(int row, int column) {
-				TableCellEditor e = model.getCellEditor(row, column);
+                TableCellEditor e = null;
+                try{
+                    e = model.getCellEditor(row, column);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    //TODO how to show error on UI?
+                }
 				return e == null ? super.getCellEditor(row, column) : e;
 			}
 		};

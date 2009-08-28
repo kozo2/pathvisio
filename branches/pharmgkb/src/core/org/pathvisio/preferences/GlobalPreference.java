@@ -35,6 +35,7 @@ import org.pathvisio.util.Utils;
 public enum GlobalPreference implements Preference 
 {
 	FILE_LOG(new File (getApplicationDir(), "PathVisio.log")),
+    FILE_PROPERTIES(new File("")),//getApplicationDir(), "custom-properties.xml"
 	WP_FILE_LOG(new File (getApplicationDir(), "WikiPathways.log")),
 	
 	COLOR_NO_CRIT_MET(new Color(180, 220, 180)),

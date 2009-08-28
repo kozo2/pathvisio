@@ -60,7 +60,7 @@
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="accessionId" name="Phenotype" type="STRING">
+        <property id="accessionId" name="Accession Id" type="STRING">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
@@ -83,7 +83,7 @@
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="path" name="path" type="STRING">
+        <property id="path" name="Path" type="STRING">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 

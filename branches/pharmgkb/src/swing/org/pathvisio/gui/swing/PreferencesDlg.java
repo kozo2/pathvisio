@@ -20,6 +20,10 @@ import javax.swing.JPanel;
 
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.PreferenceManager;
+import org.pathvisio.model.PropertyManager;
+import org.pathvisio.model.Property;
+
+import java.util.Set;
 
 /**
  * Global dialog for setting the user preferences.
@@ -76,7 +80,7 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 				"Enable double-buffering (pathway is drawn slower, but flickerless)");
 		
 		JPanel displayPanel = builder.getPanel();
-		
+
 		builder = createBuilder();
 		
 		builder.addColorField(
@@ -106,7 +110,11 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 		builder.addFileField(
 				GlobalPreference.FILE_LOG, 
 				"Log file:", false);
-		
+
+        builder.addFileField(
+                GlobalPreference.FILE_PROPERTIES,
+                "Custom Properties file:", false);
+
 		JPanel filePanel = builder.getPanel();;
 
 		builder = createBuilder();
@@ -132,11 +140,25 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 		
 		JPanel dbPanel = builder.getPanel();
 
+        //modes panel
+        builder = createBuilder();
+        //TODO this should be dynamic
+        Set<Property> modes = PropertyManager.getModes();
+        for (Property mode : modes){
+        builder.addBooleanField (
+                GlobalPreference.SHOW_ADVANCED_PROPERTIES,// TODO HOW TO DEAL with this
+                /*"Show advanced properties (e.g. references)"*/
+                mode.getName() + " mode");
+        }
+
+        JPanel mdPanel = builder.getPanel();
+
 		addPanel ("Display", displayPanel);
 		addPanel ("Display.Colors", colorPanel);
 		addPanel ("Directories", dirPanel);
 		addPanel ("Files", filePanel);
 		addPanel ("Database", dbPanel);
+        addPanel ("Display Modes", mdPanel);
 	}
 	
 }
