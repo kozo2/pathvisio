@@ -52,17 +52,13 @@ public class VisibleProperties
 	public static List<Object> getVisiblePropertyKeys (PathwayElement e)
 	{
 		List<Object> result = new ArrayList<Object>();
-		
-		boolean advanced = PreferenceManager.getCurrent().getBoolean(GlobalPreference.SHOW_ADVANCED_PROPERTIES);
-		
 		result.addAll (e.getStaticPropertyKeys());
-		
+		boolean advanced = PreferenceManager.getCurrent().getBoolean(GlobalPreference.SHOW_ADVANCED_PROPERTIES);
 		if (!advanced)
 		{
 			// filter out advanced properties
 			result.removeAll (
-					Arrays.asList(new Object[] { 
-							PropertyType.BOARDWIDTH,
+					Arrays.asList(PropertyType.BOARDWIDTH,
 							PropertyType.BOARDHEIGHT,
 							PropertyType.WINDOWWIDTH,
 							PropertyType.WINDOWHEIGHT,
@@ -73,19 +69,17 @@ public class VisibleProperties
 							PropertyType.GROUPREF,
 							PropertyType.STARTGRAPHREF,
 							PropertyType.ENDGRAPHREF,
-							PropertyType.ZORDER,
-					}));
+							PropertyType.ZORDER));
 		}
 		
 		// add dynamic properties
-        // XXX: NEED TO TAKE MODES INTO ACCOUNT
-        List<Property> dynamicProperties = e.getDynamicPropertyKeys();
-		if (!advanced) //for now, but will change once modes is added
-		{
-            List<Property> advProperties = e.getDynamicPropertyKeys(PropertyManager.getProperty("Advanced"));
-            result.removeAll(advProperties);
+		Set<Property> modes = new HashSet<Property>();
+		for (Property prop : PropertyManager.getModes()) {
+			if (PreferenceManager.getCurrent().getBoolean(prop)) {
+				modes.add(prop);
+			}
 		}
-        result.addAll(e.getDynamicPropertyKeys());
+        result.addAll(e.getDynamicPropertyKeys(modes));
 
 
 		return result;

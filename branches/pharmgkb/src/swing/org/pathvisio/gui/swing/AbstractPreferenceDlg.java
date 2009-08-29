@@ -48,11 +48,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.pathvisio.preferences.Preference;
 import org.pathvisio.preferences.PreferenceManager;
+import org.pathvisio.model.Property;
 
 /**
  * Global dialog for setting the user preferences.
@@ -112,14 +112,14 @@ abstract public class AbstractPreferenceDlg
 
 		private class BooleanFieldEditor implements ActionListener
 		{
-			private Preference p;
+			private Object p;
 			private JCheckBox cb;
 			
-			BooleanFieldEditor(Preference p, JCheckBox cb)
+			BooleanFieldEditor(Object p, JCheckBox cb)
 			{
 				this.p = p;
 				this.cb = cb;
-				cb.setSelected (prefs.getBoolean (p));
+				cb.setSelected(prefs.getBoolean(p));
 			}
 
 			public void actionPerformed(ActionEvent ae) 
@@ -128,8 +128,11 @@ abstract public class AbstractPreferenceDlg
 			}
 		}
 
-		void addBooleanField (Preference p, String desc)
+		void addBooleanField (Object p, String desc)
 		{
+			if (!(p instanceof Preference || p instanceof Property)) {
+				throw new IllegalArgumentException("Key must be a property or preference");
+			}
 			JCheckBox cb = new JCheckBox (desc);
 			BooleanFieldEditor editor = new BooleanFieldEditor (p, cb);
 			cb.addActionListener(editor);
@@ -380,7 +383,7 @@ abstract public class AbstractPreferenceDlg
 			public void valueChanged(TreeSelectionEvent e) 
 			{
 				TreePath tp = e.getPath();
-				String title = ((TreeNode)tp.getLastPathComponent()).toString();
+				String title = tp.getLastPathComponent().toString();
 				cards.show(pnlSettings, title);
 			}
 		});

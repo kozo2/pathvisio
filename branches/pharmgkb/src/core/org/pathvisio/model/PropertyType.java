@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Types for Static properties on {@link PathwayElement}
  */
-public enum PropertyType 
+public enum PropertyType
 {
 	// all
 	COMMENTS ("Comments", "Comments", PropertyClass.COMMENTS, 101),
@@ -71,7 +71,6 @@ public enum PropertyType
 	DATASOURCE ("SystemCode", "Database Name", PropertyClass.DATASOURCE, 123), 
 	GENMAPP_XREF ("Xref", "Xref", PropertyClass.STRING, 124), // deprecated, maintained for backward compatibility with GenMAPP. 
 	BACKPAGEHEAD ("BackpageHead", "Backpage head", PropertyClass.STRING, 125), 
-	TYPE ("Type", "Type", PropertyClass.GENETYPE, 126),
 		
 	MODIFICATIONTYPE ("ModificationType", "ModificationType", PropertyClass.STRING, 127),
 	
