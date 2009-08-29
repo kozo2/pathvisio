@@ -89,15 +89,31 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
     /**
      * Gets a set of all dynamic property keys
      * XXX: SIGNATURE CHANGE! (Set<String> to List<Property>)
+	 * @deprecated XXX: SHOULD DELETE
      */
     public List<Property> getDynamicPropertyKeys()
     {
-        return PropertyManager.getObjectProperties(objectType).getProperties();
+        return PropertyManager.getObjectProperties(objectType).getProperties(null);
     }
 
-    public List<Property> getDynamicPropertyKeys(Property mode)
+    public List<Property> getDynamicPropertyKeys(Set<Property> modes)
     {
-        return PropertyManager.getObjectProperties(objectType).getProperties(mode);
+		ObjectProperties objProps = PropertyManager.getObjectProperties(objectType);
+		List<Property> props = new ArrayList<Property>();
+		props.addAll(objProps.getProperties(modes));
+		Set<Property> subPropertyKeys = objProps.getSubPropertyKeys(modes);
+		if (subPropertyKeys != null) {
+			for (Property prop : subPropertyKeys) {
+				Object val = dynamicProperties.get(prop);
+				if (val != null) {
+					List<Property> subProps = objProps.getSubProperties(prop, val.toString());
+					if (subProps != null) {
+						props.addAll(subProps);
+					}
+				}
+			}
+		}
+        return props;
     }
 
     /**
@@ -789,13 +805,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         {
             setDynamicProperty((Property)key, value);
         }
-        else if (key instanceof String)
-        {
-            setDynamicProperty((String)key, value.toString());
-        }
         else
         {
-            throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Key must be a Property or PropertyType");
         }
     }
 
@@ -808,13 +820,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         else if (key instanceof Property) {
             return getDynamicProperty((Property)key);
         }
-        else if (key instanceof String)
-        {
-            return getDynamicProperty ((String)key);
-        }
         else
         {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Key must be a Property or PropertyType");
         }
     }
 
@@ -938,10 +946,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case BACKPAGEHEAD:
             setBackpageHead((String) value);
             break;
-        case TYPE:
-            setDataNodeType((String) value);
-            break;
-
         case TEXTLABEL:
             setTextLabel((String) value);
             break;
@@ -1111,10 +1115,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case BACKPAGEHEAD:
             result = getBackpageHead();
             break;
-/*        case TYPE:
-            result = getDataNodeType();
-            break;
-*/
         case TEXTLABEL:
             result = getTextLabel();
             break;

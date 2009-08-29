@@ -16,7 +16,10 @@
 //
 package org.pathvisio.gui.swing.propertypanel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -51,7 +54,6 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 
 	private JTable table;
 	final private Collection<PathwayElement> input;
-//	final private Map<Object, TypedProperty> propertyValues;
 	final private List<TypedProperty> propertyValues;
 	final private List<TypedProperty> shownProperties;
 	
@@ -59,8 +61,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 	
 	public PathwayTableModel(SwingEngine swingEngine) {
 		input = new HashSet<PathwayElement>();
-		//propertyValues = new HashMap<Object, TypedProperty>();
-        propertyValues = new ArrayList<TypedProperty>(); //sorted map
+        propertyValues = new ArrayList<TypedProperty>();
 		shownProperties = new ArrayList<TypedProperty>();
 		this.swingEngine = swingEngine;
 		swingEngine.getEngine().addApplicationEventListener(this);
@@ -222,7 +223,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		}		
 	}
 
-	public TableCellRenderer getCellRenderer(int row, int column) throws Exception{
+	public TableCellRenderer getCellRenderer(int row, int column) {
 		if(column != 0) {
 			TypedProperty tp = getPropertyAt(row);
 			if(tp != null) return tp.getCellRenderer();
@@ -230,7 +231,7 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 		return null;
 	}
 
-	public TableCellEditor getCellEditor(int row, int column) throws Exception{
+	public TableCellEditor getCellEditor(int row, int column) {
 		if(column != 0) {
 			TypedProperty tp = getPropertyAt(row);
 			if(tp != null) return tp.getCellEditor(swingEngine);

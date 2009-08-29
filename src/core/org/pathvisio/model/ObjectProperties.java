@@ -54,22 +54,20 @@ public class ObjectProperties {
     }
 
 
-    public List<Property> getProperties() {
-        return properties;
-    }
-
     /**
-     * returns all properties with a given mode
-     * @param mode
-     * @return
+     * Returns all properties that are visible in specified modes.  All properties are visible if modes is null or
+	 * empty.
      */
-    public List<Property> getProperties(Property mode) {
-        List<Property> props = new ArrayList<Property>();
-        for (Property p: properties){
-            if (p.getModes().contains(mode)){
-                props.add(p);
-            }
-        }
+    public List<Property> getProperties(Set<Property> modes) {
+		if (modes == null || modes.isEmpty()) {
+			return properties;
+		}
+		List<Property> props = new ArrayList<Property>();
+		for (Property p: properties){
+			if (p.getModes() == null || p.getModes().size() > 0 || !Collections.disjoint(p.getModes(), modes)) {
+				props.add(p);
+			}
+		}
         return props;
     }
 
@@ -145,9 +143,21 @@ public class ObjectProperties {
     }
 
 
-    public Set<Property> getSubPropertyKeys() {
-        return subPropertiesMap.keySet();
-    }
+	public Set<Property> getSubPropertyKeys(Set<Property> modes) {
+		if (subPropertiesMap == null || subPropertiesMap.isEmpty()) {
+			return null;
+		}
+		if (modes != null && modes.size() > 0) {
+			return subPropertiesMap.keySet();
+		}
+		Set<Property> props = new HashSet<Property>();
+		for (Property p: subPropertiesMap.keySet()){
+			if (p.getModes() == null || p.getModes().size() > 0 || !Collections.disjoint(p.getModes(), modes)) {
+				props.add(p);
+			}
+		}
+        return props;
+	}
 
     public List<Property> getSubProperties(Property prop, String value) {
         return subPropertiesMap.get(prop).get(value);

@@ -180,7 +180,7 @@ public class TestPropertyManager extends TestCase {
       private void printObjProps(ObjectProperties objProp){
           System.out.println("=================================");
           System.out.println("obj: " + objProp.getId() + " " + objProp.getName() + objProp.getType());
-          List<Property> prop = objProp.getProperties();
+          List<Property> prop = objProp.getProperties(null);
           System.out.println("properties");
           for (Property p : prop){
               System.out.println(" " + p.getId());

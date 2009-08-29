@@ -182,7 +182,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	/**
 	 * Returns a TableCellRenderer suitable for rendering this property
 	 */
-	public TableCellRenderer getCellRenderer() throws Exception
+	public TableCellRenderer getCellRenderer()
 	{
 		if(hasDifferentValues()) {
             return differentRenderer;
@@ -247,7 +247,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
                 case DICTIONARY:
                     return null;
                 case MODE:
-                    throw new Exception ("Requesting a renderer for MODE");
+                    throw new RuntimeException("Requesting a renderer for MODE");
             }
         }
         return null;
@@ -258,7 +258,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	 *
 	 * @param swingEngine: the comments editor requires a connection to swingEngine, so you need to pass it here.
 	 */
-	public TableCellEditor getCellEditor(SwingEngine swingEngine) throws Exception{
+	public TableCellEditor getCellEditor(SwingEngine swingEngine) {
 
         PropertyClass propClass = null;
 		if (type instanceof PropertyType) {
@@ -337,7 +337,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
                 case DICTIONARY:
                     return null;
                 case MODE:
-                    throw new Exception ("Requesting editor for MODE");
+                    throw new RuntimeException("Requesting editor for MODE");
                 default:
                     return null;
             }
@@ -349,10 +349,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	 * Return the first of the set of PathwayElement's
 	 */
 	private PathwayElement getFirstElement() {
-		PathwayElement first;
-		//TODO: weird way of getting first element?
-		for(first = (PathwayElement)elements.iterator().next();;) break;
-		return first;
+		return elements.iterator().next();
 	}
 	
 	private static class DoubleEditor extends DefaultCellEditor {
@@ -361,7 +358,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Double d = new Double(0.0);
+			Double d = 0.0;
 			try {
 				d = Double.parseDouble(value);
 			} catch(Exception e) {
@@ -378,7 +375,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Integer i = new Integer(0);
+			Integer i = 0;
 			try {
 				i = Integer.parseInt(value);
 			} catch(Exception e) {
@@ -395,7 +392,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 		public Object getCellEditorValue() {
 			String value = ((JTextField)getComponent()).getText();
-			Double d = new Double(0.0);
+			Double d = 0.0;
 			try {
 				d = Double.parseDouble(value) * Math.PI / 180;
 			} catch(Exception e) {
@@ -586,8 +583,6 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	private static FontRenderer fontRenderer = new FontRenderer();
 	private static ComboRenderer shapeTypeRenderer = new ComboRenderer(ShapeType.getNames(), ShapeType.getValues());
 	private static ComboRenderer outlineTypeRenderer = new ComboRenderer(OutlineType.getTags(), OutlineType.values());
-	//private static ComboRenderer datanodeTypeRenderer = new ComboRenderer(DataNodeType.getNames());
-
 	private static ColorEditor colorEditor = new ColorEditor();
 	private static ComboEditor lineTypeEditor = new ComboEditor(LineType.getNames(), LineType.getValues());
 	private static ComboEditor lineStyleEditor = new ComboEditor(LineStyle.getNames(), true);
@@ -610,8 +605,6 @@ public class TypedProperty implements Comparable<TypedProperty> {
 			super.setValue( (Double)(value) * 180.0 / Math.PI );
 		}
 	};
-	
-	//private static ComboEditor datanodeTypeEditor = new ComboEditor(DataNodeType.getNames(), false);
 	
 	private static DefaultTableCellRenderer doubleRenderer = new DefaultTableCellRenderer() {
 
