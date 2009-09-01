@@ -55,20 +55,11 @@ public class ObjectProperties {
 
 
     /**
-     * Returns all properties that are visible in specified modes.  All properties are visible if modes is null or
-	 * empty.
+     * Returns all properties that are visible in specified modes.
      */
     public List<Property> getProperties(Set<Property> modes) {
-		if (modes == null || modes.isEmpty()) {
-			return properties;
-		}
-		List<Property> props = new ArrayList<Property>();
-		for (Property p: properties){
-			if (p.getModes() == null || p.getModes().size() > 0 || !Collections.disjoint(p.getModes(), modes)) {
-				props.add(p);
-			}
-		}
-        return props;
+
+		return filterProperties(properties, modes);
     }
 
     public void addProperty(Property prop) {
@@ -143,20 +134,24 @@ public class ObjectProperties {
     }
 
 
-	public Set<Property> getSubPropertyKeys(Set<Property> modes) {
+	public List<Property> getSubPropertyKeys(Set<Property> modes) {
 		if (subPropertiesMap == null || subPropertiesMap.isEmpty()) {
 			return null;
 		}
-		if (modes != null && modes.size() > 0) {
-			return subPropertiesMap.keySet();
-		}
-		Set<Property> props = new HashSet<Property>();
-		for (Property p: subPropertiesMap.keySet()){
-			if (p.getModes() == null || p.getModes().size() > 0 || !Collections.disjoint(p.getModes(), modes)) {
+        return filterProperties(subPropertiesMap.keySet(), modes);
+	}
+
+	private List<Property> filterProperties(Collection<Property> allProps, Set<Property> modes) {
+
+		List<Property> props = new ArrayList<Property>();
+		for (Property p: allProps){
+			if (p.getModes() == null || p.getModes().isEmpty()) {
+				props.add(p);
+			} else if (!modes.isEmpty() && !Collections.disjoint(p.getModes(), modes)) {
 				props.add(p);
 			}
 		}
-        return props;
+		return props;
 	}
 
     public List<Property> getSubProperties(Property prop, String value) {

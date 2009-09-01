@@ -101,7 +101,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		ObjectProperties objProps = PropertyManager.getObjectProperties(objectType);
 		List<Property> props = new ArrayList<Property>();
 		props.addAll(objProps.getProperties(modes));
-		Set<Property> subPropertyKeys = objProps.getSubPropertyKeys(modes);
+		List<Property> subPropertyKeys = objProps.getSubPropertyKeys(modes);
 		if (subPropertyKeys != null) {
 			for (Property prop : subPropertyKeys) {
 				Object val = dynamicProperties.get(prop);
