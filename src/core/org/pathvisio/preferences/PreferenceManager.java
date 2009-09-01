@@ -26,6 +26,8 @@ import java.util.Properties;
 
 import org.pathvisio.debug.Logger;
 import org.pathvisio.util.ColorConverter;
+import org.pathvisio.util.Utils;
+import org.pathvisio.model.Property;
 
 /**
  * Loads & saves application preferences
@@ -74,7 +76,7 @@ public class PreferenceManager
 		}
 		catch (IOException e)
 		{
-			Logger.log.error ("Could not read properties", e);
+			Logger.log.warn ("Could not read properties", e);
 		}
 		dirty = false;
 	}
@@ -96,34 +98,41 @@ public class PreferenceManager
 	/**
 	 * Get a preference as String
 	 */
-	public String get (Preference p)
-	{
-		String key = p.name();
-		if (properties.containsKey(key))
-		{
-			return properties.getProperty(key);
-		}
-		else
-		{
-			return p.getDefault();
+	public String get(Object p) {
+		if (p instanceof Preference) {
+			String key = ((Preference)p).name();
+			if (properties.containsKey(key))
+			{
+				return properties.getProperty(key);
+			}
+			else
+			{
+				return ((Preference)p).getDefault();
+			}
+		} else if (p instanceof Property) {
+			return properties.getProperty(((Property)p).getId());
+		} else {
+			throw new IllegalArgumentException("Key must be a property or preference");
 		}
 	}
-	
-	public void set (Preference p, String newVal)
+
+	public void set (Object p, String newVal)
 	{
-		String oldVal = properties.getProperty(p.name());
-		
-		if (oldVal == null ? newVal == null : oldVal.equals (newVal))
-		{
-			// newVal is equal to oldVal, do nothing
+		String key;
+		if (p instanceof Preference) {
+			key = ((Preference)p).name();
+		} else if (p instanceof Property) {
+			key = ((Property)p).getId();
+		} else {
+			throw new IllegalArgumentException("Key must be a property or preference");
 		}
-		else
-		{
-			properties.setProperty(p.name(), newVal);
+		String oldVal = properties.getProperty(key);
+		if (!Utils.stringEquals(oldVal, newVal)) {
+			properties.setProperty(key, newVal);
 			dirty = true;
 		}
 	}
-	
+
 	public int getInt (Preference p)
 	{
 		return Integer.parseInt (get(p));
@@ -154,16 +163,22 @@ public class PreferenceManager
 		set (p, ColorConverter.getRgbString(c));
 	}
 	
-	public void setBoolean (Preference p, Boolean val)
+	public void setBoolean (Object p, Boolean val)
 	{
+		if (!(p instanceof Preference || p instanceof Property)) {
+			throw new IllegalArgumentException("Key must be a property or preference");
+		}
 		set (p, "" + val);
 	}
-	
-	public boolean getBoolean (Preference p)
+
+	public boolean getBoolean (Object p)
 	{
-		return (get(p).equals (""  + true));
+		if (!(p instanceof Preference || p instanceof Property)) {
+			throw new IllegalArgumentException("Key must be a property or preference");
+		}
+		return Boolean.parseBoolean(get(p));
 	}
-	
+
 	/**
 	 * Returns true if the current value of Preference p equals the default value.
 	 */
