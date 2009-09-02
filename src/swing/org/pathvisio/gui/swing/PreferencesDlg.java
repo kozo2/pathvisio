@@ -62,9 +62,6 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 				GlobalPreference.MIM_SUPPORT,
 				"Load support for molecular interaction maps (MIM) at program start");
 		builder.addBooleanField (
-				GlobalPreference.SHOW_ADVANCED_PROPERTIES,									   
-				"Show advanced properties (e.g. references)");
-		builder.addBooleanField (
 				GlobalPreference.USE_SYSTEM_LOOK_AND_FEEL,									   
 				"Use Java System look-and-feel at program start");
 		builder.addBooleanField(
@@ -131,6 +128,11 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 
         // config modes panel
         builder = createBuilder();
+
+		builder.addBooleanField ( // NOTE: advanced mode only applies to static properties
+				GlobalPreference.SHOW_ADVANCED_PROPERTIES,
+				"Show advanced properties (e.g. references)");
+
         for (Property mode : PropertyManager.getModes()) {
 			builder.addBooleanField(mode, mode.getName() + " mode");
 		}
