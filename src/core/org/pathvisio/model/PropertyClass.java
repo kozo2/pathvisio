@@ -34,7 +34,6 @@ public enum PropertyClass
 	SHAPETYPE,
 	LINETYPE,
 	OUTLINETYPE,
-	GENETYPE,
 	FONT,
 	ANGLE,
 	ORGANISM,

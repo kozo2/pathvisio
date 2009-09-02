@@ -234,8 +234,6 @@ public class TypedProperty implements Comparable<TypedProperty> {
                     return shapeTypeRenderer;
                 case OUTLINETYPE:
                     return outlineTypeRenderer;
-                /*case GENETYPE:
-                    return datanodeTypeRenderer;*/
                 case ENUM:
                     List<PropertyEnum> values = ((Property)type).getValues();
                     String[] enumValues = new String[values.size()];
@@ -322,8 +320,6 @@ public class TypedProperty implements Comparable<TypedProperty> {
                     return commentsEditor;
                 case OUTLINETYPE:
                     return outlineTypeEditor;
-                /*case GENETYPE:
-                    return datanodeTypeEditor;*/
                 case GROUPSTYLETYPE:
                     return groupStyleEditor;
                 case ENUM:
