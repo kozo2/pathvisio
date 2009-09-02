@@ -52,6 +52,15 @@ public class VisibleProperties
 	public static List<Object> getVisiblePropertyKeys (PathwayElement e)
 	{
 		List<Object> result = new ArrayList<Object>();
+		// add dynamic properties
+		Set<Property> modes = new HashSet<Property>();
+		for (Property prop : PropertyManager.getModes()) {
+			if (PreferenceManager.getCurrent().getBoolean(prop)) {
+				modes.add(prop);
+			}
+		}
+        result.addAll(e.getDynamicPropertyKeys(modes));
+
 		result.addAll (e.getStaticPropertyKeys());
 		boolean advanced = PreferenceManager.getCurrent().getBoolean(GlobalPreference.SHOW_ADVANCED_PROPERTIES);
 		if (!advanced)
@@ -72,16 +81,6 @@ public class VisibleProperties
 							PropertyType.ZORDER));
 		}
 		
-		// add dynamic properties
-		Set<Property> modes = new HashSet<Property>();
-		for (Property prop : PropertyManager.getModes()) {
-			if (PreferenceManager.getCurrent().getBoolean(prop)) {
-				modes.add(prop);
-			}
-		}
-        result.addAll(e.getDynamicPropertyKeys(modes));
-
-
 		return result;
 	}
 

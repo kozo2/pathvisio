@@ -5,7 +5,6 @@
         <mode id="biopax" name="BioPAX"/>
         <mode id="mim" name="MIM"/>
         <mode id="pharmgkb" name="PharmGKB"/>
-        <mode id="adv" name="Advanced"/>
     </modes>
 
     <properties>
