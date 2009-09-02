@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
+import org.pathvisio.model.Property;
 
 /**
    Utility class for pathway element methods related to gpmldiff.
@@ -74,6 +75,11 @@ class PwyElt
 			String attr = prop.tag();
 			String val = "" + elt.getStaticProperty (prop);
 			result.put (attr, val);
+		}
+		for (Property p: elt.getDynamicPropertyKeys(null)){ //passing in null to get all
+			String attr = p.getId();
+			String val = ""+elt.getDynamicProperty(p);
+			result.put(attr, val);
 		}
 		return result;
 	}

@@ -34,6 +34,8 @@ import org.pathvisio.model.GpmlFormat;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
 import org.pathvisio.model.ShapeType;
+import org.pathvisio.model.PropertyManager;
+import org.pathvisio.model.Property;
 
 /**
  * A patch contains a series of deletions, insertions and modifications
@@ -80,9 +82,15 @@ class Patch
 				case DB_ID:
 					result.setStaticProperty(pt, ch.newValue);
 					break;
-				case GENETYPE:
-					result.setStaticProperty(pt, ch.newValue);
+				case ENUM:
+					Property prop = PropertyManager.getProperty(ch.attr);
+					result.setDynamicProperty(prop, ch.newValue);
 					break;
+				case DICTIONARY: //TODO XXX
+					break;
+				/*case GENETYPE: 
+					result.setStaticProperty(pt, ch.newValue);
+					break;*/
 				default:
 					Logger.log.error (ch.attr + " of type " + pt.type() + " not supported");
 					assert (false);
