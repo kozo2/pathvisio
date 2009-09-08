@@ -34,6 +34,7 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PathwayElementListener;
 import org.pathvisio.model.PathwayEvent;
 import org.pathvisio.model.PropertyType;
+import org.pathvisio.model.Property;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.view.SelectionBox.SelectionEvent;
 import org.pathvisio.view.SelectionBox.SelectionListener;
@@ -48,7 +49,7 @@ import org.pathvisio.view.VPathway;
  * PathwayElements. If many are selected, the subset of shared Properties
  * is used as row set. 
  */
-public class PathwayTableModel extends AbstractTableModel implements SelectionListener, 
+public class PathwayTableModel extends AbstractTableModel implements SelectionListener,
 									PathwayElementListener, 
 									ApplicationEventListener {
 
@@ -224,9 +225,15 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 	}
 
 	public TableCellRenderer getCellRenderer(int row, int column) {
-		if(column != 0) {
-			TypedProperty tp = getPropertyAt(row);
-			if(tp != null) return tp.getCellRenderer();
+		TypedProperty tp = getPropertyAt(row);
+		if (tp != null) {
+			if (column == 0) {
+				if (tp.getType() instanceof Property) {
+					return tp.getDynamicPropertyLabelRenderer();
+				}
+			} else {
+				return tp.getCellRenderer();
+			}
 		}
 		return null;
 	}
