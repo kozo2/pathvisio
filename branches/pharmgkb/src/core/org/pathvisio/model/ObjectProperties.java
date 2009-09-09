@@ -141,7 +141,7 @@ public class ObjectProperties {
         return filterProperties(subPropertiesMap.keySet(), modes);
 	}
 
-	private List<Property> filterProperties(Collection<Property> allProps, Set<Property> modes) {
+	public List<Property> filterProperties(Collection<Property> allProps, Set<Property> modes) {
 
 		List<Property> props = new ArrayList<Property>();
 		for (Property p: allProps){
