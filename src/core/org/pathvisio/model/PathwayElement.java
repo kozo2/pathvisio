@@ -108,7 +108,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 				if (val != null) {
 					List<Property> subProps = objProps.getSubProperties(prop, val.toString());
 					if (subProps != null) {
-						props.addAll(subProps);
+						props.addAll(objProps.filterProperties(subProps, modes));
 					}
 				}
 			}
