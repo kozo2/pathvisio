@@ -16,7 +16,15 @@
 //
 package org.pathvisio.model;
 
-import java.awt.Color;
+import org.bridgedb.DataSource;
+import org.bridgedb.Xref;
+import org.jdom.Document;
+import org.pathvisio.biopax.BiopaxReferenceManager;
+import org.pathvisio.model.GraphLink.GraphIdContainer;
+import org.pathvisio.model.GraphLink.GraphRefContainer;
+import org.pathvisio.util.Utils;
+
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -26,14 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.bridgedb.DataSource;
-import org.bridgedb.Xref;
-import org.jdom.Document;
-import org.pathvisio.biopax.BiopaxReferenceManager;
-import org.pathvisio.model.GraphLink.GraphIdContainer;
-import org.pathvisio.model.GraphLink.GraphRefContainer;
-import org.pathvisio.util.Utils;
 
 /**
  * PathwayElement is responsible for maintaining the data for all the individual
@@ -96,7 +96,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         return PropertyManager.getObjectProperties(objectType).getProperties(null);
     }
 
-    public List<Property> getDynamicPropertyKeys(Set<Property> modes)
+    public List<Property> getDynamicPropertyKeys(List<Property> modes)
     {
 		ObjectProperties objProps = PropertyManager.getObjectProperties(objectType);
 		List<Property> props = new ArrayList<Property>();
