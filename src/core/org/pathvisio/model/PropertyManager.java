@@ -41,7 +41,7 @@ public class PropertyManager {
     private static final Map<String, List<PropertyType>> STATIC_PROPERTY_LIST_MAP =
             new HashMap<String, List<PropertyType>>();
     private static final Map<String, String> STATIC_PROPERTY_LIST_NAMES = new HashMap<String, String>();
-    private static final Set<Property> MODES = new HashSet<Property>();
+    private static final List<Property> MODES = new ArrayList<Property>();
 
 
     /**
@@ -319,7 +319,7 @@ public class PropertyManager {
     /**
      * Gets all modes.
      */
-    public static Set<Property> getModes() {
+    public static List<Property> getModes() {
         return MODES;
     }
 }

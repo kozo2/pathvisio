@@ -53,7 +53,7 @@ public class VisibleProperties
 	{
 		List<Object> result = new ArrayList<Object>();
 		// add dynamic properties
-		Set<Property> modes = new HashSet<Property>();
+		List<Property> modes = new ArrayList<Property>();
 		for (Property prop : PropertyManager.getModes()) {
 			if (PreferenceManager.getCurrent().getBoolean(prop)) {
 				modes.add(prop);

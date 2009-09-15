@@ -27,6 +27,8 @@ import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.gui.swing.panels.CommentPanel;
 import org.pathvisio.gui.swing.panels.LitReferencePanel;
 import org.pathvisio.gui.swing.panels.PathwayElementPanel;
+import org.pathvisio.gui.swing.panels.DictValuesPanel;
+import org.pathvisio.gui.swing.panels.DictFilePanel;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.PropertyType;
@@ -40,9 +42,14 @@ import org.pathvisio.view.VPathway;
  */
 public class PathwayElementDialog extends OkCancelDialog {
 
+	public static final int COMMENTS = 0;
 	public static final String TAB_COMMENTS = "Comments";
 	public static final String TAB_LITERATURE = "Literature";
-	
+
+	public static final int DICTIONARY = 1;
+	public static final String TAB_VALUES = "Dictionary Values";
+	public static final String TAB_FILE = "Dictionary File";
+
 	/**
 	 * Create a dialog for the given pathway element.
 	 * @param e The pathway element
@@ -51,18 +58,25 @@ public class PathwayElementDialog extends OkCancelDialog {
 	 * type attribute of the given PathwayElement, e.g. type DATANODE returns a DataNodeDialog
 	 */
 	public static PathwayElementDialog getInstance(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, Component locationComp) {
+		return getInstance(swingEngine, e, readonly, frame, locationComp, COMMENTS);
+	}
+
+	public static PathwayElementDialog getInstance(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, Component locationComp, int tabGroupType) {
 		switch(e.getObjectType()) {
 		case LABEL:
 			return new LabelDialog(swingEngine, e, readonly, frame, locationComp);
 		case DATANODE:
 			return new DataNodeDialog(swingEngine, e, readonly, frame, locationComp);
 		case INFOBOX:
-			return new PathwayElementDialog(swingEngine, e.getParent().getMappInfo(), readonly, frame, "Pathway properties", locationComp);
+			return new PathwayElementDialog(swingEngine, e.getParent().getMappInfo(), readonly, frame, "Pathway properties", locationComp, tabGroupType);
 		default:
-			return new PathwayElementDialog(swingEngine, e, readonly, frame, "Element properties", locationComp);
+			return new PathwayElementDialog(swingEngine, e, readonly, frame, "Element properties", locationComp, tabGroupType);
 		}
 	}
-	
+
+	private int tabGroupType = 0;
+
+
 	PathwayElement input;
 	private JTabbedPane dialogPane;
 	private Map<String, PathwayElementPanel> panels;
@@ -71,9 +85,19 @@ public class PathwayElementDialog extends OkCancelDialog {
 		
 	protected boolean readonly;
 	protected SwingEngine swingEngine;
-	
+
 	protected PathwayElementDialog(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, String title, Component locationComp) {
 		super(frame, title, locationComp, true);
+		init(swingEngine, e, readonly, COMMENTS);	
+	}
+
+	protected PathwayElementDialog(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, String title, Component locationComp, int tabGroupType) {
+		super(frame, title, locationComp, true);
+		init(swingEngine, e, readonly, tabGroupType);
+	}
+
+	private void init(SwingEngine swingEngine, PathwayElement e, boolean readonly, int tabGroupType){
+		this.tabGroupType = tabGroupType;
 		this.readonly = readonly;
 		this.swingEngine = swingEngine;
 		setDialogComponent(createDialogPane());
@@ -140,8 +164,13 @@ public class PathwayElementDialog extends OkCancelDialog {
 	}
 	
 	private void createTabs() {
-		addPathwayElementPanel(TAB_COMMENTS, new CommentPanel());
-		addPathwayElementPanel(TAB_LITERATURE, new LitReferencePanel(swingEngine));
+		if (tabGroupType == COMMENTS){
+			addPathwayElementPanel(TAB_COMMENTS, new CommentPanel());
+			addPathwayElementPanel(TAB_LITERATURE, new LitReferencePanel(swingEngine));
+		}else if (tabGroupType == DICTIONARY){
+			addPathwayElementPanel(TAB_VALUES, new DictValuesPanel(swingEngine));
+			addPathwayElementPanel(TAB_FILE, new DictFilePanel());
+		}
 		addCustomTabs(dialogPane);
 	}
 	

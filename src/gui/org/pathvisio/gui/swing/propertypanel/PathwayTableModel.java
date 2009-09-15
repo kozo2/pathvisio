@@ -20,8 +20,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import javax.swing.JTable;
+import javax.swing.*;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -51,7 +54,7 @@ import org.pathvisio.view.VPathway;
  */
 public class PathwayTableModel extends AbstractTableModel implements SelectionListener,
 									PathwayElementListener, 
-									ApplicationEventListener {
+									ApplicationEventListener, CellEditorListener {
 
 	private JTable table;
 	final private Collection<PathwayElement> input;
@@ -241,7 +244,13 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 	public TableCellEditor getCellEditor(int row, int column) {
 		if(column != 0) {
 			TypedProperty tp = getPropertyAt(row);
-			if(tp != null) return tp.getCellEditor(swingEngine);
+			if(tp != null) {
+				TableCellEditor editor = tp.getCellEditor(swingEngine);
+				if (tp.getType() instanceof Property && ((Property)tp.getType()).isSubtypeKey()) {
+				  editor.addCellEditorListener(this);
+				}
+				return editor;
+			}
 		}
 		return null;
 	}
@@ -262,5 +271,29 @@ public class PathwayTableModel extends AbstractTableModel implements SelectionLi
 			reset(); // clear selected set
 			break;
 		}
+	}
+
+
+	/**
+	 * Recalculates which properties to display based on currently selected pathway elements.
+	 */
+    public void updateModel() {
+		if (input.size() > 0) {
+			Set<PathwayElement> elems = new HashSet<PathwayElement>(input);
+			reset();
+			for (PathwayElement pw : elems) {
+				addInput(pw);
+			}
+		}
+	}
+
+	/**
+	 * Handle edit events for subtype property keys that determine which properties are visible.
+	 */
+	public void editingStopped(ChangeEvent e) {
+		updateModel();
+	}
+
+	public void editingCanceled(ChangeEvent e) {
 	}
 }

@@ -24,6 +24,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +55,7 @@ import javax.swing.tree.TreePath;
 import org.pathvisio.preferences.Preference;
 import org.pathvisio.preferences.PreferenceManager;
 import org.pathvisio.model.Property;
+import org.pathvisio.gui.swing.propertypanel.PathwayTableModel;
 
 /**
  * Global dialog for setting the user preferences.
@@ -268,7 +271,7 @@ abstract public class AbstractPreferenceDlg
 		{
 			private Preference p;
 			private JTextField txt;
-			
+
 			FileFieldEditor (Preference p, JTextField txt)
 			{
 				this.p = p;
@@ -276,7 +279,7 @@ abstract public class AbstractPreferenceDlg
 				txt.setText (prefs.get(p));
 			}
 
-			public void actionPerformed(ActionEvent ae) 
+			public void actionPerformed(ActionEvent ae)
 			{
 				JFileChooser jfc = new JFileChooser();
 				if (jfc.showDialog(null, "Choose") == JFileChooser.APPROVE_OPTION)
@@ -291,13 +294,13 @@ abstract public class AbstractPreferenceDlg
 			{
 				prefs.set (p, txt.getText());
 			}
-			
-			public void changedUpdate(DocumentEvent de) 
+
+			public void changedUpdate(DocumentEvent de)
 			{
 				update();
 			}
 
-			public void insertUpdate(DocumentEvent de) 
+			public void insertUpdate(DocumentEvent de)
 			{
 				update();
 			}
@@ -307,7 +310,7 @@ abstract public class AbstractPreferenceDlg
 				update();
 			}
 		}
-		
+
 		void addFileField (Preference p, String desc, boolean isDir)
 		{
 			//TODO: do somethign with isDir
@@ -323,7 +326,7 @@ abstract public class AbstractPreferenceDlg
 		}
 		
 	}
-	
+
 	PreferenceManager prefs;
 	
 	public AbstractPreferenceDlg (PreferenceManager prefs)
@@ -338,7 +341,7 @@ abstract public class AbstractPreferenceDlg
 	{
 		final JDialog dlg = new JDialog(swingEngine.getFrame(), "Preferences", true);
 		dlg.setLayout (new BorderLayout());
-		
+		final PathwayTableModel model = swingEngine.getApplicationPanel().getModel();
 		initPanels();
 		
 		DefaultMutableTreeNode top = createNodes();
@@ -355,6 +358,8 @@ abstract public class AbstractPreferenceDlg
 			{
 				dlg.setVisible (false);
 				dlg.dispose();
+				model.updateModel();
+				prefs.store(); // save values to prefs file
 			}
 		}
 		);
@@ -367,10 +372,21 @@ abstract public class AbstractPreferenceDlg
 			{
 				dlg.setVisible(false);
 				dlg.dispose();
+				//cancel, so restore old values from prefs file
+				prefs.load();
 			}
 		}
 		);
-		
+
+		dlg.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(WindowEvent we)
+			{
+				prefs.load();
+			}
+		});
+
 		final CardLayout cards = new CardLayout();
 		pnlSettings.setLayout (cards);
 		for (String title : panels.keySet())
