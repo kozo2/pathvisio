@@ -858,7 +858,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case COLOR:
             setColor((Color) value);
             break;
-
         case CENTERX:
             setMCenterX((Double) value);
             break;
@@ -888,7 +887,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case ROTATION:
             setRotation((Double) value);
             break;
-
         case STARTX:
             setMStartX((Double) value);
             break;
@@ -922,11 +920,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case LINESTYLE:
             setLineStyle((Integer) value);
             break;
-
         case ORIENTATION:
             setOrientation((Integer) value);
             break;
-
         case GENEID:
             setGeneID((String) value);
             break;
@@ -1000,7 +996,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case WINDOWHEIGHT:
             setWindowHeight((Double) value);
             break;
-
         case GRAPHID:
             setGraphId((String) value);
             break;
@@ -1019,7 +1014,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case TRANSPARENT:
             setTransparent((Boolean) value);
             break;
-
         case BIOPAXREF:
             setBiopaxRefs((List<String>) value);
             break;
@@ -1063,7 +1057,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case HEIGHT:
             result = getMHeight();
             break;
-
         case FILLCOLOR:
             result = getFillColor();
             break;
@@ -1098,11 +1091,9 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case LINESTYLE:
             result = getLineStyle();
             break;
-
         case ORIENTATION:
             result = getOrientation();
             break;
-
         case GENEID:
             result = getGeneID();
             break;
@@ -1130,7 +1121,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
         case FONTSIZE:
             result = getMFontSize();
             break;
-
         case MAPINFONAME:
             result = getMapInfoName();
             break;
