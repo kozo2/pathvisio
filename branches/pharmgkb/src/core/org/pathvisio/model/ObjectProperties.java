@@ -57,7 +57,7 @@ public class ObjectProperties {
     /**
      * Returns all properties that are visible in specified modes.
      */
-    public List<Property> getProperties(Set<Property> modes) {
+    public List<Property> getProperties(List<Property> modes) {
 
 		return filterProperties(properties, modes);
     }
@@ -134,14 +134,14 @@ public class ObjectProperties {
     }
 
 
-	public List<Property> getSubPropertyKeys(Set<Property> modes) {
+	public List<Property> getSubPropertyKeys(List<Property> modes) {
 		if (subPropertiesMap == null || subPropertiesMap.isEmpty()) {
 			return null;
 		}
         return filterProperties(subPropertiesMap.keySet(), modes);
 	}
 
-	public List<Property> filterProperties(Collection<Property> allProps, Set<Property> modes) {
+	public List<Property> filterProperties(Collection<Property> allProps, List<Property> modes) {
 
 		List<Property> props = new ArrayList<Property>();
 		for (Property p: allProps){
@@ -174,6 +174,7 @@ public class ObjectProperties {
         if (subProperties == null) {
             subProperties = new HashMap<String, List<Property>>();
             subPropertiesMap.put(propKey, subProperties);
+			propKey.setSubtypeKey(true);
         }
         if (propKey.isValidValue(condition)) {
             List<Property> props = subProperties.get(condition);

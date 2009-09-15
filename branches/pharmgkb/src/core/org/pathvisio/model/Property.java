@@ -36,6 +36,7 @@ public class Property implements Comparable<Property> {
     private Set<Property> modes;
     private boolean isInternal;
     private boolean isMultiSelect;
+	private boolean isSubtypeKey;
 
 
     public Property(String newId, String newName, PropertyClass newType) {
@@ -202,4 +203,15 @@ public class Property implements Comparable<Property> {
     public String toString() {
         return name;
     }
+
+	/**
+	 * Gets whether this property is used as a subtype key for an object.
+	 */
+	public boolean isSubtypeKey() {
+		return isSubtypeKey;
+	}
+
+	public void setSubtypeKey(boolean subtypeKey) {
+		isSubtypeKey = subtypeKey;
+	}
 }

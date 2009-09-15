@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.InputStream;
 
 import org.bridgedb.bio.BioDataSource;
 import org.jdom.Document;
@@ -136,7 +137,7 @@ public class GpmlFormat implements PathwayImporter, PathwayExporter
 		readFromXmlImpl (pwy, new InputSource(in), validate);
 	}
 
-	static public void readFromXml(Pathway pwy, Reader in, boolean validate) throws ConverterException
+	static public void readFromXml(Pathway pwy, InputStream in, boolean validate) throws ConverterException
 	{
 		readFromXmlImpl (pwy, new InputSource(in), validate);
 	}
