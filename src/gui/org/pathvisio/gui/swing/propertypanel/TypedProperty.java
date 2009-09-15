@@ -16,10 +16,28 @@
 //
 package org.pathvisio.gui.swing.propertypanel;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
+import org.bridgedb.DataSource;
+import org.bridgedb.bio.Organism;
+import org.pathvisio.gui.swing.SwingEngine;
+import org.pathvisio.model.GroupStyle;
+import org.pathvisio.model.LineStyle;
+import org.pathvisio.model.LineType;
+import org.pathvisio.model.OrientationType;
+import org.pathvisio.model.OutlineType;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyClass;
+import org.pathvisio.model.PropertyEnum;
+import org.pathvisio.model.PropertyType;
+import org.pathvisio.model.ShapeType;
+import org.pathvisio.view.VPathway;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -29,28 +47,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-
-import org.bridgedb.DataSource;
-import org.bridgedb.bio.Organism;
-import org.pathvisio.gui.swing.SwingEngine;
-import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
-import org.pathvisio.model.*;
-import org.pathvisio.view.VPathway;
 
 /**
  * TypedProperty ties together functionality to view / edit a property
@@ -334,7 +330,6 @@ public class TypedProperty implements Comparable<TypedProperty> {
                         enumValues[i++] = pe.getValue();
                     }
                     return new ComboEditor(enumValues, false);
-
                 case DICTIONARY:
 					DictionaryEditor dictEditor = new DictionaryEditor(swingEngine);
 					dictEditor.setInput(this);
@@ -351,7 +346,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	/**
 	 * Return the first of the set of PathwayElement's
 	 */
-	private PathwayElement getFirstElement() {
+	PathwayElement getFirstElement() {
 		return elements.iterator().next();
 	}
 	
@@ -410,124 +405,6 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 	}
 
-	private static class CommentsEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
-
-		static final String BUTTON_LABEL = "View/edit comments";
-		JButton button;
-		PathwayElement currentElement;
-		TypedProperty property;
-
-		protected static final String EDIT = "edit";
-
-		private SwingEngine swingEngine;
-
-		public CommentsEditor(SwingEngine swingEngine) {
-			this.swingEngine = swingEngine;
-			button = new JButton();
-			button.setText(BUTTON_LABEL);
-			button.setActionCommand("edit");
-			button.addActionListener(this);
-		}
-
-		public void setInput(TypedProperty p) {
-			property = p;
-			button.setText("");
-			if(!mayEdit()) fireEditingCanceled();
-			button.setText(BUTTON_LABEL);
-		}
-
-		boolean mayEdit() { return property.elements.size() == 1; }
-
-		public void actionPerformed(ActionEvent e) {
-			if(!mayEdit()) {
-				fireEditingCanceled();
-				return;
-			}
-			if (EDIT.equals(e.getActionCommand()) && property != null) {
-				currentElement = property.getFirstElement();
-				if(currentElement != null) {
-					PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.COMMENTS);
-					d.selectPathwayElementPanel(PathwayElementDialog.TAB_COMMENTS);
-					d.setVisible(true);
-					fireEditingCanceled(); //Value is directly saved in dialog
-				}
-			}
-		}
-
-		public Object getCellEditorValue() {
-			return currentElement.getComments();
-		}
-
-		public Component getTableCellEditorComponent(JTable table,
-				Object value,
-				boolean isSelected,
-				int row,
-				int column) {
-			return button;
-		}
-	}
-
-	/*
-	dictionary editor, allows multiselect, loads from a file
-	editor and renderer are merged for dictionary, like comments
-	 */
-	private static class DictionaryEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
-
-		static final String BUTTON_LABEL = "Select Data From Dictionary";
-		JButton button;
-		PathwayElement currentElement;
-		TypedProperty property;
-		
-		protected static final String EDIT = "edit";
-
-		private SwingEngine swingEngine;
-		
-		public DictionaryEditor(SwingEngine swingEngine) {
-			this.swingEngine = swingEngine;
-			button = new JButton();
-			button.setText(BUTTON_LABEL);
-			button.setActionCommand("edit");
-			button.addActionListener(this);
-		}
-
-		public void setInput(TypedProperty p) {
-			property = p;
-			button.setText("");
-			if(!mayEdit()) fireEditingCanceled();
-			button.setText(BUTTON_LABEL);
-		}
-		
-		boolean mayEdit() { return property.elements.size() == 1; }
-		
-		public void actionPerformed(ActionEvent e) {
-			if(!mayEdit()) {
-				fireEditingCanceled();
-				return;
-			}
-			if (EDIT.equals(e.getActionCommand()) && property != null) {
-				currentElement = property.getFirstElement();
-				if(currentElement != null) {
-					PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.DICTIONARY);
-					d.selectPathwayElementPanel(PathwayElementDialog.TAB_VALUES);
-					d.setVisible(true);
-					fireEditingCanceled(); //Value is directly saved in dialog
-				}
-			}
-		}
-
-		public Object getCellEditorValue() {
-			return currentElement.getComments();
-		}
-
-		public Component getTableCellEditorComponent(JTable table,
-				Object value,
-				boolean isSelected,
-				int row,
-				int column) {
-			return button;
-		}
-	}
-	
 	private static class ColorEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
 		Color currentColor;
 		JButton button;
@@ -619,6 +496,9 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	private static class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if (value == null){ //if no value is set, then set it to false //XXX HOW to set value for phenotype??
+				value = false;
+			}
 			setSelected((Boolean)value);
 			return this;
 		}
@@ -673,35 +553,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 		}
 	}
 
-	public class DynamicPropertyLabelRenderer extends JLabel implements TableCellRenderer {
-		   public Component getTableCellRendererComponent(JTable table, Object value,
-				   boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
-			   // 'value' is value contained in the cell located at
-			   // (rowIndex, vColIndex)
-			   if (isSelected) {
-				   // cell (and perhaps other cells) are selected
-			   }
-			   if (hasFocus) {
-				   // this cell is the anchor and the table has the focus
-			   }
-			   // Configure the component with the specified value
-			   setText(value.toString());
-
-			   // Set tool tip if desired
-			   setToolTipText((String)value);
-			   setForeground(Color.BLUE);
-
-			   return this;
-		   }
-
-		   // The following methods override the defaults for performance reasons
-		   public void validate() {}
-		   public void revalidate() {}
-		   protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {}
-		   public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {}
-	   }
-
-    /**
+	/**
      * Alphabetically sort dynamic properties
      */
 	public int compareTo(TypedProperty arg0)
