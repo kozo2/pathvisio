@@ -27,11 +27,13 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.model.Property;
 import org.pathvisio.model.PropertyManager;
 import org.pathvisio.model.PropertyType;
+import org.pathvisio.preferences.PreferenceManager;
 import org.pathvisio.view.UndoAction;
 import org.pathvisio.view.VPathway;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -157,7 +159,14 @@ public class PathwayElementDialog extends OkCancelDialog {
 		for(PropertyType t : e.getStaticPropertyKeys()) {
 			state.put(t, e.getStaticProperty(t));
 		}
-		for (Property p : e.getDynamicPropertyKeys(PropertyManager.getModes())){
+		//get selected dynamic modes and then get dynamic properties and save the state
+		java.util.List<Property> modes = new ArrayList<Property>();
+		for (Property prop : PropertyManager.getModes()) {
+			if (PreferenceManager.getCurrent().getBoolean(prop)) {
+				modes.add(prop);
+			}
+		}
+		for (Property p : e.getDynamicPropertyKeys(modes)){
 			dynamicState.put(p, e.getDynamicProperty(p));
 		}
 	}

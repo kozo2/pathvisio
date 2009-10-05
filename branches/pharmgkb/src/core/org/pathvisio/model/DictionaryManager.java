@@ -26,10 +26,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -40,7 +38,7 @@ import java.util.TreeMap;
 public class DictionaryManager {
 	private static SortedMap<Property, File> DICTIONARY_MAP = new TreeMap<Property, File>();
 	private static Map<Property, List<DictionaryEntry>> DICTIONARY_VALUES = new HashMap<Property, List<DictionaryEntry>>();
-	private static Map<Property, Set<String>> ID_MAP = new HashMap<Property, Set<String>>();
+	private static Map<Property, Map<String, String>> DICTIONARY_VALUES_MAP = new HashMap<Property, Map<String, String>>();
 
 
 	public static void setDictionaryFile(Property prop, File file){
@@ -65,6 +63,10 @@ public class DictionaryManager {
 		return DICTIONARY_VALUES.get(prop);
 	}
 
+	public static Map<String, String> getValuesMap(Property prop){
+		return DICTIONARY_VALUES_MAP.get(prop);
+	}
+
 
 	/**
 	 * Given an XML file, parse out the properties.
@@ -85,7 +87,8 @@ public class DictionaryManager {
 		}
 		// clear keys
 		DICTIONARY_VALUES.remove(prop);
-		ID_MAP.remove(prop);
+		DICTIONARY_VALUES_MAP.remove(prop);
+		//ID_MAP.remove(prop);
 
 		List<DictionaryEntry> values = new ArrayList<DictionaryEntry>();
 		DICTIONARY_VALUES.put(prop, values);
@@ -98,16 +101,15 @@ public class DictionaryManager {
 			if (entryName == null || entryName.isEmpty()){
 				entryName = entryId;
 			}
-			Set<String> id_set = ID_MAP.get(prop);
-			if (id_set == null){
-				id_set = new HashSet<String>();
-				ID_MAP.put(prop, id_set);
+			Map<String, String> values_map = DICTIONARY_VALUES_MAP.get(prop);
+			if (values_map == null){
+				values_map = new HashMap<String,String>();
+				DICTIONARY_VALUES_MAP.put(prop, values_map);
 			}
-			if (id_set.contains(entryId)){
+			if (values_map.containsKey(entryId)){
 				throw new Exception(" id already exists " + entryId + "in file " + file.getName());
 			}
-			id_set.add(entryId);
-
+			values_map.put(entryId, entryName);
 			values.add(new DictionaryEntry(entryId, entryName));
 		}
 	}

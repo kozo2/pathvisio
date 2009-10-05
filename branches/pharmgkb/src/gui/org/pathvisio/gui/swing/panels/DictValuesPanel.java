@@ -25,6 +25,7 @@ import org.pathvisio.gui.swing.propertypanel.TypedProperty;
 import org.pathvisio.model.DictionaryEntry;
 import org.pathvisio.model.DictionaryManager;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Property;
 import org.pathvisio.util.Resources;
 
 import javax.swing.*;
@@ -34,6 +35,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Rebecca Fieldman
@@ -68,11 +71,11 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 
 	boolean readonly = false;
 
-	/*public void setReadOnly(boolean readonly) {
+	public void setReadOnly(boolean readonly) {
 		super.setReadOnly(readonly);
 		this.readonly = readonly;
 		addBtn.setEnabled(!readonly);
-	}*/
+	}
 
 	public void setInput(PathwayElement e) {
 		super.setInput(e);
@@ -83,7 +86,7 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 		DictionaryEntry m_entry;
 		JPanel btnPanel;
 
-		public SelectedValuePanel(DictionaryEntry entry) {
+		public SelectedValuePanel(DictionaryEntry entry, boolean match) {
 			m_entry = entry;
 			setBackground(Color.WHITE);
 			setLayout(new FormLayout(
@@ -92,7 +95,12 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 			JTextPane txt = new JTextPane();
 			txt.setContentType("text/html");
 			txt.setEditable(false);
-			txt.setText("<html>" + entry.getName() + "</html>");
+			if (match){
+				txt.setText("<html>" + entry.getName() + "</html>");
+			}else{
+				txt.setText("<html> <font color=\"red\">" + entry.getName() + "</font></html>");
+			}
+
 			CellConstraints cc = new CellConstraints();
 			add(txt, cc.xy(2, 2));
 
@@ -150,11 +158,26 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 
 //		List<DictionaryEntry> entries = dictionaryMgr.getSelectedEntries();
 
+
 		DefaultFormBuilder b = new DefaultFormBuilder(
 				new FormLayout("fill:pref:grow")
 		);
+		Map<String, String> masterMap = new HashMap<String, String>();
+		if (property.getType() instanceof Property){
+			masterMap = DictionaryManager.getValuesMap((Property)property.getType());
+		}
 		for(DictionaryEntry entry : getInput().getDictionaryEntries(property)) {
-			b.append(new SelectedValuePanel(entry));
+			//XXX this is ineffecient
+			//compare selected values with values in dictionary and mark red if anything does not exist in the dictionary file
+			//this can happen if dictionary file is changed mid editing, or pathway file is xferred and the versions of dict file's different
+			boolean match = false;
+			if (masterMap.containsKey(entry.getId())){
+				String value = masterMap.get(entry.getId());
+				if (value.equals(entry.getName())){
+					match = true;
+				}
+			}
+			b.append(new SelectedValuePanel(entry, match));
 			b.nextLine();
 		}
 
