@@ -16,23 +16,11 @@
 //
 package org.pathvisio.gui.swing.dialogs;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Frame;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 
 /**
  * The basis for a dialog with ok / cancel buttons at the bottom
@@ -100,6 +88,12 @@ public class OkCancelDialog extends JDialog implements ActionListener {
 	 */
 	public final void setDialogComponent(Component dialogComponent) {
 		contentPanel.add(dialogComponent, BorderLayout.CENTER);
+		JScrollPane cmtPanel = new JScrollPane(dialogComponent,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+		);
+		contentPanel.add(cmtPanel, BorderLayout.CENTER);
+		
 		invalidate();
 	}
 
