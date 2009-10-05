@@ -46,7 +46,7 @@ class DictionaryEditor extends AbstractCellEditor implements TableCellEditor, Ac
 		this.swingEngine = swingEngine;
 		button = new JButton();
 		button.setText(BUTTON_LABEL);
-		button.setActionCommand("edit");
+		button.setActionCommand(EDIT);
 		button.addActionListener(this);
 	}
 
@@ -67,16 +67,16 @@ class DictionaryEditor extends AbstractCellEditor implements TableCellEditor, Ac
 		if (EDIT.equals(e.getActionCommand()) && property != null) {
 			currentElement = property.getFirstElement();
 			if(currentElement != null) {
-				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.DICTIONARY);
+				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.DICTIONARY, property);
 				d.selectPathwayElementPanel(PathwayElementDialog.TAB_VALUES);
 				d.setVisible(true);
-				fireEditingCanceled(); //Value is directly saved in dialog
+				//fireEditingCanceled(); //Value is directly saved in dialog
 			}
 		}
 	}
 
 	public Object getCellEditorValue() {
-		return currentElement.getComments();
+		return currentElement.getDictionaryEntries(property);
 	}
 
 	public Component getTableCellEditorComponent(JTable table,

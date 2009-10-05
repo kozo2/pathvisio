@@ -64,7 +64,7 @@ class CommentsEditor extends AbstractCellEditor implements TableCellEditor, Acti
 		if (EDIT.equals(e.getActionCommand()) && property != null) {
 			currentElement = property.getFirstElement();
 			if(currentElement != null) {
-				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.COMMENTS);
+				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.COMMENTS, property);
 				d.selectPathwayElementPanel(PathwayElementDialog.TAB_COMMENTS);
 				d.setVisible(true);
 				fireEditingCanceled(); //Value is directly saved in dialog
@@ -72,7 +72,7 @@ class CommentsEditor extends AbstractCellEditor implements TableCellEditor, Acti
 		}
 	}
 
-	public Object getCellEditorValue() {
+	public Object getCellEditorValue() { // this method is not called because of fireEditingCanceled();
 		return currentElement.getComments();
 	}
 

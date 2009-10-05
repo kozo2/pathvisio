@@ -56,14 +56,13 @@
         </property>
 
         <property id="phenotype" name="Phenotype" type="BOOLEAN">
-            <propertyMode>pharmgkb</propertyMode>
         </property>
 
         <property id="accessionId" name="Accession Id" type="STRING">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="classification" name="Classification" type="DICTIONARY">
+        <property id="classification" name="Classification" type="DICTIONARY" file="D:\work\dev\PathVisio\dictionaryData\\Classifications.xml">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
@@ -78,7 +77,7 @@
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="diseases" name="Diseases" type="DICTIONARY">
+        <property id="diseases" name="Diseases" type="DICTIONARY" file="D:\work\dev\PathVisio\dictionaryData\\Diseases.xml">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
@@ -86,15 +85,15 @@
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="relatedGenes" name="Related Genes" type="DICTIONARY" multiSelect="true">
+        <property id="relatedGenes" name="Related Genes" type="DICTIONARY" multiSelect="true" file="D:\work\dev\PathVisio\dictionaryData\\Genes.xml">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="relatedDrugs" name="Related Drugs" type="DICTIONARY" multiSelect="true">
+        <property id="relatedDrugs" name="Related Drugs" type="DICTIONARY" multiSelect="true" file="D:\work\dev\PathVisio\dictionaryData\\Drugs.xml">
             <propertyMode>pharmgkb</propertyMode>
         </property>
 
-        <property id="relatedDiseases" name="Related Diseases" type="DICTIONARY" multiSelect="true">
+        <property id="relatedDiseases" name="Related Diseases" type="DICTIONARY" multiSelect="true" file="D:\work\dev\PathVisio\dictionaryData\\Diseases.xml">
             <propertyMode>pharmgkb</propertyMode>
         </property>
     </properties>

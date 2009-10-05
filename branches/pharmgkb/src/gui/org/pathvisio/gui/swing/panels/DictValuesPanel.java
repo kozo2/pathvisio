@@ -15,56 +15,49 @@
 // limitations under the License.
 package org.pathvisio.gui.swing.panels;
 
-import org.pathvisio.util.Resources;
-import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.DictionaryValues;
-import org.pathvisio.biopax.BiopaxReferenceManager;
-import org.pathvisio.biopax.BiopaxElementManager;
-import org.pathvisio.biopax.reflect.PublicationXRef;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import org.pathvisio.debug.Logger;
 import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.gui.swing.dialogs.DictValuesDialog;
-import org.pathvisio.debug.Logger;
+import org.pathvisio.gui.swing.propertypanel.TypedProperty;
+import org.pathvisio.model.DictionaryEntry;
+import org.pathvisio.model.DictionaryManager;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.util.Resources;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.HyperlinkEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.*;
 import java.net.URL;
-import java.util.*;
-
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * @author Rebecca Fieldman
  */
 public class DictValuesPanel extends PathwayElementPanel implements ActionListener {
-	private static final String ADD = "Select More Values";
+
+	private static final String ADD = "Select Values";
 	private static final String REMOVE = "Remove";
-//	private static final String EDIT = "Edit";
-//	private static final URL IMG_EDIT= Resources.getResourceURL("edit.gif");
 	private static final URL IMG_REMOVE = Resources.getResourceURL("cancel.gif");
 
-	BiopaxReferenceManager refMgr;
-	BiopaxElementManager elmMgr;
+	DictionaryManager dictionaryMgr;
 
-	java.util.List<PublicationXRef> xrefs;
 
-	JScrollPane refPanel;
+	JScrollPane valuesPanel;
 	JButton addBtn;
+	TypedProperty property = null;
 
 	final private SwingEngine swingEngine;
 
-	public DictValuesPanel(SwingEngine swingEngine) 
+	public DictValuesPanel(SwingEngine swingEngine, TypedProperty property)
 	{
 		this.swingEngine = swingEngine;
+		this.property = property;
 		setLayout(new BorderLayout(5, 5));
-		xrefs = new ArrayList<PublicationXRef>();
 		addBtn = new JButton(ADD);
 		addBtn.setActionCommand(ADD);
 		addBtn.addActionListener(this);
@@ -75,27 +68,23 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 
 	boolean readonly = false;
 
-	public void setReadOnly(boolean readonly) {
+	/*public void setReadOnly(boolean readonly) {
 		super.setReadOnly(readonly);
 		this.readonly = readonly;
 		addBtn.setEnabled(!readonly);
-	}
+	}*/
 
 	public void setInput(PathwayElement e) {
-		if(e != getInput()) {
-			elmMgr = e.getParent().getBiopaxElementManager();
-			refMgr = e.getBiopaxReferenceManager();
-		}
 		super.setInput(e);
 	}
 
 
-	private class XRefPanel extends JPanel implements HyperlinkListener, ActionListener {
-		PublicationXRef xref;
+	private class SelectedValuePanel extends JPanel implements ActionListener {
+		DictionaryEntry m_entry;
 		JPanel btnPanel;
 
-		public XRefPanel(PublicationXRef xref) {
-			this.xref = xref;
+		public SelectedValuePanel(DictionaryEntry entry) {
+			m_entry = entry;
 			setBackground(Color.WHITE);
 			setLayout(new FormLayout(
 					"2dlu, fill:[100dlu,min]:grow, 1dlu, pref, 2dlu", "2dlu, pref, 2dlu"
@@ -103,22 +92,11 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 			JTextPane txt = new JTextPane();
 			txt.setContentType("text/html");
 			txt.setEditable(false);
-			txt.setText("<html>" + "<B>" +
-					elmMgr.getOrdinal(xref) + ":</B> " +
-					xref.toHTML() + "</html>"
-			);
-			txt.addHyperlinkListener(this);
+			txt.setText("<html>" + entry.getName() + "</html>");
 			CellConstraints cc = new CellConstraints();
 			add(txt, cc.xy(2, 2));
 
 			btnPanel = new JPanel(new FormLayout("pref", "pref, pref"));
-//			JButton btnEdit = new JButton();
-//			btnEdit.setActionCommand(EDIT);
-//			btnEdit.addActionListener(this);
-//			btnEdit.setIcon(new ImageIcon(IMG_EDIT));
-//			btnEdit.setBackground(Color.WHITE);
-//			btnEdit.setBorder(null);
-//			btnEdit.setToolTipText("Edit literature reference");
 
 			JButton btnRemove = new JButton();
 			btnRemove.setActionCommand(REMOVE);
@@ -159,39 +137,31 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 			txt.addMouseListener(maHide);
 		}
 
-		public void hyperlinkUpdate(HyperlinkEvent e) {
-			if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-				swingEngine.openUrl(e.getURL());
-			}
-		}
-
 		public void actionPerformed(ActionEvent e) {
 			String action = e.getActionCommand();
-			/*if(EDIT.equals(action)) {
-				edit(xref);
-			} else*/
 			if (REMOVE.equals(action)) {
-				DictValuesPanel.this.remove(xref);
+				DictValuesPanel.this.remove(m_entry);
 			}
 		}
 	}
 
 	public void refresh() {
-		if(refPanel != null) remove(refPanel);
+		if(valuesPanel != null) remove(valuesPanel);
 
-		xrefs = refMgr.getPublicationXRefs();
+//		List<DictionaryEntry> entries = dictionaryMgr.getSelectedEntries();
 
 		DefaultFormBuilder b = new DefaultFormBuilder(
 				new FormLayout("fill:pref:grow")
 		);
-		for(PublicationXRef xref : xrefs) {
-			b.append(new XRefPanel(xref));
+		for(DictionaryEntry entry : getInput().getDictionaryEntries(property)) {
+			b.append(new SelectedValuePanel(entry));
 			b.nextLine();
 		}
+
 		JPanel p = b.getPanel();
 		p.setBackground(Color.WHITE);
-		refPanel = new JScrollPane(p);
-		add(refPanel, BorderLayout.CENTER);
+		valuesPanel = new JScrollPane(p);
+		add(valuesPanel, BorderLayout.CENTER);
 		validate();
 	}
 
@@ -201,23 +171,14 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 		}
 	}
 
-	private void edit(DictionaryValues vals) {
-		if(vals != null) {
-				DictValuesDialog d = new DictValuesDialog(vals, null, this, false);
-				d.setVisible(true);
-		}
+
+	private void remove(DictionaryEntry entry) {
+		getInput().removeDictionaryEntry(property, entry);
 		refresh();
 	}
 
-	private void remove(PublicationXRef xref) {
-		refMgr.removeElementReference(xref);
-		refresh();
-	}
-
-	private void addPressed() {
-		DictionaryValues vals = new DictionaryValues();
-
-		final DictValuesDialog d = new DictValuesDialog(vals, null, this);
+	private void addPressed(){
+		final DictValuesDialog d = new DictValuesDialog(getInput().getDictionaryEntries(property), null, this, property);
 		if(!SwingUtilities.isEventDispatchThread()) {
 			try {
 				SwingUtilities.invokeAndWait(new Runnable() {
@@ -232,7 +193,6 @@ public class DictValuesPanel extends PathwayElementPanel implements ActionListen
 			d.setVisible(true);
 		}
 		if(d.getExitCode().equals(DictValuesDialog.OK)) {
-		//	refMgr.addElementReference(xref); //XXX what to do here?
 			refresh();
 		}
 	}

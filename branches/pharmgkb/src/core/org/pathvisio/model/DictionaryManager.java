@@ -16,34 +16,52 @@
 package org.pathvisio.model;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
-import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.SortedMap;
-
-import com.sun.org.apache.xerces.internal.xni.parser.XMLParseException;
+import java.util.TreeMap;
 
 /**
- * @author Rebecca Fieldman
+ * @author Rebecca Tang
+ * Associates dictionary files to properties
  */
 public class DictionaryManager {
-	private static Map<Property, File> DICTIONARY_MAP;
-	private static Map<Property, SortedMap<String, String>> DICTIONARY_VALUES;
+	private static SortedMap<Property, File> DICTIONARY_MAP = new TreeMap<Property, File>();
+	private static Map<Property, List<DictionaryEntry>> DICTIONARY_VALUES = new HashMap<Property, List<DictionaryEntry>>();
+	private static Map<Property, Set<String>> ID_MAP = new HashMap<Property, Set<String>>();
 
 
-	public static void setDictionaryFile(Property prop, File file) throws Exception{
+	public static void setDictionaryFile(Property prop, File file){
 		DICTIONARY_MAP.put(prop, file);
-		processDictionaryXML(prop, file);
+		try{
+			processDictionaryXML(prop, file);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
-	public static SortedMap<String, String> getValues(Property prop) {
+	public static Map<Property, File> getDictionaryFiles(){
+		return DICTIONARY_MAP;
+	}
+
+
+	public static File getDictionaryFile(Property prop){
+		return DICTIONARY_MAP.get(prop);
+	}
+
+	public static List<DictionaryEntry> getValues(Property prop) {
 		return DICTIONARY_VALUES.get(prop);
 	}
 
@@ -65,10 +83,11 @@ public class DictionaryManager {
 		if (roots.getLength() > 1){
 			throw new Exception("More than one dictionary roots found");
 		}
-		if (DICTIONARY_VALUES.containsKey(prop)){
-					DICTIONARY_VALUES.remove(prop);
-		}
-		SortedMap<String, String> values = new TreeMap<String, String>();
+		// clear keys
+		DICTIONARY_VALUES.remove(prop);
+		ID_MAP.remove(prop);
+
+		List<DictionaryEntry> values = new ArrayList<DictionaryEntry>();
 		DICTIONARY_VALUES.put(prop, values);
 		Element rootElement = (Element)roots.item(0);
 		NodeList entryNL = rootElement.getElementsByTagName("entry");
@@ -76,10 +95,20 @@ public class DictionaryManager {
 			Element entryElem = (Element)entryNL.item(j);
 			String entryId = entryElem.getAttribute("id");
 			String entryName = entryElem.getAttribute("name");
-			if (entryName == null){
+			if (entryName == null || entryName.isEmpty()){
 				entryName = entryId;
 			}
-			values.put(entryId, entryName);
+			Set<String> id_set = ID_MAP.get(prop);
+			if (id_set == null){
+				id_set = new HashSet<String>();
+				ID_MAP.put(prop, id_set);
+			}
+			if (id_set.contains(entryId)){
+				throw new Exception(" id already exists " + entryId + "in file " + file.getName());
+			}
+			id_set.add(entryId);
+
+			values.add(new DictionaryEntry(entryId, entryName));
 		}
 	}
 }

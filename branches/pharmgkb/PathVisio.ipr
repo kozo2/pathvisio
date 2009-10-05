@@ -10,7 +10,6 @@
       <maximumStackSize value="32" />
       <properties />
       <executeOn event="beforeRun" target="resources-jar" />
-      <executeOn event="beforeRun" target="resources-jar" runConfigurationType="Application" runConfigurationName="Gui" />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -21,6 +20,24 @@
       <value>
         <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="12" />
         <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="12" />
+        <ADDITIONAL_INDENT_OPTIONS fileType="groovy">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="gsp">
+          <option name="INDENT_SIZE" value="2" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="java">
           <option name="INDENT_SIZE" value="4" />
           <option name="CONTINUATION_INDENT_SIZE" value="8" />
@@ -74,7 +91,11 @@
     <option name="DEFAULT_COMPILER" value="Javac" />
     <option name="DEPLOY_AFTER_MAKE" value="0" />
     <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/src/wikipathways-client" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/src/test/org/pathvisio/wikipathways" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/src/core/org/pathvisio/temp" includeSubdirectories="true" />
       <file url="file://$PROJECT_DIR$/tools/xml-import test/XmlTree.java" />
+      <file url="file://$PROJECT_DIR$/plugins/wpdownload/org/pathvisio/plugins/WPDownloadPlugin.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -412,12 +433,11 @@
   </component>
   <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectKey">
-    <option name="state" value="project://D:\Mark\Dev\Work\pathvisio-pgkb\PathVisio.ipr" />
+    <option name="state" value="http://svn.bigcat.unimaas.nl/pathvisio/branches/pharmgkb/PathVisio.ipr" />
   </component>
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/src/PathVisio.iml" filepath="$PROJECT_DIR$/src/PathVisio.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../pvplugins/Plugins.iml" filepath="$PROJECT_DIR$/../pvplugins/Plugins.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
@@ -450,6 +470,19 @@
                 </list>
               </option>
               <option name="trunkUrl" value="http://svn.bigcat.unimaas.nl/pathvisio/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../PvPlugins/Trunk">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="http://svn.bigcat.unimaas.nl/pvplugins/branches" />
+                  <option value="http://svn.bigcat.unimaas.nl/pvplugins/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="http://svn.bigcat.unimaas.nl/pvplugins/trunk" />
             </SvnBranchConfiguration>
           </value>
         </entry>

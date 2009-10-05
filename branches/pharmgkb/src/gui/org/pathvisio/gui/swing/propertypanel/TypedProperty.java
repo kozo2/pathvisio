@@ -496,7 +496,7 @@ public class TypedProperty implements Comparable<TypedProperty> {
 	private static class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			if (value == null){ //if no value is set, then set it to false //XXX HOW to set value for phenotype??
+			if (value == null) { 
 				value = false;
 			}
 			setSelected((Boolean)value);
