@@ -20,6 +20,7 @@ import org.bridgedb.DataSource;
 import org.bridgedb.Xref;
 import org.jdom.Document;
 import org.pathvisio.biopax.BiopaxReferenceManager;
+import org.pathvisio.gui.swing.propertypanel.TypedProperty;
 import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
 import org.pathvisio.util.Utils;
@@ -30,6 +31,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1546,6 +1548,39 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			fireObjectModifiedEvent(new PathwayEvent(this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
+	}
+
+	//Dictionary
+	private Map<TypedProperty, List<DictionaryEntry>> dictEntries = new HashMap<TypedProperty, List<DictionaryEntry>>();
+
+	public List<DictionaryEntry> getDictionaryEntries(TypedProperty prop){
+		if (dictEntries.containsKey(prop)){
+			return dictEntries.get(prop);
+		}else{
+			List<DictionaryEntry> list = new ArrayList<DictionaryEntry>();
+			dictEntries.put(prop, list);
+			return list;
+		}
+	}
+	public void setDictionaryEntries(TypedProperty prop, List<DictionaryEntry> entries){
+		dictEntries.put(prop, entries);
+		//XXX does this need to fire modified event???
+	}
+	public void addDictionaryEntry(TypedProperty prop, DictionaryEntry entry){
+		if (dictEntries.containsKey(prop)){
+			dictEntries.get(prop).add(entry);
+		}else{
+			List<DictionaryEntry> list = new ArrayList<DictionaryEntry>();
+			list.add(entry);
+			dictEntries.put(prop, list);
+		}
+
+	}
+	public void removeDictionaryEntry(TypedProperty prop, DictionaryEntry entry){
+		if (dictEntries.containsKey(prop)){
+			dictEntries.get(prop).remove(entry);
+		}
+		//XXX does this need to fire event???
 	}
 
 	// general

@@ -15,24 +15,37 @@
 // limitations under the License.
 package org.pathvisio.model;
 
-import java.util.Set;
-import java.util.List;
-
 /**
  * @author Rebecca Tang
  * Holds selected Dictionary Values
  * Used to pass values to and from
  */
-public class DictionaryValues {
-	List<String> m_values;
+public class DictionaryEntry {
+	private String m_id;
+	private String m_name;
 
-	public void setValue(String value){
-		if (!m_values.contains(value)){
-		  m_values.add(value);
-		}
+	public DictionaryEntry(String id, String name){
+		m_id = id;
+		m_name = name;
 	}
-	public List<String> getValues(){
-		return m_values;
+	public void setId(String id){
+		m_id = id;
 	}
+	public String getId(){
+		return m_id;
+	}
+
+	public void setName(String name){
+		m_name = name;
+	}
+
+	public String getName(){
+		return m_name;
+	}
+
+	public String toString() {
+		return m_name;
+	}
+
 
 }

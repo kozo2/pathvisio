@@ -16,14 +16,16 @@
 //
 package org.pathvisio.gui.swing;
 
-import javax.swing.JPanel;
-
+import org.pathvisio.model.DictionaryManager;
+import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyManager;
 import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.PreferenceManager;
-import org.pathvisio.model.PropertyManager;
-import org.pathvisio.model.Property;
 
-import java.util.Set;
+import javax.swing.*;
+import java.io.File;
+import java.util.Map;
+
 
 /**
  * Global dialog for setting the user preferences.
@@ -96,10 +98,10 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 		builder = createBuilder();
 		builder.addFileField(
 				GlobalPreference.FILE_LOG, 
-				"Log file:", false);
+				"Log file:", null, false);
         builder.addFileField(
                 GlobalPreference.FILE_PROPERTIES,
-                "Custom Properties file:", false);
+                "Custom properties file:", null, false);
 		// create file panel
 		JPanel filePanel = builder.getPanel();
 
@@ -107,11 +109,11 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 		// config dir panel
 		builder = createBuilder();
 		builder.addFileField (GlobalPreference.DIR_PWFILES,
-				"Gpml pathways:", true);
+				"Gpml pathways:", null, true);
 		builder.addFileField (GlobalPreference.DIR_GDB,
-				"Gene databases:", true);
+				"Gene databases:",  null, true);
 		builder.addFileField (GlobalPreference.DIR_EXPR,
-				"Expression datasets:", true);		
+				"Expression datasets:",  null, true);
 		// create dir panel
 		JPanel dirPanel = builder.getPanel();
 
@@ -139,11 +141,19 @@ public class PreferencesDlg extends AbstractPreferenceDlg
 		// create modes panel
         JPanel mdPanel = builder.getPanel();
 
+		// dictionary file panel
+		builder = createBuilder();
+        for (Map.Entry<Property, File> a : DictionaryManager.getDictionaryFiles().entrySet()){
+			builder.addFileField(a.getKey(), "Property File for " + a.getKey().getName(), a.getValue(), false);
+		}
+		JPanel dfPanel = builder.getPanel();
+
 		addPanel ("Display", displayPanel);
 		addPanel ("Display.Colors", colorPanel);
 		addPanel ("Directories", dirPanel);
 		addPanel ("Files", filePanel);
 		addPanel ("Database", dbPanel);
         addPanel ("Display Modes", mdPanel);
+		addPanel ("Dictionary Files", dfPanel);
 	}
 }

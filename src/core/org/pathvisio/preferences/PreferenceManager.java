@@ -16,18 +16,17 @@
 //
 package org.pathvisio.preferences;
 
-import java.awt.Color;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.Property;
+import org.pathvisio.util.ColorConverter;
+import org.pathvisio.util.Utils;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import java.util.Properties;
-
-import org.pathvisio.debug.Logger;
-import org.pathvisio.util.ColorConverter;
-import org.pathvisio.util.Utils;
-import org.pathvisio.model.Property;
 
 /**
  * Loads & saves application preferences
@@ -143,12 +142,12 @@ public class PreferenceManager
 		set (p, "" + val);
 	}
 	
-	public File getFile (Preference p)
+	public File getFile (Object p)
 	{
 		return new File (get (p));
 	}
 	
-	public void setFile (Preference p, File val)
+	public void setFile (Object p, File val)
 	{
 		set (p, "" + val);
 	}

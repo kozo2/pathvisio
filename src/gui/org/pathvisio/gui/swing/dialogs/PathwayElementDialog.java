@@ -16,24 +16,24 @@
 //
 package org.pathvisio.gui.swing.dialogs;
 
-import java.awt.Component;
-import java.awt.Frame;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.JTabbedPane;
-
 import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.gui.swing.panels.CommentPanel;
+import org.pathvisio.gui.swing.panels.DictValuesPanel;
 import org.pathvisio.gui.swing.panels.LitReferencePanel;
 import org.pathvisio.gui.swing.panels.PathwayElementPanel;
-import org.pathvisio.gui.swing.panels.DictValuesPanel;
-import org.pathvisio.gui.swing.panels.DictFilePanel;
+import org.pathvisio.gui.swing.propertypanel.TypedProperty;
 import org.pathvisio.model.Pathway;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyManager;
 import org.pathvisio.model.PropertyType;
 import org.pathvisio.view.UndoAction;
 import org.pathvisio.view.VPathway;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Dialog that allows you to display and edit properties of a PathwayElement
@@ -48,7 +48,7 @@ public class PathwayElementDialog extends OkCancelDialog {
 
 	public static final int DICTIONARY = 1;
 	public static final String TAB_VALUES = "Dictionary Values";
-	public static final String TAB_FILE = "Dictionary File";
+//	public static final String TAB_FILE = "Dictionary File";
 
 	/**
 	 * Create a dialog for the given pathway element.
@@ -58,48 +58,55 @@ public class PathwayElementDialog extends OkCancelDialog {
 	 * type attribute of the given PathwayElement, e.g. type DATANODE returns a DataNodeDialog
 	 */
 	public static PathwayElementDialog getInstance(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, Component locationComp) {
-		return getInstance(swingEngine, e, readonly, frame, locationComp, COMMENTS);
+		return getInstance(swingEngine, e, readonly, frame, locationComp, COMMENTS, null);
 	}
 
-	public static PathwayElementDialog getInstance(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, Component locationComp, int tabGroupType) {
+	public static PathwayElementDialog getInstance(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, Component locationComp, int tabGroupType, TypedProperty property) {
 		switch(e.getObjectType()) {
 		case LABEL:
 			return new LabelDialog(swingEngine, e, readonly, frame, locationComp);
 		case DATANODE:
 			return new DataNodeDialog(swingEngine, e, readonly, frame, locationComp);
 		case INFOBOX:
-			return new PathwayElementDialog(swingEngine, e.getParent().getMappInfo(), readonly, frame, "Pathway properties", locationComp, tabGroupType);
+			return new PathwayElementDialog(swingEngine, e.getParent().getMappInfo(), readonly, frame, "Pathway properties", locationComp, tabGroupType, property);
 		default:
-			return new PathwayElementDialog(swingEngine, e, readonly, frame, "Element properties", locationComp, tabGroupType);
+			return new PathwayElementDialog(swingEngine, e, readonly, frame, "Element properties", locationComp, tabGroupType, property);
 		}
 	}
 
 	private int tabGroupType = 0;
+	private TypedProperty property = null;
 
 
 	PathwayElement input;
 	private JTabbedPane dialogPane;
 	private Map<String, PathwayElementPanel> panels;
 	private Map<PropertyType, Object> state = new HashMap<PropertyType, Object>();
+	private Map<Property, Object> dynamicState = new HashMap<Property, Object>(); // stores dynamic property states
 	private Pathway originalPathway; //Used for undo event
 		
 	protected boolean readonly;
 	protected SwingEngine swingEngine;
 
+	protected TypedProperty getProperty(){
+		return property;
+	}
+
 	protected PathwayElementDialog(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, String title, Component locationComp) {
 		super(frame, title, locationComp, true);
-		init(swingEngine, e, readonly, COMMENTS);	
+		init(swingEngine, e, readonly, COMMENTS, null);
 	}
 
-	protected PathwayElementDialog(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, String title, Component locationComp, int tabGroupType) {
+	protected PathwayElementDialog(SwingEngine swingEngine, PathwayElement e, boolean readonly, Frame frame, String title, Component locationComp, int tabGroupType, TypedProperty property){
 		super(frame, title, locationComp, true);
-		init(swingEngine, e, readonly, tabGroupType);
+		init(swingEngine, e, readonly, tabGroupType, property);
 	}
 
-	private void init(SwingEngine swingEngine, PathwayElement e, boolean readonly, int tabGroupType){
+	private void init(SwingEngine swingEngine, PathwayElement e, boolean readonly, int tabGroupType, TypedProperty property){
 		this.tabGroupType = tabGroupType;
 		this.readonly = readonly;
 		this.swingEngine = swingEngine;
+		this.property = property;
 		setDialogComponent(createDialogPane());
 		panels = new HashMap<String, PathwayElementPanel>();
 		createTabs();
@@ -150,6 +157,9 @@ public class PathwayElementDialog extends OkCancelDialog {
 		for(PropertyType t : e.getStaticPropertyKeys()) {
 			state.put(t, e.getStaticProperty(t));
 		}
+		for (Property p : e.getDynamicPropertyKeys(PropertyManager.getModes())){
+			dynamicState.put(p, e.getDynamicProperty(p));
+		}
 	}
 	
 	/**
@@ -161,15 +171,18 @@ public class PathwayElementDialog extends OkCancelDialog {
 		for(PropertyType t : state.keySet()) {
 			e.setStaticProperty(t, state.get(t));
 		}
+		for(Property p : dynamicState.keySet()){
+			e.setDynamicProperty(p, state.get(p));
+		}
 	}
 	
-	private void createTabs() {
+	private void createTabs(){
 		if (tabGroupType == COMMENTS){
 			addPathwayElementPanel(TAB_COMMENTS, new CommentPanel());
 			addPathwayElementPanel(TAB_LITERATURE, new LitReferencePanel(swingEngine));
 		}else if (tabGroupType == DICTIONARY){
-			addPathwayElementPanel(TAB_VALUES, new DictValuesPanel(swingEngine));
-			addPathwayElementPanel(TAB_FILE, new DictFilePanel());
+			addPathwayElementPanel(TAB_VALUES, new DictValuesPanel(swingEngine, property));
+			//addPathwayElementPanel(TAB_FILE, new DictFilePanel());
 		}
 		addCustomTabs(dialogPane);
 	}

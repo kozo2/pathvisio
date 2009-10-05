@@ -21,9 +21,14 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
+import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class handles dynamic properties configured via the properties.xml file.
@@ -115,8 +120,13 @@ public class PropertyManager {
 
                 String multiSelect = propElem.getAttribute("multiSelect");
                 if (multiSelect != null && multiSelect.equalsIgnoreCase("true")){
-                    prop.setMultiSelect(true);
+					prop.setMultiSelect(true);
                 }
+				String fileName = propElem.getAttribute("file"); // set file
+				if (fileName != null && !fileName.isEmpty()){
+					File file = new File(fileName);
+					DictionaryManager.setDictionaryFile(prop, file);
+				}
                 //property modes
                 NodeList modesNL = propElem.getElementsByTagName("propertyMode");
                 for (int n=0; n<modesNL.getLength(); n++){

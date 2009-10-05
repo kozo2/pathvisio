@@ -18,10 +18,22 @@ package org.pathvisio.gui.swing;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
+import org.pathvisio.gui.swing.propertypanel.PathwayTableModel;
+import org.pathvisio.model.DictionaryManager;
+import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyClass;
+import org.pathvisio.preferences.Preference;
+import org.pathvisio.preferences.PreferenceManager;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -32,30 +44,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-
-import org.pathvisio.preferences.Preference;
-import org.pathvisio.preferences.PreferenceManager;
-import org.pathvisio.model.Property;
-import org.pathvisio.gui.swing.propertypanel.PathwayTableModel;
 
 /**
  * Global dialog for setting the user preferences.
@@ -269,13 +257,22 @@ abstract public class AbstractPreferenceDlg
 		
 		private class FileFieldEditor implements ActionListener, DocumentListener
 		{
-			private Preference p;
+			private Object p;
 			private JTextField txt;
 
-			FileFieldEditor (Preference p, JTextField txt)
+			FileFieldEditor (Object p, JTextField txt, File f)
 			{
 				this.p = p;
 				this.txt = txt;
+				if (f != null){
+					prefs.setFile (p, f);
+					if (p instanceof Property){
+						if (((Property)p).getType().equals(PropertyClass.DICTIONARY)){//dictionary files, set dictionary manager
+							DictionaryManager.setDictionaryFile((Property)p, f);
+						}
+					}
+
+				}
 				txt.setText (prefs.get(p));
 			}
 
@@ -287,12 +284,25 @@ abstract public class AbstractPreferenceDlg
 					File result = jfc.getSelectedFile();
 					txt.setText("" + result);
 					prefs.setFile (p, result);
+					if (p instanceof Property){
+						if (((Property)p).getType().equals(PropertyClass.DICTIONARY)){//dictionary files, set dictionary manager
+							DictionaryManager.setDictionaryFile((Property)p, result);
+						}
+					}
 				}
 			}
 
 			private void update()
 			{
 				prefs.set (p, txt.getText());
+				File result = new File(txt.getText());
+				prefs.setFile (p, result);
+				if (p instanceof Property){
+					if (((Property)p).getType().equals(PropertyClass.DICTIONARY)){//dictionary files, set dictionary manager
+						DictionaryManager.setDictionaryFile((Property)p, result);
+					}
+				}
+
 			}
 
 			public void changedUpdate(DocumentEvent de)
@@ -311,12 +321,16 @@ abstract public class AbstractPreferenceDlg
 			}
 		}
 
-		void addFileField (Preference p, String desc, boolean isDir)
+		void addFileField (Object p, String desc, File f, boolean isDir)
 		{
+			if (!(p instanceof Preference || p instanceof Property)) {
+				throw new IllegalArgumentException("Key must be a property or preference");
+			}
+			
 			//TODO: do somethign with isDir
 			JTextField txt = new JTextField(40);
 			JButton btnBrowse = new JButton("Browse");
-			FileFieldEditor editor = new FileFieldEditor (p, txt); 
+			FileFieldEditor editor = new FileFieldEditor (p, txt, f);
 			btnBrowse.addActionListener(editor);
 			txt.getDocument().addDocumentListener(editor);
 			builder.append (new JLabel (desc));
