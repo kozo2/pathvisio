@@ -70,7 +70,7 @@ class DictionaryEditor extends AbstractCellEditor implements TableCellEditor, Ac
 				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.DICTIONARY, property);
 				d.selectPathwayElementPanel(PathwayElementDialog.TAB_VALUES);
 				d.setVisible(true);
-				//fireEditingCanceled(); //Value is directly saved in dialog
+				fireEditingStopped();
 			}
 		}
 	}
