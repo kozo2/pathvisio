@@ -1551,34 +1551,34 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 	}
 
 	//Dictionary
-	private Map<TypedProperty, List<DictionaryEntry>> dictEntries = new HashMap<TypedProperty, List<DictionaryEntry>>();
+	private Map<Object, List<DictionaryEntry>> dictEntries = new HashMap<Object, List<DictionaryEntry>>();
 
 	public List<DictionaryEntry> getDictionaryEntries(TypedProperty prop){
-		if (dictEntries.containsKey(prop)){
-			return dictEntries.get(prop);
+		if (dictEntries.containsKey(prop.getType())){
+			return dictEntries.get(prop.getType());
 		}else{
 			List<DictionaryEntry> list = new ArrayList<DictionaryEntry>();
-			dictEntries.put(prop, list);
+			dictEntries.put(prop.getType(), list);
 			return list;
 		}
 	}
 	public void setDictionaryEntries(TypedProperty prop, List<DictionaryEntry> entries){
-		dictEntries.put(prop, entries);
+		dictEntries.put(prop.getType(), entries);
 		//XXX does this need to fire modified event???
 	}
 	public void addDictionaryEntry(TypedProperty prop, DictionaryEntry entry){
-		if (dictEntries.containsKey(prop)){
-			dictEntries.get(prop).add(entry);
+		if (dictEntries.containsKey(prop.getType())){
+			dictEntries.get(prop.getType()).add(entry);
 		}else{
 			List<DictionaryEntry> list = new ArrayList<DictionaryEntry>();
 			list.add(entry);
-			dictEntries.put(prop, list);
+			dictEntries.put(prop.getType(), list);
 		}
 
 	}
 	public void removeDictionaryEntry(TypedProperty prop, DictionaryEntry entry){
-		if (dictEntries.containsKey(prop)){
-			dictEntries.get(prop).remove(entry);
+		if (dictEntries.containsKey(prop.getType())){
+			dictEntries.get(prop.getType()).remove(entry);
 		}
 		//XXX does this need to fire event???
 	}
