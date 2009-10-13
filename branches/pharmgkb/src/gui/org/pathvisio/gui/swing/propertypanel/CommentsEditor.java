@@ -19,9 +19,11 @@ import org.pathvisio.gui.swing.SwingEngine;
 import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
 import org.pathvisio.model.PathwayElement;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JButton;
+import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
-import java.awt.*;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -64,7 +66,7 @@ class CommentsEditor extends AbstractCellEditor implements TableCellEditor, Acti
 		if (EDIT.equals(e.getActionCommand()) && property != null) {
 			currentElement = property.getFirstElement();
 			if(currentElement != null) {
-				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.COMMENTS, property);
+				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button);
 				d.selectPathwayElementPanel(PathwayElementDialog.TAB_COMMENTS);
 				d.setVisible(true);
 				fireEditingCanceled(); //Value is directly saved in dialog
