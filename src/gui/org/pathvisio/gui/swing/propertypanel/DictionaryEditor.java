@@ -16,12 +16,16 @@
 package org.pathvisio.gui.swing.propertypanel;
 
 import org.pathvisio.gui.swing.SwingEngine;
-import org.pathvisio.gui.swing.dialogs.PathwayElementDialog;
+import org.pathvisio.gui.swing.dialogs.DictionaryDialog;
 import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyType;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JButton;
+import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
-import java.awt.*;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -67,16 +71,19 @@ class DictionaryEditor extends AbstractCellEditor implements TableCellEditor, Ac
 		if (EDIT.equals(e.getActionCommand()) && property != null) {
 			currentElement = property.getFirstElement();
 			if(currentElement != null) {
-				PathwayElementDialog d = PathwayElementDialog.getInstance(swingEngine, currentElement, false, null, this.button, PathwayElementDialog.DICTIONARY, property);
-				d.selectPathwayElementPanel(PathwayElementDialog.TAB_VALUES);
+				DictionaryDialog d = new DictionaryDialog(currentElement, property, null, "Select Terms", this.button);
 				d.setVisible(true);
 				fireEditingStopped();
 			}
 		}
 	}
 
-	public Object getCellEditorValue() {
-		return currentElement.getDictionaryEntries(property);
+	public Object getCellEditorValue(){
+		if (property.getType() instanceof Property){
+			return currentElement.getDynamicProperty((Property)property.getType());
+		}else{
+			return currentElement.getStaticProperty((PropertyType)property.getType());
+		}
 	}
 
 	public Component getTableCellEditorComponent(JTable table,

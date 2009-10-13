@@ -1,0 +1,31 @@
+<dictionary type = "gene">
+    <entry id="abcb1" name="abcb1 name"/>
+    <entry id="abcb10" name="abcb10 name"/>
+    <entry id="abcb11" name="abcb11 name"/>
+    <entry id="abcb4"/>
+    <entry id="abcb7"/>
+    <entry id="abcc1"/>
+    <entry id="abcc2"/>
+    <entry id="abcc3"/>
+    <entry id="abcc4"/>
+    <entry id="abcc5"/>
+    <entry id="abcc6"/>
+    <entry id="abcc8"/>
+    <entry id="abcg2"/>
+    <entry id="abhd2"/>
+    <entry id="abl1"/>
+    <entry id="ablim1"/>
+    <entry id="acadvl"/>
+    <entry id="acat2"/>
+    <entry id="ace"/>
+    <entry id="ace2"/>
+    <entry id="abcb111"/>
+    <entry id="abcp2"/>
+    <entry id="acvr2b"/>
+    <entry id="adcy8"/>
+    <entry id="adcy9"/>
+    <entry id="add1"/>
+    <entry id="adh1a"/>
+    <entry id="adh1b"/>
+    <entry id="adh1c"/>
+</dictionary>

@@ -20,18 +20,16 @@ import org.bridgedb.DataSource;
 import org.bridgedb.Xref;
 import org.jdom.Document;
 import org.pathvisio.biopax.BiopaxReferenceManager;
-import org.pathvisio.gui.swing.propertypanel.TypedProperty;
 import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.GraphLink.GraphRefContainer;
 import org.pathvisio.util.Utils;
 
-import java.awt.*;
+import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1548,39 +1546,6 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			fireObjectModifiedEvent(new PathwayEvent(this,
 					PathwayEvent.MODIFIED_GENERAL));
 		}
-	}
-
-	//Dictionary
-	private Map<Object, List<DictionaryEntry>> dictEntries = new HashMap<Object, List<DictionaryEntry>>();
-
-	public List<DictionaryEntry> getDictionaryEntries(TypedProperty prop){
-		if (dictEntries.containsKey(prop.getType())){
-			return dictEntries.get(prop.getType());
-		}else{
-			List<DictionaryEntry> list = new ArrayList<DictionaryEntry>();
-			dictEntries.put(prop.getType(), list);
-			return list;
-		}
-	}
-	public void setDictionaryEntries(TypedProperty prop, List<DictionaryEntry> entries){
-		dictEntries.put(prop.getType(), entries);
-		//XXX does this need to fire modified event???
-	}
-	public void addDictionaryEntry(TypedProperty prop, DictionaryEntry entry){
-		if (dictEntries.containsKey(prop.getType())){
-			dictEntries.get(prop.getType()).add(entry);
-		}else{
-			List<DictionaryEntry> list = new ArrayList<DictionaryEntry>();
-			list.add(entry);
-			dictEntries.put(prop.getType(), list);
-		}
-
-	}
-	public void removeDictionaryEntry(TypedProperty prop, DictionaryEntry entry){
-		if (dictEntries.containsKey(prop.getType())){
-			dictEntries.get(prop.getType()).remove(entry);
-		}
-		//XXX does this need to fire event???
 	}
 
 	// general
