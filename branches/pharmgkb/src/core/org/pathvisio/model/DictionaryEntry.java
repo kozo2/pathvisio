@@ -23,6 +23,7 @@ package org.pathvisio.model;
 public class DictionaryEntry {
 	private String m_id;
 	private String m_name;
+	private boolean m_match = true;
 
 	public DictionaryEntry(String id, String name){
 		m_id = id;
@@ -43,9 +44,19 @@ public class DictionaryEntry {
 		return m_name;
 	}
 
-	public String toString() {
-		return m_name;
+
+	/**
+	 * Sets whether this entry is valid within the current dictionary.
+	 */
+	public void setValid(boolean match){
+		m_match = match;
 	}
 
+	public boolean isValid(){
+		return m_match;
+	}
 
+	public String toString() {
+			return m_name;
+	}
 }

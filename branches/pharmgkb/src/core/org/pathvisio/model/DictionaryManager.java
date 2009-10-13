@@ -23,6 +23,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +33,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
+ * Associates dictionary files to properties.
+ *
  * @author Rebecca Tang
- * Associates dictionary files to properties
  */
 public class DictionaryManager {
 	private static SortedMap<Property, File> DICTIONARY_MAP = new TreeMap<Property, File>();
@@ -59,8 +61,13 @@ public class DictionaryManager {
 		return DICTIONARY_MAP.get(prop);
 	}
 
-	public static List<DictionaryEntry> getValues(Property prop) {
-		return DICTIONARY_VALUES.get(prop);
+	public static List<DictionaryEntry> getValues(Property prop) throws Exception {
+
+		List<DictionaryEntry> entries = DICTIONARY_VALUES.get(prop);
+		if (entries == null) {
+			entries = processDictionaryXML(prop);
+		}
+		return entries;
 	}
 
 	public static Map<String, String> getValuesMap(Property prop){
@@ -68,49 +75,65 @@ public class DictionaryManager {
 	}
 
 
+	public static List<DictionaryEntry> processDictionaryXML(Property prop) throws Exception {
+		return processDictionaryXML(prop, getDictionaryFile(prop));
+	}
+
 	/**
 	 * Given an XML file, parse out the properties.
 	 */
-	public static void processDictionaryXML(Property prop, File file) throws Exception {
+	private static List<DictionaryEntry> processDictionaryXML(Property prop, File file) throws Exception {
 
-		InputStream xmlStream = new FileInputStream(file);
-		DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
-		Document doc = docBuilder.parse(xmlStream);
+		InputStream xmlStream = null;
+		try {
+			xmlStream = new FileInputStream(file);
+			DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+			Document doc = docBuilder.parse(xmlStream);
 
-		NodeList roots = doc.getElementsByTagName("dictionary");
-		if (roots.getLength() == 0){
-			throw new Exception("No dictionary root found");
-		}
-		if (roots.getLength() > 1){
-			throw new Exception("More than one dictionary roots found");
-		}
-		// clear keys
-		DICTIONARY_VALUES.remove(prop);
-		DICTIONARY_VALUES_MAP.remove(prop);
-		//ID_MAP.remove(prop);
+			NodeList roots = doc.getElementsByTagName("dictionary");
+			if (roots.getLength() == 0){
+				throw new Exception("No dictionary root found");
+			}
+			if (roots.getLength() > 1){
+				throw new Exception("More than one dictionary roots found");
+			}
+			// clear keys
+			DICTIONARY_VALUES.remove(prop);
+			DICTIONARY_VALUES_MAP.remove(prop);
+			//ID_MAP.remove(prop);
 
-		List<DictionaryEntry> values = new ArrayList<DictionaryEntry>();
-		DICTIONARY_VALUES.put(prop, values);
-		Element rootElement = (Element)roots.item(0);
-		NodeList entryNL = rootElement.getElementsByTagName("entry");
-		for (int j=0; j<entryNL.getLength(); j++){
-			Element entryElem = (Element)entryNL.item(j);
-			String entryId = entryElem.getAttribute("id");
-			String entryName = entryElem.getAttribute("name");
-			if (entryName == null || entryName.isEmpty()){
-				entryName = entryId;
+			List<DictionaryEntry> values = new ArrayList<DictionaryEntry>();
+			DICTIONARY_VALUES.put(prop, values);
+			Element rootElement = (Element)roots.item(0);
+			NodeList entryNL = rootElement.getElementsByTagName("entry");
+			for (int j=0; j<entryNL.getLength(); j++){
+				Element entryElem = (Element)entryNL.item(j);
+				String entryId = entryElem.getAttribute("id");
+				String entryName = entryElem.getAttribute("name");
+				if (entryName == null || entryName.isEmpty()){
+					entryName = entryId;
+				}
+				Map<String, String> values_map = DICTIONARY_VALUES_MAP.get(prop);
+				if (values_map == null){
+					values_map = new HashMap<String,String>();
+					DICTIONARY_VALUES_MAP.put(prop, values_map);
+				}
+				if (values_map.containsKey(entryId)){
+					throw new Exception(" id already exists " + entryId + "in file " + file.getName());
+				}
+				values_map.put(entryId, entryName);
+				values.add(new DictionaryEntry(entryId, entryName));
 			}
-			Map<String, String> values_map = DICTIONARY_VALUES_MAP.get(prop);
-			if (values_map == null){
-				values_map = new HashMap<String,String>();
-				DICTIONARY_VALUES_MAP.put(prop, values_map);
+			return values;
+		} finally {
+			if (xmlStream != null) {
+				try {
+					xmlStream.close();
+				} catch (IOException ex) {
+					// ignore
+				}
 			}
-			if (values_map.containsKey(entryId)){
-				throw new Exception(" id already exists " + entryId + "in file " + file.getName());
-			}
-			values_map.put(entryId, entryName);
-			values.add(new DictionaryEntry(entryId, entryName));
 		}
 	}
 }

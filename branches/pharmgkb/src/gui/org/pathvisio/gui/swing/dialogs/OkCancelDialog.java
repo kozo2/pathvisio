@@ -16,8 +16,19 @@
 //
 package org.pathvisio.gui.swing.dialogs;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -32,9 +43,9 @@ public class OkCancelDialog extends JDialog implements ActionListener {
 	public static final String CANCEL = "Cancel";
 	
 	private String exitCode = CANCEL;
-	JButton setButton;
-	JPanel contentPanel;
-	
+	protected JButton setButton;
+	private JPanel contentPanel;
+
 	/**
 	 * Create a dialog with ok/cancel buttons. A custom content component can
 	 * be set using {@link #setDialogComponent(Component)}.
@@ -88,12 +99,6 @@ public class OkCancelDialog extends JDialog implements ActionListener {
 	 */
 	public final void setDialogComponent(Component dialogComponent) {
 		contentPanel.add(dialogComponent, BorderLayout.CENTER);
-		JScrollPane cmtPanel = new JScrollPane(dialogComponent,
-				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
-		);
-		contentPanel.add(cmtPanel, BorderLayout.CENTER);
-		
 		invalidate();
 	}
 

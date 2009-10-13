@@ -1,0 +1,7 @@
+<!-- id is required, name is optional.  if name is given, then name is displayed -->
+<dictionary type = "gene">
+    <entry id="drug0" />
+    <entry id="drug1" />
+    <entry id="drug2" name="drug name 2"/>
+    <entry id="drug3" name="drug name 3"/>
+</dictionary>
