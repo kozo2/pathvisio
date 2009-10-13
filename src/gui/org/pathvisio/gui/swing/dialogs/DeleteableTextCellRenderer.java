@@ -67,16 +67,13 @@ public class DeleteableTextCellRenderer implements TableCellRenderer, MouseListe
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		System.out.println("click " + e.getWhen());
 		remove(e);
 	}
 
 	public void mousePressed(MouseEvent e) {
-		System.out.println("press " + e.getWhen());
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		System.out.println("release " + e.getWhen());
 	}
 
 	public void mouseEntered(MouseEvent e) {
