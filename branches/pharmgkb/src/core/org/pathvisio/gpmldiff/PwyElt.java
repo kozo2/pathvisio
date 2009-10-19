@@ -16,13 +16,17 @@
 //
 package org.pathvisio.gpmldiff;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collection;
-
 import org.pathvisio.model.PathwayElement;
-import org.pathvisio.model.PropertyType;
 import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyManager;
+import org.pathvisio.model.PropertyType;
+import org.pathvisio.preferences.PreferenceManager;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
    Utility class for pathway element methods related to gpmldiff.
@@ -76,7 +80,14 @@ class PwyElt
 			String val = "" + elt.getStaticProperty (prop);
 			result.put (attr, val);
 		}
-		for (Property p: elt.getDynamicPropertyKeys(null)){ //passing in null to get all
+		//get all the selected modes
+		List<Property> modes = new ArrayList<Property>();
+		for (Property prop : PropertyManager.getModes()) {
+			if (PreferenceManager.getCurrent().getBoolean(prop)) {
+				modes.add(prop);
+			}
+		}
+		for (Property p: elt.getDynamicPropertyKeys(modes)){
 			String attr = p.getId();
 			String val = ""+elt.getDynamicProperty(p);
 			result.put(attr, val);

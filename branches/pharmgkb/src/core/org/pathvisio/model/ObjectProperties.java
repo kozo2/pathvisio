@@ -17,7 +17,14 @@ package org.pathvisio.model;
 
 import org.pathvisio.debug.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Mark Woon
@@ -141,11 +148,13 @@ public class ObjectProperties {
         return filterProperties(subPropertiesMap.keySet(), modes);
 	}
 
+	/**
+	 *  pass null for modes for the properties of all the modes
+	 */
 	public List<Property> filterProperties(Collection<Property> allProps, List<Property> modes) {
-
 		List<Property> props = new ArrayList<Property>();
 		for (Property p: allProps){
-			if (p.getModes() == null || p.getModes().isEmpty()) {
+			if (modes == null || p.getModes() == null || p.getModes().isEmpty()) {
 				props.add(p);
 			} else if (!modes.isEmpty() && !Collections.disjoint(p.getModes(), modes)) {
 				props.add(p);

@@ -32,12 +32,24 @@ import org.pathvisio.model.PropertyType;
 import org.pathvisio.model.ShapeType;
 import org.pathvisio.view.VPathway;
 
-import javax.swing.*;
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -499,7 +511,13 @@ public class TypedProperty implements Comparable<TypedProperty> {
 			if (value == null) { 
 				value = false;
 			}
-			setSelected((Boolean)value);
+			if (value instanceof Boolean){
+				setSelected((Boolean)value);
+			}else if (value instanceof String){ // if it's opening a saved file, then this value is string
+				setSelected(Boolean.parseBoolean((String)value));
+			}else{ // cannot interpret this value, so set it to false (unchecked)
+				setSelected(false);
+			}
 			return this;
 		}
 	}

@@ -16,28 +16,6 @@
 //
 package org.pathvisio.model;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.ValidatorHandler;
-
 import org.bridgedb.DataSource;
 import org.jdom.Attribute;
 import org.jdom.Content;
@@ -53,6 +31,27 @@ import org.pathvisio.model.GraphLink.GraphIdContainer;
 import org.pathvisio.model.PathwayElement.MAnchor;
 import org.pathvisio.model.PathwayElement.MPoint;
 import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.ValidatorHandler;
+import java.awt.Color;
+import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * class responsible for interaction with Gpml format.
@@ -732,22 +731,58 @@ public class GpmlFormatImpl1
 	{
 		for (Object f : e.getChildren("Attribute", e.getNamespace()))
 		{
-			o.setDynamicProperty(
-					getAttribute("Attribute", "Key", (Element)f), 
-					getAttribute("Attribute", "Value", (Element)f));
-		}    	
+			Property prop = PropertyManager.getProperty(getAttribute("Attribute", "Key", (Element)f));
+			String propStringValue = getAttribute("Attribute", "Value", (Element)f);
+			if (prop != null){
+				if (prop.getType().equals(PropertyClass.DICTIONARY)){
+					List<DictionaryEntry> entries = (List<DictionaryEntry>)o.getDynamicProperty(prop);
+					if (entries == null){
+						entries = new ArrayList<DictionaryEntry>();
+						o.setDynamicProperty(prop, entries);
+					}
+					Map<String, String> masterMap = DictionaryManager.getValuesMap(prop);
+					DictionaryEntry en = null;
+					if (masterMap.containsKey(propStringValue)){
+						String dictName = masterMap.get(propStringValue);
+						en = new DictionaryEntry(propStringValue, dictName);
+					}else{
+						en = new DictionaryEntry(propStringValue, propStringValue);
+						en.setValid(false);
+					}
+					entries.add(en);
+				}else{
+					o.setDynamicProperty(
+							prop,
+							propStringValue);
+				}
+			}else{ // legacy support
+				o.setDynamicProperty(getAttribute("Attribute", "Key", (Element)f), propStringValue);
+			}
+		}
 	}
 	
 	private void updateAttributes(PathwayElement o, Element e) throws ConverterException
 	{
 		if(e != null) 
 		{
-			for (Property key : o.getDynamicPropertyKeys())
+			for (Property key : o.getDynamicPropertyKeys(null))
 			{
-				Element a = new Element ("Attribute", e.getNamespace());
-				setAttribute ("Attribute", "Key", a, key.getName());
-				setAttribute ("Attribute", "Value", a, o.getDynamicProperty(key).toString());	
-				e.addContent (a);
+				Object dynamicPropvalue = o.getDynamicProperty(key);
+				if ( dynamicPropvalue!= null){
+					if (dynamicPropvalue instanceof Collection){
+						for (Object s : (Collection)dynamicPropvalue){
+							Element a = new Element ("Attribute", e.getNamespace());
+							setAttribute ("Attribute", "Key", a, key.getId());
+							setAttribute ("Attribute", "Value", a, s.toString());
+							e.addContent (a);
+						}
+					}else{
+						Element a = new Element ("Attribute", e.getNamespace());
+						setAttribute ("Attribute", "Key", a, key.getId());
+						setAttribute ("Attribute", "Value", a, dynamicPropvalue.toString());
+						e.addContent (a);
+					}
+				}
 			}
 		}
 	}
