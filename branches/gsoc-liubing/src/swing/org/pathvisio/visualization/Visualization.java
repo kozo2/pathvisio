@@ -33,7 +33,7 @@ import org.jdom.Element;
 import org.pathvisio.debug.Logger;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.view.Legend;
-import org.pathvisio.visualization.plugins.LegendPanel;
+//import org.pathvisio.visualization.plugins.LegendPanel; //[lb] avoid compiling error
 
 /**
  * Represents a set of configured visualization plugins
@@ -158,7 +158,7 @@ public class Visualization
 			double zoomFactor = l.getDrawing().getZoomFactor();
 			Font f = l.getVFont();
 			g2d.setFont(f);
-			LegendPanel.drawVisualization(visMgr, g2d, area, zoomFactor);
+			//LegendPanel.drawVisualization(visMgr, g2d, area, zoomFactor); //[lb] avoid compiling error
 		}
 	}
 
