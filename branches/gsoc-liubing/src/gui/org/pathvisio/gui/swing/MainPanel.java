@@ -303,11 +303,11 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 				zs=zs.replace("%","");
 				try {
 					double zf = Double.parseDouble(zs);
-						if(zf > 0){ // Ignore negtive number
-							ZoomAction za = new ZoomAction(swingEngine.getEngine(), zf);
-							za.setEnabled(true);
-							za.actionPerformed(e);
-						}
+					if(zf > 0){ // Ignore negative number
+						ZoomAction za = new ZoomAction(swingEngine.getEngine(), zf);
+						za.setEnabled(true);
+						za.actionPerformed(e);
+					}
 				} catch (Exception ex) {
 					// Ignore bad input
 				}
