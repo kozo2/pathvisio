@@ -184,6 +184,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	}
 
 	public void mouseDragged(MouseEvent e) {
+		System.out.println(e.getButton());
 		Rectangle r = container.getViewport().getViewRect();
 		final int stepSize = 10;
 		int newx = (int)r.getMinX();
@@ -217,20 +218,37 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 
 	public void mouseWheelMoved(MouseWheelEvent e) {
 	    int notches = e.getWheelRotation();
+	    double dx,dy;
+	    if(notches > 0){
+	    	child.setPctZoom(child.getPctZoom() * 21 / 20);
+	    	dx = - e.getPoint().x / 20.0;
+	    	dy = - e.getPoint().y / 20.0;
+	    } else {
+	    	child.setPctZoom(child.getPctZoom() * 20 / 21);
+	    	dx = e.getPoint().x / 21.0;
+	    	dy = e.getPoint().y / 21.0;
+	    }
+
+	    child.allMoveBy(dx, dy);
+	    
 	    //child.setPctZoom(child.getPctZoom() + notches * 5);	
+	    /*
 	    int oldx = container.getViewport().getViewPosition().x;
 	    int oldy = container.getViewport().getViewPosition().y;
 	    int newx, newy;
+
 	    if(notches > 0) {
 	    	child.setPctZoom(child.getPctZoom() * 21 / 20);
-	    	newx = oldx + e.getPoint().x / 20; 
-	    	newy = oldy + e.getPoint().y / 20; 
+	    	newx = (int)Math.round(oldx + e.getPoint().x / 20.0); 
+	    	newy = (int)Math.round(oldy + e.getPoint().y / 20.0); 
 	    } else { 
 	    	child.setPctZoom(child.getPctZoom() * 20 / 21);
-	    	newx = oldx - e.getPoint().x / 21; 
-	    	newy = oldy - e.getPoint().y / 21; 
+	    	newx = (int)Math.round(oldx - e.getPoint().x / 21.0); 
+	    	newy = (int)Math.round(oldy - e.getPoint().y / 21.0); 
 	    }
+	    System.out.println("new:"+newx+" "+newy);
 	    container.getViewport().setViewPosition(new Point (newx, newy));
+	    */
 	    
 		int comboIndex = 10;
 		DecimalFormat df = new DecimalFormat("###.#");
