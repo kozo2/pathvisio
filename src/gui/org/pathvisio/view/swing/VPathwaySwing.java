@@ -184,7 +184,6 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		System.out.println(e.getButton());
 		Rectangle r = container.getViewport().getViewRect();
 		final int stepSize = 10;
 		int newx = (int)r.getMinX();

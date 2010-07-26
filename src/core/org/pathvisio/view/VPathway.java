@@ -15,6 +15,7 @@
 // limitations under the License.
 package org.pathvisio.view;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Action;
+import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
@@ -807,6 +809,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 			vPreviousX = e.getX();
 			vPreviousY = e.getY();
 			isDraggingButton2 = true;
+			((JPanel)e.getSource()).setCursor(new Cursor(Cursor.HAND_CURSOR));
 		}
 		
 	}
@@ -867,6 +870,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 		if(e.getButton() == MouseEvent.BUTTON2){
 
 			isDraggingButton2 = false;
+			((JPanel)e.getSource()).setCursor(Cursor.getDefaultCursor());
 		}
 	}
 
