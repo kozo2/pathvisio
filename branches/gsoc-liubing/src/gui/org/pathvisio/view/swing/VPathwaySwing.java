@@ -78,7 +78,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 
 	VPathway child;
 
-	JScrollPane container;
+	public JScrollPane container; ///
 
 	public VPathwaySwing(JScrollPane parent) {
 		super();
@@ -184,7 +184,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		Rectangle r = container.getViewport().getViewRect();
+		Rectangle r = container.getViewport().getViewRect(); //System.out.println(r);
 		final int stepSize = 10;
 		int newx = (int)r.getMinX();
 		int newy = (int)r.getMinY();
@@ -218,7 +218,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	public void mouseWheelMoved(MouseWheelEvent e) {
 	    int notches = e.getWheelRotation();
 	    double dx,dy;
-	    if(notches > 0){
+	    if(notches < 0){
 	    	child.setPctZoom(child.getPctZoom() * 21 / 20);
 	    	dx = - e.getPoint().x / 20.0;
 	    	dy = - e.getPoint().y / 20.0;
@@ -227,8 +227,27 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	    	dx = e.getPoint().x / 21.0;
 	    	dy = e.getPoint().y / 21.0;
 	    }
+	    
+	    int newx = (int)Math.round(container.getViewport().getViewPosition().x - dx);
+	    int newy = (int)Math.round(container.getViewport().getViewPosition().y - dy);
 
-	    child.allMoveBy(dx, dy);
+	    
+	    /*
+	    int viewWidth = container.getViewport().getExtentSize().width;
+	    int viewHeight = container.getViewport().getExtentSize().height;
+	    System.out.println("=>("+viewWidth+","+viewHeight+")");
+	    System.out.println(container.getHorizontalScrollBar().isVisible());
+	    System.out.println("this:{"+this.getWidth()+","+this.getHeight()+"}");
+	    System.out.println("viewposition:["+container.getViewport().getViewPosition().x+","+container.getViewport().getViewPosition().y+"]");
+	    System.out.println("newxy:["+newx+","+newy+"]");
+	    */
+	    
+	    if(newx < 0 || newy < 0 || !container.getHorizontalScrollBar().isVisible() || !container.getVerticalScrollBar().isVisible()){
+	    	child.allMoveBy(dx, dy);
+	    } else {
+	    	container.getViewport().setViewPosition(new Point (newx, newy));
+	    }
+	    //child.allMoveBy(dx, dy);
 	    
 	    //child.setPctZoom(child.getPctZoom() + notches * 5);	
 	    /*
