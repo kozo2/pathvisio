@@ -64,6 +64,7 @@ import org.pathvisio.preferences.PreferenceManager;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.SelectionBox.SelectionListener;
 import org.pathvisio.view.ViewActions.KeyMoveAction;
+import org.pathvisio.view.swing.VPathwaySwing;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
@@ -680,11 +681,25 @@ public class VPathway implements PathwayListener, PathwayElementListener
 
 			hoverManager.reset(ve);
 		} else {
-			double vdx = ve.getX() - vPreviousX;
-			double vdy = ve.getY() - vPreviousY;
-			vPreviousX = ve.getX();
-			vPreviousY = ve.getY();
-			allMoveBy(vdx, vdy);			
+		    int vdx = ve.getX() - vPreviousX;
+			int vdy = ve.getY() - vPreviousY;
+			
+			VPathwaySwing vps = (VPathwaySwing)(ve.getSource());
+			int newx = vps.container.getViewport().getViewPosition().x - vdx;
+			int newy = vps.container.getViewport().getViewPosition().y - vdy;
+
+			//int viewWidth = vps.container.getViewport().getExtentSize().width;
+		    //int viewHeight = vps.container.getViewport().getExtentSize().height;
+		    
+			//if(newx < 0 || newy < 0){
+		    //if(newx < 0 || newy < 0 || vps.getWidth() == viewWidth || vps.getHeight() == viewHeight){
+		    if(newx < 0 || newy < 0 || !vps.container.getHorizontalScrollBar().isVisible() || !vps.container.getVerticalScrollBar().isVisible()){
+				vPreviousX = ve.getX();
+				vPreviousY = ve.getY();
+				allMoveBy(vdx, vdy);	
+			} else {
+				vps.container.getViewport().setViewPosition(new Point (newx, newy));
+			}
 		}
 	}
 	
@@ -692,12 +707,14 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	 * move all the objects
 	 */
 	public void allMoveBy(double dx, double dy)
-	{
+	{		
 		for(VPathwayElement vpe : drawingObjects) {
-			vpe.vMoveBy(dx,dy);
+			//System.out.println(vpe);
+			if(!vpe.equals(pressedObject) && (!(vpe instanceof Group)))
+					vpe.vMoveBy(dx,dy);
 	    }
-		
 	}
+	
 	private Set<VPathwayElement> lastMouseOver = new HashSet<VPathwayElement>();
 	private HoverManager hoverManager = new HoverManager();
 
@@ -781,7 +798,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	 */
 	public void mouseDown(MouseEvent e)
 	{
-		if(e.getButton() == MouseEvent.BUTTON1){
+		if(e.getButton() != MouseEvent.BUTTON2){
 			vDragStart = new Point(e.getX(), e.getY());
 			temporaryCopy = (Pathway) data.clone();
 			// setFocus();
@@ -804,8 +821,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 				fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
 						VPathwayEvent.ELEMENT_CLICKED_DOWN));
 			}
-		}
-		if(e.getButton() == MouseEvent.BUTTON2){
+		} else {
 			vPreviousX = e.getX();
 			vPreviousY = e.getY();
 			isDraggingButton2 = true;
@@ -819,7 +835,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	 */
 	public void mouseUp(MouseEvent e)
 	{
-		if(e.getButton() == MouseEvent.BUTTON1){
+		if(e.getButton() != MouseEvent.BUTTON2){
 			if (isDragging)
 			{
 				if (dragUndoState == DRAG_UNDO_CHANGED)
@@ -866,9 +882,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 				fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
 					VPathwayEvent.ELEMENT_CLICKED_UP));
 			}
-		}
-		if(e.getButton() == MouseEvent.BUTTON2){
-
+		} else {			
 			isDraggingButton2 = false;
 			((JPanel)e.getSource()).setCursor(Cursor.getDefaultCursor());
 		}
