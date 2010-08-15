@@ -708,10 +708,17 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	 */
 	public void allMoveBy(double dx, double dy)
 	{		
+		List<VPathwayElement> nonshapeObjects = new ArrayList<VPathwayElement>();
 		for(VPathwayElement vpe : drawingObjects) {
-			//System.out.println(vpe);
-			if(!vpe.equals(pressedObject) && (!(vpe instanceof Group)))
+			if(!vpe.equals(pressedObject) && (vpe instanceof Shape))
+				vpe.vMoveBy(dx,dy);
+			else
+				nonshapeObjects.add(vpe);
+		}
+		for(VPathwayElement vpe : nonshapeObjects) {
+			if(!vpe.equals(pressedObject) && (!(vpe instanceof Group))){
 					vpe.vMoveBy(dx,dy);
+			}
 	    }
 	}
 	
