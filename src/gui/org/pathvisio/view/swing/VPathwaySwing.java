@@ -78,7 +78,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 
 	VPathway child;
 
-	public JScrollPane container; ///
+	public JScrollPane container;
 
 	public VPathwaySwing(JScrollPane parent) {
 		super();
@@ -162,13 +162,29 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 
 	}
 
+	private int vPreviousX;
+	private int vPreviousY;
+	private boolean isPanning;
+	
 	public void mousePressed(MouseEvent e) {
 		requestFocus();
-		child.mouseDown(new SwingMouseEvent(e));
+		if(e.getButton() != MouseEvent.BUTTON2){
+			child.mouseDown(new SwingMouseEvent(e));
+		} else {
+			vPreviousX = e.getX();
+			vPreviousY = e.getY();
+			isPanning = true;
+			setCursor(new Cursor(Cursor.HAND_CURSOR));
+		}
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		child.mouseUp(new SwingMouseEvent(e));
+		if(e.getButton() != MouseEvent.BUTTON2){
+			child.mouseUp(new SwingMouseEvent(e));
+		} else {
+			isPanning = false;
+			setCursor(Cursor.getDefaultCursor());
+		}
 	}
 
 	public void keyPressed(KeyEvent e) {
@@ -184,7 +200,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		Rectangle r = container.getViewport().getViewRect(); //System.out.println(r);
+		Rectangle r = container.getViewport().getViewRect();
 		final int stepSize = 10;
 		int newx = (int)r.getMinX();
 		int newy = (int)r.getMinY();
@@ -208,7 +224,23 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 		container.getViewport().setViewPosition(
 				new Point (newx, newy)
 		);
-		child.mouseMove(new SwingMouseEvent(e));
+		if(!isPanning){
+			child.mouseMove(new SwingMouseEvent(e));
+		} else {
+		    int vdx = e.getX() - vPreviousX;
+			int vdy = e.getY() - vPreviousY;
+			
+			newx = container.getViewport().getViewPosition().x - vdx;
+			newy = container.getViewport().getViewPosition().y - vdy;
+
+		    if(newx < 0 || newy < 0 || !container.getHorizontalScrollBar().isVisible() || !container.getVerticalScrollBar().isVisible()){
+				vPreviousX = e.getX();
+				vPreviousY = e.getY();
+				child.allMoveBy(vdx, vdy);	
+			} else {
+				container.getViewport().setViewPosition(new Point (newx, newy));
+			}
+		}
 	}
 
 	public void mouseMoved(MouseEvent e) {
@@ -230,43 +262,12 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 	    
 	    int newx = (int)Math.round(container.getViewport().getViewPosition().x - dx);
 	    int newy = (int)Math.round(container.getViewport().getViewPosition().y - dy);
-
-	    
-	    /*
-	    int viewWidth = container.getViewport().getExtentSize().width;
-	    int viewHeight = container.getViewport().getExtentSize().height;
-	    System.out.println("=>("+viewWidth+","+viewHeight+")");
-	    System.out.println(container.getHorizontalScrollBar().isVisible());
-	    System.out.println("this:{"+this.getWidth()+","+this.getHeight()+"}");
-	    System.out.println("viewposition:["+container.getViewport().getViewPosition().x+","+container.getViewport().getViewPosition().y+"]");
-	    System.out.println("newxy:["+newx+","+newy+"]");
-	    */
 	    
 	    if(newx < 0 || newy < 0 || !container.getHorizontalScrollBar().isVisible() || !container.getVerticalScrollBar().isVisible()){
 	    	child.allMoveBy(dx, dy);
 	    } else {
 	    	container.getViewport().setViewPosition(new Point (newx, newy));
 	    }
-	    //child.allMoveBy(dx, dy);
-	    
-	    //child.setPctZoom(child.getPctZoom() + notches * 5);	
-	    /*
-	    int oldx = container.getViewport().getViewPosition().x;
-	    int oldy = container.getViewport().getViewPosition().y;
-	    int newx, newy;
-
-	    if(notches > 0) {
-	    	child.setPctZoom(child.getPctZoom() * 21 / 20);
-	    	newx = (int)Math.round(oldx + e.getPoint().x / 20.0); 
-	    	newy = (int)Math.round(oldy + e.getPoint().y / 20.0); 
-	    } else { 
-	    	child.setPctZoom(child.getPctZoom() * 20 / 21);
-	    	newx = (int)Math.round(oldx - e.getPoint().x / 21.0); 
-	    	newy = (int)Math.round(oldy - e.getPoint().y / 21.0); 
-	    }
-	    System.out.println("new:"+newx+" "+newy);
-	    container.getViewport().setViewPosition(new Point (newx, newy));
-	    */
 	    
 		int comboIndex = 10;
 		DecimalFormat df = new DecimalFormat("###.#");
