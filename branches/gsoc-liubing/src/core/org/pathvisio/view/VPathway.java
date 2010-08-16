@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -64,7 +63,6 @@ import org.pathvisio.preferences.PreferenceManager;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.SelectionBox.SelectionListener;
 import org.pathvisio.view.ViewActions.KeyMoveAction;
-import org.pathvisio.view.swing.VPathwaySwing;
 
 /**
  * This class implements and handles a drawing. Graphics objects are stored in
@@ -85,7 +83,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	private Pathway temporaryCopy = null;
 
 	/**
-	 * Retuns true if snap to anchors is enabled
+	 * Returns true if snap to anchors is enabled
 	 */
 	public boolean isSnapToAnchors()
 	{
@@ -615,14 +613,14 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	private int vPreviousX;
 	private int vPreviousY;
 	private boolean isDragging;
-	private boolean isDraggingButton2;
+	//private boolean isPanning;
 	
 	/**
 	 * handles mouse movement
 	 */
 	public void mouseMove(MouseEvent ve)
 	{
-		if(!isDraggingButton2){
+		//if(!isDraggingButton2){
 			snapToAngle = ve.isKeyDown(MouseEvent.M_SHIFT);
 			// If draggin, drag the pressed object
 			// And only when the right button isn't clicked
@@ -680,7 +678,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 			}
 
 			hoverManager.reset(ve);
-		} else {
+		/*} else {
 		    int vdx = ve.getX() - vPreviousX;
 			int vdy = ve.getY() - vPreviousY;
 			
@@ -700,7 +698,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 			} else {
 				vps.container.getViewport().setViewPosition(new Point (newx, newy));
 			}
-		}
+		} */
 	}
 	
 	/**
@@ -805,36 +803,28 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	 */
 	public void mouseDown(MouseEvent e)
 	{
-		if(e.getButton() != MouseEvent.BUTTON2){
-			vDragStart = new Point(e.getX(), e.getY());
-			temporaryCopy = (Pathway) data.clone();
-			// setFocus();
-			if (editMode)
+		vDragStart = new Point(e.getX(), e.getY());
+		temporaryCopy = (Pathway) data.clone();
+		// setFocus();
+		if (editMode)
+		{
+			if (newTemplate != null)
 			{
-				if (newTemplate != null)
-				{
-					newObject(new Point(e.getX(), e.getY()));
-					// SwtGui.getCurrent().getWindow().deselectNewItemActions();
-				} else
-				{
-					editObject(new Point(e.getX(), e.getY()), e);
-				}
+				newObject(new Point(e.getX(), e.getY()));
+				// SwtGui.getCurrent().getWindow().deselectNewItemActions();
 			} else
 			{
-				mouseDownViewMode(e);
+				editObject(new Point(e.getX(), e.getY()), e);
 			}
-			if (pressedObject != null)
-			{
-				fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
-						VPathwayEvent.ELEMENT_CLICKED_DOWN));
-			}
-		} else {
-			vPreviousX = e.getX();
-			vPreviousY = e.getY();
-			isDraggingButton2 = true;
-			((JPanel)e.getSource()).setCursor(new Cursor(Cursor.HAND_CURSOR));
+		} else
+		{
+			mouseDownViewMode(e);
 		}
-		
+		if (pressedObject != null)
+		{
+			fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
+					VPathwayEvent.ELEMENT_CLICKED_DOWN));
+		}		
 	}
 
 	/**
@@ -842,56 +832,51 @@ public class VPathway implements PathwayListener, PathwayElementListener
 	 */
 	public void mouseUp(MouseEvent e)
 	{
-		if(e.getButton() != MouseEvent.BUTTON2){
-			if (isDragging)
+		if (isDragging)
+		{
+			if (dragUndoState == DRAG_UNDO_CHANGED)
 			{
-				if (dragUndoState == DRAG_UNDO_CHANGED)
+				assert (temporaryCopy != null);
+				// further specify the type of undo event,
+				// depending on the type of object being dragged
+				String message = "Drag Object";
+				if (pressedObject instanceof Handle)
 				{
-					assert (temporaryCopy != null);
-					// further specify the type of undo event,
-					// depending on the type of object being dragged
-					String message = "Drag Object";
-					if (pressedObject instanceof Handle)
+					if (((Handle) pressedObject).getFreedom() == Handle.Freedom.ROTATION)
 					{
-						if (((Handle) pressedObject).getFreedom() == Handle.Freedom.ROTATION)
-						{
-							message = "Rotate Object";
-						} else
-						{
-							message = "Resize Object";
-						}
+						message = "Rotate Object";
+					} else
+					{
+						message = "Resize Object";
 					}
-					undoManager.newAction(new UndoAction(message, temporaryCopy));
-					temporaryCopy = null;
 				}
-				resetHighlight();
-				hideLinkAnchors();
-				if (selection.isSelecting())
-				{ // If we were selecting, stop it
-					selection.stopSelecting();
-				}
-				// check if we placed a new object by clicking or dragging
-				// if it was a click, give object the initial size.
-				else if (newObject != null
-						&& Math.abs(vDragStart.x - e.getX()) <= MIN_DRAG_LENGTH
-						&& Math.abs(vDragStart.y - e.getY()) <= MIN_DRAG_LENGTH)
-				{
-					newObject.setInitialSize();
-				}
-				newObject = null;
-				setNewTemplate(null);
-				redrawDirtyRect();
+				undoManager.newAction(new UndoAction(message, temporaryCopy));
+				temporaryCopy = null;
 			}
-			isDragging = false;
-			dragUndoState = DRAG_UNDO_NOT_RECORDING;
-			if (pressedObject != null)
+			resetHighlight();
+			hideLinkAnchors();
+			if (selection.isSelecting())
+			{ // If we were selecting, stop it
+				selection.stopSelecting();
+			}
+			// check if we placed a new object by clicking or dragging
+			// if it was a click, give object the initial size.
+			else if (newObject != null
+					&& Math.abs(vDragStart.x - e.getX()) <= MIN_DRAG_LENGTH
+					&& Math.abs(vDragStart.y - e.getY()) <= MIN_DRAG_LENGTH)
 			{
-				fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
-					VPathwayEvent.ELEMENT_CLICKED_UP));
+				newObject.setInitialSize();
 			}
-		} else {			
-			isDraggingButton2 = false;
-			((JPanel)e.getSource()).setCursor(Cursor.getDefaultCursor());
+			newObject = null;
+			setNewTemplate(null);
+			redrawDirtyRect();
+		}
+		isDragging = false;
+		dragUndoState = DRAG_UNDO_NOT_RECORDING;
+		if (pressedObject != null)
+		{
+			fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
+					VPathwayEvent.ELEMENT_CLICKED_UP));
 		}
 	}
 
