@@ -167,6 +167,9 @@ public class CommonActions implements ApplicationEventListener {
 							new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.METABOLITE))
 					},
 					new Action[] {
+							new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.PATHWAY))
+					},
+					new Action[] {
 							new NewElementAction(e, new DefaultTemplates.LabelTemplate())
 					},
 					new Action[] {
