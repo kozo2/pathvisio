@@ -101,8 +101,7 @@ public class Line extends Graphics implements Adjustable
 		for (VPoint vp : points)
 		{
 			vp.handle = new Handle(Handle.Freedom.FREE, this, vp);
-			//vp.handle.setCursorHint(Cursor.HAND_CURSOR);
-			vp.handle.setAngle(1);
+			vp.handle.setCursorHint(Cursor.MOVE_CURSOR);
 			setHandleLocation(vp);
 		}
 	}

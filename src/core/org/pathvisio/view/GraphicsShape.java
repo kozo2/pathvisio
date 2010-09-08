@@ -18,6 +18,7 @@ package org.pathvisio.view;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -80,7 +81,7 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 				&& gdata.getShapeType().isRotatable())
 		{
 			handleR = new Handle(Handle.Freedom.ROTATION, this, this);
-			handleR.setAngle(1);
+			handleR.setCursorHint(Cursor.MOVE_CURSOR);
 			handles = new Handle[]
 			{
 					handleR
@@ -92,12 +93,10 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 			handleSE = new Handle(Handle.Freedom.FREE, this, this);
 			handleSW = new Handle(Handle.Freedom.FREER, this, this);
 			handleNW = new Handle(Handle.Freedom.FREE, this, this);
-			
-			handleNE.setAngle(315);
-			handleSE.setAngle(45);
-			handleSW.setAngle(135);
-			handleNW.setAngle(225);
-			
+			handleNE.setCursorHint(Cursor.NE_RESIZE_CURSOR);
+			handleSE.setCursorHint(Cursor.SE_RESIZE_CURSOR);
+			handleSW.setCursorHint(Cursor.SW_RESIZE_CURSOR);
+			handleNW.setCursorHint(Cursor.NW_RESIZE_CURSOR);
 			handles = new Handle[]
   				{
   					handleNE, handleSE,
@@ -116,14 +115,14 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 			handleSW = new Handle(Handle.Freedom.FREER, this, this);
 			handleNW = new Handle(Handle.Freedom.FREE, this, this);
 
-			handleN.setAngle(270);
-			handleE.setAngle(0);
-			handleS.setAngle(90);
-			handleW.setAngle(180);
-			handleNE.setAngle(315);
-			handleSE.setAngle(45);
-			handleSW.setAngle(135);
-			handleNW.setAngle(225);
+			handleN.setCursorHint(Cursor.N_RESIZE_CURSOR);
+			handleE.setCursorHint(Cursor.E_RESIZE_CURSOR);
+			handleS.setCursorHint(Cursor.S_RESIZE_CURSOR);
+			handleW.setCursorHint(Cursor.W_RESIZE_CURSOR);
+			handleNE.setCursorHint(Cursor.NE_RESIZE_CURSOR);
+			handleSE.setCursorHint(Cursor.SE_RESIZE_CURSOR);
+			handleSW.setCursorHint(Cursor.SW_RESIZE_CURSOR);
+			handleNW.setCursorHint(Cursor.NW_RESIZE_CURSOR);
             
 			if(this instanceof GeneProduct || 
 				this instanceof Label || !gdata.getShapeType().isRotatable())
@@ -138,7 +137,7 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 			else
 			{
 				handleR = new Handle(Handle.Freedom.ROTATION, this, this);
-				handleR.setAngle(1);
+				handleR.setCursorHint(Cursor.MOVE_CURSOR);
 
 				handles = new Handle[]
 				{
@@ -213,7 +212,7 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 	public void setRotation(double angle)
 	{
 		if(angle < 0) gdata.setRotation(angle + Math.PI*2);
-		else if (angle > Math.PI*2) gdata.setRotation (angle - Math.PI*2);
+		else if(angle > Math.PI*2) gdata.setRotation (angle - Math.PI*2);
 		else gdata.setRotation(angle);
 	}
 
@@ -544,9 +543,6 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 			for(int i = 0; i < lines.length; i++) {
 				if(lines[i].equals("")) continue; //Can't have attributed string with 0 length
 				AttributedString ats = getVAttributedString(lines[i]);
-				if(!gdata.getHref().equals("")) {
-					ats.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-	            }
 				Rectangle2D tb = fm.getStringBounds(ats.getIterator(), 0, lines[i].length(), g);
 
 				int xoffset = area.x;

@@ -111,12 +111,6 @@ public class CommonActions implements ApplicationEventListener {
 
 	public final Action[][] newElementActions;
 	
-	public final Action[] newDatanodeActions;	
-	
-	public final Action[] newAnnotationActions;	
-	
-	public final Action[] newTemplateActions;	
-	
 	public final Action[] newShapeActions;	
 	
 	public final Action[] newCellularComponentActions;
@@ -171,6 +165,9 @@ public class CommonActions implements ApplicationEventListener {
 					},
 					new Action[] {
 							new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.METABOLITE))
+					},
+					new Action[] {
+							new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.PATHWAY))
 					},
 					new Action[] {
 							new NewElementAction(e, new DefaultTemplates.LabelTemplate())
@@ -237,29 +234,7 @@ public class CommonActions implements ApplicationEventListener {
 							new NewElementAction(e, new DefaultTemplates.ReactionTemplate()) },
 
 			};
-	
-		 // actions for "Data nodes" section
-		 newDatanodeActions = new Action[] {
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.GENEPRODUCT)),
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.METABOLITE)),
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.PATHWAY)),
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.COMPLEX)),
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.PROTEIN)),
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.RNA)),
-				 new NewElementAction(e, new DefaultTemplates.DataNodeTemplate(DataNodeType.UNKOWN)),
-		 };
-		
-		 // actions for "Annotations" section
-		 newAnnotationActions = new Action[] {
-				 new NewElementAction(e, new DefaultTemplates.LabelTemplate()),
-		 };
-		
-		 // actions for "Template" section
-		 newTemplateActions = new Action[] {
-				 new NewElementAction(e, new  DefaultTemplates.InteractionTemplate()),
-				 new NewElementAction(e, new  DefaultTemplates.ReactionTemplate()),
-		 };
-		
+		 
 		 // actions for "Basic shapes" section
 		 newShapeActions = new Action[] {
 				 new NewElementAction(e, new DefaultTemplates.ShapeTemplate(ShapeType.RECTANGLE)),

@@ -27,8 +27,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +71,6 @@ import org.pathvisio.model.PathwayElement;
 import org.pathvisio.util.Resources;
 import org.pathvisio.view.Graphics;
 import org.pathvisio.view.Handle;
-import org.pathvisio.view.Label;
 import org.pathvisio.view.SelectionBox;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayElement;
@@ -206,16 +203,13 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 		
 		objectsPane = new ObjectsPane(swingEngine);
 		int numItemsPerRow = 10;
-		objectsPane.addButtons(actions.newDatanodeActions, "Data Nodes", numItemsPerRow);
 		objectsPane.addButtons(actions.newShapeActions, "Basic Shapes", numItemsPerRow);
 		objectsPane.addButtons(actions.newMIMShapeActions, "MIM shapes", numItemsPerRow);
 		objectsPane.addButtons(actions.newInteractionActions, "Basic interactions", numItemsPerRow);
 		//objectsPane.addButtons(actions.newRLInteractionActions, "Receptor/ligand", numItemsPerRow);
 		objectsPane.addButtons(actions.newMIMInteractionActions, "MIM interactions", numItemsPerRow);
 		objectsPane.addButtons(actions.newCellularComponentActions, "Cellular compartments", numItemsPerRow);
-		objectsPane.addButtons(actions.newAnnotationActions, "Annotations", numItemsPerRow);
-		objectsPane.addButtons(actions.newTemplateActions, "Templates", numItemsPerRow);
-				
+		
 		propertyTable = new JTable(model) {
 
 			public TableCellRenderer getCellRenderer(int row, int column) {
@@ -479,20 +473,7 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 				b.setEnabled(false);
 			}
 			break;
-		case VPathwayEvent.HREF_ACTIVATED:
-			if(e.getAffectedElement() instanceof Label) {
-				try {
-					hyperlinkUpdate(new HyperlinkEvent(e.getSource(), HyperlinkEvent.EventType.ACTIVATED, new URL(((Label)e.getAffectedElement()).getPathwayElement().getHref())));
-				} catch (MalformedURLException e1) {
-					swingEngine.getEngine().getActiveVPathway().selectObject(e.getAffectedElement());
-					swingEngine.handleMalformedURLException("The specified link address is not valid.", this, e1);
-				}
-			}
 		}
-	}
-	
-	public void hyperlinkUpdate(HyperlinkEvent e) {
-		swingEngine.hyperlinkUpdate(e);
 	}
 
 	public void applicationEvent(ApplicationEvent e) {

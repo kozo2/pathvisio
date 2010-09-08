@@ -138,7 +138,6 @@ public class Test extends TestCase
 		}
 		catch (ConverterException e)
 		{
-			e.printStackTrace();
 			fail ("No ConverterException expected in original Pathway");
 		}
 		originalDoc = new PwyDoc (originalPwy);

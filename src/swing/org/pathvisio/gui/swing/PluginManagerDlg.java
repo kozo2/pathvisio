@@ -22,15 +22,12 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.pathvisio.plugin.PluginManager.PluginInfo;
-
-import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Creates and displays the Plugin Manager dialog,
@@ -66,11 +63,9 @@ public class PluginManagerDlg
 				dlg.dispose();
 			}
 		});
-		CellConstraints cc = new CellConstraints();
-		JPanel panelSouth = new JPanel();
-		panelSouth.add (btnOk, cc.xyw (2, 6, 3, "center, top"));
-		dlg.add (panelSouth, BorderLayout.SOUTH);
-		
+
+		dlg.add (btnOk, BorderLayout.SOUTH);
+
 		DefaultMutableTreeNode errors = new DefaultMutableTreeNode ("errors");
 		top.add (errors);
 

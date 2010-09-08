@@ -17,6 +17,7 @@
 package org.pathvisio.view;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -42,7 +43,7 @@ public class Handle extends VPathwayElement
 	 * specified at creation time and does not change during
 	 * the life of a Handle.
 	 */
-	public enum Freedom {
+	enum Freedom {
 		/** a FREE handle can move to any location on the canvas, it move diagonally when SHIFT is pressed */
 		FREE,
 		/** a FREER handle can move to any location on the canvas, it move diagonally (perpendicular to XY) when SHIFT is pressed */
@@ -92,10 +93,10 @@ public class Handle extends VPathwayElement
 
 	// used for calculations related to rotating parent objects
 	double rotation;
-	
-	// the start angle of the handle without rotation 
-	// (degrees of the angle in the bounding box of the element)
-	private int angle = 1;
+
+	// the appearance of the mouse cursor when
+	// the mouse hovers over / drags this handle
+	private int cursor = Cursor.DEFAULT_CURSOR;
 
 	/**
 	 * Constructor for this class, creates a handle given the parent, direction and canvas
@@ -124,21 +125,19 @@ public class Handle extends VPathwayElement
 	public void setStyle(Style style) {
 		this.style = style;
 	}
-	
+
 	/**
-	 * set the angle of the handle
-	 * is used to calculate the corresponding cursor type
-	 * @param angle without rotation in degrees
+	 * Set a hint for a cursor to use by the front-end while
+	 * dragging or hovering over this handle.
+	 * @param cursor One of the Swing cursor types
 	 */
-	public void setAngle(int angle) {
-		this.angle = angle;
-	}
-	
-	public int getAngle() {
-		return angle;
+	public void setCursorHint(int cursor) {
+		this.cursor = cursor;
 	}
 
-	
+	public int getCursorHint() {
+		return cursor;
+	}
 
 	/**
 	 * The object being adjusted by this Handle. Usually, but
