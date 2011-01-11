@@ -82,16 +82,17 @@ public class Shape extends Annotation implements ViewportChangeListener {
 
 		if (pwElm.getShapeType() == null || pwElm.getShapeType() == ShapeType.NONE)
 		{
-			s = ShapeRegistry.DEFAULT_SHAPE.getShape(w, h);
+			s = ShapeRegistry.getShape ("Default", x, y, w, h);
 		}
 		else
 		{
-			s = pwElm.getShapeType().getShape (w, h);
+			s = ShapeRegistry.getShape (
+					pwElm.getShapeType().getName(),
+					x, y, w, h);
 		}
 
 		AffineTransform t = new AffineTransform();
 		t.rotate(pwElm.getRotation(), cx, cy);
-		t.translate(x, y);
 		s = t.createTransformedShape(s);
 		
 		if (pwElm.getShapeType() == ShapeType.BRACE ||

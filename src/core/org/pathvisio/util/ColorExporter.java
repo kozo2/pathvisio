@@ -42,7 +42,6 @@ import org.pathvisio.view.VPathwayElement;
 import org.pathvisio.view.VPathwayEvent;
 import org.pathvisio.view.VPathwayListener;
 import org.pathvisio.view.VPathwayWrapperBase;
-import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
 
 /**
  * Utility that takes a set of graphId/Color pairs and exports a pathway
@@ -70,7 +69,7 @@ public class ColorExporter implements VPathwayListener {
 	}
 
 	public void vPathwayEvent(VPathwayEvent e) {
-		if(e.getType() == VPathwayEventType.ELEMENT_DRAWN) {
+		if(e.getType() == VPathwayEvent.ELEMENT_DRAWN) {
 			VPathwayElement vpwe = e.getAffectedElement();
 			if(vpwe instanceof Graphics) {
 				PathwayElement pwe = ((Graphics)vpwe).getPathwayElement();

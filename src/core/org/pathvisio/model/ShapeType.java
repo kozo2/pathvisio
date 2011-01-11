@@ -16,75 +16,61 @@
 //
 package org.pathvisio.model;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.pathvisio.view.GenMAPPShapes;
-import org.pathvisio.view.GenMAPPShapes.Internal;
-import org.pathvisio.view.ShapeRegistry;
-
 /**
    Extensible enum
  */
-public enum ShapeType implements IShape
+public class ShapeType
 {
-	NONE(null, "None", "None"),
-	RECTANGLE(new Rectangle (0, 0, 10, 10), "Rectangle"),
-	ROUNDED_RECTANGLE(null, "RoundedRectangle")
-	{
-		public Shape getShape (double mw, double mh)
-		{
-			return new RoundRectangle2D.Double (0, 0, mw, mh, 20, 20);
-		}	
-	},
-	
-	OVAL(new Ellipse2D.Double (0, 0, 10, 10), "Oval"),
-	ARC(new Arc2D.Double (0, 0, 10, 10, 0, -180, Arc2D.OPEN), "Arc"),
-	TRIANGLE(GenMAPPShapes.getRegularPolygon (3, 10, 10), "Triangle", "Poly"), // poly ;in MAPP
-	PENTAGON(GenMAPPShapes.getRegularPolygon (5, 10, 10), "Pentagon", "Poly"), // poly in MAPP
-	HEXAGON(GenMAPPShapes.getRegularPolygon (6, 10, 10), "Hexagon", "Poly"), // poly in MAPP
-	BRACE(GenMAPPShapes.getPluggableShape (Internal.BRACE), "Brace", "Brace"),	
-	MITOCHONDRIA(GenMAPPShapes.getPluggableShape (Internal.MITOCHONDRIA), "Mitochondria", null),
-	SARCOPLASMICRETICULUM(GenMAPPShapes.getPluggableShape (Internal.SARCOPLASMICRETICULUM), "Sarcoplasmic Reticulum", null),
-	ENDOPLASMICRETICULUM(GenMAPPShapes.getPluggableShape (Internal.ENDOPLASMICRETICULUM), "Endoplasmic Reticulum", null),
-	GOLGIAPPARATUS(GenMAPPShapes.getPluggableShape (Internal.GOLGIAPPARATUS), "Golgi Apparatus", null),
-	
-	@Deprecated
-	CELL(GenMAPPShapes.getCombinedShape (Internal.CELL), "Cell", null),
-	@Deprecated
-	NUCLEUS(GenMAPPShapes.getCombinedShape (Internal.NUCLEUS), "Nucleus", null),
-	@Deprecated
-	ORGANELLE(GenMAPPShapes.getCombinedShape (Internal.ORGANELLE), "Organelle", null),
-	@Deprecated
-	VESICLE(GenMAPPShapes.getCombinedShape (Internal.VESICLE), "Vesicle", "Vesicle"),
-	@Deprecated
-	MEMBRANE(null, "Membrane", "Membrane"),
-	@Deprecated
-	CELLA(GenMAPPShapes.getPluggableShape (Internal.CELLA), "CellA", "CellA"),
-	@Deprecated
-	RIBOSOME(GenMAPPShapes.getPluggableShape (Internal.RIBOSOME), "Ribosome", "Ribosome"),
-	@Deprecated
-	ORGANA(GenMAPPShapes.getPluggableShape (Internal.ORGANA), "OrganA", "OrganA"),
-	@Deprecated
-	ORGANB(GenMAPPShapes.getPluggableShape (Internal.ORGANB), "OrganB", "OrganB"),
-	@Deprecated
-	ORGANC(GenMAPPShapes.getPluggableShape (Internal.ORGANA), "OrganC", "OrganC"),
-	@Deprecated
-	PROTEINB(GenMAPPShapes.getPluggableShape (Internal.PROTEINB), "ProteinComplex", "ProteinB"),
+	private static Map<String, ShapeType> mappMappings = new HashMap<String, ShapeType>();
+	private static Map<String, ShapeType> nameMappings = new HashMap<String, ShapeType>();
+	private static List<ShapeType> values = new ArrayList<ShapeType>();
 
-	;
+	public static final ShapeType NONE = new ShapeType ("None", "None");
+	public static final ShapeType RECTANGLE = new ShapeType ("Rectangle", "Rectangle");
+	public static final ShapeType ROUNDED_RECTANGLE = new ShapeType ("RoundedRectangle", "RoundedRectangle");
+	public static final ShapeType OVAL = new ShapeType ("Oval", "Oval");
+	public static final ShapeType ARC = new ShapeType ("Arc", "Arc");
+	public static final ShapeType TRIANGLE = new ShapeType ("Triangle", "Poly"); // poly ;in MAPP
+	public static final ShapeType PENTAGON = new ShapeType ("Pentagon", "Poly"); // poly in MAPP
+	public static final ShapeType HEXAGON = new ShapeType ("Hexagon", "Poly"); // poly in MAPP
+	public static final ShapeType BRACE = new ShapeType ("Brace", "Brace");	
+	public static final ShapeType MITOCHONDRIA = new ShapeType ("Mitochondria", null);
+	public static final ShapeType SARCOPLASMICRETICULUM = new ShapeType ("Sarcoplasmic Reticulum", null);
+	public static final ShapeType ENDOPLASMICRETICULUM = new ShapeType ("Endoplasmic Reticulum", null);
+	public static final ShapeType GOLGIAPPARATUS = new ShapeType ("Golgi Apparatus", null);
+	
+	// BEGIN DEPRECATION MANAGEMENT CODE
+	@Deprecated
+	public static final ShapeType CELL = new ShapeType ("Cell", null);
+	@Deprecated
+	public static final ShapeType NUCLEUS = new ShapeType ("Nucleus", null);
+	@Deprecated
+	public static final ShapeType ORGANELLE = new ShapeType ("Organelle", null);
+	@Deprecated
+	public static final ShapeType VESICLE = new ShapeType ("Vesicle", "Vesicle");
+	@Deprecated
+	public static final ShapeType MEMBRANE = new ShapeType ("Membrane", "Membrane");
+	@Deprecated
+	public static final ShapeType CELLA = new ShapeType ("CellA", "CellA");
+	@Deprecated
+	public static final ShapeType RIBOSOME = new ShapeType ("Ribosome", "Ribosome");
+	@Deprecated
+	public static final ShapeType ORGANA = new ShapeType ("OrganA", "OrganA");
+	@Deprecated
+	public static final ShapeType ORGANB = new ShapeType ("OrganB", "OrganB");
+	@Deprecated
+	public static final ShapeType ORGANC = new ShapeType ("OrganC", "OrganC");
+	@Deprecated
+	public static final ShapeType PROTEINB = new ShapeType ("ProteinComplex", "ProteinB");
 
+	
 	//This map is used to track deprecated shapetypes for conversion and exclusion from gui
 	public static final Map<ShapeType, ShapeType> deprecatedMap = new HashMap<ShapeType, ShapeType>();
-	private static final List<ShapeType> visibleValues = new ArrayList<ShapeType>();
 	static { 
 		deprecatedMap.put(CELL, ROUNDED_RECTANGLE);
 		deprecatedMap.put(ORGANELLE, ROUNDED_RECTANGLE);
@@ -97,21 +83,30 @@ public enum ShapeType implements IShape
 		deprecatedMap.put(VESICLE, OVAL);   	
 		deprecatedMap.put(PROTEINB, HEXAGON);
 		deprecatedMap.put(RIBOSOME, HEXAGON);
-		
-		// prune from list for gui
-		for (ShapeType s : values())
-		{
-			if (!deprecatedMap.containsKey(s)){
-				visibleValues.add(s);
-			}
-		}
+		// exclude from list for gui
+		pruneValues();
 	}
 	
-	private final String name;
-	private final String mappName;
-	private final boolean isResizeable;
-	private final boolean isRotatable;
-	private final Shape sh;
+	/**
+	 * Prunes values list for deprecated shapes
+	 */
+	private static void pruneValues() {
+		List<ShapeType> list = new ArrayList<ShapeType>();
+		for (int i = 0; i < values.size(); ++i)
+		{
+			ShapeType s = values.get(i);
+			if (!deprecatedMap.containsKey(s)){
+				list.add(s);
+			}
+		}
+		values = list;
+	}
+	// END DEPRECATION MANAGEMENT CODE
+   
+	private String name;
+	private String mappName;
+	private boolean isResizeable;
+	private boolean isRotatable;
 
 	/**
 	   The constructor is private so we have to use the "create"
@@ -120,31 +115,93 @@ public enum ShapeType implements IShape
 
 	   Note that mappName may be null for Shapes that are not supported by GenMAPP.
 	 */
-	private ShapeType(Shape shape, String name, String mappName)
+	private ShapeType(String name, String mappName)
 	{
-		this(shape, name, mappName, true, true);
+		this(name, mappName, true, true);
 	}
 
-	private ShapeType (Shape shape, String name, String mappName, boolean isResizeable, boolean isRotatable)
+	private ShapeType (String name, String mappName, boolean isResizeable, boolean isRotatable)
 	{
 		if (name == null) { throw new NullPointerException(); }
 		this.isResizeable = isResizeable;
 		this.isRotatable = isRotatable;
 		this.mappName = mappName;
 		this.name  = name;
-		this.sh = shape;
-		
-		ShapeRegistry.registerShape(this);
+
+		if (mappName != null)
+		{
+			mappMappings.put (mappName, this);
+		}
+		nameMappings.put (name, this);
+
+		// add it to the array list.
+		values.add (this);
 	}
 
-	private ShapeType(Shape shape, String name)
+	/**
+	   Create an object and add it to the list.
+
+	   For extending the enum.
+	 */
+	public static ShapeType create (String name, String mappName)
 	{
-		this (shape, name, name, true, true);
+		if (nameMappings.containsKey (name))
+		{
+			return nameMappings.get (name);
+		}
+		else
+		{
+			return new ShapeType (name, mappName, true, true);
+		}
+	}
+
+   /**
+	   Create an object and add it to the list.
+
+	   For extending the enum.
+	 */
+	public static ShapeType create (String name, String mappName, boolean isResizeable, boolean isRotatable)
+	{
+		if (nameMappings.containsKey (name))
+		{
+			return nameMappings.get (name);
+		}
+		else
+		{
+			return new ShapeType (name, mappName, isResizeable, isRotatable);
+		}
+	}
+
+    /*
+	 * Warning when using fromMappName: in case value == Poly, 
+	 * this will return Triangle. The caller needs to check for
+	 * this special
+	 * case.
+	 */
+	public static ShapeType fromMappName (String value)
+	{
+		return mappMappings.get(value);
 	}
 
 	public String getMappName()
 	{
 		return mappName;
+	}
+
+	/**
+	   @deprecated: use ShapeType.fromName() instead, it does the same thing.
+	 */
+	public static ShapeType fromGpmlName (String value)
+	{
+		return fromName (value);
+	}
+
+	/**
+	   looks up the ShapeType corresponding to that name.
+	 */
+	public static ShapeType fromName (String value)
+	{
+		return nameMappings.get(value);
 	}
 
 	/**
@@ -155,20 +212,26 @@ public enum ShapeType implements IShape
 		return name;
 	}
 
-	static public String[] getVisibleNames()
-	{
-		String[] result = new String[visibleValues.size()];
+	/**
+	   Returns the names of all registered Shape types, in such a way that the index
+	   is equal to it's ordinal value.
 
-		for (int i = 0; i < visibleValues.size(); ++i)
+	   i.e. ShapeType.fromName(ShapeType.getNames[n]).getOrdinal() == n
+	 */
+	static public String[] getNames()
+	{
+		String[] result = new String[values.size()];
+
+		for (int i = 0; i < values.size(); ++i)
 		{
-			result[i] = visibleValues.get(i).getName();
+			result[i] = values.get(i).getName();
 		}
 		return result;
 	}
 
-	static public ShapeType[] getVisibleValues()
+	static public ShapeType[] getValues()
 	{
-		return visibleValues.toArray(new ShapeType[0]);
+		return values.toArray(new ShapeType[0]);
 	}
 
 	public String toString()
@@ -184,17 +247,6 @@ public enum ShapeType implements IShape
 	public boolean isRotatable()
 	{
 		return isRotatable;
-	}
-
-	@Override
-	public Shape getShape(double mw, double mh)
-	{
-		// now scale the path so it has proper w and h.
-		Rectangle r = sh.getBounds();
-		AffineTransform at = new AffineTransform();
-		at.translate ( - r.x,  - r.y);
-		at.scale (mw / r.width, mh / r.height);
-		return at.createTransformedShape (sh);
 	}
 
 }

@@ -60,7 +60,6 @@ import org.pathvisio.preferences.GlobalPreference;
 import org.pathvisio.preferences.PreferenceManager;
 import org.pathvisio.util.Utils;
 import org.pathvisio.view.SelectionBox.SelectionListener;
-import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
 import org.pathvisio.view.ViewActions.KeyMoveAction;
 import org.pathvisio.view.ViewActions.TextFormattingAction;
 
@@ -294,7 +293,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 
 		// data.fireObjectModifiedEvent(new PathwayEvent(null,
 		// PathwayEvent.MODIFIED_GENERAL));
-		fireVPathwayEvent(new VPathwayEvent(this, VPathwayEventType.MODEL_LOADED));
+		fireVPathwayEvent(new VPathwayEvent(this, VPathwayEvent.MODEL_LOADED));
 		data.addListener(this);
 		undoManager.setPathway(data);
 		addScheduled();
@@ -427,8 +426,8 @@ public class VPathway implements PathwayListener, PathwayElementListener
 		}
 
 		redraw();
-		VPathwayEventType type = editMode ? VPathwayEventType.EDIT_MODE_ON
-				: VPathwayEventType.EDIT_MODE_OFF;
+		int type = editMode ? VPathwayEvent.EDIT_MODE_ON
+				: VPathwayEvent.EDIT_MODE_OFF;
 		fireVPathwayEvent(new VPathwayEvent(this, type));
 	}
 
@@ -730,7 +729,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 						new VPathwayEvent(
 							VPathway.this,
 							getObjectsAt(lastEvent.getLocation()), lastEvent,
-							VPathwayEventType.ELEMENT_HOVER)
+							VPathwayEvent.ELEMENT_HOVER)
 				);
 				 tooltipDisplayed = true;
 			}
@@ -792,7 +791,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 		if(e.isKeyDown(128) && o != null && o instanceof Label) {
 			String href = ((Label)o).gdata.getHref();
 			if(selection.getSelection().size() < 1 && !href.equals("")) {
-				fireVPathwayEvent(new VPathwayEvent(this, o, VPathwayEventType.HREF_ACTIVATED));
+				fireVPathwayEvent(new VPathwayEvent(this, o, VPathwayEvent.HREF_ACTIVATED));
 				return true;
 			}
 		}
@@ -828,7 +827,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 			if (pressedObject != null)
 			{
 				fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
-						VPathwayEventType.ELEMENT_CLICKED_DOWN));
+						VPathwayEvent.ELEMENT_CLICKED_DOWN));
 			}
 		}
 	}
@@ -882,7 +881,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 		if (pressedObject != null)
 		{
 			fireVPathwayEvent(new VPathwayEvent(this, pressedObject, e,
-					VPathwayEventType.ELEMENT_CLICKED_UP));
+					VPathwayEvent.ELEMENT_CLICKED_UP));
 		}
 	}
 
@@ -899,7 +898,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 				Logger.log.trace("\t " + l.hashCode() + ", " + l);
 			}
 			fireVPathwayEvent(new VPathwayEvent(this, o,
-					VPathwayEventType.ELEMENT_DOUBLE_CLICKED));
+					VPathwayEvent.ELEMENT_DOUBLE_CLICKED));
 		}
 	}
 
@@ -961,7 +960,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 						o.draw((Graphics2D) g2d.create());
 						fireVPathwayEvent(new VPathwayEvent(this, o,
 								(Graphics2D) g2dFull.create(),
-								VPathwayEventType.ELEMENT_DRAWN));
+								VPathwayEvent.ELEMENT_DRAWN));
 					}
 				}
 			}
@@ -1280,7 +1279,7 @@ public class VPathway implements PathwayListener, PathwayElementListener
 			vPreviousY = ve.y;
 
 			fireVPathwayEvent(new VPathwayEvent(this, lastAdded,
-					VPathwayEventType.ELEMENT_ADDED));
+					VPathwayEvent.ELEMENT_ADDED));
 			newTemplate.postInsert(newObjects);
 		}
 		setNewTemplate(null);

@@ -400,32 +400,31 @@ public abstract class GraphicsShape extends Graphics implements LinkProvider, Ad
 	 * @return
 	 */
 	protected java.awt.Shape getShape(boolean rotate, float sw) {
-		double mx = gdata.getMLeft();
-		double my = gdata.getMTop();
-		double mw = gdata.getMWidth();
-		double mh = gdata.getMHeight();
-		double mcx = gdata.getMCenterX();
-		double mcy = gdata.getMCenterY();
+		double x = getVLeft();
+		double y = getVTop();
+		double w = getVWidth();
+		double h = getVHeight();
+		double cx = getVCenterX();
+		double cy = getVCenterY();
 
 		java.awt.Shape s = null;
 
 		if (gdata.getShapeType() == null || gdata.getShapeType() == ShapeType.NONE)
 		{
-			s = ShapeRegistry.DEFAULT_SHAPE.getShape (mw, mh);
+			s = ShapeRegistry.getShape ("Rectangle", x, y, w, h);
 		}
 		else
 		{
-			s = gdata.getShapeType().getShape(mw, mh);
+			s = ShapeRegistry.getShape (
+					gdata.getShapeType().getName(),
+					x, y, w, h);
 		}
 
-		AffineTransform t = new AffineTransform();
-		t.scale (canvas.getZoomFactor(), canvas.getZoomFactor());
-		
 		if(rotate) {
-			t.rotate(gdata.getRotation(), mcx, mcy);
+			AffineTransform t = new AffineTransform();
+			t.rotate(gdata.getRotation(), cx, cy);
+			s = t.createTransformedShape(s);
 		}
-		t.translate(mx, my);
-		s = t.createTransformedShape(s);
 
 		if(sw > 0) {
 			if (gdata.getLineStyle() == LineStyle.DOUBLE){

@@ -21,7 +21,6 @@ import java.net.URL;
 import org.pathvisio.model.CellularComponentType;
 import org.pathvisio.model.ConnectorType;
 import org.pathvisio.model.DataNodeType;
-import org.pathvisio.model.IShape;
 import org.pathvisio.model.LineStyle;
 import org.pathvisio.model.LineType;
 import org.pathvisio.model.ObjectType;
@@ -203,9 +202,9 @@ public abstract class DefaultTemplates {
 	 * Template for adding a Shape to a Pathway. Pass a ShapeType upon creation.
 	 */
 	public static class ShapeTemplate extends SingleElementTemplate {
-		IShape type;
+		ShapeType type;
 
-		public ShapeTemplate(IShape type) {
+		public ShapeTemplate(ShapeType type) {
 			this.type = type;
 		}
 
@@ -227,7 +226,7 @@ public abstract class DefaultTemplates {
 		}
 
 		public VPathwayElement getDragElement(VPathway vp) {
-			GraphicsShape s = (GraphicsShape)super.getDragElement(vp);
+			Shape s = (Shape)super.getDragElement(vp);
 			return s.handleSE;
 		}
 
