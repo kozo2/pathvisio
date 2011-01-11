@@ -224,7 +224,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 
 	public void vPathwayEvent(VPathwayEvent e) {
 		switch(e.getType()) {
-		case MODEL_LOADED:
+		case VPathwayEvent.MODEL_LOADED:
 			if(e.getSource() == child) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -238,7 +238,7 @@ MouseMotionListener, MouseListener, KeyListener, VPathwayListener, VElementMouse
 				});
 			}
 			break;
-		case ELEMENT_HOVER:
+		case VPathwayEvent.ELEMENT_HOVER:
 			showToolTip(e);
 			break;
 		}

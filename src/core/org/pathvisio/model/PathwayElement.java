@@ -940,7 +940,7 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 			setFillColor((Color) value);
 			break;
 		case SHAPETYPE:
-			setShapeType((IShape)value);
+			setShapeType((ShapeType)value);
 			break;
 		case ROTATION:
 			setRotation((Double) value);
@@ -1832,14 +1832,14 @@ public class PathwayElement implements GraphIdContainer, Comparable<PathwayEleme
 		fireObjectModifiedEvent(PathwayElementEvent.createCoordinatePropertyEvent(this));
 	}
 
-	protected IShape shapeType = ShapeType.RECTANGLE;
+	protected ShapeType shapeType = ShapeType.RECTANGLE;
 
-	public IShape getShapeType()
+	public ShapeType getShapeType()
 	{
 		return shapeType;
 	}
 
-	public void setShapeType(IShape v)
+	public void setShapeType(ShapeType v)
 	{
 		if (shapeType != v)
 		{

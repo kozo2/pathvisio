@@ -40,7 +40,6 @@ import org.pathvisio.gui.swing.WrapLayout;
 import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayEvent;
 import org.pathvisio.view.VPathwayListener;
-import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
 import org.pathvisio.view.swing.VPathwaySwing;
 
 class GpmlDiffWindow extends JPanel implements VPathwayListener
@@ -323,7 +322,7 @@ class GpmlDiffWindow extends JPanel implements VPathwayListener
 
 	public void vPathwayEvent (VPathwayEvent e)
 	{
-		if (e.getType() == VPathwayEventType.ELEMENT_CLICKED_DOWN)
+		if (e.getType() == VPathwayEvent.ELEMENT_CLICKED_DOWN)
 		{
 			if (outputter != null)
 			{

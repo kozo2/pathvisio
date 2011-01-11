@@ -44,7 +44,6 @@ import org.pathvisio.view.VPathway;
 import org.pathvisio.view.VPathwayElement;
 import org.pathvisio.view.VPathwayEvent;
 import org.pathvisio.view.VPathwayListener;
-import org.pathvisio.view.VPathwayEvent.VPathwayEventType;
 import org.pathvisio.visualization.colorset.ColorSetManager;
 
 /**
@@ -320,7 +319,7 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 		out.close();
 
 		if (finalFile.exists()) finalFile.delete();
-		if (!tempFile.renameTo(finalFile)) throw new IOException ("Couldn't rename temporary file " + tempFile);
+		if (!tempFile.renameTo(finalFile)) throw new IOException ("Couldn't rename temporary file");
 	}
 
 
@@ -369,7 +368,7 @@ public class VisualizationManager implements GexManagerListener, VPathwayListene
 
 
 	public void vPathwayEvent(VPathwayEvent e) {
-		if(e.getType() == VPathwayEventType.ELEMENT_DRAWN) {
+		if(e.getType() == VPathwayEvent.ELEMENT_DRAWN) {
 			Visualization v = getActiveVisualization();
 			VPathwayElement elm = e.getAffectedElement();
 			if(v != null && elm instanceof Graphics) {

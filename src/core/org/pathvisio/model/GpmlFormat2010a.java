@@ -38,7 +38,6 @@ import org.pathvisio.model.GpmlFormatAbstract.ByElementName;
 import org.pathvisio.model.PathwayElement.MAnchor;
 import org.pathvisio.model.PathwayElement.MPoint;
 import org.pathvisio.util.Utils;
-import org.pathvisio.view.ShapeRegistry;
 
 class GpmlFormat2010a extends GpmlFormatAbstract implements GpmlFormatReader, GpmlFormatWriter 
 {
@@ -442,7 +441,7 @@ class GpmlFormat2010a extends GpmlFormatAbstract implements GpmlFormatReader, Gp
 	{
 		String base = e.getName();
     	Element graphics = e.getChild("Graphics", e.getNamespace());
-    	IShape s= ShapeRegistry.fromName(getAttribute(base + ".Graphics", "ShapeType", graphics));
+    	ShapeType s= ShapeType.fromGpmlName(getAttribute(base + ".Graphics", "ShapeType", graphics));
     	if (ShapeType.deprecatedMap.containsKey(s)){
     		s = ShapeType.deprecatedMap.get(s);
     		o.setShapeType(s);
