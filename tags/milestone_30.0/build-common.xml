@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<project name="PathVisio-common" basedir=".">
+
+	<property name="ant.build.javac.target" value="1.5"/>
+	<property name="ant.build.javac.source" value="1.5"/>
+	<property name="debug.mode" value="true"/>
+
+	<property name="bundle.dest" value=".."/>
+
+	<target name="prepare-common">
+		<mkdir dir="build"/>
+	</target>
+	
+	<target name="prepare">
+	</target>
+	
+	<target name="clean">
+		<delete dir="build"/>
+	</target>
+
+	<target name="dist-clean" depends="clean">
+		<delete file="${bundle.dest}/${jar.name}"/>
+	</target>
+
+	<target name="compile" depends="prepare,prepare-common">
+		<echo>Compiling: ${jar.name}</echo>
+		<javac srcdir="src"
+			   includes="**"
+			   destdir="build"
+			   debug="${debug.mode}"
+			   source="1.5">
+		  <classpath refid="project.class.path"/>
+		</javac>
+		<!-- workaround: make an empty directory so that the next step doesn't fail -->
+		<mkdir dir="resources"/>
+		<copy todir="build">
+			<fileset dir="resources">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="jar" depends="compile"> 
+		<echo>Creating JAR: ${jar.name}</echo>
+		<taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="../../lib-build/biz.aQute.bnd.jar"/> 
+		<bnd classpath="build" 
+			output="${bundle.dest}/${jar.name}" 
+			eclipse="false" failok="false" exceptions="true" 
+			files="package.bnd"/> 
+	</target>
+
+</project>
