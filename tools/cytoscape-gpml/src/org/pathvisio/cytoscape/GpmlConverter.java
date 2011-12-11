@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,14 @@
 //
 package org.pathvisio.cytoscape;
 
+import cytoscape.CyEdge;
+import cytoscape.CyNode;
+import cytoscape.Cytoscape;
+import cytoscape.CytoscapeInit;
+import cytoscape.groups.CyGroup;
+import cytoscape.groups.CyGroupManager;
+import cytoscape.view.CyNetworkView;
+
 import giny.view.GraphView;
 
 import java.io.StringReader;
@@ -25,24 +33,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.GpmlFormat;
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.GraphLink.GraphIdContainer;
-import org.pathvisio.core.model.PathwayElement.MAnchor;
-
-import cytoscape.CyEdge;
-import cytoscape.CyNode;
-import cytoscape.Cytoscape;
-import cytoscape.CytoscapeInit;
-import cytoscape.groups.CyGroup;
-import cytoscape.groups.CyGroupManager;
-import cytoscape.layout.CyLayoutAlgorithm;
-import cytoscape.layout.CyLayouts;
-import cytoscape.view.CyNetworkView;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.GpmlFormat;
+import org.pathvisio.model.GraphLink.GraphIdContainer;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayElement.MAnchor;
 
 /**
  * Converts GPML or fragments of GPML to a network.
@@ -58,8 +56,6 @@ public class GpmlConverter {
 
 	GpmlHandler gpmlHandler;
 	Pathway pathway;
-	
-	private boolean loadAsNetwork = false;
 
 	private GpmlConverter(GpmlHandler h) {
 		gpmlHandler = h;
@@ -67,13 +63,6 @@ public class GpmlConverter {
 
 	public GpmlConverter(GpmlHandler gpmlHandler, Pathway p) {
 		this(gpmlHandler);
-		pathway = p;
-		convert();
-	}
-	
-	public GpmlConverter(GpmlHandler gpmlHandler, Pathway p, boolean loadAsNetwork) {
-		this(gpmlHandler);
-		this.loadAsNetwork = loadAsNetwork;
 		pathway = p;
 		convert();
 	}
@@ -89,8 +78,7 @@ public class GpmlConverter {
 		edgeMap.clear();
 		edges.clear();
 		nodeMap.clear();
-		nodeIds.clear();
-		
+
 		findNodes();
 		findEdges();
 	}
@@ -106,11 +94,6 @@ public class GpmlConverter {
 		if(id != null) {
 			CyNode node = Cytoscape.getCyNode(id, false);
 			if(node != null) {
-				if(loadAsNetwork) {
-					Logger.log.trace("Adding id " + id);
-					nodeIds.put(o, id);
-					return id;
-				}
 				id = null; //Node already exists, use graphId instead!
 			}
 		}
@@ -140,9 +123,6 @@ public class GpmlConverter {
 					type == ObjectType.INFOBOX ||
 					type == ObjectType.MAPPINFO
 				) {
-				continue;
-			}
-			if(loadAsNetwork && (type == ObjectType.LABEL || type == ObjectType.SHAPE)) {
 				continue;
 			}
 			String id = generateNodeId(o, o.getTextLabel());
@@ -189,7 +169,6 @@ public class GpmlConverter {
 			return isEdge(((MAnchor)idc).getParent());
 		} else if(idc instanceof PathwayElement) {
 			ObjectType ot = ((PathwayElement)idc).getObjectType();
-			if(loadAsNetwork && ot == ObjectType.LABEL) return false;
 			return
 				ot == ObjectType.DATANODE ||
 				ot == ObjectType.GROUP ||
@@ -300,16 +279,14 @@ public class GpmlConverter {
 		int[] inodes = new int[nodeMap.size()];
 		int i = 0;
 		for(CyNode n : nodeMap.values()) {
-			inodes[i++] = n.getRootGraphIndex();
+				inodes[i++] = n.getRootGraphIndex();
 		}
 		return inodes;
 	}
 
 	public int[] getEdgeIndicesArray() {
 		int[] iedges = new int[edges.size()];
-		for(int i = 0; i< edges.size(); i++) {
-			iedges[i] = edges.get(i).getRootGraphIndex();
-		}
+		for(int i = 0; i< edges.size(); i++) iedges[i] = edges.get(i).getRootGraphIndex();
 		return iedges;
 	}
 
@@ -347,7 +324,6 @@ public class GpmlConverter {
 				//Create the cytoscape parts of the group
 				for(int i = 0; i < groupElements.length; i++) {
 					PathwayElement peI = groupElements[i];
-					if(peI.getObjectType() == ObjectType.LINE) continue; //Skip grouped lines
 					GpmlNetworkElement neI = gpmlHandler.getNetworkElement(getNodeId(peI));
 					//Only add links to nodes, not to annotations
 					if(neI instanceof GpmlNode) {
@@ -393,12 +369,7 @@ public class GpmlConverter {
 	public void layout(GraphView view)
 	{
 		gpmlHandler.addAnnotations(view, nodeMap.values());
-		if(loadAsNetwork) gpmlHandler.showAnnotations(view, false);
 		gpmlHandler.applyGpmlLayout(view, nodeMap.values());
-		if(loadAsNetwork) {
-			CyLayoutAlgorithm alg = CyLayouts.getLayout("force-directed");
-			alg.doLayout();
-		}
 		gpmlHandler.applyGpmlVisualStyle();
 		view.fitContent();
 	}

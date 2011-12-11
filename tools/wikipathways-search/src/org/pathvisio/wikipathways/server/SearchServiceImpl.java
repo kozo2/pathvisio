@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,10 +35,11 @@ import javax.xml.rpc.ServiceException;
 import org.bridgedb.DataSource;
 import org.bridgedb.Xref;
 import org.bridgedb.bio.BioDataSource;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.wikipathways.WikiPathwaysClient;
 import org.pathvisio.wikipathways.client.IdSearchPanel;
 import org.pathvisio.wikipathways.client.Query;
 import org.pathvisio.wikipathways.client.Result;
@@ -47,7 +48,6 @@ import org.pathvisio.wikipathways.client.SearchException;
 import org.pathvisio.wikipathways.client.SearchService;
 import org.pathvisio.wikipathways.webservice.WSIndexField;
 import org.pathvisio.wikipathways.webservice.WSSearchResult;
-import org.wikipathways.client.WikiPathwaysClient;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 

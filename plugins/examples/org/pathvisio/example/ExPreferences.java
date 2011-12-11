@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 
-import org.pathvisio.core.preferences.Preference;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.desktop.PreferencesDlg;
-import org.pathvisio.desktop.PvDesktop;
-import org.pathvisio.desktop.plugin.Plugin;
+import org.pathvisio.gui.swing.PreferencesDlg;
+import org.pathvisio.gui.swing.PvDesktop;
+import org.pathvisio.plugin.Plugin;
+import org.pathvisio.preferences.Preference;
+import org.pathvisio.preferences.PreferenceManager;
 
 /**
  * Example of how to use Preference Manager and Preferences Dlg

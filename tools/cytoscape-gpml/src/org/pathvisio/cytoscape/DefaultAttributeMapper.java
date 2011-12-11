@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bridgedb.bio.BioDataSource;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.PropertyType;
-import org.pathvisio.core.model.StaticProperty;
-import org.pathvisio.core.model.StaticPropertyType;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PropertyType;
+import org.pathvisio.model.StaticProperty;
+import org.pathvisio.model.StaticPropertyType;
 
 import cytoscape.data.CyAttributes;
 
@@ -41,7 +41,6 @@ public class DefaultAttributeMapper implements AttributeMapper {
 	private Map<String, StaticProperty> attr2prop;
 
 	private Set<StaticProperty> protectedProps;
-	private Set<StaticProperty> hiddenAttrs;
 
 	public DefaultAttributeMapper() {
 		prop2attr = new HashMap<StaticProperty, String>();
@@ -52,7 +51,7 @@ public class DefaultAttributeMapper implements AttributeMapper {
 	}
 
 	public String getMapping(StaticProperty prop) {
-		//First check if a mapping is explicitly set
+		//First check if a mapping is explicitely set
 		String name = prop2attr.get(prop);
 		if(name == null && prop != null) { //If not, use the property tag name
 			name = prop.tag();
@@ -114,35 +113,6 @@ public class DefaultAttributeMapper implements AttributeMapper {
 		return protectedProps;
 	}
 
-	protected Set<StaticProperty> getHiddenAttrs() {
-		if(hiddenAttrs == null) {
-			hiddenAttrs = new HashSet<StaticProperty>();
-			hiddenAttrs.add(StaticProperty.CENTERX);
-			hiddenAttrs.add(StaticProperty.CENTERY);
-			hiddenAttrs.add(StaticProperty.STARTX);
-			hiddenAttrs.add(StaticProperty.STARTY);
-			hiddenAttrs.add(StaticProperty.ENDX);
-			hiddenAttrs.add(StaticProperty.ENDY);
-			hiddenAttrs.add(StaticProperty.GRAPHID);
-			hiddenAttrs.add(StaticProperty.ALIGN);
-			hiddenAttrs.add(StaticProperty.BIOPAXREF);
-			hiddenAttrs.add(StaticProperty.ENDGRAPHREF);
-			hiddenAttrs.add(StaticProperty.FONTNAME);
-			hiddenAttrs.add(StaticProperty.FONTSIZE);
-			hiddenAttrs.add(StaticProperty.FONTSTYLE);
-			hiddenAttrs.add(StaticProperty.FONTWEIGHT);
-			hiddenAttrs.add(StaticProperty.LINETHICKNESS);
-			hiddenAttrs.add(StaticProperty.HREF);
-			hiddenAttrs.add(StaticProperty.ROTATION);
-			hiddenAttrs.add(StaticProperty.SHAPETYPE);
-			hiddenAttrs.add(StaticProperty.STARTGRAPHREF);
-			hiddenAttrs.add(StaticProperty.TRANSPARENT);
-			hiddenAttrs.add(StaticProperty.VALIGN);
-			hiddenAttrs.add(StaticProperty.ZORDER);
-		}
-		return hiddenAttrs;
-	}
-
 	protected void setInitialMappings() {
 		setMapping("canonicalName", StaticProperty.TEXTLABEL);
 		setDefaultValue(StaticProperty.DATASOURCE, BioDataSource.UNIPROT);
@@ -158,10 +128,6 @@ public class DefaultAttributeMapper implements AttributeMapper {
 
 	public void unprotect(StaticProperty prop) {
 		getProtectedProps().remove(prop);
-	}
-
-	public boolean isHidden(StaticProperty prop) {
-		return getHiddenAttrs().contains(prop);
 	}
 
 	public void attributesToProperties(String id, PathwayElement elm, CyAttributes attr) {
@@ -285,11 +251,6 @@ public class DefaultAttributeMapper implements AttributeMapper {
 					attr.setAttribute(id, aname, ((Color) value).getRGB());
 				else //STRING, DB_ID, DB_SYMBOL, default
 					attr.setAttribute(id, aname, value.toString());
-				
-				//set hidden state; default is visible
-				if(isHidden(prop)) {
-					attr.setUserVisible(aname, false);
-				}
 			}
 		}
 //TODO needs more testing

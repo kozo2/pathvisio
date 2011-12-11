@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import org.pathvisio.core.ApplicationEvent;
-import org.pathvisio.core.Engine;
-import org.pathvisio.desktop.PvDesktop;
-import org.pathvisio.desktop.plugin.Plugin;
+import org.pathvisio.ApplicationEvent;
+import org.pathvisio.Engine;
+import org.pathvisio.gui.swing.PvDesktop;
+import org.pathvisio.plugin.Plugin;
 
 /**
  * Example plugin, adds action to toolbar

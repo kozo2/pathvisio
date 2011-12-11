@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.bridgedb.rdb.GdbProvider;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.util.FileUtils;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.util.FileUtils;
 
 /**
  * Maintains an index for a collection of GPML files

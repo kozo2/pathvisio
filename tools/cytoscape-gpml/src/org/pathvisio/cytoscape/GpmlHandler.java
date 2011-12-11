@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,12 +33,11 @@ import giny.view.NodeView;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
 import org.pathvisio.cytoscape.visualmapping.GpmlVisualStyle;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayElement;
 
 /**
  * Class that handles the GPML representation of nodes and edges, stored
@@ -224,17 +223,15 @@ public class GpmlHandler {
     public void applyGpmlVisualStyle() {
     	VisualMappingManager vmm = Cytoscape.getVisualMappingManager();
     	CalculatorCatalog catalog = vmm.getCalculatorCatalog();
-		VisualStyle gpmlStyle;
-		Set<String> styles = catalog.getVisualStyleNames();
-		if (styles.contains(GpmlVisualStyle.NAME)){
-			Logger.log.trace("VisualStyle: reusing GPML style");
-			gpmlStyle = catalog.getVisualStyle(GpmlVisualStyle.NAME);
-		} else {
-			Logger.log.trace("VisualStyle: creating GPML style");
-			gpmlStyle = new GpmlVisualStyle(this);
-			catalog.addVisualStyle(gpmlStyle);
-		}
-    	vmm.setVisualStyle(gpmlStyle);	
+    	VisualStyle gpmlStyle = catalog.getVisualStyle(GpmlVisualStyle.NAME);
+    	if(gpmlStyle == null) { //Create the GPML visual style
+    		Logger.log.trace("VisualStyle: creating GPML style");
+    		gpmlStyle = new GpmlVisualStyle(this, vmm.getVisualStyle());
+    		catalog.addVisualStyle(gpmlStyle);
+    	} else {
+    		Logger.log.trace("VisualStyle: reusing GPML style");
+    	}
+    	vmm.setVisualStyle(gpmlStyle);
     }
 
     /**

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 ; requires ISPP (InnoSetup Pre-Processor) to be installed.
-#define AppVerStr "3.0.Beta2"
+#define AppVerStr "2.0.11"
 
 [Setup]
 AppName=PathVisio
@@ -30,10 +30,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "pathvisio.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "pvicon.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "pathvisio.jar"; DestDir: "{app}"; Flags: ignoreversion
-Source: "readme.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "LICENSE-2.0.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "NOTICE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "CONTRIBUTORS.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "visplugins.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "lib\*.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
+Source: "lib\apache\*.jar"; DestDir: "{app}\lib\apache"; Flags: ignoreversion
+Source: "lib\batik\*.jar"; DestDir: "{app}\lib\batik"; Flags: ignoreversion
+Source: "lib\jdom.jar"; DestDir: "{app}\lib"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

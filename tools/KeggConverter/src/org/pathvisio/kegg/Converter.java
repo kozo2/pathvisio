@@ -34,12 +34,12 @@ import org.bridgedb.bio.Organism;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.GpmlFormat;
-import org.pathvisio.core.model.ImageExporter;
-import org.pathvisio.core.model.RasterImageExporter;
-import org.pathvisio.core.preferences.PreferenceManager;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.GpmlFormat;
+import org.pathvisio.model.ImageExporter;
+import org.pathvisio.model.RasterImageExporter;
+import org.pathvisio.preferences.PreferenceManager;
 import org.xml.sax.SAXException;
 
 /**
@@ -71,12 +71,6 @@ public class Converter {
 	@Option(name = "-spacing", required = false, usage = "Multiplier for the coordinates to get more spacing between the elements (default = 2).")
 	private double spacing = 2;
 	
-	@Option(name = "-symbolIndex", required = false, usage = "Which symbol to pick from bget results (default = 0 -> first symbol).")
-	private int symbolIndex = 0;
-	
-	@Option(name = "-symbolByName", usage = "Query for symbols using element name instead of gene.")
-	private boolean symbolByName = false;
-	
 	@Option(name = "-map", required = true, usage = "Prefix for map files, either ec or ko.")
 	private String map;
 
@@ -107,8 +101,7 @@ public class Converter {
 	public Converter() {
 	}
 
-	private String getOrganism() {
-		//Try to parse Organism class to support short names for common species
+	private Organism getOrganism() {
 		Organism organism = Organism.fromLatinName(species);
 		if(organism == null) {
 			//try by short name
@@ -118,8 +111,11 @@ public class Converter {
 			//finally, try by code
 			organism = Organism.fromCode(species);
 		}
-		if(organism != null) species = organism.latinName();
-		return species;
+		if(organism == null) {
+			//give up and print help
+			throw new IllegalArgumentException("Couldn't find species: " + species);
+		}
+		return organism;
 	}
 
 	private void recursiveConversion() throws FileNotFoundException, RemoteException, JAXBException, ConverterException, ServiceException,
@@ -162,7 +158,7 @@ public class Converter {
 		Pathway pathway = (Pathway)Util.unmarshal(Pathway.class,
 				new BufferedInputStream(new FileInputStream(file)));
 
-		org.pathvisio.core.model.Pathway gpmlPathway = null;
+		org.pathvisio.model.Pathway gpmlPathway = null;
 
 		if(useMap && (!file.getName().startsWith(map))) {
 			//Try to find the corresponding map file
@@ -203,22 +199,17 @@ public class Converter {
 		}
 	}
 
-	private void setKeggFormatOptions(KeggFormat kf) throws ServiceException {
-		kf.setPrefSymbolIndex(symbolIndex);
-		kf.setSymbolByGene(!symbolByName);
+	private org.pathvisio.model.Pathway convert(Pathway pathway) throws RemoteException, ConverterException, ServiceException, ClassNotFoundException, IDMapperException {
+		KeggFormat kf = new KeggFormat(pathway, getOrganism());
 		kf.setUseWebservice(!offline);
 		kf.setSpacing(spacing);
-	}
-	
-	private org.pathvisio.core.model.Pathway convert(Pathway pathway) throws RemoteException, ConverterException, ServiceException, ClassNotFoundException, IDMapperException {
-		KeggFormat kf = new KeggFormat(pathway, getOrganism());
-		setKeggFormatOptions(kf);
 		return kf.convert();
 	}
 
-	private org.pathvisio.core.model.Pathway convert(Pathway map, Pathway ko) throws RemoteException, ConverterException, ServiceException, ClassNotFoundException, IDMapperException {
+	private org.pathvisio.model.Pathway convert(Pathway map, Pathway ko) throws RemoteException, ConverterException, ServiceException, ClassNotFoundException, IDMapperException {
 		KeggFormat kf = new KeggFormat(map, ko, getOrganism());
-		setKeggFormatOptions(kf);
+		kf.setUseWebservice(!offline);
+		kf.setSpacing(spacing);
 		return kf.convert();
 	}
 }

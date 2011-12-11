@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,13 +60,13 @@ import javax.swing.SwingUtilities;
 import javax.xml.rpc.ServiceException;
 
 import org.bridgedb.bio.Organism;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.Pathway;
 import org.pathvisio.cytoscape.GpmlPlugin;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.wikipathways.WikiPathwaysClient;
 import org.pathvisio.wikipathways.webservice.WSIndexField;
 import org.pathvisio.wikipathways.webservice.WSPathway;
 import org.pathvisio.wikipathways.webservice.WSSearchResult;
-import org.wikipathways.client.WikiPathwaysClient;
 
 /**
  * WebserviceClient implementation, for accessing the
@@ -87,7 +87,7 @@ public class CyWikiPathwaysClient extends WebServiceClientImplWithGUI<WikiPathwa
 				new ClientType[] { ClientType.NETWORK },
 				null, null, null
 		);
-		Logger.log.setLogLevel(false, false, false, false, true, true);
+		Logger.log.setLogLevel(true, true, true, true, true, true);
 		setProperties();
 		getStub();
 		this.gpmlPlugin = gpmlPlugin;

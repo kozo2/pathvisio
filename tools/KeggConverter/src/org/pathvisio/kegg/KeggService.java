@@ -16,9 +16,7 @@
 package org.pathvisio.kegg;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.xml.rpc.ServiceException;
@@ -28,9 +26,8 @@ import keggapi.KEGGLocator;
 import keggapi.KEGGPortType;
 import keggapi.LinkDBRelation;
 
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.PathwayElement;
+import org.bridgedb.bio.Organism;
+import org.pathvisio.model.ConverterException;
 
 public class KeggService {
 	private static KEGGLocator keggLocator = new KEGGLocator();
@@ -49,22 +46,12 @@ public class KeggService {
 		keggPortType = keggLocator.getKEGGPort();
 	}
 
-	String[] getGenes(String keggCode, String organism) throws RemoteException {
-		Set<String> genes = new HashSet<String>();
-		//KEGG code --> NCBI code
-		LinkDBRelation[] links = keggPortType.get_linkdb_by_entry(keggCode, "NCBI-GeneID", 1, 1000);
-		for(LinkDBRelation ldb : links) {
-			genes.add(ldb.getEntry_id2().substring(12));
-		}
-		return genes.toArray(new String[genes.size()]);
-	}
-	
 	/**
 	 * Fetches the organism specific NCBI gene identifiers for the enzyme code
 	 * @throws ConverterException
 	 * @throws RemoteException
 	 */
-	String[] getGenesForEc(String ec, String organism) throws RemoteException, ConverterException {
+	String[] getGenesForEc(String ec, Organism organism) throws RemoteException, ConverterException {
 		Set<String> genes = new HashSet<String>();
 
 		//Fetch the kegg gene IDs
@@ -81,7 +68,7 @@ public class KeggService {
 		return genes.toArray(new String[genes.size()]);
 	}
 
-	String[] getGenesForKo(String ko, String organism) throws RemoteException, ConverterException {
+	String[] getGenesForKo(String ko, Organism organism) throws RemoteException, ConverterException {
 		Set<String> genes = new HashSet<String>();
 
 		Definition[] keggGenes = keggPortType.get_genes_by_ko(ko, Util.getKeggOrganism(organism));
@@ -99,43 +86,15 @@ public class KeggService {
 		return genes.toArray(new String[genes.size()]);
 	}
 
-	SymbolInfo getKeggSymbol(String geneId) throws RemoteException, ConverterException {
-		Logger.log.trace("Querying btit:" + geneId);
+	String getKeggSymbol(String geneId) throws RemoteException, ConverterException {
 		String result = keggPortType.btit(geneId);
-		
-		SymbolInfo parsed = new SymbolInfo();
-		
 		result = result.replaceAll(geneId + " ", ""); //Results starts with query + space, remove
 		String[] data = result.split("; "); //Subsequent results are separated by '; '
 		if(data.length > 1) {
-			for(String s : data) {
-				s = s.replaceAll("^\\[", "");
-				s = s.replaceAll("\\]$","");
-				if(s.contains("[EC:")) {
-					parsed.enzymeCode = s.substring(s.indexOf("[EC:") + 4, s.length());
-				} else {
-					parsed.symbols.add(s);
-				}
-			}
+			result = data[0].substring(0, data[0].length()); //Pick the first synonym
 		} else {
-			parsed.symbols.add(geneId);
+			result = geneId;
 		}
-		return parsed;
-	}
-	
-	static class SymbolInfo {
-		String enzymeCode;
-		List<String> symbols = new ArrayList<String>();
-		
-		String getPreferred(int index) {
-			if(symbols.size() == 0) return "";
-			if(symbols.size() <= index) return symbols.get(0);
-			return symbols.get(index);
-		}
-		
-		void addToComments(PathwayElement pwe) {
-			if(enzymeCode != null) pwe.addComment("EC: " + enzymeCode, KeggFormat.COMMENT_SOURCE);
-			for(String s : symbols) pwe.addComment("Symbol: " + s, KeggFormat.COMMENT_SOURCE);
-		}
+		return result;
 	}
 }

@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
 
-import org.pathvisio.core.model.PathwayElement;
+import org.pathvisio.model.PathwayElement;
 
 /**
  * Base class for Shape, Label, unconnected Lines, i.e. everything that

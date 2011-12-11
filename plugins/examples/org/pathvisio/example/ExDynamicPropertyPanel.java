@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ package org.pathvisio.example;
 
 import java.util.EnumSet;
 
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.Property;
-import org.pathvisio.core.model.PropertyManager;
-import org.pathvisio.core.model.PropertyType;
-import org.pathvisio.core.model.StaticPropertyType;
-import org.pathvisio.desktop.PvDesktop;
-import org.pathvisio.desktop.plugin.Plugin;
-import org.pathvisio.gui.handler.PropertyDisplayManager;
+import org.pathvisio.gui.swing.PvDesktop;
+import org.pathvisio.gui.swing.propertypanel.PropertyDisplayManager;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.Property;
+import org.pathvisio.model.PropertyManager;
+import org.pathvisio.model.PropertyType;
+import org.pathvisio.model.StaticPropertyType;
+import org.pathvisio.plugin.Plugin;
 
 /**
  * Example that shows how to make a dynamic property available in the

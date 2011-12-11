@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.pathvisio.cytoscape;
 
 import cytoscape.data.CyAttributes;
 
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.StaticProperty;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.StaticProperty;
 
 /**
  * Interface for classes that keep track of mapping from
@@ -59,7 +59,6 @@ public interface AttributeMapper {
 	 * be mapped to and from this property.
 	 */
 	public boolean isProtected(StaticProperty prop);
-	
 	/**
 	 * Protect a property. If a property is protected, no attributes should
 	 * be mapped to and from this property.
@@ -71,11 +70,4 @@ public interface AttributeMapper {
 	 * will map attribute value from and to this property
 	 */
 	public void unprotect(StaticProperty prop);
-	
-	/**
-	 * Check whether a prop is to be a hidden attribute. If a property is to be hidden, the its 
-	 * associated attribute should be set to isVisible(false).
-	 */
-	public boolean isHidden(StaticProperty prop);
-	
 }

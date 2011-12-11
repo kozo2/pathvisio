@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,14 +31,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.GraphLink.GraphIdContainer;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.GraphLink.GraphIdContainer;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.PathwayElement;
 
 /**
- * Class that holds a Cytoscape node that has a GPML representation, which is stored
- * as node attributes
+ * Class that holds a Cytoscape edge that has a GPML representation, which is stored
+ * as edge attributes
  * @author thomas
  *
  */
@@ -87,16 +87,6 @@ public class GpmlNode extends GpmlNetworkElement<CyNode> {
 		Annotation a = annotations.get(view);
 		if(a != null) {
 			a.setVisible(visible);
-			DGraphView dview = (DGraphView) view;
-			DGraphView.Canvas canvas = DGraphView.Canvas.BACKGROUND_CANVAS;
-			DingCanvas aLayer = dview.getCanvas(canvas);
-			
-			a.setVisible(visible);
-			if(visible) {
-				aLayer.add(a);
-			} else {
-				aLayer.remove(a);
-			}
 		}
 	}
 

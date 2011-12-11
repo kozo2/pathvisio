@@ -15,6 +15,18 @@
 //limitations under the License.
 package org.pathvisio.kegg;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+
+import dtd.kegg.Entry;
+import dtd.kegg.Graphics;
+import dtd.kegg.Pathway;
+import dtd.kegg.Product;
+import dtd.kegg.Reaction;
+import dtd.kegg.Relation;
+import dtd.kegg.Substrate;
+import dtd.kegg.Subtype;
+
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.rmi.RemoteException;
@@ -35,38 +47,25 @@ import org.bridgedb.DataSource;
 import org.bridgedb.IDMapperException;
 import org.bridgedb.bio.BioDataSource;
 import org.bridgedb.bio.Organism;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.core.model.ConnectorType;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.DataNodeType;
-import org.pathvisio.core.model.GpmlFormatAbstract;
-import org.pathvisio.core.model.LineStyle;
-import org.pathvisio.core.model.LineType;
-import org.pathvisio.core.model.MLine;
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.ShapeType;
-import org.pathvisio.core.model.ConnectorShape.Segment;
-import org.pathvisio.core.model.ConnectorShape.WayPoint;
-import org.pathvisio.core.model.GraphLink.GraphIdContainer;
-import org.pathvisio.core.model.PathwayElement.MAnchor;
-import org.pathvisio.core.model.PathwayElement.MPoint;
-import org.pathvisio.core.view.LinAlg;
-import org.pathvisio.core.view.MIMShapes;
-import org.pathvisio.core.view.LinAlg.Point;
-import org.pathvisio.kegg.KeggService.SymbolInfo;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-
-import dtd.kegg.Entry;
-import dtd.kegg.Graphics;
-import dtd.kegg.Pathway;
-import dtd.kegg.Product;
-import dtd.kegg.Reaction;
-import dtd.kegg.Relation;
-import dtd.kegg.Substrate;
-import dtd.kegg.Subtype;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.model.ConnectorShape.Segment;
+import org.pathvisio.model.ConnectorShape.WayPoint;
+import org.pathvisio.model.ConnectorType;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.DataNodeType;
+import org.pathvisio.model.GpmlFormatAbstract;
+import org.pathvisio.model.GraphLink.GraphIdContainer;
+import org.pathvisio.model.LineStyle;
+import org.pathvisio.model.LineType;
+import org.pathvisio.model.MLine;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayElement.MAnchor;
+import org.pathvisio.model.PathwayElement.MPoint;
+import org.pathvisio.model.ShapeType;
+import org.pathvisio.view.LinAlg;
+import org.pathvisio.view.LinAlg.Point;
+import org.pathvisio.view.MIMShapes;
 
 /**
  * File converter for the KGML, the kegg pathway format.
@@ -76,7 +75,7 @@ public class KeggFormat {
 		MIMShapes.registerShapes();
 	}
 
-	static final String COMMENT_SOURCE = "KeggConverter";
+	private static final String COMMENT_SOURCE = "KeggConverter";
 	private static final String KEGG_ID = "KeggId";
 	private static final String CONVERSION_DATE = "ConversionDate";
 
@@ -85,15 +84,13 @@ public class KeggFormat {
 	private double spacing = 2;
 
 	private KeggService keggService;
+	private Organism organism;
 	private String species;
-	private String speciesCode;
+	private String shortName;
 	private Pathway pathway; //Main pathway
 	private Pathway map; //Used only to improve species specific pathway
 
-	private int prefSymbolIndex = 0;
-	private boolean symbolByGene = true;
-	
-	private org.pathvisio.core.model.Pathway gpmlPathway;
+	private org.pathvisio.model.Pathway gpmlPathway;
 
 	private Map<String, PathwayElement> id2gpml = new HashMap<String, PathwayElement>();
 	private Map<String, PathwayElement> reaction2gpml = new HashMap<String, PathwayElement>();
@@ -110,28 +107,23 @@ public class KeggFormat {
 
 	private Map<String, Entry> entriesById = new HashMap<String, Entry>();
 
-	public KeggFormat(Pathway pathway, String organism) {
+	public KeggFormat(Pathway pathway, Organism organism) {
 		this.pathway = pathway;
-		this.species = organism;
+		this.organism = organism;
+		this.shortName = organism.shortName();
+		this.species = organism.latinName();
 	}
 
-	public KeggFormat(Pathway map, Pathway ko, String organism) {
+	public KeggFormat(Pathway map, Pathway ko, Organism organism) {
 		this(ko, organism);
 		this.map = map;
+		this.shortName = organism.shortName();
 	}
 
 	public void setSpacing(double spacing) {
 		this.spacing = spacing;
 	}
 
-	public void setPrefSymbolIndex(int prefSymbolIndex) {
-		this.prefSymbolIndex = prefSymbolIndex;
-	}
-	
-	public void setSymbolByGene(boolean symbolByGene) {
-		this.symbolByGene = symbolByGene;
-	}
-	
 	public void setUseWebservice(boolean use) throws ServiceException {
 		if(use) {
 			keggService = KeggService.getInstance();
@@ -144,10 +136,10 @@ public class KeggFormat {
 		return keggService != null;
 	}
 
-	public org.pathvisio.core.model.Pathway convert() throws RemoteException, ConverterException, ClassNotFoundException, IDMapperException {
+	public org.pathvisio.model.Pathway convert() throws RemoteException, ConverterException, ClassNotFoundException, IDMapperException {
 		id2gpml.clear();
 		addedMapLinks.clear();
-		gpmlPathway = new org.pathvisio.core.model.Pathway();
+		gpmlPathway = new org.pathvisio.model.Pathway();
 		reaction2entry.clear();
 		ecrelEnzyme2Compound.clear();
 		entriesById.clear();
@@ -163,7 +155,7 @@ public class KeggFormat {
 				title = title.substring(0, 50);
 			}
 			mappInfo.setMapInfoName(title);
-			mappInfo.setOrganism(speciesCode);
+			mappInfo.setOrganism(species);
 		}
 		mappInfo.setMapInfoDataSource(pathway.getLink()); //KH add url to kgml map
 
@@ -586,8 +578,6 @@ public class KeggFormat {
 
 	private void convertEntry(Entry entry) throws RemoteException, ConverterException, ClassNotFoundException, IDMapperException {
 		Type type = Type.fromString(entry.getType());
-		
-		
 		switch(type) {
 		case MAP:
 			convertMap(entry);
@@ -611,32 +601,25 @@ public class KeggFormat {
 
 	private void convertCompound(Entry compound) throws RemoteException, ConverterException, ClassNotFoundException, IDMapperException {
 		List<Graphics> graphics = compound.getGraphics();
+
 		String name = compound.getName();
-		SymbolInfo sinfo = null;
-				
+		
 		if (graphics.size() == 1)
 			{
 			Graphics cg = graphics.get(0);
+			String wlabel = null;
 			
 			if(isUseWebservice()) { //fetch the real name from the webservice
-				sinfo = keggService.getKeggSymbol("cpd:"+cg.getName());
+				wlabel = keggService.getKeggSymbol("cpd:"+cg.getName());
 			}
-			
-			String compoundname = sinfo == null ? "cpd:"+cg.getName() : sinfo.getPreferred(prefSymbolIndex);
-			
-			//Create gpml element. Modified by KH to use compoundname instead of sinfo
+				
 			PathwayElement pwElm = createDataNode(
-					cg,
-					DataNodeType.METABOLITE,
-					compoundname,
-					name.replace("cpd:", ""),
-					BioDataSource.KEGG_COMPOUND);
-			
-			//Add comments regarding the source on KEGG. Modified by KH to only add if working online (otherwise sinfo is null)
-			if(!(sinfo == null)) {
-				sinfo.addToComments(pwElm);
-			}
-			
+				cg,
+				DataNodeType.METABOLITE,
+				wlabel,
+				name.replace("cpd:", ""),
+				BioDataSource.KEGG_COMPOUND);
+
 			gpmlPathway.add(pwElm);
 			pwElm.setGeneratedGraphId();
 			mapConvertedId(compound.getId(), pwElm);
@@ -702,14 +685,6 @@ public class KeggFormat {
 		}
 	}
 
-	private String processLabel(String label) {
-		if(label.contains(", ")) {
-			label = label.split(", ")[0]; //Only use first synonym
-		}
-		if(label.endsWith("...")) label.substring(0, label.length() - 3);
-		return label;
-	}
-	
 	private void convertDataNode(Entry entry) throws RemoteException, ConverterException {
 		List<Graphics> graphics = entry.getGraphics();
 		
@@ -718,13 +693,11 @@ public class KeggFormat {
 			return;
 		}
 		
-		
 		if (graphics.size() == 1)
 		{
 		
 			Graphics dg = graphics.get(0);
 			String label = dg.getName();
-			label = processLabel(label);
 			String name = entry.getName();
 			String[] ids = name.split(" ");
 
@@ -733,39 +706,29 @@ public class KeggFormat {
 
 			for(int i = 0; i < ids.length; i++) {
 				String id = ids[i];
-				String[] genes = getGenes(id, species, Type.fromString(entry.getType()));
+				String[] genes = getGenes(id, organism, Type.fromString(entry.getType()));
+
 				
 				for(String gene : genes) {
-					SymbolInfo sinfo = null;
-					
+					String geneName = dg.getName();
 					if(isUseWebservice()) { //fetch the real name from the webservice
-						String query = symbolByGene ? gene : id;
-						if(!query.startsWith(Util.getKeggOrganism(species) + ":")) {
-							query = Util.getKeggOrganism(species) + ":" + query;
-						}
-						sinfo = keggService.getKeggSymbol(query);
-						
-					}
-			
-					String geneName = sinfo == null ? dg.getName() : sinfo.getPreferred(prefSymbolIndex);
-					geneName = processLabel(geneName);
-
-					//Create gpml element. Modified by KH to use geneName instead of sinfo.getPreferred
-					PathwayElement pwElm = createDataNode(
-							dg,
-							DataNodeType.GENEPRODUCT,
-							geneName,
-							gene == null ? "" : gene,
-							BioDataSource.ENTREZ_GENE
+						geneName = keggService.getKeggSymbol(
+								Util.getKeggOrganism(organism) + ":" + gene
 						);
-					
-					
-					//Add comments regarding the source on KEGG. Modified by KH to only add if working online (otherwise sinfo is null)
-					if(!(sinfo == null)) {
-						sinfo.addToComments(pwElm);
 					}
-										
 					
+					
+
+					//Create gpml element
+					PathwayElement pwElm = createDataNode(
+						dg,
+						DataNodeType.GENEPRODUCT,
+						geneName == null ? "" : geneName,
+						gene == null ? "" : gene,
+						BioDataSource.ENTREZ_GENE
+					);
+
+					//Add comments regarding the source on KEGG
 					String e_id = entry.getId();
 					String e_type = entry.getType();
 					String e_name = entry.getName();
@@ -793,7 +756,6 @@ public class KeggFormat {
 		} //end for loop
 			
 		if(pwElms.size() > 1) {
-			
 			PathwayElement group = createGroup(name, pwElms);  
 			Util.stackElements(pwElms);
 			mapConvertedId(entry.getId(), group);
@@ -870,7 +832,6 @@ public class KeggFormat {
 	}
 
 	private PathwayElement createGroup(String name, Collection<PathwayElement> elements) {
-		
 		PathwayElement group = PathwayElement.createPathwayElement(ObjectType.GROUP);
 		group.setTextLabel(name);
 		gpmlPathway.add(group);
@@ -949,7 +910,6 @@ public class KeggFormat {
 	}
 
 	private PathwayElement createDataNode(Graphics graphics, DataNodeType type, String label, String id, DataSource source) {
-		
 		PathwayElement dn = PathwayElement.createPathwayElement(ObjectType.DATANODE);
 		dn.setDataSource(source);
 		if(id != null && id.length() < 50) dn.setGeneID(id);
@@ -965,14 +925,10 @@ public class KeggFormat {
 		return dn;
 	}
 
-	private String[] getGenes(String keggId, String organism, Type type) throws RemoteException, ConverterException {
-		boolean isValidGene = type == Type.GENE && keggId.matches("[a-z]{3}:[0-9]+$");
-		
-		if(isUseWebservice() && !isValidGene) {
+	private String[] getGenes(String keggId, Organism organism, Type type) throws RemoteException, ConverterException {
+		if(isUseWebservice() && type != Type.GENE) {
 			if(type == Type.ORTHOLOG) {
 				return keggService.getGenesForKo(keggId, organism);
-			} else if(type == Type.GENE) {
-				return keggService.getGenes(keggId, organism);
 			} else {
 				return keggService.getGenesForEc(keggId, organism);
 			}

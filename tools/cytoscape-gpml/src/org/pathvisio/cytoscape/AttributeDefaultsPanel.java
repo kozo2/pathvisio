@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.StaticProperty;
-import org.pathvisio.gui.handler.PropertyView;
+import org.pathvisio.gui.swing.propertypanel.PropertyView;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.StaticProperty;
 
 /**
  * Panel to configure attribute to GPML property mappings

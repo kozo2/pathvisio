@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.pathvisio.plugins.gexview;
 import javax.swing.table.AbstractTableModel;
 
 import org.bridgedb.IDMapperException;
-import org.pathvisio.core.debug.Logger;
-import org.pathvisio.desktop.gex.SimpleGex;
+import org.pathvisio.debug.Logger;
+import org.pathvisio.gex.SimpleGex;
 
 public class HeatmapTableModel extends AbstractTableModel
 {

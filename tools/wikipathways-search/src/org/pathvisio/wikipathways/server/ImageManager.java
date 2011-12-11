@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,12 @@
 //
 package org.pathvisio.wikipathways.server;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,25 +29,21 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.swing.Action;
-import javax.swing.KeyStroke;
-
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscodingHints;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.pathvisio.core.model.BatikImageExporter;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.preferences.PreferenceManager;
-import org.pathvisio.core.view.VPathway;
-import org.pathvisio.core.view.VPathwayWrapper;
+import org.pathvisio.model.BatikImageExporter;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.preferences.PreferenceManager;
+import org.pathvisio.view.VPathway;
+import org.pathvisio.view.VPathwayWrapperBase;
+import org.pathvisio.wikipathways.WikiPathwaysClient;
 import org.pathvisio.wikipathways.client.SearchException;
 import org.pathvisio.wikipathways.client.SearchService;
 import org.pathvisio.wikipathways.webservice.WSPathway;
 import org.pathvisio.wikipathways.webservice.WSPathwayInfo;
 import org.pathvisio.wikipathways.webservice.WSSearchResult;
-import org.wikipathways.client.WikiPathwaysClient;
 
 /**
  * Manages the cache of the GPML files and preview images
@@ -255,7 +248,7 @@ public class ImageManager {
 //		}
 
 		PreferenceManager.init();
-		VPathway vpathway = new VPathway(null);
+		VPathway vpathway = new VPathway(new VPathwayWrapperBase());
 		vpathway.fromModel(pathway);
 
 		//Uncomment this to enable highlighting of the

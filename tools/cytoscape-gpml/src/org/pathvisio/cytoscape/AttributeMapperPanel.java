@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import org.jdesktop.swingx.autocomplete.ComboBoxCellEditor;
-import org.pathvisio.core.model.StaticProperty;
+import org.pathvisio.model.StaticProperty;
 
 /**
  * Panel to configure attribute to GPML property mappings
@@ -63,8 +63,8 @@ public class AttributeMapperPanel extends JPanel {
 		List<String> propNames = new ArrayList<String>();
 		for(StaticProperty prop : StaticProperty.values()) {
 			if(!mapper.isProtected(prop)) {
-				desc2prop.put(prop.getName(), prop);
-				propNames.add(prop.getName());
+				desc2prop.put(prop.getDescription(), prop);
+				propNames.add(prop.getDescription());
 			}
 		}
 		propNames.add(NONE);

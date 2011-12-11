@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.pathvisio.core.biopax.reflect.BiopaxElement;
-import org.pathvisio.core.biopax.reflect.PublicationXref;
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayExporter;
-import org.pathvisio.desktop.PvDesktop;
-import org.pathvisio.desktop.plugin.Plugin;
+import org.pathvisio.biopax.reflect.BiopaxElement;
+import org.pathvisio.biopax.reflect.PublicationXref;
+import org.pathvisio.gui.swing.PvDesktop;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayExporter;
+import org.pathvisio.plugin.Plugin;
 
 /**
  * Shows how to implement a new file format,

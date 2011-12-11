@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import cytoscape.data.CyAttributes;
 import giny.view.EdgeView;
 import giny.view.GraphView;
 
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.view.LinAlg;
-import org.pathvisio.core.view.LinAlg.Point;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.view.LinAlg;
+import org.pathvisio.view.LinAlg.Point;
 
 /**
  * Class that holds a Cytoscape edge that has a GPML representation, which is stored

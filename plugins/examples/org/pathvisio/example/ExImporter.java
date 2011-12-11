@@ -1,6 +1,6 @@
 // PathVisio,
 // a tool for data visualization and analysis using Biological Pathways
-// Copyright 2006-2011 BiGCaT Bioinformatics
+// Copyright 2006-2009 BiGCaT Bioinformatics
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.pathvisio.core.model.ConverterException;
-import org.pathvisio.core.model.ObjectType;
-import org.pathvisio.core.model.Pathway;
-import org.pathvisio.core.model.PathwayElement;
-import org.pathvisio.core.model.PathwayImporter;
-import org.pathvisio.desktop.PvDesktop;
-import org.pathvisio.desktop.plugin.Plugin;
+import org.pathvisio.gui.swing.PvDesktop;
+import org.pathvisio.model.ConverterException;
+import org.pathvisio.model.ObjectType;
+import org.pathvisio.model.Pathway;
+import org.pathvisio.model.PathwayElement;
+import org.pathvisio.model.PathwayImporter;
+import org.pathvisio.plugin.Plugin;
 
 /**
  * Example of how to create and register a Pathway importer.
