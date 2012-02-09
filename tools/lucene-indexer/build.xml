@@ -79,7 +79,7 @@
 	<target name="dist" depends="jar" description="Copies jar and external libraries to dist path">
 		<copy file="${jar.name}" toDir="${dist.dir}"/>
 		<copy file="${service.jar.name}" toDir="${dist.dir}"/>
-		<copy file="bridge.config" toDir="${dist.dir}"/>
+		<copy file="gdb.config" toDir="${dist.dir}"/>
 		<copy file="indexer.config" toDir="${dist.dir}"/>
 		<copy toDir="${dist.dir}/lib">
 			<fileset dir="${lib.dir}">
