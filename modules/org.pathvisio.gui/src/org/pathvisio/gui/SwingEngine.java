@@ -57,7 +57,7 @@ import org.pathvisio.core.util.Utils;
 import org.pathvisio.core.view.VPathwayWrapper;
 import org.pathvisio.gui.dialogs.OkCancelDialog;
 import org.pathvisio.gui.dialogs.PopupDialogHandler;
-import org.pathvisio.gui.util.Compat;
+//import org.pathvisio.gui.util.Compat;
 import org.pathvisio.gui.view.VPathwaySwing;
 
 /**
@@ -76,7 +76,7 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 
 	private Engine engine;
 	private GdbManager gdbManager = null;
-	private final Compat compat;
+	//private final Compat compat;
 
 	public Engine getEngine() { return engine; }
 
@@ -86,8 +86,8 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 		gdbManager = new GdbManager();
 		actions = new CommonActions(this);
 		engine.addApplicationEventListener(this);
-		compat = new Compat(this);
-		engine.addApplicationEventListener(compat);
+		//compat = new Compat(this);
+		//engine.addApplicationEventListener(compat);
 	}
 
 	public GdbManager getGdbManager()
@@ -604,7 +604,7 @@ public class SwingEngine implements ApplicationEventListener, Pathway.StatusFlag
 	{
 		assert (!disposed);
 		engine.removeApplicationEventListener(this);
-		engine.removeApplicationEventListener(compat);
+		//engine.removeApplicationEventListener(compat);
 		disposed = true;
 	}
 
