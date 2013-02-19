@@ -124,7 +124,6 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 	 */
 	public void processOptions() {
 		//Create a plugin manager that loads the plugins
-		pvDesktop.loadPluginManager();
 		pvDesktop.initPlugins();
 
 		String str = System.getProperty(ARG_PROPERTY_PATHWAYFILE);

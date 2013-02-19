@@ -18,7 +18,6 @@ package org.pathvisio.gui;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Desktop;
 import java.io.File;
 import java.net.URL;
 import java.util.Comparator;
@@ -32,6 +31,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
@@ -57,6 +57,7 @@ import org.pathvisio.core.util.Utils;
 import org.pathvisio.core.view.VPathwayWrapper;
 import org.pathvisio.gui.dialogs.OkCancelDialog;
 import org.pathvisio.gui.dialogs.PopupDialogHandler;
+//import org.pathvisio.gui.util.Compat;
 import org.pathvisio.gui.view.VPathwaySwing;
 
 /**

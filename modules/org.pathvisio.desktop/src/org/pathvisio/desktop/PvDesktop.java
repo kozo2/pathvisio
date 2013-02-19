@@ -17,12 +17,8 @@
 
 package org.pathvisio.desktop;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JFrame;
@@ -32,14 +28,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
+import org.bridgedb.IDMapperException;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.pathvisio.core.ApplicationEvent;
 import org.pathvisio.core.Engine.ApplicationEventListener;
 import org.pathvisio.core.data.GdbEvent;
 import org.pathvisio.core.data.GdbManager.GdbEventListener;
 import org.pathvisio.core.debug.Logger;
+import org.pathvisio.core.model.ObjectType;
 import org.pathvisio.core.model.Pathway;
+import org.pathvisio.core.model.PathwayElement;
 import org.pathvisio.core.preferences.GlobalPreference;
 import org.pathvisio.core.preferences.PreferenceManager;
 import org.pathvisio.core.view.VPathway;
@@ -51,11 +49,11 @@ import org.pathvisio.desktop.gex.GexManager;
 import org.pathvisio.desktop.plugin.PluginDialogSwitch;
 import org.pathvisio.desktop.plugin.PluginManager;
 import org.pathvisio.desktop.util.StandaloneCompat;
+import org.pathvisio.desktop.visualization.Visualization;
 import org.pathvisio.desktop.visualization.VisualizationEvent;
 import org.pathvisio.desktop.visualization.VisualizationManager;
-import org.pathvisio.gui.PathwayElementMenuListener.PathwayElementMenuHook;
 import org.pathvisio.gui.SwingEngine;
-import org.pathvisio.pluginmanager.IPluginManager;
+import org.pathvisio.gui.PathwayElementMenuListener.PathwayElementMenuHook;
 
 /**
  * PvDesktop ties together several
@@ -76,7 +74,6 @@ public class PvDesktop implements ApplicationEventListener, GdbEventListener, Vi
 	private final SwingEngine swingEngine;
 	private final StandaloneCompat compat;
 	private final PreferencesDlg preferencesDlg;
-	private IPluginManager pluginManagerExternal;
 
 	private BundleContext context;
 	
@@ -288,9 +285,6 @@ public class PvDesktop implements ApplicationEventListener, GdbEventListener, Vi
 			JMenu menuAt = menuBar.getMenu(i);
 			if (menuAt.getText().equals (submenu))
 			{
-				if(menuAt.getText().equalsIgnoreCase("plugins") && menuAt.getItemCount() == 2) {
-					menuAt.addSeparator(); 
-				}
 				JMenuItem item = menuAt.add(a);
 				registeredActions.put(a, item);
 				break;
@@ -464,32 +458,5 @@ public class PvDesktop implements ApplicationEventListener, GdbEventListener, Vi
 			Logger.log.error(msg, ex);
 		}
 	}
-	
-	/**
-	 * plugin manager registers a service in the activator
-	 * this methods gets the plugin manager class from the OSGi registry
-	 * @return
-	 */
-	public void loadPluginManager() {
-		ServiceReference ref = getContext().getServiceReference(IPluginManager.class.getName());
-		// TODO: warning if plugin manager service can not be resolved
-		if(ref != null) {
-			pluginManagerExternal = (IPluginManager) getContext().getService(ref);
-			Set<URL> onlineRepos = new HashSet<URL>();
-			try {
-				// TODO: this information should be stored in global settings
-				onlineRepos.add(new URL("http://repository.pathvisio.org/repository.xml"));
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			pluginManagerExternal.init(GlobalPreference.getBundleDir(), onlineRepos);
-		}
-	}
 
-
-	public IPluginManager getPluginManagerExternal() {
-		return pluginManagerExternal;
-	}
 }
