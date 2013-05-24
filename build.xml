@@ -7,6 +7,11 @@
     <property name="apidoc.dir" value="apidoc"/>
 	<property name="webstart.dir" value="webstart"/>
 	<property name="release.dir" value="release"/>
+	<!-- needed to create the wikipathways client zip file -->
+	<property name="lib.axis.dir" value="tools/cytoscape-gpml/lib"/>
+
+	<!-- needed so the zipped files have the correct name -->
+	<property name="pathvisio.version" value="3.0.1"/>
 
 	<property name="build.wpi.bin" value="build/wpi/bin"/>
 	<property name="build.wpi.applet" value="build/wpi/applet"/>
@@ -441,7 +446,7 @@
 
 		<zip destfile="${release.dir}/${binbase2}.zip">
 			<zipfileset dir="." prefix="wikipathways_client-${pathvisio.version}">
-				<include name="wikipathways-client.jar" />
+				<include name="org.wikipathways.client.jar" />
 				<include name="lib/jdom.jar" />
 				<include name="lib/derby.jar" />
 				<include name="modules/org.pathvisio.core.jar" />

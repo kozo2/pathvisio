@@ -38,6 +38,7 @@ public class PublicationXref extends BiopaxNode {
 				PropertyType.SOURCE,
 				PropertyType.TITLE,
 				PropertyType.YEAR,
+				PropertyType.URL
 			});
 	}
 
