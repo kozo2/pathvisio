@@ -30,6 +30,7 @@ public enum PropertyType {
 	ID("http://www.w3.org/2001/XMLSchema#string", 1),
 	DB("http://www.w3.org/2001/XMLSchema#string", 1),
 	SOURCE("http://www.w3.org/2001/XMLSchema#string", 1),
+  URL("http://www.w3.org/2001/XMLSchema#string", 1),
 	;
 
 	String datatype;

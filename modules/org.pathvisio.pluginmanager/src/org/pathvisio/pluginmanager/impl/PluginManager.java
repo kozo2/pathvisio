@@ -22,10 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +38,7 @@ import javax.swing.SwingWorker;
 import org.apache.felix.bundlerepository.Reason;
 import org.apache.felix.bundlerepository.Repository;
 import org.apache.felix.bundlerepository.RepositoryAdmin;
+import org.apache.felix.bundlerepository.Requirement;
 import org.apache.felix.bundlerepository.Resolver;
 import org.apache.felix.bundlerepository.Resource;
 import org.osgi.framework.Bundle;
@@ -54,7 +53,6 @@ import org.pathvisio.desktop.plugin.IPluginManager;
 import org.pathvisio.desktop.plugin.Plugin;
 import org.pathvisio.gui.ProgressDialog;
 import org.pathvisio.pluginmanager.impl.data.BundleVersion;
-import org.pathvisio.pluginmanager.impl.data.Category;
 import org.pathvisio.pluginmanager.impl.data.PVBundle;
 import org.pathvisio.pluginmanager.impl.data.PVRepository;
 import org.pathvisio.pluginmanager.impl.dialogs.PluginManagerDialog;
@@ -93,7 +91,7 @@ public class PluginManager implements IPluginManager {
 		tmpBundles = new HashMap<String, BundleVersion>();
 	}
 	
-	public void init(File localRepo, final Set<URL> onlineRepo, PvDesktop desktop) {
+	public void init(File localRepo, Set<URL> onlineRepo, PvDesktop desktop) {
 		this.desktop = desktop;
 	
 		// initialize local repository
@@ -106,63 +104,18 @@ public class PluginManager implements IPluginManager {
 		initPlugins();
 		
 		// initialize online repositories
-		final ServiceReference ref = context.getServiceReference(RepositoryAdmin.class.getName());
-		repoAdmin = (RepositoryAdmin) context.getService(ref);
-
-		if(ref != null) 
-		{
-			SwingWorker<Void, Map.Entry<Repository, URL>> worker = new SwingWorker<Void, Map.Entry<Repository, URL>>()
-			{
-				boolean atLeastOneSuccess = false;
-				Throwable connectionException;
-				
-				@Override
-				protected Void doInBackground() throws Exception
-				{
-					for(URL url : onlineRepo) 
-					{
-						try 
-						{
-							Repository repo = repoAdmin.addRepository(url);
-							publish (new AbstractMap.SimpleEntry<Repository, URL>(repo, url));
-							atLeastOneSuccess = true;
-						}
-						catch (Exception e) 
-						{
-							Logger.log.error("Could not initialize repository " + url + "\t" + e.getMessage());
-							connectionException = e;
-						} 
-					}
-					return null;
-				}
-				
-				@Override
-				protected void process(List<Map.Entry<Repository, URL>> result) 
-				{
-					for (Map.Entry<Repository, URL> repo : result)
-					{
-						setUpOnlineRepo(repo.getKey(), repo.getValue());
-					}
-				}
-				
-				@Override
-				protected void done()
-				{
-					if (atLeastOneSuccess)
-						status = PluginManagerStatus.CONNECTION_COMPLETED_SUCCESSFULLY;
-					else
-					{
-						status = PluginManagerStatus.CONNECTION_COMPLETED_FAILURE;
-						savedConnectionException = connectionException;
-					}
-					if (dlg != null) dlg.updateData();
-				}
-				
-			};
-			worker.execute();
-		} 
-		else 
-		{
+		ServiceReference ref = context.getServiceReference(RepositoryAdmin.class.getName());
+		if(ref != null) {
+			repoAdmin = (RepositoryAdmin) context.getService(ref);
+			for(URL url : onlineRepo) {
+				try {
+					Repository repo = repoAdmin.addRepository(url);
+					setUpOnlineRepo(repo, url);
+				} catch (Exception e) {
+					Logger.log.error("Could not initialize repository " + url + "\t" + e.getMessage());
+				} 
+			}
+		} else {
 			Logger.log.error("Could not initialize online repositories.");
 		}
 	}
@@ -488,30 +441,6 @@ public class PluginManager implements IPluginManager {
 		}
 		return null;
 	}
-	
-	public Set<BundleVersion> getBundlesPerTag(String tag) {
-		Set<BundleVersion> set = new HashSet<BundleVersion>();
-		for(PVRepository repo : onlineRepos) {
-			for(BundleVersion v : repo.getBundleVersions()) {
-				if(!v.isInstalled() && v.getBundle().hasCatgeory(tag)) {
-					set.add(v);
-				}
-			}
-		}
-		return set;
-	}
-	
-	public Set<Category> getAvailableTags() {
-		Set<Category> tags = new HashSet<Category>();
-		for(PVRepository repo : onlineRepos) {
-			for(BundleVersion version : repo.getBundleVersions()) {
-				if(version.getType() != null && version.getType().equals("plugin")) {
-					tags.addAll(version.getBundle().getCategories());
-				}
-			}
-		}
-		return tags;
-	}
 
 	/**
 	 * returns all available plugins that are not installed
@@ -669,54 +598,4 @@ public class PluginManager implements IPluginManager {
 	public Map<String, BundleVersion> getTmpBundles() {
 		return tmpBundles;
 	}
-
-	public enum PluginManagerStatus
-	{
-		/** This status indicates that the PluginManager attempted to connect,
-		 * but failed due to a problem, most likely due to firewall or slow connection (timeout) */
-		CONNECTION_COMPLETED_FAILURE,
-		
-		/** This status indicates that the PluginManager is still attempting to connect to the online repository */
-		BUSY,
-		
-		/** 
-		 * This status indicates that AT LEAST ONE online repository was initialized correctly.
-		 * It is possible that others did fail.  
-		 * If the number of online repositories is still zero, it means there weren't any to begin with. */
-		CONNECTION_COMPLETED_SUCCESSFULLY
-	}
-	
-	private PluginManagerStatus status = PluginManagerStatus.BUSY;
-	private Throwable savedConnectionException = null;
-	
-	/**
-	 * Return the status of connecting to online repositories.
-	 * The resulting message may contain html formatting suitable for a JLabel.
-	 */
-	public String getStatusMessage()
-	{
-		String msg;
-		switch (status)
-		{
-		case BUSY:
-			msg = "Attempting to connect to online repository, please wait...";
-			break;
-		case CONNECTION_COMPLETED_FAILURE:
-			msg = "<html>Exception occurred while connecting to the online repository.";
-			if (savedConnectionException != null)
-			{
-				// create a user-friendly exception message
-				Throwable t = savedConnectionException;
-				if (t.getCause() != null) t = t.getCause();
-				msg += "<br>" + t.getClass().getSimpleName() + ": " + savedConnectionException.getCause().getMessage();
-			}
-			break;
-		default:
-		case CONNECTION_COMPLETED_SUCCESSFULLY:
-			// if connection has completed successfully, but repo is empty, then there simply are no plugins
-			msg = "Connected succesfully to " + onlineRepos.size() + " repositories";
-		}
-		return msg;
-	}
-
 }

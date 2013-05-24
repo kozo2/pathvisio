@@ -327,6 +327,8 @@ public class BiopaxElement extends PathwayElement
 		}
 	}
 
+  // copies all publication references when a previous state of a pathway
+  // is copied in the UndoAction 
 	@Override
 	public void copyValuesFrom(PathwayElement src) {
 		super.copyValuesFrom(src);
@@ -336,5 +338,5 @@ public class BiopaxElement extends PathwayElement
 		this.ordinal = srcElement.ordinal;
 		this.random = srcElement.random;
 	}
-
 }
+
