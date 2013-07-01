@@ -60,7 +60,6 @@ import org.pathvisio.desktop.gex.GexManager.GexManagerListener;
 import org.pathvisio.desktop.model.BatikImageWithDataExporter;
 import org.pathvisio.desktop.model.RasterImageWithDataExporter;
 import org.pathvisio.desktop.visualization.VisualizationManager;
-import org.pathvisio.gui.DataPaneTextProvider;
 import org.pathvisio.gui.MainPanel;
 import org.pathvisio.gui.SwingEngine;
 import org.pathvisio.gui.SwingEngine.Browser;
@@ -157,10 +156,8 @@ public class GuiMain implements GdbEventListener, GexManagerListener
 		}
 		return s;
 	}
-//	private final DataPaneTextProvider dpt;
 //Commented out interaction database for milestone 33, to be included in milestone 34
 	private void setGdbStatus(JLabel gdbLabel, JLabel mdbLabel) {
-//		DataPaneTextProvider.getDataHTML(swingEngine) ;
 		String gdb = "" + swingEngine.getGdbManager().getGeneDb();
 		String mdb = "" + swingEngine.getGdbManager().getMetaboliteDb();
 //		String idb = "" + swingEngine.getGdbManager().getInteractionDb();

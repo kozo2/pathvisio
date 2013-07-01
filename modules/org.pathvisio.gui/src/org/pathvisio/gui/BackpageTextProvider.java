@@ -37,7 +37,6 @@ import org.pathvisio.core.model.ObjectType;
 import org.pathvisio.core.model.PathwayElement;
 import org.pathvisio.core.util.Resources;
 import org.pathvisio.core.util.Utils;
-import org.pathvisio.gui.DataPaneTextProvider.DataHook;
 
 /**
  * BackpageTextProvider knows how to generate a html "backpage" for a given PathwayElement.
@@ -72,7 +71,7 @@ public class BackpageTextProvider
 	 * A @{link BackpageHook} that generates a section with a description
 	 * and a few other attributes to the backpage panel.
 	 */
-	public static class BackpageAttributes implements BackpageHook, DataHook
+	public static class BackpageAttributes implements BackpageHook
 	{
 		private final AttributeMapper attributeMapper;
 
@@ -119,8 +118,7 @@ public class BackpageTextProvider
 						{"Description", Utils.oneOf (attributes.get("Description"))},
 						{"Synonyms", Utils.oneOf (attributes.get("Synonyms"))},
 						{"Chromosome", Utils.oneOf (attributes.get("Chromosome"))},
-						{"Molecular Formula", Utils.oneOf (attributes.get("BrutoFormula"))},
-						{"Direction", Utils.oneOf (attributes.get("Direction"))}
+						{"Molecular Formula", Utils.oneOf (attributes.get("BrutoFormula"))}
 				};
 
 				for (String[] row : table)
@@ -143,13 +141,6 @@ public class BackpageTextProvider
 			}
 			return text;
 		}
-
-//		@Override
-//		public String getHtml(SwingEngine swe) {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
-
 	}
 
 	/**Graphics
