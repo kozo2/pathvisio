@@ -4,7 +4,7 @@
 	<property name="src.dir" value="modules"/>
 	<property name="debug.mode" value="true"/>
 
-    <property name="apidoc.dir" value="apidoc"/>
+    	<property name="apidoc.dir" value="apidoc"/>
 	<property name="webstart.dir" value="webstart"/>
 	<property name="release.dir" value="release"/>
 
