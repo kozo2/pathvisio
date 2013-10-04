@@ -441,6 +441,10 @@
 		<delete dir="${release.dir}/PathVisio.app"/>
 	</target>
 
+	<target name="wp-bots" depends="wpclient.jar" description="">
+		<subant target="wp-bots" buildpath="modules/org.wikipathways.client/build.xml"/>
+	</target>
+
 	<target name="tarbin-wpclient" depends="wpclient.jar" description="Create a binary tarball for the WikiPathways client">
 		<property name="binbase2" value="wikipathways_client_bin-${pathvisio.version}-r${subversion_revision}" />
 
