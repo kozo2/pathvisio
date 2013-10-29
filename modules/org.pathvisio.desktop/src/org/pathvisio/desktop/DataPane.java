@@ -199,3 +199,4 @@ public class DataPane extends JEditorPane implements ApplicationEventListener,
 		disposed = true;
 	}
 }
+

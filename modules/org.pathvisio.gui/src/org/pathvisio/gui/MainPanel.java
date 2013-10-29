@@ -563,3 +563,4 @@ public class MainPanel extends JPanel implements VPathwayListener, ApplicationEv
 		}
 	}
 }
+

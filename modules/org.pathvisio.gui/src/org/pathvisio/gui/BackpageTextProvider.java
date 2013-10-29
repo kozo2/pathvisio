@@ -168,9 +168,9 @@ public class BackpageTextProvider
 		public String getHtml(PathwayElement e) {
 			try
 			{
-				if(	e.getXref().getId() == null || 
-					"".equals(e.getXref().getId()) ||
-					e.getXref().getDataSource() == null	) {
+				if(		e.getXref().getId() == null || 
+						"".equals(e.getXref().getId()) ||
+						e.getXref().getDataSource() == null	) {
 					return "";
 				}
 				
@@ -208,6 +208,8 @@ public class BackpageTextProvider
 			}
 		}
 	}
+	
+	
 
 	/**
 	 * Register a BackpageHook with this text provider. Backpage fragments
