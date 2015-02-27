@@ -41,7 +41,13 @@
 	<target name="jar" depends="compile"> 
 		<echo>Creating JAR: ${jar.name}</echo>
 		<mkdir dir="resources"/> <!-- workaround in case resources dir doesn't exist -->
-		<jar jarfile="${jar.name}" manifest="META-INF/MANIFEST.MF">
+		<jar jarfile="${jar.name}">
+			<manifest file="META-INF/MANIFEST.MF">
+				<attribute name="Permissions" value="all-permissions"/>
+				<attribute name="Codebase" value="*"/>
+				<attribute name="Application-Name" value="PathVisio"/>
+			</manifest>
+
 			<fileset dir="resources">
 				<include name="**/*"/>
 			</fileset>
