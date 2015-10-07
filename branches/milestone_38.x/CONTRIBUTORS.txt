@@ -1,0 +1,34 @@
+# DEVELOPERS TEAM
+Martina Kutmon
+Jonathan Melius
+Anwesha Bohler
+Nuno Nunes
+Thomas Kelder
+Martijn van Iersel
+Kristina Hanspers
+Alexander Pico
+
+# CONTRIBUTORS
+Adem Bilicna
+Augustin Luna
+Bing Lui 
+Christ Leemans
+Eric Creussen
+Erik Pelgrin
+Esterh Neuteboom
+Ferry Jagers
+Hakim Achterberg
+Harm Nijveen
+Irene Kaashoek
+Justin Elser
+Kumar Chanden
+Margot Sunshine
+Mark Woon
+Margiet Palm
+Pim Moeskops
+Praveen Kumar
+Rene Besseling
+Rianne Fijten
+Sjoerd Crijns
+Sravanthi Sinha
+Stefan van Helden

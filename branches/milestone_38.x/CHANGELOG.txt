@@ -1,0 +1,2 @@
+Check all release notes here:
+http://developers.pathvisio.org/wiki/ReleaseNotes
